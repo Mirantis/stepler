@@ -1,0 +1,10 @@
+*.pyc
+.venv
+*.egg-info
+.idea
+.cache
+*.pyo
+src
+test_reports
+test_results
+build

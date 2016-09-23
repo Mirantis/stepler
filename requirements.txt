@@ -1,0 +1,28 @@
+paramiko==2.0.2
+pytest==3.0.2
+pytest-xdist==1.15.0
+python-cinderclient==1.9.0
+python-glanceclient==2.5.0
+python-heatclient==1.5.0
+python-keystoneclient==3.5.0
+python-muranoclient==0.11.0
+python-neutronclient==6.0.0
+python-novaclient==6.0.0
+python-swiftclient==3.1.0
+requests==2.11.1
+six==1.10.0
+waiting==1.3.0
+
+# ui testing
+attrdict==2.0.0
+PyHamcrest==1.9.0
+python-pom==1.0.2
+selenium==2.53.6
+xvfbwrapper==0.2.8
+
+# debug
+ipdb==0.10.1
+ipython==5.1.0
+
+# doc
+Sphinx==1.4.6
