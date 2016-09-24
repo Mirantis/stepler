@@ -41,5 +41,10 @@ class BaseSteps(object):
     """Base steps."""
 
     def __init__(self, client):
-        """Constructor."""
+        """
+        Constructor.
+        
+        Args:
+            client (object): The client for resources manipulation.
+        """
         self._client = client

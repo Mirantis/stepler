@@ -1,5 +1,7 @@
 """
-Nova conftest.
+-------------
+Nova conftest
+-------------
 
 @author: schipiga@mirantis.com
 """
@@ -44,3 +46,5 @@ __all__ = [
     'server_steps',
     'ssh_proxy_data'
 ]
+
+__all__.sort()

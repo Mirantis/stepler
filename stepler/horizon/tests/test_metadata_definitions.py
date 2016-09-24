@@ -1,5 +1,7 @@
 """
-Metadata definitions tests.
+--------------------------
+Metadata definitions tests
+--------------------------
 
 @author: schipiga@mirantis.com
 """

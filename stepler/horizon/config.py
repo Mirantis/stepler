@@ -25,7 +25,7 @@ UI_TIMEOUT = 30
 ACTION_TIMEOUT = 60
 EVENT_TIMEOUT = 180
 
-DASHBOARD_URL = os.environ['DASHBOARD_URL']
+DASHBOARD_URL = os.environ.get('DASHBOARD_URL')  # should be defined!
 VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')
 
 DEFAULT_ADMIN_NAME = 'admin'

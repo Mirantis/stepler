@@ -30,7 +30,14 @@ __all__ = [
 
 @pytest.fixture
 def session():
-    """Fixture to get session."""
+    """
+    Fixture to get session.
+
+    Returns:
+      keystoneauth1.session.Session: authenticated session object
+    """
+    assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
+
     auth = v3.Password(auth_url=config.AUTH_URL,
                        username=config.USERNAME,
                        user_domain_name=config.USER_DOMAIN_NAME,

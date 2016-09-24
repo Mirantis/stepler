@@ -1,5 +1,7 @@
 """
-Container tests.
+---------------
+Container tests
+---------------
 
 @author: schipiga@mirantis.com
 """

@@ -1,5 +1,7 @@
 """
-Neutron steps package.
+-------------
+Neutron steps
+-------------
 
 @author: schipiga@mirantis.com
 """

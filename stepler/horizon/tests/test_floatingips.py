@@ -1,5 +1,7 @@
 """
-Floating IP tests.
+-----------------
+Floating IP tests
+-----------------
 
 @author: schipiga@mirantis.com
 """

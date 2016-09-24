@@ -1,5 +1,7 @@
 """
-Keystone tests.
+--------------
+Keystone tests
+--------------
 
 @author: schipiga@mirantis.com
 """

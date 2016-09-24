@@ -1,5 +1,7 @@
 """
-Keystone steps package.
+--------------
+Keystone steps
+--------------
 
 @author: mshalamov@mirantis.com
 """
@@ -23,7 +25,7 @@ from .projects import *  # noqa
 from .roles import *  # noqa
 from .users import *  # noqa
 
-__all_ = [
+__all__ = [
     'DomainSteps',
     'ProjectSteps',
     'RoleSteps',

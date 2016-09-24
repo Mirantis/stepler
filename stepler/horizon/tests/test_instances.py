@@ -1,5 +1,7 @@
 """
-Instance tests.
+--------------
+Instance tests
+--------------
 
 @author: schipiga@mirantis.com
 """

@@ -1,5 +1,7 @@
 """
-Auth tests.
+-------------
+Project tests
+-------------
 
 @author: schipiga@mirantis.com
 """

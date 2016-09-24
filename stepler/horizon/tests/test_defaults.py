@@ -1,5 +1,7 @@
 """
-Quota tests.
+-----------
+Quota tests
+-----------
 
 @author: schipiga@mirantis.com
 """

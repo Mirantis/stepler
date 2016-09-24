@@ -1,0 +1,2 @@
+.. automodule:: stepler.conftest
+   :members:

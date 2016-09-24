@@ -1,5 +1,7 @@
 """
-Flavor tests.
+------------
+Flavor tests
+------------
 
 @author: schipiga@mirantis.com
 """

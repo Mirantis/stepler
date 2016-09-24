@@ -1,5 +1,7 @@
 """
-Tests for users.
+-----------
+Users tests
+-----------
 
 @author: schipiga@mirantis.com
 """

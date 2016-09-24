@@ -79,7 +79,14 @@ class GlanceSteps(BaseSteps):
 
     @step
     def bind_project(self, image, project, check=True):
-        """Step to bind image to project."""
+        """
+        Step to bind image to project.
+
+        Args:
+            image (object): image to bind to project
+            project (object): project to bind to image
+            check (bool): flag whether to check binding or not.
+        """
         self._client.image_members.create(image.id, project.id)
         self.check_image_bind_status(image, project)
 
@@ -112,7 +119,19 @@ class GlanceSteps(BaseSteps):
 
     @step
     def check_image_bind_status(self, image, project, binded=True, timeout=0):
-        """Check step image binding status."""
+        """
+        Check step image binding status.
+
+        Args:
+            image (object): image binded/unbinded with project
+            project (object): project binded/unbinded with image
+            binded (bool): flag when project and image should be binded or
+                           unbinded
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutError: if check was falsed after timeout.
+        """
         def predicate():
             members = self._client.image_members.list(image.id)
             member_ids = [member['member_id'] for member in members]

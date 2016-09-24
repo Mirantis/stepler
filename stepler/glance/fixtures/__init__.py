@@ -1,6 +1,7 @@
 """
-Glance fixtures package
------------------------
+===============
+Glance fixtures
+===============
 
 @author: schipiga@mirantis.com
 """

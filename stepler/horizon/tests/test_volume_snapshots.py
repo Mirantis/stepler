@@ -1,5 +1,7 @@
 """
-Tests for volume snapshots.
+---------------------
+Volume snapshot tests
+---------------------
 
 @author: schipiga@mirantis.com
 """

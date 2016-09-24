@@ -1,5 +1,7 @@
 """
-Neutron conftest.
+----------------
+Neutron conftest
+----------------
 
 @author: schipiga@mirantis.com
 """
@@ -25,3 +27,5 @@ __all__ = [
     'neutron_client',
     'neutron_steps'
 ]
+
+__all__.sort()

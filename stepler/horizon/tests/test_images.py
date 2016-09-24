@@ -1,5 +1,7 @@
 """
-Image tests.
+-----------
+Image tests
+-----------
 
 @author: schipiga@mirantis.com
 """

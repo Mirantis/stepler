@@ -1,5 +1,7 @@
 """
-Nova steps package.
+----------
+Nova steps
+----------
 
 @author: schipiga@mirantis.com
 """

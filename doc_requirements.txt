@@ -1,0 +1,2 @@
+Sphinx==1.4.6
+oslosphinx==4.7.0

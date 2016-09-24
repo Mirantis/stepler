@@ -1,5 +1,9 @@
 """
-Module with horizon steps.
+-------------
+Horizon steps
+-------------
+
+Contains steps specific for horizon (UI testing).
 
 @author: schipiga@mirantis.com
 """
@@ -36,3 +40,25 @@ from .settings import SettingsSteps  # noqa
 from .users import UsersSteps  # noqa
 from .volume_types import VolumeTypesSteps  # noqa
 from .volumes import VolumesSteps  # noqa
+
+__all__ = [
+    'AccessSteps',
+    'ApiAccessSteps',
+    'AuthSteps',
+    'ContainersSteps',
+    'DefaultsSteps',
+    'FlavorsSteps',
+    'FloatingIPsSteps',
+    'HostAggregatesSteps',
+    'ImagesSteps',
+    'InstancesSteps',
+    'KeypairsSteps',
+    'NamespacesSteps',
+    'NetworksSteps',
+    'ProjectsSteps',
+    'RoutersSteps',
+    'SettingsSteps',
+    'UsersSteps',
+    'VolumeTypesSteps',
+    'VolumesSteps'
+]

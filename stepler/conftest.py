@@ -1,5 +1,9 @@
 """
-Global conftest.
+---------------
+Global conftest
+---------------
+
+Includes fixtures available in global scope among all tests.
 
 @author: schipiga@mirantis.com
 """
@@ -22,6 +26,61 @@ from stepler.glance.conftest import *  # noqa
 from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
 from stepler.nova.conftest import *  # noqa
+
+__all__ = [
+    'admin_ssh_key_path',
+    'auth_url',
+    'ip_by_host',
+    'session',
+
+    'create_image',
+    'create_images',
+    'glance_client',
+    'glance_steps',
+    'ubuntu_image',
+
+    'create_domain',
+    'domain_steps',
+    'domain',
+    'keystone_client',
+    'create_project',
+    'project_steps',
+    'project',
+    'admin_role',
+    'create_role',
+    'role_steps',
+    'role',
+    'admin',
+    'create_user',
+    'user_steps',
+    'user',
+
+    'create_network',
+    'network',
+    'neutron_client',
+    'neutron_steps',
+
+    'create_flavor',
+    'flavor',
+    'flavor_steps',
+    'nova_create_floating_ip',
+    'nova_floating_ip',
+    'nova_floating_ip_steps',
+    'create_keypair',
+    'keypair',
+    'keypair_steps',
+    'nova_client',
+    'create_security_group',
+    'security_group',
+    'security_group_steps',
+    'create_server',
+    'create_servers',
+    'server',
+    'server_steps',
+    'ssh_proxy_data'
+]
+
+__all__.sort()
 
 pytest_plugins = [
     'third_party.steps_checker',

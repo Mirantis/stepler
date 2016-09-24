@@ -1,5 +1,7 @@
 """
-Tests for volume types tab at volumes admin page.
+-----------------
+Volume type tests
+-----------------
 
 @author: schipiga@mirantis.com
 """

@@ -1,5 +1,7 @@
 """
-Credentials tests.
+-----------------
+Credentials tests
+-----------------
 
 @author: schipiga@mirantis.com
 """

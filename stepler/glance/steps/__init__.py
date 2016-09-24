@@ -1,6 +1,9 @@
 """
-Glance steps package
---------------------
+------------
+Glance steps
+------------
+
+Contains steps specific for glance.
 
 @author: schipiga@mirantis.com
 """

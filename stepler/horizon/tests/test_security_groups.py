@@ -1,5 +1,7 @@
 """
-Security group tests.
+--------------------
+Security group tests
+--------------------
 
 @author: schipiga@mirantis.com
 """

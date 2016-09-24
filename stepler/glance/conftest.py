@@ -1,5 +1,9 @@
 """
-Glance conftest.
+---------------
+Glance conftest
+---------------
+
+Contains fixtures specific for glance.
 
 @author: schipiga@mirantis.com
 """

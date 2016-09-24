@@ -1,5 +1,7 @@
 """
-Tests for volume snapshots.
+-------------------
+User settings tests
+-------------------
 
 @author: schipiga@mirantis.com
 """

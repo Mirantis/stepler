@@ -1,5 +1,7 @@
 """
-Host aggregate tests.
+--------------------
+Host aggregate tests
+--------------------
 
 @author: schipiga@mirantis.com
 """

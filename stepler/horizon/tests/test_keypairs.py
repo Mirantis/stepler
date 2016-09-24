@@ -1,5 +1,7 @@
 """
-Keypair tests.
+-------------
+Keypair tests
+-------------
 
 @author: schipiga@mirantis.com
 """

@@ -1,5 +1,7 @@
 """
-Keystone conftest.
+-----------------
+Keystone conftest
+-----------------
 
 @author: mshalamov@mirantis.com
 """
@@ -40,3 +42,5 @@ __all__ = [
     'user_steps',
     'user'
 ]
+
+__all__.sort()

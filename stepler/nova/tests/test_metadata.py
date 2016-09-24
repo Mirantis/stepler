@@ -1,5 +1,7 @@
 """
-Server metadata tests.
+---------------------
+Server metadata tests
+---------------------
 
 @author: schipiga@mirantis.com
 """
