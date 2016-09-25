@@ -32,7 +32,19 @@ class GlanceSteps(BaseSteps):
     @step
     def create_image(self, image_name, image_path, disk_format='qcow2',
                      container_format='bare', check=True):
-        """Step to create image."""
+        """
+        Step to create image.
+
+        Args:
+            image_name (str): name of created image
+            image_path (str): path to image at local machine
+            disk_format (str): format of image disk
+            container_format (str): format of image container
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: glance image
+        """
         image = self._client.images.create(name=image_name,
                                            disk_format=disk_format,
                                            container_format=container_format)
@@ -45,7 +57,13 @@ class GlanceSteps(BaseSteps):
 
     @step
     def delete_image(self, image, check=True):
-        """Step to delete image."""
+        """
+        Step to delete image.
+
+        Args:
+            image (object): glance image
+            check (bool): flag whether to check step or not
+        """
         self._client.images.delete(image.id)
 
         if check:
@@ -54,7 +72,19 @@ class GlanceSteps(BaseSteps):
     @step
     def create_images(self, image_names, image_path, disk_format='qcow2',
                       container_format='bare', check=True):
-        """Step to create images."""
+        """
+        Step to create images.
+
+        Args:
+            image_names (list): names of created images
+            image_path (str): path to image at local machine
+            disk_format (str): format of image disk
+            container_format (str): format of image container
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: glance images
+        """
         images = []
         for image_name in image_names:
             image = self.create_image(image_name, image_path, disk_format,
@@ -69,7 +99,13 @@ class GlanceSteps(BaseSteps):
 
     @step
     def delete_images(self, images, check=True):
-        """Step to delete images."""
+        """
+        Step to delete images.
+
+        Args:
+            image (object): glance image
+            check (bool): flag whether to check step or not
+        """
         for image in images:
             self.delete_image(image, check=False)
 
@@ -85,20 +121,37 @@ class GlanceSteps(BaseSteps):
         Args:
             image (object): image to bind to project
             project (object): project to bind to image
-            check (bool): flag whether to check binding or not.
+            check (bool): flag whether to check binding or not
         """
         self._client.image_members.create(image.id, project.id)
         self.check_image_bind_status(image, project)
 
     @step
     def unbind_project(self, image, project, check=True):
-        """Step to unbind image to project."""
+        """
+        Step to unbind image to project.
+
+        Args:
+            image (object): image to unbind from project
+            project (object): project to unbind from image
+            check (bool): flag whether to check unbinding or not
+        """
         self._client.image_members.delete(image.id, project.id)
         self.check_image_bind_status(image, project, binded=False)
 
     @step
     def check_image_presence(self, image, present=True, timeout=0):
-        """Check step image is present."""
+        """
+        Check step image presence status.
+
+        Args:
+            image (object): glance image to check presence status
+            presented (bool): flag whether image should present or no
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutError: if check was falsed after timeout
+        """
         def predicate():
             try:
                 self._client.images.get(image.id)
@@ -110,7 +163,17 @@ class GlanceSteps(BaseSteps):
 
     @step
     def check_image_status(self, image, status, timeout=0):
-        """Check step image status."""
+        """
+        Check step image status.
+
+        Args:
+            image (object): glance image to check status
+            status (str): image status name to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutError: if check was falsed after timeout
+        """
         def predicate():
             image.update(self._client.images.get(image.id))
             return image.status.lower() == status.lower()
@@ -125,12 +188,12 @@ class GlanceSteps(BaseSteps):
         Args:
             image (object): image binded/unbinded with project
             project (object): project binded/unbinded with image
-            binded (bool): flag when project and image should be binded or
+            binded (bool): flag whether project and image should be binded or
                            unbinded
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutError: if check was falsed after timeout.
+            TimeoutError: if check was falsed after timeout
         """
         def predicate():
             members = self._client.image_members.list(image.id)

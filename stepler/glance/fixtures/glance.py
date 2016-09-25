@@ -35,21 +35,45 @@ __all__ = [
 
 @pytest.fixture
 def glance_client(session):
-    """Fixture to get glance client."""
+    """
+    Function fixture to get glance client.
+
+    Args:
+        session (object): authenticated keystone session
+
+    Returns:
+        glanceclient.v2.client.Client: instantiated glance client
+    """
     return Client(session=session)
 
 
 @pytest.fixture
 def glance_steps(glance_client):
-    """Fixture to get glance steps."""
+    """
+    Function fixture to get glance steps.
+
+    Args:
+        glance_client (object): instantiated glance client
+
+    Returns:
+        stepler.glance.steps.GlanceSteps: instantiated glance steps
+    """
     return GlanceSteps(glance_client)
 
 
 @pytest.yield_fixture
 def create_images(glance_steps):
-    """Fixture to create images with options.
+    """
+    Function fixture to create images with options.
 
-    Can be called several times during test.
+    Can be called several times during a test.
+    After the test it destroys all created images.
+
+    Args:
+        glance_steps (object): instantiated glance steps
+
+    Returns:
+        function: function to create images as batch with options
     """
     images = []
 
@@ -66,9 +90,17 @@ def create_images(glance_steps):
 
 @pytest.fixture
 def create_image(create_images):
-    """Fixture to create image with options.
+    """
+    Function fixture to create single image with options.
 
-    Can be called several times during test.
+    Can be called several times during a test.
+    After the test it destroys all created images.
+
+    Args:
+        create_images (function): function to create images with options
+
+    Returns:
+        function: function to create single image with options
     """
     def _create_image(image_name, *args, **kwgs):
         return create_images([image_name], *args, **kwgs)[0]
@@ -78,7 +110,15 @@ def create_image(create_images):
 
 @pytest.fixture
 def ubuntu_image(create_image):
-    """Fixture to create image with default options before test."""
+    """
+    Function fixture to create ubuntu image with default options before test.
+
+    Args:
+        create_image (function): function to create image with options
+
+    Returns:
+        object: ubuntu glance image
+    """
     image_name = next(generate_ids('ubuntu'))
     image_path = get_file_path(config.UBUNTU_QCOW2_URL)
     return create_image(image_name, image_path)
