@@ -19,3 +19,11 @@ PyHamcrest==1.9.0
 python-pom==1.0.2
 selenium==2.53.6
 xvfbwrapper==0.2.8
+
+# debug
+ipdb==0.10.1
+ipython==5.1.0
+
+# doc
+Sphinx==1.4.6
+oslosphinx==4.7.0

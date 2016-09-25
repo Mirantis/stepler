@@ -35,15 +35,15 @@ def test_share_glance_image(ubuntu_image, project, glance_steps):
     """Check sharing glance image to another project.
 
     Scenario:
-        1. Create image from `image_file`
-        2. Check that image is present in list and image status is `active`
-        3. Bind another project to image
-        4. Check that binded project id is present in image member list
-        5. Unbind project from image
-        6. Check that project id is not present in image member list
-        7. Delete image
-        8. Check that image deleted
 
+    #. Create image from `image_file`
+    #. Check that image is present in list and image status is `active`
+    #. Bind another project to image
+    #. Check that binded project id is present in image member list
+    #. Unbind project from image
+    #. Check that project id is not present in image member list
+    #. Delete image
+    #. Check that image deleted
     """
     glance_steps.bind_project(ubuntu_image, project)
     glance_steps.unbind_project(ubuntu_image, project)
