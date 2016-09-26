@@ -17,6 +17,7 @@ Server steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, is_not, has_item
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -140,8 +141,10 @@ class ServerSteps(BaseSteps):
         self._client.add_floating_ip(server, floating_ip)
 
         if check:
+            server.get()
             floating_ips = self.get_ips(server, 'floating').keys()
-            floating_ip.ip in floating_ips
+            assert_that(floating_ips, has_item(floating_ip.ip),
+                        "Floating IP not in a list of server's IPs.")
 
     @step
     def detach_floating_ip(self, server, floating_ip, check=True):
@@ -149,8 +152,10 @@ class ServerSteps(BaseSteps):
         self._client.remove_floating_ip(server, floating_ip)
 
         if check:
+            server.get()
             floating_ips = self.get_ips(server, 'floating').keys()
-            floating_ip.ip not in floating_ips
+            assert_that(floating_ips, is_not(has_item(floating_ip.ip)),
+                        "Floating IP still in a list of server's IPs.")
 
     @step
     def get_ips(self, server, ip_type=None):
