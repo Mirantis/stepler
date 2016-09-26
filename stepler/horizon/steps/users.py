@@ -20,7 +20,7 @@ Users steps.
 import pom
 from waiting import wait
 
-from stepler.steps import step
+from stepler.third_party.steps_checker import step
 
 from .base import BaseSteps
 

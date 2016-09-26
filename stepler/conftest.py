@@ -83,6 +83,6 @@ __all__ = [
 __all__.sort()
 
 pytest_plugins = [
-    'third_party.steps_checker',
-    'third_party.testrail_id'
+    'stepler.third_party.steps_checker',
+    'stepler.third_party.testrail_id'
 ]

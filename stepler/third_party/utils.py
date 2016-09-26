@@ -26,7 +26,7 @@ import uuid
 import requests
 
 from stepler import config
-from stepler.steps import step
+from stepler.third_party.steps_checker import step
 
 LOGGER = logging.getLogger(__name__)
 

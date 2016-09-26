@@ -19,25 +19,7 @@ Base steps.
 
 __all__ = [
     'BaseSteps',
-    'step',
-    'STEPS'
 ]
-
-# predefined permitted calls
-STEPS = [
-    'list',
-    'next',
-    'put',  # TODO (schipiga): update attrdict method
-    'range',
-    'sorted',
-    'set_trace'
-]
-
-
-def step(func):
-    """Decorator to append step name to storage."""
-    STEPS.append(func.__name__)
-    return func
 
 
 class BaseSteps(object):

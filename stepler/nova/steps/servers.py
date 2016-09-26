@@ -19,8 +19,9 @@ Server steps.
 
 from waiting import wait
 
-from stepler.ssh import SshClient
-from stepler.steps import BaseSteps, step
+from stepler.base import BaseSteps
+from stepler.third_party.ssh import SshClient
+from stepler.third_party.steps_checker import step
 
 __all__ = [
     'ServerSteps'

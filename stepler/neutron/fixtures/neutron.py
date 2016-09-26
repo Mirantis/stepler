@@ -21,7 +21,7 @@ from neutronclient.v2_0.client import Client
 import pytest
 
 from stepler.neutron.steps import NeutronSteps
-from stepler.utils import generate_ids
+from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_network',

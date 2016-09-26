@@ -20,7 +20,7 @@ Role fixtures.
 import pytest
 
 from stepler.keystone.steps import RoleSteps
-from stepler.utils import generate_ids
+from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'admin_role',

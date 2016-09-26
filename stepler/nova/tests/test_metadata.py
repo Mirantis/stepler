@@ -20,7 +20,7 @@ Server metadata tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from stepler.utils import generate_ids
+from stepler.third_party.utils import generate_ids
 
 
 def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,

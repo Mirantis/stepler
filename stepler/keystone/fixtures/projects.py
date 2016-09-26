@@ -20,7 +20,7 @@ Project fixtures.
 import pytest
 
 from stepler.keystone.steps import ProjectSteps
-from stepler.utils import generate_ids
+from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_project',

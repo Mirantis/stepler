@@ -22,7 +22,7 @@ import pytest
 
 from stepler.glance.steps import GlanceSteps
 from stepler import config
-from stepler.utils import generate_ids, get_file_path
+from stepler.third_party.utils import generate_ids, get_file_path
 
 __all__ = [
     'create_image',

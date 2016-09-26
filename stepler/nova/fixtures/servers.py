@@ -20,7 +20,7 @@ Server fixtures.
 import pytest
 
 from stepler.nova.steps import ServerSteps
-from stepler.utils import generate_ids
+from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_server',

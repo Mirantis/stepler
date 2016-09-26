@@ -20,7 +20,7 @@ Images steps.
 import pom
 
 from stepler.horizon.config import EVENT_TIMEOUT
-from stepler.steps import step
+from stepler.third_party.steps_checker import step
 
 from .base import BaseSteps
 

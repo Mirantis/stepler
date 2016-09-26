@@ -19,7 +19,8 @@ User steps.
 
 from waiting import wait
 
-from stepler.steps import BaseSteps, step
+from stepler.base import BaseSteps
+from stepler.third_party.steps_checker import step
 
 __all__ = [
     'UserSteps'

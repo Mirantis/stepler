@@ -19,7 +19,7 @@ Flavors steps.
 
 import pom
 
-from stepler.steps import step
+from stepler.third_party.steps_checker import step
 
 from .base import BaseSteps
 

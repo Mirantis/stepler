@@ -20,9 +20,23 @@ Pytest plugin to check only steps and fixtures are called inside test.
 import inspect
 import re
 
-from stepler.steps import STEPS
-
 REGEX_CALL = re.compile('\W*(\w+)\(')
+
+# predefined permitted calls
+STEPS = [
+    'list',
+    'next',
+    'put',  # TODO (schipiga): update attrdict method
+    'range',
+    'sorted',
+    'set_trace'
+]
+
+
+def step(func):
+    """Decorator to append step name to storage."""
+    STEPS.append(func.__name__)
+    return func
 
 
 def pytest_collection_modifyitems(config, items):
