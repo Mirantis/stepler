@@ -19,6 +19,8 @@ Routers steps.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -29,6 +31,7 @@ class RoutersSteps(BaseSteps):
         """Open routers page if it isn't opened."""
         return self._open(self.app.page_routers)
 
+    @step
     @pom.timeit('Step')
     def create_router(self, router_name, admin_state=None,
                       external_network=None, check=True):
@@ -52,6 +55,7 @@ class RoutersSteps(BaseSteps):
             page_routers.table_routers.row(
                 name=router_name).wait_for_presence(30)
 
+    @step
     @pom.timeit('Step')
     def delete_router(self, router_name, check=True):
         """Step to delete router."""

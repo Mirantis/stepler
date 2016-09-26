@@ -20,6 +20,8 @@ Networks steps.
 import pom
 from waiting import wait
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -34,6 +36,7 @@ class NetworksSteps(BaseSteps):
         """Open admin networks page if it isn't opened."""
         return self._open(self.app.page_admin_networks)
 
+    @step
     @pom.timeit('Step')
     def create_network(self, network_name, shared=False, create_subnet=False,
                        subnet_name='subnet', network_adress='192.168.0.0/24',
@@ -69,6 +72,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=network_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def delete_network(self, network_name, check=True):
         """Step to delete network."""
@@ -86,6 +90,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=network_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def delete_networks(self, network_names, check=True):
         """Step to delete networks as batch."""
@@ -104,6 +109,7 @@ class NetworksSteps(BaseSteps):
                 page_networks.table_networks.row(
                     name=network_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def add_subnet(self, network_name, subnet_name,
                    network_address='10.109.3.0/24', check=True):
@@ -128,6 +134,7 @@ class NetworksSteps(BaseSteps):
                 name=subnet_name,
                 network_address=network_address).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def admin_update_network(self, network_name, new_network_name=False,
                              shared=False, check=True):
@@ -152,6 +159,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=new_network_name or network_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def admin_delete_network(self, network_name, check=True):
         """Step to delete network as admin."""
@@ -169,6 +177,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=network_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def admin_filter_networks(self, query, check=True):
         """Step to filter networks."""

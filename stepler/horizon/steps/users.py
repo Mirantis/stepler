@@ -20,6 +20,8 @@ Users steps.
 import pom
 from waiting import wait
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -30,6 +32,7 @@ class UsersSteps(BaseSteps):
         """Open users page if it isn't opened."""
         return self._open(self.app.page_users)
 
+    @step
     @pom.timeit('Step')
     def create_user(self, username, password, project=None, role=None,
                     check=True):
@@ -55,6 +58,7 @@ class UsersSteps(BaseSteps):
             self.close_notification('success')
             page_users.table_users.row(name=username).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def delete_user(self, username, check=True):
         """Step to delete user."""
@@ -70,6 +74,7 @@ class UsersSteps(BaseSteps):
             self.close_notification('success')
             page_users.table_users.row(name=username).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def delete_users(self, usernames, check=True):
         """Step to delete users."""
@@ -87,6 +92,7 @@ class UsersSteps(BaseSteps):
             for username in usernames:
                 page_users.table_users.row(name=username).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def change_user_password(self, username, new_password, check=True):
         """Step to change user password."""
@@ -104,6 +110,7 @@ class UsersSteps(BaseSteps):
         if check:
             self.close_notification('success')
 
+    @step
     @pom.timeit('Step')
     def filter_users(self, query, check=True):
         """Step to filter users."""
@@ -124,6 +131,7 @@ class UsersSteps(BaseSteps):
 
             wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
 
+    @step
     @pom.timeit('Step')
     def sort_users(self, reverse=False, check=True):
         """Step to sort users."""
@@ -147,6 +155,7 @@ class UsersSteps(BaseSteps):
 
             wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
 
+    @step
     @pom.timeit('Step')
     def toggle_user(self, username, enable, check=True):
         """Step to disable user."""
@@ -168,6 +177,7 @@ class UsersSteps(BaseSteps):
                 self.close_notification('success')
                 assert row.cell('enabled').value == need_status
 
+    @step
     @pom.timeit('Step')
     def update_user(self, username, new_username, check=True):
         """Step to update user."""

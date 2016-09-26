@@ -19,6 +19,8 @@ Flavors steps.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -29,6 +31,7 @@ class FlavorsSteps(BaseSteps):
         """Open flavors page if it isn't opened."""
         return self._open(self.app.page_flavors)
 
+    @step
     @pom.timeit('Step')
     def create_flavor(self, flavor_name, cpu_count=1, ram=1024, root_disk=1,
                       check=True):
@@ -48,6 +51,7 @@ class FlavorsSteps(BaseSteps):
             page_flavors.table_flavors.row(
                 name=flavor_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def delete_flavor(self, flavor_name, check=True):
         """Step to delete flavor."""
@@ -65,6 +69,7 @@ class FlavorsSteps(BaseSteps):
             page_flavors.table_flavors.row(
                 name=flavor_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def delete_flavors(self, flavor_names, check=True):
         """Step to delete flavors as batch."""
@@ -83,6 +88,7 @@ class FlavorsSteps(BaseSteps):
                 page_flavors.table_flavors.row(
                     name=flavor_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def update_flavor(self, flavor_name, new_flavor_name=None, check=True):
         """Step to update flavor."""
@@ -101,6 +107,7 @@ class FlavorsSteps(BaseSteps):
             page_flavors.table_flavors.row(
                 name=new_flavor_name or flavor_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def update_metadata(self, flavor_name, metadata, check=True):
         """Step to update flavor metadata."""
@@ -124,6 +131,7 @@ class FlavorsSteps(BaseSteps):
             page_flavors.table_flavors.row(
                 name=flavor_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def get_metadata(self, flavor_name):
         """Step to get flavor metadata."""
@@ -144,6 +152,7 @@ class FlavorsSteps(BaseSteps):
 
         return metadata
 
+    @step
     @pom.timeit('Step')
     def modify_access(self, flavor_name, project, check=True):
         """Step to modify flavor access."""

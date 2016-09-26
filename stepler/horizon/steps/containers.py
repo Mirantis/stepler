@@ -19,6 +19,8 @@ Containers steps.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -29,6 +31,7 @@ class ContainersSteps(BaseSteps):
         """Open containers page if it isn't opened."""
         return self._open(self.app.page_containers)
 
+    @step
     @pom.timeit('Step')
     def create_container(self, container_name, public=False, check=True):
         """Step to create container."""
@@ -50,6 +53,7 @@ class ContainersSteps(BaseSteps):
             page_containers.list_containers.row(
                 container_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def delete_container(self, container_name, check=True):
         """Step to delete container."""
@@ -74,6 +78,7 @@ class ContainersSteps(BaseSteps):
         """Exit from context manager."""
         self._callback()
 
+    @step
     @pom.timeit('Step')
     def container(self, container_name):
         """Step to enter to container."""
@@ -86,6 +91,7 @@ class ContainersSteps(BaseSteps):
         self._callback = exit
         return self
 
+    @step
     @pom.timeit('Step')
     def folder(self, folder_name):
         """Step to enter to folder."""
@@ -98,6 +104,7 @@ class ContainersSteps(BaseSteps):
         self._callback = exit
         return self
 
+    @step
     @pom.timeit('Step')
     def create_folder(self, folder_name, check=True):
         """Step to create folder."""
@@ -113,6 +120,7 @@ class ContainersSteps(BaseSteps):
             self.app.page_containers.table_objects.row(
                 name=folder_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def delete_folder(self, folder_name, check=True):
         """Step to delete folder."""
@@ -126,6 +134,7 @@ class ContainersSteps(BaseSteps):
             self.app.page_containers.table_objects.row(
                 name=folder_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def container_info(self, container_name):
         """Step to get container info."""
@@ -137,6 +146,7 @@ class ContainersSteps(BaseSteps):
                 'created_date': row.label_created_date.value,
                 'public_url': row.link_public_url.href}
 
+    @step
     @pom.timeit('Step')
     def upload_file(self, file_path, file_name=None, check=True):
         """Step to upload file."""
@@ -158,6 +168,7 @@ class ContainersSteps(BaseSteps):
 
         return file_name
 
+    @step
     @pom.timeit('Step')
     def delete_file(self, file_name, check=True):
         """Step to delete file."""

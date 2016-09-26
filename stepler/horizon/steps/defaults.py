@@ -19,6 +19,8 @@ Horizon steps for defaults.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -29,6 +31,7 @@ class DefaultsSteps(BaseSteps):
         """Open access & security page."""
         return self._open(self.app.page_defaults)
 
+    @step
     @pom.timeit('Step')
     def update_defaults(self, defaults, check=True):
         """Step to update defaults."""
@@ -46,6 +49,7 @@ class DefaultsSteps(BaseSteps):
                 assert getattr(page_defaults, 'label_' + default_name).value \
                     == str(default_value)
 
+    @step
     @pom.timeit('Step')
     def get_defaults(self, defaults):
         """Step to get defaults."""

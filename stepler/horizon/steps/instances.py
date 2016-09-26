@@ -21,6 +21,7 @@ import pom
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT, UI_TIMEOUT
+from stepler.steps import step
 
 from .base import BaseSteps
 
@@ -32,6 +33,7 @@ class InstancesSteps(BaseSteps):
         """Open instances page if it isn't opened."""
         return self._open(self.app.page_instances)
 
+    @step
     @pom.timeit('Step')
     def create_instance(self, instance_name, network_name='admin_internal_net',
                         count=1, check=True):
@@ -78,6 +80,7 @@ class InstancesSteps(BaseSteps):
 
         return instance_names
 
+    @step
     @pom.timeit('Step')
     def delete_instances(self, instance_names, check=True):
         """Step to delete instances."""
@@ -96,6 +99,7 @@ class InstancesSteps(BaseSteps):
                 page_instances.table_instances.row(
                     name=instance_name).wait_for_absence(EVENT_TIMEOUT)
 
+    @step
     @pom.timeit('Step')
     def delete_instance(self, instance_name, check=True):
         """Step to delete instance."""
@@ -113,6 +117,7 @@ class InstancesSteps(BaseSteps):
             page_instances.table_instances.row(
                 name=instance_name).wait_for_absence(EVENT_TIMEOUT)
 
+    @step
     @pom.timeit('Step')
     def lock_instance(self, instance_name, check=True):
         """Step to lock instance."""
@@ -124,6 +129,7 @@ class InstancesSteps(BaseSteps):
         if check:
             self.close_notification('success')
 
+    @step
     @pom.timeit('Step')
     def unlock_instance(self, instance_name, check=True):
         """Step to unlock instance."""
@@ -135,6 +141,7 @@ class InstancesSteps(BaseSteps):
         if check:
             self.close_notification('success')
 
+    @step
     @pom.timeit('Step')
     def view_instance(self, instance_name, check=True):
         """Step to view instance."""
@@ -145,6 +152,7 @@ class InstancesSteps(BaseSteps):
             assert self.app.page_instance.info_instance.label_name.value \
                 == instance_name
 
+    @step
     @pom.timeit('Step')
     def filter_instances(self, query, check=True):
         """Step to filter instances."""
@@ -163,6 +171,7 @@ class InstancesSteps(BaseSteps):
 
             wait(check_rows, timeout_seconds=UI_TIMEOUT, sleep_seconds=0.1)
 
+    @step
     @pom.timeit('Step')
     def reset_instances_filter(self):
         """Step to reset instances filter."""

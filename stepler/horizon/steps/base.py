@@ -19,6 +19,8 @@ Horizon base steps.
 
 import pom
 
+from stepler.steps import step
+
 
 class BaseSteps(object):
     """Base steps."""
@@ -43,6 +45,7 @@ class BaseSteps(object):
 
         return page
 
+    @step
     @pom.timeit('Step')
     def switch_project(self, project_name, check=True):
         """Switch project in user account.
@@ -64,6 +67,7 @@ class BaseSteps(object):
 
         self.app.current_project = project_name
 
+    @step
     @pom.timeit('Step')
     def close_notification(self, level):
         """Close notification popup window.

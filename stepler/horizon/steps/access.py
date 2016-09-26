@@ -19,6 +19,8 @@ Horizon steps for authentication.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -35,6 +37,7 @@ class AccessSteps(BaseSteps):
             page.label_security_groups.click()
             return page.tab_security_groups
 
+    @step
     @pom.timeit('Step')
     def create_security_group(self, group_name, description=None, check=True):
         """Step to create security group."""
@@ -54,6 +57,7 @@ class AccessSteps(BaseSteps):
             tab_security_groups.table_security_groups.row(
                 name=group_name).wait_for_presence(30)
 
+    @step
     @pom.timeit('Step')
     def delete_security_group(self, group_name, check=True):
         """Step to delete security group."""

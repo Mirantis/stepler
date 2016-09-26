@@ -19,6 +19,8 @@ Horizon steps for authentication.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -29,6 +31,7 @@ class AuthSteps(BaseSteps):
         """Open login page if it's not opened."""
         return self._open(self.app.page_login)
 
+    @step
     @pom.timeit('Step')
     def login(self, username, password, check=True):
         """Step to log in user account.
@@ -47,6 +50,7 @@ class AuthSteps(BaseSteps):
 
         self.app.current_username = username
 
+    @step
     @pom.timeit('Step')
     def logout(self, check=True):
         """Step to log out user account."""

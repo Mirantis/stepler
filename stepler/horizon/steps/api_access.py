@@ -22,6 +22,8 @@ import os
 import pom
 from waiting import wait
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -34,6 +36,7 @@ class ApiAccessSteps(BaseSteps):
         access_page.label_api_access.click()
         return access_page.tab_api_access
 
+    @step
     @pom.timeit('Step')
     def download_rc_v2(self, check=True):
         """Step to download v2 file."""
@@ -51,6 +54,7 @@ class ApiAccessSteps(BaseSteps):
             assert 'OS_TENANT_NAME="{}"'.format(self._project_name) in content
             assert 'OS_TENANT_ID={}'.format(self._project_id) in content
 
+    @step
     @pom.timeit('Step')
     def download_rc_v3(self, check=True):
         """Step to download v3 file."""
@@ -69,6 +73,7 @@ class ApiAccessSteps(BaseSteps):
             assert 'OS_PROJECT_NAME="{}"'.format(self._project_name) in content
             assert 'OS_PROJECT_ID={}'.format(self._project_id) in content
 
+    @step
     @pom.timeit('Step')
     def view_credentials(self, check=True):
         """Step to view credentials."""

@@ -58,19 +58,20 @@ class TestAdminOnly(object):
         auth_steps.logout()
         auth_steps.login(USER_NAME, USER_PASSWD)
 
-        horizon.page_instances.open()
-        horizon.page_instances.button_launch_instance.click()
+        # TODO (schipiga): move it to check step
+        # horizon.page_instances.open()
+        # horizon.page_instances.button_launch_instance.click()
 
-        with horizon.page_instances.form_launch_instance as form:
-            form.item_flavor.click()
+        # with horizon.page_instances.form_launch_instance as form:
+        #     form.item_flavor.click()
 
-            wait(lambda: form.tab_flavor.table_available_flavors.rows,
-                 timeout_seconds=30, sleep_seconds=0.1)
+        #     wait(lambda: form.tab_flavor.table_available_flavors.rows,
+        #          timeout_seconds=30, sleep_seconds=0.1)
 
-            for row in form.tab_flavor.table_available_flavors.rows:
-                assert row.cell('name').value != flavor.name
+        #     for row in form.tab_flavor.table_available_flavors.rows:
+        #         assert row.cell('name').value != flavor.name
 
-            form.cancel()
+        #     form.cancel()
 
         auth_steps.logout()
         auth_steps.login(ADMIN_NAME, ADMIN_PASSWD)

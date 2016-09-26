@@ -19,6 +19,8 @@ Floating IPs steps.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -31,6 +33,7 @@ class FloatingIPsSteps(BaseSteps):
         page_access.label_floating_ips.click()
         return page_access.tab_floating_ips
 
+    @step
     @pom.timeit('Step')
     def allocate_floating_ip(self, check=True):
         """Step to allocate floating IP."""
@@ -50,6 +53,7 @@ class FloatingIPsSteps(BaseSteps):
             assert len(allocated_ip) == 1
             return allocated_ip.pop()
 
+    @step
     @pom.timeit('Step')
     def release_floating_ip(self, ip, check=True):
         """Step to release floating IP."""
@@ -67,6 +71,7 @@ class FloatingIPsSteps(BaseSteps):
             tab_floating_ips.table_floating_ips.row(
                 ip_address=ip).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def associate_floating_ip(self, ip, instance_name, check=True):
         """Step to associate floating IP."""

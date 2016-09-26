@@ -19,6 +19,8 @@ Settings steps.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -29,6 +31,7 @@ class SettingsSteps(BaseSteps):
         """Open settings page if it isn't opened."""
         return self._open(self.app.page_settings)
 
+    @step
     @pom.timeit('Step')
     def update_settings(self,
                         lang=None,
@@ -52,6 +55,7 @@ class SettingsSteps(BaseSteps):
             self.close_notification('success')
 
     @property
+    @step
     @pom.timeit('Step')
     def current_settings(self):
         """Current user settings."""
@@ -66,6 +70,7 @@ class SettingsSteps(BaseSteps):
         """Open page to change user password if it isn't opened."""
         return self._open(self.app.page_password)
 
+    @step
     @pom.timeit('Step')
     def change_user_password(self, current_password, new_password, check=True):
         """Step to change user password."""

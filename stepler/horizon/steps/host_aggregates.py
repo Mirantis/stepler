@@ -19,6 +19,8 @@ Host aggregates steps.
 
 import pom
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -29,6 +31,7 @@ class HostAggregatesSteps(BaseSteps):
         """Open images page if it isn't opened."""
         return self._open(self.app.page_host_aggregates)
 
+    @step
     @pom.timeit('Step')
     def create_host_aggregate(self, host_aggregate_name, check=True):
         """Step to create host aggregate."""
@@ -44,6 +47,7 @@ class HostAggregatesSteps(BaseSteps):
             page_host_aggregates.table_host_aggregates.row(
                 name=host_aggregate_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def delete_host_aggregate(self, host_aggregate_name, check=True):
         """Step to delete host_aggregate."""
@@ -61,6 +65,7 @@ class HostAggregatesSteps(BaseSteps):
             page_host_aggregates.table_host_aggregates.row(
                 name=host_aggregate_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def delete_host_aggregates(self, host_aggregate_names, check=True):
         """Step to delete host aggregates."""

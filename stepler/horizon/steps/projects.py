@@ -20,6 +20,8 @@ Projects steps.
 import pom
 from waiting import wait
 
+from stepler.steps import step
+
 from .base import BaseSteps
 
 
@@ -30,6 +32,7 @@ class ProjectsSteps(BaseSteps):
         """Open projects page if it isn't opened."""
         return self._open(self.app.page_projects)
 
+    @step
     @pom.timeit('Step')
     def create_project(self, project_name, check=True):
         """Step to create project."""
@@ -45,6 +48,7 @@ class ProjectsSteps(BaseSteps):
             page_projects.table_projects.row(
                 name=project_name).wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def delete_project(self, project_name, check=True):
         """Step to delete project."""
@@ -62,6 +66,7 @@ class ProjectsSteps(BaseSteps):
             page_projects.table_projects.row(
                 name=project_name).wait_for_absence()
 
+    @step
     @pom.timeit('Step')
     def filter_projects(self, query, check=True):
         """Step to filter projects."""

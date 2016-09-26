@@ -25,8 +25,11 @@ __all__ = [
 
 # predefined permitted calls
 STEPS = [
+    'list',
     'next',
+    'put',  # TODO (schipiga): update attrdict method
     'range',
+    'sorted',
     'set_trace'
 ]
 
@@ -43,8 +46,8 @@ class BaseSteps(object):
     def __init__(self, client):
         """
         Constructor.
-        
+
         Args:
-            client (object): The client for resources manipulation.
+            client (object): client for resources manipulation.
         """
         self._client = client

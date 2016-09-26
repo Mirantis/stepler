@@ -20,6 +20,7 @@ Images steps.
 import pom
 
 from stepler.horizon.config import EVENT_TIMEOUT
+from stepler.steps import step
 
 from .base import BaseSteps
 
@@ -34,6 +35,7 @@ class ImagesSteps(BaseSteps):
         """Open images page if it isn't opened."""
         return self._open(self.app.page_images)
 
+    @step
     @pom.timeit('Step')
     def create_image(self, image_name, image_url=CIRROS_URL, image_file=None,
                      disk_format='QCOW2', min_disk=None, min_ram=None,
@@ -72,6 +74,7 @@ class ImagesSteps(BaseSteps):
             page_images.table_images.row(
                 name=image_name).wait_for_status('Active')
 
+    @step
     @pom.timeit('Step')
     def delete_image(self, image_name, check=True):
         """Step to delete image."""
@@ -89,6 +92,7 @@ class ImagesSteps(BaseSteps):
             page_images.table_images.row(
                 name=image_name).wait_for_absence(EVENT_TIMEOUT)
 
+    @step
     @pom.timeit('Step')
     def delete_images(self, image_names, check=True):
         """Step to delete images."""
@@ -107,6 +111,7 @@ class ImagesSteps(BaseSteps):
                 page_images.table_images.row(
                     name=image_name).wait_for_absence(EVENT_TIMEOUT)
 
+    @step
     @pom.timeit('Step')
     def update_metadata(self, image_name, metadata, check=True):
         """Step to update image metadata."""
@@ -129,6 +134,7 @@ class ImagesSteps(BaseSteps):
             page_images.table_images.row(
                 name=image_name, status='Active').wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def get_metadata(self, image_name):
         """Step to get image metadata."""
@@ -149,6 +155,7 @@ class ImagesSteps(BaseSteps):
 
         return metadata
 
+    @step
     @pom.timeit('Step')
     def update_image(self, image_name, new_image_name=None, protected=False,
                      check=True):
@@ -179,6 +186,7 @@ class ImagesSteps(BaseSteps):
                 name=new_image_name or image_name,
                 status='Active').wait_for_presence()
 
+    @step
     @pom.timeit('Step')
     def view_image(self, image_name, check=True):
         """Step to view image."""
@@ -189,6 +197,7 @@ class ImagesSteps(BaseSteps):
             assert self.app.page_image.info_image.label_name.value \
                 == image_name
 
+    @step
     @pom.timeit('Step')
     def create_volume(self, image_name, volume_name, check=True):
         """Step to create volume from image."""
@@ -206,6 +215,7 @@ class ImagesSteps(BaseSteps):
         if check:
             self.close_notification('info')
 
+    @step
     @pom.timeit('Step')
     def launch_instance(self, image_name, instance_name, network_name,
                         check=True):
