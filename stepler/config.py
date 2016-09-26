@@ -19,6 +19,7 @@ Config module.
 
 import os
 
+# keystone v3 authentication is supported only
 PROJECT_DOMAIN_NAME = os.environ.get('OS_PROJECT_DOMAIN_NAME', 'default')
 USER_DOMAIN_NAME = os.environ.get('OS_USER_DOMAIN_NAME', 'default')
 PROJECT_NAME = os.environ.get('OS_PROJECT_NAME', 'admin')
