@@ -219,3 +219,26 @@ class GlanceSteps(BaseSteps):
                 return project.id not in member_ids
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def get_image(self, check=True, **kwargs):
+        """Find one image by provided **kwargs.
+
+        Args:
+            check (bool): flag whether to check step or not
+            **kwargs: like: {'name': 'TestVM', 'status': 'active'}
+
+        Returns:
+            object: glance image
+        """
+        images = self._client.images.list()
+        matched_images = [
+            img for img in images
+            if all(key in img and img[key] == value
+                   for key, value in kwargs.items())]
+
+        if check:
+            assert_that(matched_images, is_not(empty()),
+                        "Image with '{0}' not found.".format(kwargs))
+
+        return matched_images[0]
