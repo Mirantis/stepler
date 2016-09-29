@@ -64,7 +64,7 @@ class NetworkSteps(base.BaseSteps):
 
         Args:
             network (dict): network to check presence status
-            presented (bool): flag whether network should present or no
+            present (bool): flag whether network should present or no
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -91,14 +91,42 @@ class NetworkSteps(base.BaseSteps):
         return self._client.find(name=name)
 
     @steps_checker.step
-    def get_public_network(self):
+    def get_public_network(self, check=True):
         """Step to get public network.
+
+        Args:
+            check (bool): flag whether to check step or not
 
         Returns:
             dict: network
         """
         params = {'router:external': True, 'status': 'ACTIVE'}
-        return self._client.find(**params)
+        network = self._client.find(**params)
+
+        # check that API returned correct network
+        if check:
+            assert all(key in network and
+                       network[key] == value for key, value in params.items())
+        return network
+
+    @steps_checker.step
+    def get_internal_network(self, check=True):
+        """Step to get internal network.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            dict: network
+        """
+        params = {'router:external': False, 'status': 'ACTIVE'}
+        network = self._client.find(**params)
+
+        # check that API returned correct network
+        if check:
+            assert all(key in network and
+                       network[key] == value for key, value in params.items())
+        return network
 
     @steps_checker.step
     def get_network_id_by_mac(self, mac):

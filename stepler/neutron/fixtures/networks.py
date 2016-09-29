@@ -26,6 +26,7 @@ __all__ = [
     'create_network',
     'network',
     'public_network',
+    'internal_network',
     'network_steps'
 ]
 
@@ -73,3 +74,16 @@ def public_network(network_steps):
         dict: public network
     """
     return network_steps.get_public_network()
+
+
+@pytest.fixture
+def internal_network(network_steps):
+    """Fixture returns internal network.
+
+    Args:
+        network_steps (object): instantiated neutron steps
+
+    Returns:
+        dict: internal network
+    """
+    return network_steps.get_internal_network()
