@@ -17,6 +17,7 @@ Server steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from hamcrest import assert_that, is_not, has_item
 from waiting import wait
 
@@ -27,6 +28,8 @@ from stepler.third_party.steps_checker import step
 __all__ = [
     'ServerSteps'
 ]
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ServerSteps(BaseSteps):
@@ -45,6 +48,9 @@ class ServerSteps(BaseSteps):
                                      key_name=keypair.id,
                                      availability_zone=availability_zone,
                                      security_groups=sec_groups)
+
+        LOGGER.info("Server '{0.name}' [id:{0.id}] created.".format(server))
+
         if check:
             self.check_server_status(server, 'active', timeout=180)
 
@@ -71,7 +77,17 @@ class ServerSteps(BaseSteps):
     @step
     def delete_server(self, server, check=True):
         """Step to delete server."""
-        server.force_delete()
+        # Check if server present before delete it
+        try:
+            server.force_delete()
+            LOGGER.info(
+                "Server '{0.name}' [id:{0.id}] deleted.".format(server))
+        except Exception as e:
+            if e.code not in (404,):
+                raise e
+            else:
+                LOGGER.info("Server '{0.name}' [id:{0.id}] not present."
+                            "".format(server))
 
         if check:
             self.check_server_presence(server, present=False, timeout=180)

@@ -26,5 +26,6 @@ __all__ = [
     'create_images',
     'glance_client',
     'glance_steps',
-    'ubuntu_image'
+    'ubuntu_image',
+    'cirros_image'
 ]
