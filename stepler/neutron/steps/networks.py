@@ -101,6 +101,16 @@ class NetworkSteps(base.BaseSteps):
         return self._client.find(**params)
 
     @steps_checker.step
+    def get_internal_network(self):
+        """Step to get internal network.
+
+        Returns:
+            dict: network
+        """
+        params = {'router:external': False, 'status': 'ACTIVE'}
+        return self._client.find(**params)
+
+    @steps_checker.step
     def get_network_id_by_mac(self, mac):
         """Step to get network ID by server MAC.
 

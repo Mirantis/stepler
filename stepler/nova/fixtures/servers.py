@@ -127,7 +127,7 @@ def create_server(create_servers):
 
 
 @pytest.fixture
-def create_servers_context(get_server_steps):
+def create_servers_context(server_steps):
     """Function fixture to create servers inside context.
 
     It guarantees servers deletion after context exit.
