@@ -29,7 +29,8 @@ __all__ = [
     'create_images',
     'glance_client',
     'glance_steps',
-    'ubuntu_image'
+    'ubuntu_image',
+    'cirros_image'
 ]
 
 
@@ -122,3 +123,15 @@ def ubuntu_image(create_image):
     image_name = next(generate_ids('ubuntu'))
     image_path = get_file_path(config.UBUNTU_QCOW2_URL)
     return create_image(image_name, image_path)
+
+
+@pytest.fixture
+def cirros_image(glance_steps):
+    """
+    Function fixture to find cirros default image with default options before
+    test.
+
+    Returns:
+        object: cirros glance image
+    """
+    return glance_steps.find_image(name='TestVM')
