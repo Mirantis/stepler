@@ -17,6 +17,7 @@ Flavor steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, empty, has_entries, is_not  # noqa
 from novaclient import exceptions
 from waiting import wait
 
@@ -106,25 +107,62 @@ class FlavorSteps(BaseSteps):
         wait(predicate, timeout_seconds=timeout)
 
     @step
-    def get_flavor(self, *args, **kwgs):
-        """Step to find a single item with attributes matching **kwargs.
+    def get_flavor(self, check=True, **kwgs):
+        """Step to find a single item with attributes matching `**kwgs`.
 
         Parameters:
-            flavor_name (str): Descriptive name of the flavor
+            name (str): Descriptive name of the flavor
             ram (int): Memory in MB for the flavor
             vcpus (int): Number of VCPUs for the flavor
             disk (int): Size of local disk in GB
-            flavorid (str): ID for the flavor (optional). You can use the
-                            reserved value ``"auto"`` to have Nova generate a
-                            UUID for the flavor in cases where you cannot
-                            simply pass ``None``.
-            ephemeral (int): Ephemeral space in MB
+            id (str): ID for the flavor (optional). You can use the
+                      reserved value ``"auto"`` to have Nova generate a
+                      UUID for the flavor in cases where you cannot
+                      simply pass ``None``.
+            OS-FLV-EXT-DATA:ephemeral (int): Ephemeral space in MB
             swap (int): Swap space in MB
             rxtx_factor (float): RX/TX factor
-            is_public (bool): flag whether flavor should be public or not
+            os-flavor-access:is_public (bool): flag whether flavor should be
+                                               public or not
             check (bool): flag whether to check step or not
 
         Returns:
             object: nova flavor
         """
-        return self._client.find(*args, **kwgs)
+        flavor = self._client.find(**kwgs)
+
+        if check:
+            assert_that(flavor.to_dict(), has_entries(kwgs))
+        return flavor
+
+    @step
+    def get_flavors(self, check=True, **kwgs):
+        """Step to find all items with attributes matching `**kwgs`.
+
+        Parameters:
+            name (str): Descriptive name of the flavor
+            ram (int): Memory in MB for the flavor
+            vcpus (int): Number of VCPUs for the flavor
+            disk (int): Size of local disk in GB
+            id (str): ID for the flavor (optional). You can use the
+                      reserved value ``"auto"`` to have Nova generate a
+                      UUID for the flavor in cases where you cannot
+                      simply pass ``None``.
+            OS-FLV-EXT-DATA:ephemeral (int): Ephemeral space in MB
+            swap (int): Swap space in MB
+            rxtx_factor (float): RX/TX factor
+            os-flavor-access:is_public (bool): flag whether flavor should be
+                                               public or not
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: nova flavor object(s)
+
+        """
+        flavors = self._client.findall(**kwgs)
+
+        if check:
+            assert_that(flavors, is_not(empty()))
+            for flavor in flavors:
+                assert_that(flavor.to_dict(), has_entries(kwgs))
+        return flavors
