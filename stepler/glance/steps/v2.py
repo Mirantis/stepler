@@ -222,22 +222,28 @@ class GlanceStepsV2(BaseGlanceSteps):
         wait(predicate, timeout_seconds=timeout)
 
     @step
-    def get_image(self, image_id, check=True):
-        """Step to retrieve image from glance by image_id.
+    def get_image(self, check=True, **kwargs):
+        """Find one image by provided **kwargs.
 
         Args:
-            image_id (str): image uuid
-
-        Raises:
-                TimeoutExpired: if check was triggered to False
+            check (bool): flag whether to check step or not
+            **kwargs: like: {'name': 'TestVM', 'status': 'active'}
 
         Returns:
-            image: object image
-
+            object: glance image
         """
-        image = self._client.images.get(image_id)
+        images = self._client.images.list()
+
+        matched_images = []
+        for image in images:
+            for key, value in kwargs.items():
+                if not (key in image and image[key] == value):
+                    break
+            else:
+                matched_images.append(image)
 
         if check:
-            assert_that(image.id, equal_to(image_id))
+            assert_that(matched_images, is_not(empty()),
+                        "Image with '{0}' not found.".format(kwargs))
 
-        return image
+        return matched_images[0]
