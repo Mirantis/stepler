@@ -34,7 +34,7 @@ class TestAnyOne(object):
         backup_names = list(generate_ids('backup', count=3))
         create_backups(backup_names)
         update_settings(items_per_page=1)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # tab_backups = volumes_steps.tab_backups()
 
         # tab_backups.table_backups.row(

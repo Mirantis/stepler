@@ -26,7 +26,7 @@ REGEX_CALL = re.compile('\W*(\w+)\(')
 STEPS = [
     'list',
     'next',
-    'put',  # TODO (schipiga): update attrdict method
+    'put',  # TODO(schipiga): update attrdict method
     'range',
     'sorted',
     'set_trace'

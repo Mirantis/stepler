@@ -40,7 +40,7 @@ class TestAnyOne(object):
         snapshot_names = list(generate_ids(prefix='snapshot', count=3))
         create_snapshots(snapshot_names)
         update_settings(items_per_page=1)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # tab_snapshots = volumes_steps.tab_snapshots()
 
         # tab_snapshots.table_snapshots.row(

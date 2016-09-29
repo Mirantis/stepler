@@ -19,9 +19,9 @@ Fixtures for instances.
 
 import pytest
 
-from stepler.horizon.steps import InstancesSteps
 from stepler.horizon.config import INTERNAL_NETWORK_NAME
-from stepler.horizon.utils import AttrDict, generate_ids
+from stepler.horizon.steps import InstancesSteps
+from stepler.horizon.utils import AttrDict, generate_ids  # noqa
 
 __all__ = [
     'create_instance',

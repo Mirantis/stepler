@@ -47,9 +47,9 @@ class TestAnyOne(object):
                                   update_settings):
         """Verify that instances pagination works right and back."""
         instance_name = next(generate_ids('instance'))
-        instances = create_instance(instance_name, count=3)
+        create_instance(instance_name, count=3)
         update_settings(items_per_page=1)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # page_instances = instances_steps.page_instances()
         # page_instances.table_instances.row(
         #     name=instances[2].name).wait_for_presence(30)
