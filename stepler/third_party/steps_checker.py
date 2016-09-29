@@ -29,7 +29,8 @@ STEPS = [
     'put',  # TODO (schipiga): update attrdict method
     'range',
     'sorted',
-    'set_trace'
+    'set_trace',
+    'format'
 ]
 
 

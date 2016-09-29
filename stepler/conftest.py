@@ -38,6 +38,7 @@ __all__ = [
     'glance_client',
     'glance_steps',
     'ubuntu_image',
+    'cirros_image',
 
     'create_domain',
     'domain_steps',
