@@ -26,7 +26,7 @@ import shutil
 
 import pytest
 
-from .config import TEST_REPORTS_DIR, XVFB_LOCK
+from . import config
 from .fixtures import *  # noqa
 from .utils import slugify
 
@@ -131,11 +131,11 @@ def pytest_configure(config):
     """Pytest configure hook."""
     if not hasattr(config, 'slaveinput'):
         # on xdist-master node do all the important stuff
-        if os.path.exists(TEST_REPORTS_DIR):
-            shutil.rmtree(TEST_REPORTS_DIR)
-        os.mkdir(TEST_REPORTS_DIR)
-        if os.path.exists(XVFB_LOCK):
-            os.remove(XVFB_LOCK)
+        if os.path.exists(config.TEST_REPORTS_DIR):
+            shutil.rmtree(config.TEST_REPORTS_DIR)
+        os.mkdir(config.TEST_REPORTS_DIR)
+        if os.path.exists(config.XVFB_LOCK):
+            os.remove(config.XVFB_LOCK)
 
 
 @pytest.mark.hookwrapper
@@ -151,4 +151,5 @@ def pytest_runtest_makereport(item, call):
         item.is_passed = False
 
     if rep.when == 'teardown' and item.is_passed:
-        shutil.rmtree(os.path.join(TEST_REPORTS_DIR, slugify(item.name)))
+        shutil.rmtree(os.path.join(config.TEST_REPORTS_DIR,
+                                   slugify(item.name)))

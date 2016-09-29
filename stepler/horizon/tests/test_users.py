@@ -21,7 +21,7 @@ Users tests
 
 import pytest
 
-from stepler.horizon.config import ADMIN_NAME, ADMIN_PASSWD
+from stepler.horizon import config
 from stepler.horizon.utils import generate_ids
 
 
@@ -44,32 +44,32 @@ class TestAdminOnly(object):
         auth_steps.logout()
         auth_steps.login(user.name, user.password)
         auth_steps.logout()
-        auth_steps.login(ADMIN_NAME, ADMIN_PASSWD)
+        auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)
 
     def test_impossible_delete_admin_via_button(self, users_steps):
         """Verify that admin can't delete himself."""
-        users_steps.delete_users([ADMIN_NAME], check=False)
+        users_steps.delete_users([config.ADMIN_NAME], check=False)
         users_steps.close_notification('error')
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # assert users_steps.page_users().table_users.row(
-        #     name=ADMIN_NAME).is_present
+        #     name=config.ADMIN_NAME).is_present
 
     def test_impossible_delete_admin_via_dropdown(self, users_steps):
         """Verify that admin can't delete himself with dropdown menu."""
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # with users_steps.page_users().table_users.row(
-        #         name=ADMIN_NAME).dropdown_menu as menu:
+        #         name=config.ADMIN_NAME).dropdown_menu as menu:
 
         #     menu.button_toggle.click()
         #     assert not menu.item_delete.is_present
 
     def test_impossible_disable_admin(self, horizon, users_steps):
         """Verify that admin can't disable himself."""
-        users_steps.toggle_user(ADMIN_NAME, enable=False, check=False)
-        # TODO (schipiga): move it to check step
+        users_steps.toggle_user(config.ADMIN_NAME, enable=False, check=False)
+        # TODO(schipiga): move it to check step
         # horizon.page_users.refresh()
         # horizon.page_users.table_users.row(
-        #     name=ADMIN_NAME).cell('enabled').value == 'Yes'
+        #     name=config.ADMIN_NAME).cell('enabled').value == 'Yes'
 
     def test_filter_users(self, users_steps):
         """Verify that admin can filter users."""
@@ -78,7 +78,7 @@ class TestAdminOnly(object):
     def test_sort_users(self, users_steps):
         """Verify that admin can sort users."""
         users_steps.sort_users()
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # users_steps.page_users().refresh()
         users_steps.sort_users(reverse=True)
 
@@ -101,7 +101,7 @@ class TestUserOnly(object):
     def test_unavailable_users_list_for_unprivileged_user(
             self, horizon, users_steps):
         """Verify that demo user can't see users list."""
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # horizon.page_users.open()
         # users_steps.close_notification('info')
         # assert not horizon.page_users.table_users.rows

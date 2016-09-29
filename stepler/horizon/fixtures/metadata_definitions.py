@@ -21,7 +21,7 @@ import pytest
 
 from stepler.horizon.steps import NamespacesSteps
 
-from stepler.horizon.utils import AttrDict, generate_ids
+from stepler.horizon.utils import AttrDict, generate_ids  # noqa
 
 __all__ = [
     'create_namespace',

@@ -24,12 +24,12 @@ from pom import ui
 from selenium.webdriver import FirefoxProfile
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 
-from stepler.horizon.config import ACTION_TIMEOUT, UI_TIMEOUT
+from stepler.horizon import config
 
-from .pages import PageBase, pages
+from .pages import PageBase, pages  # noqa
 
-ui.UI.timeout = UI_TIMEOUT
-RemoteConnection.set_timeout(ACTION_TIMEOUT)
+ui.UI.timeout = config.UI_TIMEOUT
+RemoteConnection.set_timeout(config.ACTION_TIMEOUT)
 sorted_pages = sorted(pages, key=lambda page: len(page.url))
 
 
@@ -63,7 +63,7 @@ class Horizon(pom.App):
 
         self.webdriver.maximize_window()
         self.webdriver.set_window_size(1920, 1080)
-        self.webdriver.set_page_load_timeout(ACTION_TIMEOUT)
+        self.webdriver.set_page_load_timeout(config.ACTION_TIMEOUT)
 
         self.current_username = None
         self.current_project = None

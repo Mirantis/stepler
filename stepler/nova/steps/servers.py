@@ -17,7 +17,7 @@ Server steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_not, has_item
+from hamcrest import assert_that, is_not, has_item  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
