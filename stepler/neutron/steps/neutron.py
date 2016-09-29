@@ -81,7 +81,7 @@ class NeutronSteps(BaseSteps):
             mac_address=mac)['ports'][0]['network_id']
         return network_id
 
-    # TODO (schipiga): need refactor it after copy from mos-integration-tests.
+    # TODO(schipiga): need refactor it after copy from mos-integration-tests.
     @step
     def get_dhcp_host_by_network(self, net_id, filter_attr='host',
                                  is_alive=True):

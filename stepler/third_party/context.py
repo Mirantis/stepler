@@ -41,7 +41,7 @@ class ContextGenerator(object):
             self._generator.next()
         except StopIteration:
             pass
-        except:
+        except Exception:
             if not ext_type:
                 raise  # finalization error if no root cause error inside cm
         else:
@@ -51,8 +51,7 @@ class ContextGenerator(object):
 
 
 def context(func):
-    """
-    Decorator to make context manager from generator with guaranteed
+    """Decorator to make context manager from generator with guaranteed
     finalization.
 
     Note:

@@ -18,7 +18,7 @@ Volumes steps.
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to  # noqa
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT

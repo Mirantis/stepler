@@ -18,7 +18,7 @@ Floating IPs steps.
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to  # noqa
 
 from stepler.third_party.steps_checker import step
 

@@ -26,7 +26,7 @@ import shutil
 
 import pytest
 
-from .config import TEST_REPORTS_DIR, XVFB_LOCK  # TODO(schipiga): must global
+from . import config as tests_config  # TODO(schipiga): must global
 from .fixtures import *  # noqa
 from .fixtures import __all__  # noqa
 from .utils import slugify  # TODO(schipiga): must global
@@ -37,11 +37,11 @@ def pytest_configure(config):
     """Pytest configure hook."""
     if not hasattr(config, 'slaveinput'):
         # on xdist-master node do all the important stuff
-        if os.path.exists(TEST_REPORTS_DIR):
-            shutil.rmtree(TEST_REPORTS_DIR)
-        os.mkdir(TEST_REPORTS_DIR)
-        if os.path.exists(XVFB_LOCK):
-            os.remove(XVFB_LOCK)
+        if os.path.exists(tests_config.TEST_REPORTS_DIR):
+            shutil.rmtree(tests_config.TEST_REPORTS_DIR)
+        os.mkdir(tests_config.TEST_REPORTS_DIR)
+        if os.path.exists(tests_config.XVFB_LOCK):
+            os.remove(tests_config.XVFB_LOCK)
 
 
 # TODO(schipiga): move to global plugins
@@ -58,4 +58,5 @@ def pytest_runtest_makereport(item, call):
         item.is_passed = False
 
     if rep.when == 'teardown' and item.is_passed:
-        shutil.rmtree(os.path.join(TEST_REPORTS_DIR, slugify(item.name)))
+        shutil.rmtree(os.path.join(tests_config.TEST_REPORTS_DIR, slugify(
+            item.name)))

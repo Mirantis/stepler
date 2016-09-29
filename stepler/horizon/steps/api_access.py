@@ -20,7 +20,7 @@ Horizon steps for api access.
 import os
 
 import pom
-from hamcrest import assert_that, equal_to, contains_string
+from hamcrest import assert_that, equal_to, contains_string  # noqa
 from waiting import wait
 
 from stepler.third_party.steps_checker import step

@@ -187,8 +187,7 @@ class BaseSteps(object):
     """
 
     def __init__(self, client):
-        """
-        Constructor.
+        """Constructor.
 
         Args:
             client (object): client for resources manipulation.

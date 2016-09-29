@@ -18,10 +18,10 @@ Instances steps.
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to  # noqa
 from waiting import wait
 
-from stepler.horizon.config import EVENT_TIMEOUT, UI_TIMEOUT
+from stepler.horizon import config
 from stepler.third_party.steps_checker import step
 
 from .base import BaseSteps
@@ -98,7 +98,7 @@ class InstancesSteps(BaseSteps):
             self.close_notification('success')
             for instance_name in instance_names:
                 page_instances.table_instances.row(
-                    name=instance_name).wait_for_absence(EVENT_TIMEOUT)
+                    name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @step
     @pom.timeit('Step')
@@ -116,7 +116,7 @@ class InstancesSteps(BaseSteps):
         if check:
             self.close_notification('success')
             page_instances.table_instances.row(
-                name=instance_name).wait_for_absence(EVENT_TIMEOUT)
+                name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @step
     @pom.timeit('Step')
@@ -172,7 +172,8 @@ class InstancesSteps(BaseSteps):
                         return False
                 return True
 
-            wait(check_rows, timeout_seconds=UI_TIMEOUT, sleep_seconds=0.1)
+            wait(check_rows, timeout_seconds=config.UI_TIMEOUT,
+                 sleep_seconds=0.1)
 
     @step
     @pom.timeit('Step')

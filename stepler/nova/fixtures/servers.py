@@ -73,9 +73,8 @@ def create_server(create_servers):
 
 @pytest.fixture
 def create_servers_context(server_steps):
-    """
-    Fixture to create servers inside context to guarantee their deletion after
-    context exit.
+    """Fixture to create servers inside context to guarantee their deletion
+    after context exit.
 
     Should be used when ``servers`` must be deleted inside a test, and their
     deletion can't be delegated to fixture finalization. Can be called several
@@ -107,8 +106,7 @@ def create_servers_context(server_steps):
 
 @pytest.fixture
 def create_server_context(create_servers_context):
-    """
-    Fixture to create server inside context to guarantee its deletion after
+    """Fixture to create server inside context to guarantee its deletion after
     context exit.
 
     Should be used when ``server`` must be deleted inside a test, and its

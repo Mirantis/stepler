@@ -43,7 +43,7 @@ REGEX_CALL = re.compile('\W*(\w+)\(')
 STEPS = [
     'list',
     'next',
-    'put',  # TODO (schipiga): update attrdict method
+    'put',  # TODO(schipiga): update attrdict method
     'range',
     'sorted',
     'set_trace'
@@ -70,8 +70,7 @@ DEFAULT_VALUE = object()
 
 
 def step(func):
-    """
-    Decorator to append step method name to permitted calls.
+    """Decorator to append step method name to permitted calls.
 
     Args:
         func (function): function to add its name to list with permitted calls
