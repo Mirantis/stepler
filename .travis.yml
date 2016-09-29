@@ -1,0 +1,11 @@
+language: python
+matrix:
+  include:
+  - python: '2.7'
+    env: TOX_ENV=py27-static_check
+  - python: '3.4'
+    env: TOX_ENV=py34-static_check
+  - python: '3.5'
+    env: TOX_ENV=py35-static_check
+install: pip install tox
+script: tox -ve $TOX_ENV

@@ -25,27 +25,10 @@ import pytest
 import xvfbwrapper
 
 from stepler.horizon.app import Horizon
-from stepler.horizon.steps import (AuthSteps,
-                                   ProjectsSteps,
-                                   NetworksSteps,
-                                   UsersSteps)
-from stepler.horizon.third_party import VideoRecorder, Lock
+from stepler.horizon import steps
+from stepler.horizon.third_party import VideoRecorder, Lock  # noqa
 
-from stepler.horizon.config import (ADMIN_NAME,
-                                    ADMIN_PASSWD,
-                                    ADMIN_PROJECT,
-                                    DASHBOARD_URL,
-                                    DEFAULT_ADMIN_NAME,
-                                    DEFAULT_ADMIN_PASSWD,
-                                    DEFAULT_ADMIN_PROJECT,
-                                    FLOATING_NETWORK_NAME,
-                                    INTERNAL_NETWORK_NAME,
-                                    TEST_REPORTS_DIR,
-                                    USER_NAME,
-                                    USER_PASSWD,
-                                    USER_PROJECT,
-                                    VIRTUAL_DISPLAY,
-                                    XVFB_LOCK)
+from stepler.horizon import config
 from stepler.horizon.utils import slugify
 
 __all__ = [
@@ -62,7 +45,7 @@ LOGGER = logging.getLogger(__name__)
 @pytest.fixture
 def report_dir(request):
     """Create report directory to put test logs."""
-    _report_dir = os.path.join(TEST_REPORTS_DIR,
+    _report_dir = os.path.join(config.TEST_REPORTS_DIR,
                                slugify(request._pyfuncitem.name))
     if not os.path.isdir(_report_dir):
         os.mkdir(_report_dir)
@@ -72,7 +55,7 @@ def report_dir(request):
 @pytest.fixture(scope="session")
 def virtual_display(request):
     """Run test in virtual X server if env var is defined."""
-    if not VIRTUAL_DISPLAY:
+    if not config.VIRTUAL_DISPLAY:
         return
 
     _virtual_display = xvfbwrapper.Xvfb(width=1920, height=1080)
@@ -86,7 +69,7 @@ def virtual_display(request):
     else:
         _virtual_display.xvfb_cmd.extend(args)
 
-    with Lock(XVFB_LOCK):
+    with Lock(config.XVFB_LOCK):
         LOGGER.info('Start xvfb')
         _virtual_display.start()
 
@@ -163,25 +146,27 @@ def test_env(request, virtual_display):
 
 
 def _build_test_env(test_name):
-    file_path = os.path.join(TEST_REPORTS_DIR,
+    file_path = os.path.join(config.TEST_REPORTS_DIR,
                              'build_env_{}.mp4'.format(test_name))
     recorder = VideoRecorder(file_path)
     recorder.start()
 
-    app = Horizon(DASHBOARD_URL)
+    app = Horizon(config.DASHBOARD_URL)
     try:
-        auth_steps = AuthSteps(app)
-        auth_steps.login(DEFAULT_ADMIN_NAME, DEFAULT_ADMIN_PASSWD)
-        auth_steps.switch_project(DEFAULT_ADMIN_PROJECT)
+        auth_steps = steps.AuthSteps(app)
+        auth_steps.login(config.DEFAULT_ADMIN_NAME,
+                         config.DEFAULT_ADMIN_PASSWD)
+        auth_steps.switch_project(config.DEFAULT_ADMIN_PROJECT)
 
-        projects_steps = ProjectsSteps(app)
-        projects_steps.create_project(ADMIN_PROJECT)
-        projects_steps.create_project(USER_PROJECT)
+        projects_steps = steps.ProjectsSteps(app)
+        projects_steps.create_project(config.ADMIN_PROJECT)
+        projects_steps.create_project(config.USER_PROJECT)
 
-        users_steps = UsersSteps(app)
-        users_steps.create_user(ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT,
-                                role='admin')
-        users_steps.create_user(USER_NAME, USER_PASSWD, USER_PROJECT)
+        users_steps = steps.UsersSteps(app)
+        users_steps.create_user(config.ADMIN_NAME, config.ADMIN_PASSWD,
+                                config.ADMIN_PROJECT, role='admin')
+        users_steps.create_user(config.USER_NAME, config.USER_PASSWD,
+                                config.USER_PROJECT)
 
         # networks_steps = NetworksSteps(app)
         # networks_steps.admin_update_network(INTERNAL_NETWORK_NAME,
@@ -204,32 +189,33 @@ def _try_delete(resource_name):
 
 
 def _destroy_test_env(test_name):
-    file_path = os.path.join(TEST_REPORTS_DIR,
+    file_path = os.path.join(config.TEST_REPORTS_DIR,
                              'destroy_env_{}.mp4'.format(test_name))
     recorder = VideoRecorder(file_path)
     recorder.start()
 
-    app = Horizon(DASHBOARD_URL)
+    app = Horizon(config.DASHBOARD_URL)
     try:
-        auth_steps = AuthSteps(app)
-        auth_steps.login(DEFAULT_ADMIN_NAME, DEFAULT_ADMIN_PASSWD)
-        auth_steps.switch_project(DEFAULT_ADMIN_PROJECT)
+        auth_steps = steps.AuthSteps(app)
+        auth_steps.login(config.DEFAULT_ADMIN_NAME,
+                         config.DEFAULT_ADMIN_PASSWD)
+        auth_steps.switch_project(config.DEFAULT_ADMIN_PROJECT)
 
-        users_steps = UsersSteps(app)
-        with _try_delete(USER_NAME):
-            users_steps.filter_users(USER_NAME)
-            users_steps.delete_user(USER_NAME)
-        with _try_delete(ADMIN_NAME):
-            users_steps.filter_users(ADMIN_NAME)
-            users_steps.delete_user(ADMIN_NAME)
+        users_steps = steps.UsersSteps(app)
+        with _try_delete(config.USER_NAME):
+            users_steps.filter_users(config.USER_NAME)
+            users_steps.delete_user(config.USER_NAME)
+        with _try_delete(config.ADMIN_NAME):
+            users_steps.filter_users(config.ADMIN_NAME)
+            users_steps.delete_user(config.ADMIN_NAME)
 
-        projects_steps = ProjectsSteps(app)
-        with _try_delete(USER_PROJECT):
-            projects_steps.filter_projects(USER_PROJECT)
-            projects_steps.delete_project(USER_PROJECT)
-        with _try_delete(ADMIN_PROJECT):
-            projects_steps.filter_projects(ADMIN_PROJECT)
-            projects_steps.delete_project(ADMIN_PROJECT)
+        projects_steps = steps.ProjectsSteps(app)
+        with _try_delete(config.USER_PROJECT):
+            projects_steps.filter_projects(config.USER_PROJECT)
+            projects_steps.delete_project(config.USER_PROJECT)
+        with _try_delete(config.ADMIN_PROJECT):
+            projects_steps.filter_projects(config.ADMIN_PROJECT)
+            projects_steps.delete_project(config.ADMIN_PROJECT)
 
         auth_steps.logout()
     finally:

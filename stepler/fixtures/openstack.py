@@ -30,8 +30,7 @@ __all__ = [
 
 @pytest.fixture
 def session():
-    """
-    Fixture to get session.
+    """Fixture to get session.
 
     Returns:
       keystoneauth1.session.Session: authenticated session object

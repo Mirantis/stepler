@@ -20,7 +20,7 @@ Fixtures for keypairs.
 import pytest
 
 from stepler.horizon.steps import KeypairsSteps
-from stepler.horizon.utils import generate_ids, AttrDict
+from stepler.horizon.utils import generate_ids, AttrDict  # noqa
 
 __all__ = [
     'import_keypair',

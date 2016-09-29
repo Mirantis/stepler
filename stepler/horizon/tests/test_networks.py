@@ -45,7 +45,7 @@ class TestAdminOnly(object):
 
         networks_steps.delete_networks([network_name], check=False)
         networks_steps.close_notification('error')
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # horizon.page_networks.table_networks.row(
         #     name=network_name).wait_for_presence()
         networks_steps.admin_delete_network(network_name)
@@ -59,6 +59,6 @@ class TestUserOnly(object):
         """Verify that demo can not create shared network."""
         network_name = next(generate_ids('network'))
         create_network(network_name, shared=True)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # assert horizon.page_networks.table_networks.row(
         #     name=network_name).cell('shared').value == 'No'
