@@ -137,12 +137,13 @@ class GlanceStepsV2(BaseGlanceSteps):
             self.check_image_bind_status(image, project, binded=False)
 
     @step
-    def get_images(self, name_prefix=None, check=True):
+    def get_images(self, name_prefix=None, check=True, **kwargs):
         """Step to retrieve images from glance.
 
         Args:
             name_prefix (str): name prefix to filter images
             check (bool): flag whether to check step or not
+            **kwargs: like: {'name': 'TestVM', 'status': 'active'}
         Returns:
             list: images list
         """
@@ -152,10 +153,38 @@ class GlanceStepsV2(BaseGlanceSteps):
             images = [image for image in images
                       if (image.name or '').startswith(name_prefix)]
 
+        matched_images = []
+        if kwargs:
+            for image in images:
+                for key, value in kwargs.items():
+                    if not (key in image and image[key] == value):
+                        break
+                else:
+                    matched_images.append(image)
+
+        images = matched_images if kwargs else images
+
         if check:
             assert_that(images, is_not(empty()))
 
         return images
+
+    @step
+    def get_image(self, check=True, **kwargs):
+        """Find one image by provided **kwargs.
+
+        Args:
+            check (bool): flag whether to check step or not
+            **kwargs: like: {'name': 'TestVM', 'status': 'active'}
+
+        Returns:
+            object: glance image
+        """
+        if not kwargs:
+            raise ValueError("Need to provide search criteria.")
+
+        images = self.get_images(check=check, **kwargs)
+        return images[0]
 
     @step
     def check_image_presence(self, image, present=True, timeout=0):
@@ -220,24 +249,3 @@ class GlanceStepsV2(BaseGlanceSteps):
                 return project.id not in member_ids
 
         wait(predicate, timeout_seconds=timeout)
-
-    @step
-    def get_image(self, image_id, check=True):
-        """Step to retrieve image from glance by image_id.
-
-        Args:
-            image_id (str): image uuid
-
-        Raises:
-                TimeoutExpired: if check was triggered to False
-
-        Returns:
-            image: object image
-
-        """
-        image = self._client.images.get(image_id)
-
-        if check:
-            assert_that(image.id, equal_to(image_id))
-
-        return image
