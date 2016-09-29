@@ -82,7 +82,7 @@ def generate_files(prefix=None, postfix=None, folder=None, count=1, size=1024):
         yield file_path
 
 
-# TODO (schipiga): copied from mos-integration-tests, need refactor.
+# TODO(schipiga): copied from mos-integration-tests, need refactor.
 def get_file_path(url, name=None):
     """Download file by url to local cached storage."""
     def _get_file_name(url):

@@ -18,12 +18,10 @@ Fixtures for volumes.
 # limitations under the License.
 
 import pytest
-from waiting import wait
 
-from stepler.horizon.config import EVENT_TIMEOUT
 from stepler.horizon.steps import VolumesSteps
 
-from stepler.horizon.utils import AttrDict, generate_ids
+from stepler.horizon.utils import AttrDict, generate_ids  # noqa
 
 __all__ = [
     'create_backups',

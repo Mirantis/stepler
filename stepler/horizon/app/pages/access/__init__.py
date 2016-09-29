@@ -17,4 +17,4 @@ Module of access page and its components.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .page_access import PageAccess
+from .page_access import PageAccess  # noqa
