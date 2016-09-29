@@ -158,6 +158,38 @@ class GlanceStepsV2(BaseGlanceSteps):
         return images
 
     @step
+    def get_image(self, check=True, **kwargs):
+        """Find one image by provided **kwargs.
+
+        Args:
+            check (bool): flag whether to check step or not
+            **kwargs: like: {'name': 'TestVM', 'status': 'active'}
+
+        Returns:
+            object: glance image
+        """
+        images = self._client.images.list()
+
+        # matched_images = [
+        #     img for img in images
+        #     if all(key in img and img[key] == value
+        #            for key, value in kwargs.items())]
+
+        matched_images = []
+        for image in images:
+            for key, value in kwargs.items():
+                if not (key in image and image[key] == value):
+                    break
+            else:
+                matched_images.append(image)
+
+        if check:
+            assert_that(matched_images, is_not(empty()),
+                        "Image with '{0}' not found.".format(kwargs))
+
+        return matched_images[0]
+
+    @step
     def check_image_presence(self, image, present=True, timeout=0):
         """Check step image presence status.
 
@@ -220,24 +252,3 @@ class GlanceStepsV2(BaseGlanceSteps):
                 return project.id not in member_ids
 
         wait(predicate, timeout_seconds=timeout)
-
-    @step
-    def get_image(self, image_id, check=True):
-        """Step to retrieve image from glance by image_id.
-
-        Args:
-            image_id (str): image uuid
-
-        Raises:
-                TimeoutExpired: if check was triggered to False
-
-        Returns:
-            image: object image
-
-        """
-        image = self._client.images.get(image_id)
-
-        if check:
-            assert_that(image.id, equal_to(image_id))
-
-        return image
