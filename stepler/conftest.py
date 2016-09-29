@@ -56,6 +56,7 @@ __all__ = sorted([  # sort for documentation
     'glance_steps_v1',
     'glance_steps_v2',
     'ubuntu_image',
+    'cirros_image',
 
     'create_domain',
     'domain_steps',
@@ -76,6 +77,7 @@ __all__ = sorted([  # sort for documentation
     'create_network',
     'network',
     'public_network',
+    'internal_network',
     'create_port',
     'port',
     'create_subnet',
