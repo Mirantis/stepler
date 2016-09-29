@@ -20,10 +20,9 @@ Image tests
 # limitations under the License.
 
 import pytest
-from waiting import wait
 
-from stepler.horizon.config import INTERNAL_NETWORK_NAME
-from stepler.horizon.utils import generate_ids, generate_files, get_size
+from stepler.horizon import config
+from stepler.horizon.utils import (generate_ids, generate_files)  # noqa
 
 
 @pytest.mark.usefixtures('any_one')
@@ -53,7 +52,7 @@ class TestAnyOne(object):
         image_names = sorted(list(generate_ids('image', count=2, length=20)))
         create_images(*image_names)
         update_settings(items_per_page=1)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # page_images = images_steps.page_images()
         # page_images.table_images.row(name=image_names[0]).wait_for_presence()
         # assert page_images.table_images.link_next.is_present
@@ -98,7 +97,7 @@ class TestAnyOne(object):
         create_image(image_name, protected=True)
         images_steps.delete_images([image_name], check=False)
         images_steps.close_notification('error')
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # horizon.page_images.table_images.row(
         #     name=image_name).wait_for_presence()
         images_steps.update_image(image_name, protected=False)
@@ -115,7 +114,7 @@ class TestAnyOne(object):
         volume_name = next(generate_ids('volume'))
         images_steps.create_volume(image.name, volume_name)
 
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # volumes_steps.tab_volumes().table_volumes.row(
         #     name=volume_name, status='Available').wait_for_presence(90)
         volumes_steps.delete_volume(volume_name)
@@ -127,7 +126,7 @@ class TestAnyOne(object):
 
         image_name = next(generate_ids('image', length=20))
         create_image(image_name, min_disk=disk_size, min_ram=ram_size)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # with horizon.page_images as page:
         #     page.table_images.row(
         #         name=image_name).dropdown_menu.item_default.click()
@@ -154,7 +153,7 @@ class TestAnyOne(object):
 
     def test_public_image_visibility(self, horizon, login):
         """Verify that public image is visible for other users."""
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # with horizon.page_images as page:
         #     page.open()
         #     page.button_public_images.click()
@@ -165,8 +164,8 @@ class TestAnyOne(object):
         """Verify that user can launch instance from image."""
         instance_name = next(generate_ids('instance'))
         images_steps.launch_instance(image.name, instance_name,
-                                     network_name=INTERNAL_NETWORK_NAME)
-        # TODO (schipiga): move it to check step
+                                     network_name=config.INTERNAL_NETWORK_NAME)
+        # TODO(schipiga): move it to check step
         # instances_steps.page_instances().table_instances.row(
         #     name=instance_name).wait_for_status('Active')
         instances_steps.delete_instance(instance_name)

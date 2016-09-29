@@ -20,17 +20,15 @@ Image tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import pytest
 
-
-# TODO: Remove test_upload_image because steps of current test is executed
-# in another test scenarios
-#@pytest.mark.testrail_id('XXXXX')
+# TODO(schipiga): Remove test_upload_image because steps of current test
+# is executed in another test scenarios
+# @pytest.mark.testrail_id('XXXXX')
 def test_upload_image(ubuntu_image):
     """Check that image can be uploaded."""
 
 
-#@pytest.mark.testrail_id('XXXXX')
+# @pytest.mark.testrail_id('XXXXX')
 def test_share_glance_image(ubuntu_image, project, glance_steps):
     """Check sharing glance image to another project.
 

@@ -20,9 +20,8 @@ Container tests
 # limitations under the License.
 
 import pytest
-import requests
 
-from stepler.horizon.utils import generate_ids, generate_files
+from stepler.horizon.utils import generate_ids, generate_files  # noqa
 
 
 @pytest.mark.usefixtures('any_one')
@@ -41,12 +40,12 @@ class TestAnyOne(object):
         create_container(container_name, public=True)
 
         with containers_steps.container(container_name):
-            container_info = containers_steps.container_info(container_name)
+            containers_steps.container_info(container_name)
 
             folder_name = next(generate_ids('folder'))
             containers_steps.create_folder(folder_name)
 
-            # TODO (schipiga): move it to check step
+            # TODO(schipiga): move it to check step
             # assert folder_name in requests.get(
             #     container_info['public_url']).text
             # containers_steps.delete_folder(folder_name)

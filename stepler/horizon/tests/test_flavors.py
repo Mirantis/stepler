@@ -20,13 +20,8 @@ Flavor tests
 # limitations under the License.
 
 import pytest
-from waiting import wait
 
-from stepler.horizon.config import (ADMIN_NAME,
-                                    ADMIN_PASSWD,
-                                    ADMIN_PROJECT,
-                                    USER_NAME,
-                                    USER_PASSWD)
+from stepler.horizon import config
 from stepler.horizon.utils import generate_ids
 
 
@@ -53,12 +48,12 @@ class TestAdminOnly(object):
     def test_modify_flavor_access(self, horizon, flavor, auth_steps,
                                   flavors_steps):
         """Verify that admin can modify flavor access."""
-        flavors_steps.modify_access(flavor.name, project=ADMIN_PROJECT)
+        flavors_steps.modify_access(flavor.name, project=config.ADMIN_PROJECT)
 
         auth_steps.logout()
-        auth_steps.login(USER_NAME, USER_PASSWD)
+        auth_steps.login(config.USER_NAME, config.USER_PASSWD)
 
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # horizon.page_instances.open()
         # horizon.page_instances.button_launch_instance.click()
 
@@ -74,7 +69,7 @@ class TestAdminOnly(object):
         #     form.cancel()
 
         auth_steps.logout()
-        auth_steps.login(ADMIN_NAME, ADMIN_PASSWD)
+        auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)
 
     @pytest.mark.parametrize('flavors_count', [2, 1])
     def test_delete_flavors(self, flavors_count, create_flavors):
