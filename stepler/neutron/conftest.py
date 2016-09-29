@@ -20,12 +20,4 @@ Neutron conftest
 # limitations under the License.
 
 from .fixtures import *  # noqa
-
-__all__ = [
-    'create_network',
-    'network',
-    'neutron_client',
-    'neutron_steps'
-]
-
-__all__.sort()
+from .fixtures import __all__  # noqa

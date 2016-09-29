@@ -20,31 +20,4 @@ Nova conftest
 # limitations under the License.
 
 from .fixtures import *  # noqa
-
-__all__ = [
-    'create_flavor',
-    'flavor',
-    'flavor_steps',
-
-    'nova_create_floating_ip',
-    'nova_floating_ip',
-    'nova_floating_ip_steps',
-
-    'create_keypair',
-    'keypair',
-    'keypair_steps',
-
-    'nova_client',
-
-    'create_security_group',
-    'security_group',
-    'security_group_steps',
-
-    'create_server',
-    'create_servers',
-    'server',
-    'server_steps',
-    'ssh_proxy_data'
-]
-
-__all__.sort()
+from .fixtures import __all__  # noqa

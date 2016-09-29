@@ -20,10 +20,10 @@ Openstack fixtures package.
 from .env_dependent import *  # noqa
 from .openstack import *  # noqa
 
-__all__ = [
+__all__ = sorted([  # sort for documentation
     'admin_ssh_key_path',
     'auth_url',
     'ip_by_host',
 
     'session'
-]
+])

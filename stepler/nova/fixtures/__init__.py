@@ -24,7 +24,7 @@ from .nova import *  # noqa
 from .servers import *  # noqa
 from .security_groups import *  # noqa
 
-__all__ = [
+__all__ = sorted([  # sort for documentation
     'create_flavor',
     'flavor',
     'flavor_steps',
@@ -48,4 +48,4 @@ __all__ = [
     'server',
     'server_steps',
     'ssh_proxy_data'
-]
+])

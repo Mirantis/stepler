@@ -23,7 +23,7 @@ from keystoneclient.client import Client
 
 
 __all__ = [
-     'keystone_client'
+    'keystone_client'
 ]
 
 

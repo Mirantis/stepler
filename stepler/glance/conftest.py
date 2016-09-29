@@ -22,11 +22,4 @@ Contains fixtures specific for glance.
 # limitations under the License.
 
 from .fixtures import *  # noqa
-
-__all__ = [
-    'create_image',
-    'create_images',
-    'glance_client',
-    'glance_steps',
-    'ubuntu_image'
-]
+from .fixtures import __all__  # noqa

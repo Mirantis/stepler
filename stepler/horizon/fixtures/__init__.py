@@ -40,7 +40,7 @@ from .volume_types import *  # noqa
 from .volumes import *  # noqa
 
 
-__all__ = [
+__all__ = sorted([  # sort for documentation
     'access_steps',
     'create_security_group',
     'security_group',
@@ -132,6 +132,4 @@ __all__ = [
     'snapshot',
     'volume',
     'volumes_steps',
-]
-
-__all__.sort()
+])
