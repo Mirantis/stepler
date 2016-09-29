@@ -17,8 +17,10 @@ Server steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_not, has_item
+import logging
 from waiting import wait
+
+from hamcrest import assert_that, is_not, has_item
 
 from stepler.base import BaseSteps
 from stepler.third_party.ssh import SshClient
@@ -28,6 +30,8 @@ __all__ = [
     'ServerSteps'
 ]
 
+LOGGER = logging.getLogger(__name__)
+
 
 class ServerSteps(BaseSteps):
     """Nova steps."""
@@ -36,7 +40,22 @@ class ServerSteps(BaseSteps):
     def create_server(self, server_name, image, flavor, network, keypair,
                       security_groups=None, availability_zone='nova',
                       check=True):
-        """Step to create server."""
+        """
+        Step to create server
+
+        Args:
+            server_name: Str name of the future server.
+            image: Image object to use as server OS.
+            flavor: Flavor object.
+            network: Network object.
+            keypair: Keypair object.
+            security_groups: List of security groups objects.
+            availability_zone: Str name of availability zone.
+            check: Boolean value to check or not server status after creation.
+
+        Returns:
+            server object.
+        """
         sec_groups = [s.id for s in security_groups or []]
         server = self._client.create(name=server_name,
                                      image=image.id,
@@ -45,6 +64,7 @@ class ServerSteps(BaseSteps):
                                      key_name=keypair.id,
                                      availability_zone=availability_zone,
                                      security_groups=sec_groups)
+
         if check:
             self.check_server_status(server, 'active', timeout=180)
 
@@ -71,7 +91,11 @@ class ServerSteps(BaseSteps):
     @step
     def delete_server(self, server, check=True):
         """Step to delete server."""
-        server.force_delete()
+        try:
+            server.delete()
+        except Exception as e:
+            if e.code not in (404,):
+                raise e
 
         if check:
             self.check_server_presence(server, present=False, timeout=180)
