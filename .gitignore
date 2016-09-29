@@ -8,3 +8,4 @@ src
 test_reports
 test_results
 build
+.tox

@@ -21,9 +21,7 @@ Volume tests
 
 import pytest
 
-from stepler.horizon.config import (INTERNAL_NETWORK_NAME,
-                                    USER_NAME,
-                                    USER_PASSWD)
+from stepler.horizon import config
 from stepler.horizon.utils import generate_ids
 
 
@@ -51,7 +49,7 @@ class TestAnyOne(object):
         volume_names = list(generate_ids('volume', count=3))
         create_volumes(volume_names)
         update_settings(items_per_page=1)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # tab_volumes = volumes_steps.tab_volumes()
 
         # tab_volumes.table_volumes.row(
@@ -101,7 +99,7 @@ class TestAnyOne(object):
         """Verify that user can upload volume to image."""
         image_name = next(generate_ids('image', length=20))
         volumes_steps.upload_volume_to_image(volume.name, image_name)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # images_steps.page_images().table_images.row(
         #     name=image_name).wait_for_presence(30)
         images_steps.delete_image(image_name)
@@ -115,8 +113,9 @@ class TestAnyOne(object):
         """Verify that admin can launch volume as instance."""
         instance_name = next(generate_ids('instance'))
         volumes_steps.launch_volume_as_instance(
-            volume.name, instance_name, network_name=INTERNAL_NETWORK_NAME)
-        # TODO (schipiga): move it to check step
+            volume.name, instance_name,
+            network_name=config.INTERNAL_NETWORK_NAME)
+        # TODO(schipiga): move it to check step
         # instances_steps.page_instances().table_instances.row(
         #     name=instance_name).wait_for_status('Active')
         instances_steps.delete_instance(instance_name)
@@ -142,7 +141,7 @@ class TestAdminOnly(object):
         transfer_id, transfer_key = volumes_steps.create_transfer(
             volume.name, transfer_name)
         auth_steps.logout()
-        auth_steps.login(USER_NAME, USER_PASSWD)
+        auth_steps.login(config.USER_NAME, config.USER_PASSWD)
         volumes_steps.accept_transfer(transfer_id, transfer_key, volume.name)
 
     def test_migrate_volume(self, volume, volumes_steps):

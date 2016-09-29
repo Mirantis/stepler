@@ -33,8 +33,7 @@ class GlanceSteps(BaseSteps):
     @step
     def create_image(self, image_name, image_path, disk_format='qcow2',
                      container_format='bare', check=True):
-        """
-        Step to create image.
+        """Step to create image.
 
         Args:
             image_name (str): name of created image
@@ -58,8 +57,7 @@ class GlanceSteps(BaseSteps):
 
     @step
     def delete_image(self, image, check=True):
-        """
-        Step to delete image.
+        """Step to delete image.
 
         Args:
             image (object): glance image
@@ -73,8 +71,7 @@ class GlanceSteps(BaseSteps):
     @step
     def create_images(self, image_names, image_path, disk_format='qcow2',
                       container_format='bare', check=True):
-        """
-        Step to create images.
+        """Step to create images.
 
         Args:
             image_names (list): names of created images
@@ -100,8 +97,7 @@ class GlanceSteps(BaseSteps):
 
     @step
     def delete_images(self, images, check=True):
-        """
-        Step to delete images.
+        """Step to delete images.
 
         Args:
             image (object): glance image
@@ -116,8 +112,7 @@ class GlanceSteps(BaseSteps):
 
     @step
     def bind_project(self, image, project, check=True):
-        """
-        Step to bind image to project.
+        """Step to bind image to project.
 
         Args:
             image (object): image to bind to project
@@ -129,8 +124,7 @@ class GlanceSteps(BaseSteps):
 
     @step
     def unbind_project(self, image, project, check=True):
-        """
-        Step to unbind image to project.
+        """Step to unbind image to project.
 
         Args:
             image (object): image to unbind from project
@@ -142,8 +136,7 @@ class GlanceSteps(BaseSteps):
 
     @step
     def check_image_presence(self, image, present=True, timeout=0):
-        """
-        Check step image presence status.
+        """Check step image presence status.
 
         Args:
             image (object): glance image to check presence status
@@ -164,8 +157,7 @@ class GlanceSteps(BaseSteps):
 
     @step
     def check_image_status(self, image, status, timeout=0):
-        """
-        Check step image status.
+        """Check step image status.
 
         Args:
             image (object): glance image to check status
@@ -183,8 +175,7 @@ class GlanceSteps(BaseSteps):
 
     @step
     def check_image_bind_status(self, image, project, binded=True, timeout=0):
-        """
-        Check step image binding status.
+        """Check step image binding status.
 
         Args:
             image (object): image binded/unbinded with project

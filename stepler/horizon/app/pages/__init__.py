@@ -23,21 +23,21 @@ from .containers import PageContainers
 from .defaults import PageDefaults
 from .flavors import PageFlavors
 from .host_aggregates import PageHostAggregates
-from .images import PageImage, PageImages
-from .instances import PageInstance, PageInstances
+from .images import PageImage, PageImages  # noqa
+from .instances import PageInstance, PageInstances  # noqa
 from .login import PageLogin
 from .metadata_definitions import PageMetadataDefinitions
 from .networks import (PageAdminNetworks,
                        PageNetwork,
-                       PageNetworks)
+                       PageNetworks)  # noqa
 from .projects import PageProjects
 from .routers import PageRouters
-from .settings import PagePassword, PageSettings
+from .settings import PagePassword, PageSettings  # noqa
 from .users import PageUsers
 from .volumes import (PageAdminVolumes,
                       PageVolume,
                       PageVolumes,
-                      PageVolumeTransfer)
+                      PageVolumeTransfer)  # noqa
 
 pages = [
     PageAccess,

@@ -19,11 +19,9 @@ User settings tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from urlparse import urlparse
-
 import pytest
 
-from stepler.horizon.config import ADMIN_NAME, ADMIN_PASSWD
+from stepler.horizon import config
 
 
 @pytest.yield_fixture
@@ -35,7 +33,7 @@ def new_user_account(user, auth_steps):
     yield
 
     auth_steps.logout()
-    auth_steps.login(ADMIN_NAME, ADMIN_PASSWD)
+    auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)
 
 
 @pytest.mark.usefixtures('admin_only')
@@ -44,10 +42,11 @@ class TestAdminOnly(object):
 
     def test_dashboard_help_url(self, new_user_account, horizon):
         """Verify that user can open dashboard help url."""
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # with horizon.page_base.dropdown_menu_account as menu:
         #     menu.click()
-        #     assert urlparse(menu.item_help.href).netloc == "docs.openstack.org"
+        #     assert (urlparse(menu.item_help.href).netloc ==
+        #             "docs.openstack.org")
         #     menu.click()
 
     def test_change_own_password(self, horizon, user, new_user_account,
@@ -58,7 +57,7 @@ class TestAdminOnly(object):
             settings_steps.change_user_password(user.password, new_password)
 
             auth_steps.login(user.name, user.password, check=False)
-            # TODO (schipiga): move it to check step
+            # TODO(schipiga): move it to check step
             # horizon.page_login.label_alert_message.wait_for_presence()
 
         auth_steps.login(user.name, user.password)
@@ -73,7 +72,7 @@ class TestAdminOnly(object):
             'instance_log_length': '1'}
 
         update_settings(**new_settings)
-        # TODO (schipiga): move it to check step
+        # TODO(schipiga): move it to check step
         # horizon.page_settings.refresh()
 
         assert settings_steps.current_settings == new_settings

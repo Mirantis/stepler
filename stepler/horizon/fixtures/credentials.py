@@ -21,8 +21,7 @@ import os
 
 import pytest
 
-from stepler.horizon.config import (ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT,
-                                    USER_NAME, USER_PASSWD, USER_PROJECT)
+from stepler.horizon import config
 
 __all__ = [
     'admin_only',
@@ -35,26 +34,26 @@ __all__ = [
 def any_one(request):
     """Define user to log in account."""
     if request.param == 'admin':
-        os.environ['OS_LOGIN'] = ADMIN_NAME
-        os.environ['OS_PASSWD'] = ADMIN_PASSWD
-        os.environ['OS_PROJECT'] = ADMIN_PROJECT
+        os.environ['OS_LOGIN'] = config.ADMIN_NAME
+        os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
+        os.environ['OS_PROJECT'] = config.ADMIN_PROJECT
     if request.param == 'user':
-        os.environ['OS_LOGIN'] = USER_NAME
-        os.environ['OS_PASSWD'] = USER_PASSWD
-        os.environ['OS_PROJECT'] = USER_PROJECT
+        os.environ['OS_LOGIN'] = config.USER_NAME
+        os.environ['OS_PASSWD'] = config.USER_PASSWD
+        os.environ['OS_PROJECT'] = config.USER_PROJECT
 
 
 @pytest.fixture
 def admin_only():
     """Set admin credentials for test."""
-    os.environ['OS_LOGIN'] = ADMIN_NAME
-    os.environ['OS_PASSWD'] = ADMIN_PASSWD
-    os.environ['OS_PROJECT'] = ADMIN_PROJECT
+    os.environ['OS_LOGIN'] = config.ADMIN_NAME
+    os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
+    os.environ['OS_PROJECT'] = config.ADMIN_PROJECT
 
 
 @pytest.fixture
 def user_only():
     """Set user credentials for test."""
-    os.environ['OS_LOGIN'] = USER_NAME
-    os.environ['OS_PASSWD'] = USER_PASSWD
-    os.environ['OS_PROJECT'] = USER_PROJECT
+    os.environ['OS_LOGIN'] = config.USER_NAME
+    os.environ['OS_PASSWD'] = config.USER_PASSWD
+    os.environ['OS_PROJECT'] = config.USER_PROJECT
