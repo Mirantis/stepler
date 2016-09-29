@@ -66,5 +66,10 @@ class FlavorSteps(BaseSteps):
 
     @step
     def get_flavor(self, *args, **kwgs):
-        """Step to get flavor."""
+        """Step to find a single item with attributes matching."""
         return self._client.find(*args, **kwgs)
+
+    @step
+    def findall(self, *args, **kwgs):
+        """Step to find all items with attributes matching."""
+        return self._client.findall(*args, **kwgs)
