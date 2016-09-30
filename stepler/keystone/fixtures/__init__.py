@@ -23,7 +23,7 @@ from .projects import *  # noqa
 from .roles import *  # noqa
 from .users import *  # noqa
 
-__all__ = [
+__all__ = sorted([  # sort for documentation
     'create_domain',
     'domain_steps',
     'domain',
@@ -43,4 +43,4 @@ __all__ = [
     'create_user',
     'user_steps',
     'user'
-]
+])

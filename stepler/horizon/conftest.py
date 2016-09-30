@@ -26,107 +26,13 @@ import shutil
 
 import pytest
 
-from .config import TEST_REPORTS_DIR, XVFB_LOCK
+from .config import TEST_REPORTS_DIR, XVFB_LOCK  # TODO(schipiga): must global
 from .fixtures import *  # noqa
-from .utils import slugify
-
-__all__ = [
-    'access_steps',
-    'create_security_group',
-    'security_group',
-
-    'api_access_steps',
-
-    'auth_steps',
-    'horizon',
-    'login',
-
-    'logger',
-    'report_dir',
-    'video_capture',
-    'virtual_display',
-    'test_env',
-
-    'create_container',
-    'container',
-    'containers_steps',
-
-    'admin_only',
-    'any_one',
-    'user_only',
-
-    'defaults_steps',
-    'update_defaults',
-
-    'create_flavor',
-    'create_flavors',
-    'flavor',
-    'flavors_steps',
-
-    'allocate_floating_ip',
-    'floating_ip',
-    'floating_ips_steps',
-
-    'create_host_aggregate',
-    'create_host_aggregates',
-    'host_aggregate',
-    'host_aggregates_steps',
-
-    'create_image',
-    'create_images',
-    'image',
-    'images_steps',
-
-    'create_instance',
-    'instance',
-    'instances_steps',
-
-    'import_keypair',
-    'keypair',
-    'keypairs_steps',
-
-    'create_namespace',
-    'namespace',
-    'namespaces_steps',
-
-    'create_network',
-    'create_networks',
-    'network',
-    'networks_steps',
-
-    'create_project',
-    'project',
-    'projects_steps',
-
-    'create_router',
-    'router',
-    'routers_steps',
-
-    'settings_steps',
-    'update_settings',
-
-    'create_user',
-    'create_users',
-    'user',
-    'users_steps',
-
-    'qos_spec',
-    'volume_type',
-    'volume_types_steps',
-
-    'create_backups',
-    'create_snapshot',
-    'create_snapshots',
-    'create_volume',
-    'create_volumes',
-    'snapshot',
-    'volume',
-    'volumes_steps',
-]
-
-__all__.sort()
+from .fixtures import __all__  # noqa
+from .utils import slugify  # TODO(schipiga): must global
 
 
+# TODO(schipiga): move to global plugins
 def pytest_configure(config):
     """Pytest configure hook."""
     if not hasattr(config, 'slaveinput'):
@@ -138,6 +44,7 @@ def pytest_configure(config):
             os.remove(XVFB_LOCK)
 
 
+# TODO(schipiga): move to global plugins
 @pytest.mark.hookwrapper
 def pytest_runtest_makereport(item, call):
     """Pytest hook to delete test report if it is passed."""

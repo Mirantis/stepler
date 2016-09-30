@@ -1,7 +1,7 @@
 """
-===============
+---------------
 Glance fixtures
-===============
+---------------
 
 @author: schipiga@mirantis.com
 """
@@ -21,10 +21,10 @@ Glance fixtures
 
 from .glance import *  # noqa
 
-__all__ = [
+__all__ = sorted([  # sort for documentation
     'create_image',
     'create_images',
     'glance_client',
     'glance_steps',
     'ubuntu_image'
-]
+])

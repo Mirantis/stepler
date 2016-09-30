@@ -20,27 +20,4 @@ Keystone conftest
 # limitations under the License.
 
 from .fixtures import *  # noqa
-
-__all__ = [
-    'create_domain',
-    'domain_steps',
-    'domain',
-
-    'keystone_client',
-
-    'create_project',
-    'project_steps',
-    'project',
-
-    'admin_role',
-    'create_role',
-    'role_steps',
-    'role',
-
-    'admin',
-    'create_user',
-    'user_steps',
-    'user'
-]
-
-__all__.sort()
+from .fixtures import __all__  # noqa

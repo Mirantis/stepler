@@ -19,9 +19,9 @@ Neutron fixtures package.
 
 from .neutron import *  # noqa
 
-__all__ = [
+__all__ = sorted([  # sort for documentation
     'create_network',
     'network',
     'neutron_client',
     'neutron_steps'
-]
+])

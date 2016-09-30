@@ -27,7 +27,7 @@ from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
 from stepler.nova.conftest import *  # noqa
 
-__all__ = [
+__all__ = sorted([  # sort for documentation
     'admin_ssh_key_path',
     'auth_url',
     'ip_by_host',
@@ -78,9 +78,7 @@ __all__ = [
     'server',
     'server_steps',
     'ssh_proxy_data'
-]
-
-__all__.sort()
+])
 
 pytest_plugins = [
     'stepler.third_party.steps_checker',
