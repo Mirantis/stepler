@@ -27,7 +27,7 @@ from .base import BaseSteps
 class HostAggregatesSteps(BaseSteps):
     """Host aggregates steps."""
 
-    def page_host_aggregates(self):
+    def _page_host_aggregates(self):
         """Open images page if it isn't opened."""
         return self._open(self.app.page_host_aggregates)
 
@@ -35,7 +35,7 @@ class HostAggregatesSteps(BaseSteps):
     @pom.timeit('Step')
     def create_host_aggregate(self, host_aggregate_name, check=True):
         """Step to create host aggregate."""
-        page_host_aggregates = self.page_host_aggregates()
+        page_host_aggregates = self._page_host_aggregates()
         page_host_aggregates.button_create_host_aggregate.click()
 
         with page_host_aggregates.form_create_host_aggregate as form:
@@ -51,7 +51,7 @@ class HostAggregatesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_host_aggregate(self, host_aggregate_name, check=True):
         """Step to delete host_aggregate."""
-        page_host_aggregates = self.page_host_aggregates()
+        page_host_aggregates = self._page_host_aggregates()
 
         with page_host_aggregates.table_host_aggregates.row(
                 name=host_aggregate_name).dropdown_menu as menu:
@@ -69,7 +69,7 @@ class HostAggregatesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_host_aggregates(self, host_aggregate_names, check=True):
         """Step to delete host aggregates."""
-        page_host_aggregates = self.page_host_aggregates()
+        page_host_aggregates = self._page_host_aggregates()
 
         for host_aggregate_name in host_aggregate_names:
             page_host_aggregates.table_host_aggregates.row(

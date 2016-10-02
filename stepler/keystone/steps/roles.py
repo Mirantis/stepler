@@ -47,7 +47,7 @@ class RoleSteps(BaseSteps):
             self.check_role_presence(role, present=False)
 
     @step
-    def find_role(self, *args, **kwgs):
+    def get_role(self, *args, **kwgs):
         """Step to find role."""
         return self._client.find(*args, **kwgs)
 
