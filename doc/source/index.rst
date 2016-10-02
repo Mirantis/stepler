@@ -105,3 +105,4 @@ Deep to structure
    keystone
    neutron
    nova
+   third_party
