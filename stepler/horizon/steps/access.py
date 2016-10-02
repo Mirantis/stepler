@@ -27,13 +27,13 @@ from .base import BaseSteps
 class AccessSteps(BaseSteps):
     """Access & security steps."""
 
-    def page_access(self):
+    def _page_access(self):
         """Open access & security page."""
         return self._open(self.app.page_access)
 
     def tab_security_groups(self):
         """Open security groups tab."""
-        with self.page_access() as page:
+        with self._page_access() as page:
             page.label_security_groups.click()
             return page.tab_security_groups
 

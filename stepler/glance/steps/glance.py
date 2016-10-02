@@ -125,7 +125,8 @@ class GlanceSteps(BaseSteps):
             check (bool): flag whether to check binding or not
         """
         self._client.image_members.create(image.id, project.id)
-        self.check_image_bind_status(image, project)
+        if check:
+            self.check_image_bind_status(image, project)
 
     @step
     def unbind_project(self, image, project, check=True):
@@ -138,7 +139,8 @@ class GlanceSteps(BaseSteps):
             check (bool): flag whether to check unbinding or not
         """
         self._client.image_members.delete(image.id, project.id)
-        self.check_image_bind_status(image, project, binded=False)
+        if check:
+            self.check_image_bind_status(image, project, binded=False)
 
     @step
     def check_image_presence(self, image, present=True, timeout=0):
