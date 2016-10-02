@@ -27,7 +27,7 @@ from .base import BaseSteps
 class KeypairsSteps(BaseSteps):
     """Keypairs steps."""
 
-    def tab_keypairs(self):
+    def _tab_keypairs(self):
         """Open keypairs tab."""
         with self._open(self.app.page_access) as page:
             page.label_keypairs.click()
@@ -37,7 +37,7 @@ class KeypairsSteps(BaseSteps):
     @pom.timeit('Step')
     def create_keypair(self, keypair_name, check=True):
         """Step to create keypair."""
-        tab_keypairs = self.tab_keypairs()
+        tab_keypairs = self._tab_keypairs()
         tab_keypairs.button_create_keypair.click()
 
         with tab_keypairs.form_create_keypair as form:
@@ -45,14 +45,14 @@ class KeypairsSteps(BaseSteps):
             form.submit()
 
         if check:
-            self.tab_keypairs().table_keypairs.row(
+            self._tab_keypairs().table_keypairs.row(
                 name=keypair_name).wait_for_presence()
 
     @step
     @pom.timeit('Step')
     def delete_keypair(self, keypair_name, check=True):
         """Step to delete keypair."""
-        tab_keypairs = self.tab_keypairs()
+        tab_keypairs = self._tab_keypairs()
 
         tab_keypairs.table_keypairs.row(
             name=keypair_name).button_delete_keypair.click()
@@ -67,7 +67,7 @@ class KeypairsSteps(BaseSteps):
     @pom.timeit('Step')
     def import_keypair(self, keypair_name, public_key, check=True):
         """Step to import keypair."""
-        tab_keypairs = self.tab_keypairs()
+        tab_keypairs = self._tab_keypairs()
         tab_keypairs.button_import_keypair.click()
 
         with tab_keypairs.form_import_keypair as form:
@@ -84,7 +84,7 @@ class KeypairsSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_keypairs(self, keypair_names, check=True):
         """Step to delete keypairs."""
-        tab_keypairs = self.tab_keypairs()
+        tab_keypairs = self._tab_keypairs()
 
         for keypair_name in keypair_names:
             tab_keypairs.table_keypairs.row(

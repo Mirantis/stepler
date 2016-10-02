@@ -28,11 +28,11 @@ from .base import BaseSteps
 class NetworksSteps(BaseSteps):
     """networks steps."""
 
-    def page_networks(self):
+    def _page_networks(self):
         """Open networks page if it isn't opened."""
         return self._open(self.app.page_networks)
 
-    def page_admin_networks(self):
+    def _page_admin_networks(self):
         """Open admin networks page if it isn't opened."""
         return self._open(self.app.page_admin_networks)
 
@@ -42,7 +42,7 @@ class NetworksSteps(BaseSteps):
                        subnet_name='subnet', network_adress='192.168.0.0/24',
                        gateway_ip='192.168.0.1', check=True):
         """Step to create network."""
-        page_networks = self.page_networks()
+        page_networks = self._page_networks()
         page_networks.button_create_network.click()
 
         with page_networks.form_create_network as form:
@@ -76,7 +76,7 @@ class NetworksSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_network(self, network_name, check=True):
         """Step to delete network."""
-        page_networks = self.page_networks()
+        page_networks = self._page_networks()
 
         with page_networks.table_networks.row(
                 name=network_name).dropdown_menu as menu:
@@ -94,7 +94,7 @@ class NetworksSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_networks(self, network_names, check=True):
         """Step to delete networks as batch."""
-        page_networks = self.page_networks()
+        page_networks = self._page_networks()
 
         for network_name in network_names:
             page_networks.table_networks.row(
@@ -114,7 +114,7 @@ class NetworksSteps(BaseSteps):
     def add_subnet(self, network_name, subnet_name,
                    network_address='10.109.3.0/24', check=True):
         """Step to add subnet for network."""
-        page_networks = self.page_networks()
+        page_networks = self._page_networks()
 
         with page_networks.table_networks.row(
                 name=network_name).dropdown_menu as menu:
@@ -139,7 +139,7 @@ class NetworksSteps(BaseSteps):
     def admin_update_network(self, network_name, new_network_name=False,
                              shared=False, check=True):
         """Step to update network as admin."""
-        page_networks = self.page_admin_networks()
+        page_networks = self._page_admin_networks()
         page_networks.table_networks.row(
             name=network_name).dropdown_menu.item_default.click()
 
@@ -163,7 +163,7 @@ class NetworksSteps(BaseSteps):
     @pom.timeit('Step')
     def admin_delete_network(self, network_name, check=True):
         """Step to delete network as admin."""
-        page_networks = self.page_admin_networks()
+        page_networks = self._page_admin_networks()
 
         with page_networks.table_networks.row(
                 name=network_name).dropdown_menu as menu:
@@ -181,7 +181,7 @@ class NetworksSteps(BaseSteps):
     @pom.timeit('Step')
     def admin_filter_networks(self, query, check=True):
         """Step to filter networks."""
-        page_networks = self.page_admin_networks()
+        page_networks = self._page_admin_networks()
 
         page_networks.field_filter_networks.value = query
         page_networks.button_filter_networks.click()
