@@ -27,7 +27,7 @@ from .base import BaseSteps
 class AuthSteps(BaseSteps):
     """Authentication steps."""
 
-    def page_login(self):
+    def _page_login(self):
         """Open login page if it's not opened."""
         return self._open(self.app.page_login)
 
@@ -40,15 +40,14 @@ class AuthSteps(BaseSteps):
             - username: string, user name.
             - password: string, user password.
         """
-        with self.page_login().form_login as form:
+        with self._page_login().form_login as form:
             form.field_username.value = username
             form.field_password.value = password
             form.submit()
+            self.app.current_username = username
 
         if check:
             self.app.page_base.dropdown_menu_account.wait_for_presence(30)
-
-        self.app.current_username = username
 
     @step
     @pom.timeit('Step')
@@ -57,9 +56,8 @@ class AuthSteps(BaseSteps):
         with self.app.page_base.dropdown_menu_account as menu:
             menu.click()
             menu.item_exit.click()
+            self.app.current_username = None
+            self.app.current_project = None
 
         if check:
             self.app.page_login.form_login.wait_for_presence(30)
-
-        self.app.current_username = None
-        self.app.current_project = None

@@ -27,8 +27,8 @@ def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
                                       ubuntu_image, keypair, flavor_steps,
                                       neutron_steps, server_steps):
     """Verify that image can be connected with SSH."""
-    flavor = flavor_steps.find(name='m1.small')
-    network = neutron_steps.find(name='admin_internal_net')
+    flavor = flavor_steps.get_flavor(name='m1.small')
+    network = neutron_steps.get_network(name='admin_internal_net')
 
     for server_name in generate_ids('server', count=1):
         server = server_steps.create_server(server_name, ubuntu_image, flavor,
