@@ -41,10 +41,14 @@ class SecurityGroupSteps(BaseSteps):
         return group
 
     @step
-    def add_group_rules(self, group, rules):
+    def add_group_rules(self, group, rules, check=True):
         """Step to add rules to security group."""
         for rule in rules:
             self._client.security_group_rules.create(group.id, **rule)
+
+        if check:
+            for rule in rules:
+                self.check_rule_presence(group, rule)
 
     @step
     def delete_group(self, group, check=True):
@@ -60,6 +64,18 @@ class SecurityGroupSteps(BaseSteps):
         def predicate():
             try:
                 self._client.security_groups.get(group.id)
+                return present
+            except Exception:
+                return not present
+
+        wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def check_rule_presence(self, group, rule, present=True, timeout=0):
+        """Verify step to check security group is present."""
+        def predicate():
+            try:
+                self._client.security_group_rules.get(group, rule)
                 return present
             except Exception:
                 return not present

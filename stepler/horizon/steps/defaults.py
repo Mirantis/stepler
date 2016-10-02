@@ -18,6 +18,7 @@ Horizon steps for defaults.
 # limitations under the License.
 
 import pom
+from hamcrest import assert_that, equal_to
 
 from stepler.third_party.steps_checker import step
 
@@ -27,7 +28,7 @@ from .base import BaseSteps
 class DefaultsSteps(BaseSteps):
     """Access & security steps."""
 
-    def page_defaults(self):
+    def _page_defaults(self):
         """Open access & security page."""
         return self._open(self.app.page_defaults)
 
@@ -35,7 +36,7 @@ class DefaultsSteps(BaseSteps):
     @pom.timeit('Step')
     def update_defaults(self, defaults, check=True):
         """Step to update defaults."""
-        page_defaults = self.page_defaults()
+        page_defaults = self._page_defaults()
         page_defaults.button_update_defaults.click()
 
         with page_defaults.form_update_defaults as form:
@@ -46,15 +47,16 @@ class DefaultsSteps(BaseSteps):
         if check:
             self.close_notification('success')
             for default_name, default_value in defaults.items():
-                assert getattr(page_defaults, 'label_' + default_name).value \
-                    == str(default_value)
+                assert_that(
+                    getattr(page_defaults, 'label_' + default_name).value,
+                    equal_to(str(default_value)))
 
     @step
     @pom.timeit('Step')
     def get_defaults(self, defaults):
         """Step to get defaults."""
         result = {}
-        page_defaults = self.page_defaults()
+        page_defaults = self._page_defaults()
         for default_name in defaults:
             result[default_name] = getattr(
                 page_defaults, 'label_' + default_name).value

@@ -19,8 +19,6 @@ User settings tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from urlparse import urlparse
-
 import pytest
 
 from stepler.horizon.config import ADMIN_NAME, ADMIN_PASSWD
@@ -47,7 +45,7 @@ class TestAdminOnly(object):
         # TODO (schipiga): move it to check step
         # with horizon.page_base.dropdown_menu_account as menu:
         #     menu.click()
-        #     assert urlparse(menu.item_help.href).netloc == "docs.openstack.org"
+        #   assert urlparse(menu.item_help.href).netloc == "docs.openstack.org"
         #     menu.click()
 
     def test_change_own_password(self, horizon, user, new_user_account,
@@ -76,4 +74,4 @@ class TestAdminOnly(object):
         # TODO (schipiga): move it to check step
         # horizon.page_settings.refresh()
 
-        assert settings_steps.current_settings == new_settings
+        assert settings_steps.get_current_settings() == new_settings
