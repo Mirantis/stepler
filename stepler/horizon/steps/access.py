@@ -27,13 +27,13 @@ from .base import BaseSteps
 class AccessSteps(BaseSteps):
     """Access & security steps."""
 
-    def page_access(self):
+    def _page_access(self):
         """Open access & security page."""
         return self._open(self.app.page_access)
 
-    def tab_security_groups(self):
+    def _tab_security_groups(self):
         """Open security groups tab."""
-        with self.page_access() as page:
+        with self._page_access() as page:
             page.label_security_groups.click()
             return page.tab_security_groups
 
@@ -41,7 +41,7 @@ class AccessSteps(BaseSteps):
     @pom.timeit('Step')
     def create_security_group(self, group_name, description=None, check=True):
         """Step to create security group."""
-        tab_security_groups = self.tab_security_groups()
+        tab_security_groups = self._tab_security_groups()
         tab_security_groups.button_create_security_group.click()
 
         with tab_security_groups.form_create_security_group as form:
@@ -61,7 +61,7 @@ class AccessSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_security_group(self, group_name, check=True):
         """Step to delete security group."""
-        tab_security_groups = self.tab_security_groups()
+        tab_security_groups = self._tab_security_groups()
 
         with tab_security_groups.table_security_groups.row(
                 name=group_name).dropdown_menu as menu:

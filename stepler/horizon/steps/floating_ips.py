@@ -18,6 +18,7 @@ Floating IPs steps.
 # limitations under the License.
 
 import pom
+from hamcrest import assert_that, equal_to
 
 from stepler.third_party.steps_checker import step
 
@@ -27,7 +28,7 @@ from .base import BaseSteps
 class FloatingIPsSteps(BaseSteps):
     """Floating IPs steps."""
 
-    def tab_floating_ips(self):
+    def _tab_floating_ips(self):
         """Open floating IPs tab."""
         page_access = self._open(self.app.page_access)
         page_access.label_floating_ips.click()
@@ -37,7 +38,7 @@ class FloatingIPsSteps(BaseSteps):
     @pom.timeit('Step')
     def allocate_floating_ip(self, check=True):
         """Step to allocate floating IP."""
-        tab_floating_ips = self.tab_floating_ips()
+        tab_floating_ips = self._tab_floating_ips()
         old_ips = self._current_floating_ips
         tab_floating_ips.button_allocate_ip.click()
 
@@ -50,14 +51,15 @@ class FloatingIPsSteps(BaseSteps):
             new_ips = self._current_floating_ips
             allocated_ip = new_ips - old_ips
 
-            assert len(allocated_ip) == 1
-            return allocated_ip.pop()
+            assert_that(len(allocated_ip), equal_to(1))
+
+        return allocated_ip.pop()
 
     @step
     @pom.timeit('Step')
     def release_floating_ip(self, ip, check=True):
         """Step to release floating IP."""
-        tab_floating_ips = self.tab_floating_ips()
+        tab_floating_ips = self._tab_floating_ips()
 
         with tab_floating_ips.table_floating_ips.row(
                 ip_address=ip).dropdown_menu as menu:
@@ -75,7 +77,7 @@ class FloatingIPsSteps(BaseSteps):
     @pom.timeit('Step')
     def associate_floating_ip(self, ip, instance_name, check=True):
         """Step to associate floating IP."""
-        tab_floating_ips = self.tab_floating_ips()
+        tab_floating_ips = self._tab_floating_ips()
         tab_floating_ips.table_floating_ips.row(
             ip_address=ip).dropdown_menu.item_default.click()
 

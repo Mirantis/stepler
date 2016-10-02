@@ -33,7 +33,7 @@ __all__ = [
 @pytest.fixture
 def admin(user_steps):
     """Fixture to get admin."""
-    return user_steps.find_user(name='admin')
+    return user_steps.get_user(name='admin')
 
 
 @pytest.fixture

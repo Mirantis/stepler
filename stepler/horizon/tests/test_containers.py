@@ -40,8 +40,9 @@ class TestAnyOne(object):
         container_name = next(generate_ids('container'))
         create_container(container_name, public=True)
 
-        with containers_steps.container(container_name):
-            container_info = containers_steps.container_info(container_name)
+        with containers_steps.get_container(container_name):
+            container_info = containers_steps.get_container_info(
+                container_name)
 
             folder_name = next(generate_ids('folder'))
             containers_steps.create_folder(folder_name)
@@ -53,7 +54,7 @@ class TestAnyOne(object):
 
     def test_upload_file_to_container(self, container, containers_steps):
         """Verify that one can upload file to container."""
-        with containers_steps.container(container.name):
+        with containers_steps.get_container(container.name):
             file_path = next(generate_files())
 
             file_name = containers_steps.upload_file(file_path)
@@ -61,11 +62,11 @@ class TestAnyOne(object):
 
     def test_upload_file_to_folder(self, container, containers_steps):
         """Verify that one can upload file to folder."""
-        with containers_steps.container(container.name):
+        with containers_steps.get_container(container.name):
             folder_name = next(generate_ids('folder'))
             containers_steps.create_folder(folder_name)
 
-            with containers_steps.folder(folder_name):
+            with containers_steps.get_folder(folder_name):
                 file_path = next(generate_files())
                 file_name = containers_steps.upload_file(file_path)
                 containers_steps.delete_file(file_name)

@@ -62,19 +62,19 @@ def context(func):
         manager finalization after ``yield``. This decorator makes that.
 
     Example:
-       .. code:: python
+        .. code:: python
 
-          @pytest.fixture
-          def create_server_context(server_steps):
+           @pytest.fixture
+           def create_server_context(server_steps):
 
-              @context
-              def _create_server_context(server_name, *args, **kwgs):
-                  server = server_steps.create_server(server_name,
-                                                      *args, **kwgs)
-                  yield server
-                  server_steps.delete_server(server)
+               @context
+               def _create_server_context(server_name, *args, **kwgs):
+                   server = server_steps.create_server(server_name,
+                                                       *args, **kwgs)
+                   yield server
+                   server_steps.delete_server(server)
 
-              return _create_server_context
+               return _create_server_context
 
     See Also:
         #. Exception inside context manager:

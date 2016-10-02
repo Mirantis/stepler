@@ -2,5 +2,8 @@
 Third party modules
 ===================
 
+.. automodule:: stepler.third_party.steps_checker
+   :members:
+
 .. automodule:: stepler.third_party.context
    :members:

@@ -18,6 +18,7 @@ Instances steps.
 # limitations under the License.
 
 import pom
+from hamcrest import assert_that, equal_to
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT, UI_TIMEOUT
@@ -29,7 +30,7 @@ from .base import BaseSteps
 class InstancesSteps(BaseSteps):
     """Instances steps."""
 
-    def page_instances(self):
+    def _page_instances(self):
         """Open instances page if it isn't opened."""
         return self._open(self.app.page_instances)
 
@@ -38,7 +39,7 @@ class InstancesSteps(BaseSteps):
     def create_instance(self, instance_name, network_name='admin_internal_net',
                         count=1, check=True):
         """Step to create instance."""
-        page_instances = self.page_instances()
+        page_instances = self._page_instances()
 
         page_instances.button_launch_instance.click()
         with page_instances.form_launch_instance as form:
@@ -84,7 +85,7 @@ class InstancesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_instances(self, instance_names, check=True):
         """Step to delete instances."""
-        page_instances = self.page_instances()
+        page_instances = self._page_instances()
 
         for instance_name in instance_names:
             page_instances.table_instances.row(
@@ -103,7 +104,7 @@ class InstancesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_instance(self, instance_name, check=True):
         """Step to delete instance."""
-        page_instances = self.page_instances()
+        page_instances = self._page_instances()
 
         with page_instances.table_instances.row(
                 name=instance_name).dropdown_menu as menu:
@@ -121,42 +122,44 @@ class InstancesSteps(BaseSteps):
     @pom.timeit('Step')
     def lock_instance(self, instance_name, check=True):
         """Step to lock instance."""
-        with self.page_instances().table_instances.row(
+        with self._page_instances().table_instances.row(
                 name=instance_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_lock.click()
 
-        if check:
-            self.close_notification('success')
+            if check:
+                self.close_notification('success')
+                menu.wait_for_absence()
 
     @step
     @pom.timeit('Step')
     def unlock_instance(self, instance_name, check=True):
         """Step to unlock instance."""
-        with self.page_instances().table_instances.row(
+        with self._page_instances().table_instances.row(
                 name=instance_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_unlock.click()
 
-        if check:
-            self.close_notification('success')
+            if check:
+                self.close_notification('success')
+                menu.wait_for_absence()
 
     @step
     @pom.timeit('Step')
     def view_instance(self, instance_name, check=True):
         """Step to view instance."""
-        self.page_instances().table_instances.row(
+        self._page_instances().table_instances.row(
             name=instance_name).link_instance.click()
 
         if check:
-            assert self.app.page_instance.info_instance.label_name.value \
-                == instance_name
+            assert_that(self.app.page_instance.info_instance.label_name.value,
+                        equal_to(instance_name))
 
     @step
     @pom.timeit('Step')
     def filter_instances(self, query, check=True):
         """Step to filter instances."""
-        page_instances = self.page_instances()
+        page_instances = self._page_instances()
 
         page_instances.field_filter_instances.value = query
         page_instances.button_filter_instances.click()
@@ -173,8 +176,12 @@ class InstancesSteps(BaseSteps):
 
     @step
     @pom.timeit('Step')
-    def reset_instances_filter(self):
+    def reset_instances_filter(self, check=True):
         """Step to reset instances filter."""
-        page_instances = self.page_instances()
+        page_instances = self._page_instances()
         page_instances.field_filter_instances.value = ''
         page_instances.button_filter_instances.click()
+
+        if check:
+            assert_that(page_instances.field_filter_instances.value,
+                        equal_to(''))
