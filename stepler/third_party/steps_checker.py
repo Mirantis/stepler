@@ -17,7 +17,9 @@ Pytest plugin to check only steps and fixtures are called inside test.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import importlib
 import inspect
+import pkgutil
 import re
 
 REGEX_CALL = re.compile('\W*(\w+)\(')
@@ -75,3 +77,54 @@ def pytest_collection_modifyitems(config, items):
         raise SystemError(
             "Only steps and fixtures must be called in test!\n{}".format(
                 '\n'.join(errors)))
+
+
+def pytest_configure(config):
+    """Hook to check steps consistency."""
+    step_classes = []
+
+    import stepler
+    for _, pkg_name, is_pkg in pkgutil.iter_modules(stepler.__path__):
+
+        if not is_pkg:
+            continue
+
+        try:
+            steps_module = importlib.import_module(
+                stepler.__name__ + '.' + pkg_name + '.steps')
+        except ImportError:
+            continue
+
+        for obj_name in steps_module.__all__:
+            obj = getattr(steps_module, obj_name)
+
+            if inspect.isclass(obj):
+                step_classes.append(obj)
+
+    for step_cls in step_classes:
+        for attr_name in dir(step_cls):
+
+            if attr_name.startswith('_'):
+                continue
+
+            step_func = getattr(step_cls, attr_name).im_func
+
+            if step_func.__name__ != step_func.func_code.co_name:
+                for cell in step_func.func_closure:
+                    obj = cell.cell_contents
+                    if inspect.isfunction(obj):
+                        if step_func.__name__ == obj.func_code.co_name:
+                            step_func = obj
+
+            if step_func.__name__.startswith('get_'):
+                try:
+                    assert 'check' not in inspect.getargspec(step_func).args
+                except:
+                    import ipdb; ipdb.set_trace()
+                step_last_line = inspect.getsourcelines(
+                    step_func)[0][-1].strip()
+                assert step_last_line.startswith('return')
+                assert not step_last_line.endswith('return')
+                assert not step_last_line.endswith('None')
+
+    import ipdb; ipdb.set_trace()
