@@ -99,9 +99,11 @@ Deep to structure
 .. toctree::
    :maxdepth: 1
 
+   steps_concept
    common_fixtures
    glance
    horizon
    keystone
    neutron
    nova
+   third_party

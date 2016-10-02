@@ -83,9 +83,9 @@ def ssh_proxy_data(admin_ssh_key_path, ip_by_host,
         ip_info = server_steps.get_ips(server, 'fixed').values()[0]
         server_ip = ip_info['ip']
         server_mac = ip_info['mac']
-        net_id = neutron_steps.network_id_by_mac(server_mac)
+        net_id = neutron_steps.get_network_id_by_mac(server_mac)
         dhcp_netns = "qdhcp-{}".format(net_id)
-        dhcp_host = neutron_steps.dhcp_host_by_network(net_id)
+        dhcp_host = neutron_steps.get_dhcp_host_by_network(net_id)
         dhcp_server_ip = ip_by_host(dhcp_host)
         cmd = 'ssh -i {} root@{} ip netns exec {} netcat {} 22'.format(
             admin_ssh_key_path, dhcp_server_ip, dhcp_netns, server_ip)
