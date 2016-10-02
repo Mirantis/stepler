@@ -27,7 +27,7 @@ from .base import BaseSteps
 class SettingsSteps(BaseSteps):
     """Settings steps."""
 
-    def page_settings(self):
+    def _page_settings(self):
         """Open settings page if it isn't opened."""
         return self._open(self.app.page_settings)
 
@@ -40,7 +40,7 @@ class SettingsSteps(BaseSteps):
                         instance_log_length=None,
                         check=True):
         """Step to update user settings."""
-        with self.page_settings().form_settings as form:
+        with self._page_settings().form_settings as form:
             if lang:
                 form.combobox_lang.value = lang
             if timezone:
@@ -51,22 +51,23 @@ class SettingsSteps(BaseSteps):
                 form.field_instance_log_length.value = instance_log_length
             form.submit()
 
-        if check:
-            self.close_notification('success')
+            if check:
+                self.close_notification('success')
+                form.wait_for_presence()
 
-    @property
     @step
     @pom.timeit('Step')
-    def current_settings(self):
+    def get_current_settings(self):
         """Current user settings."""
-        with self.page_settings().form_settings as form:
-            return {
+        with self._page_settings().form_settings as form:
+            current_settings = {
                 'lang': form.combobox_lang.value,
                 'timezone': form.combobox_timezone.value,
                 'items_per_page': form.field_items_per_page.value,
                 'instance_log_length': form.field_instance_log_length.value}
+            return current_settings
 
-    def page_password(self):
+    def _page_password(self):
         """Open page to change user password if it isn't opened."""
         return self._open(self.app.page_password)
 
@@ -74,7 +75,7 @@ class SettingsSteps(BaseSteps):
     @pom.timeit('Step')
     def change_user_password(self, current_password, new_password, check=True):
         """Step to change user password."""
-        page_password = self.page_password()
+        page_password = self._page_password()
 
         with page_password.form_change_password as form:
             form.field_current_password.value = current_password
