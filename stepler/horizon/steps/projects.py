@@ -28,7 +28,7 @@ from .base import BaseSteps
 class ProjectsSteps(BaseSteps):
     """Projects steps."""
 
-    def page_projects(self):
+    def _page_projects(self):
         """Open projects page if it isn't opened."""
         return self._open(self.app.page_projects)
 
@@ -36,7 +36,7 @@ class ProjectsSteps(BaseSteps):
     @pom.timeit('Step')
     def create_project(self, project_name, check=True):
         """Step to create project."""
-        page_projects = self.page_projects()
+        page_projects = self._page_projects()
         page_projects.button_create_project.click()
 
         with page_projects.form_create_project as form:
@@ -52,7 +52,7 @@ class ProjectsSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_project(self, project_name, check=True):
         """Step to delete project."""
-        page_projects = self.page_projects()
+        page_projects = self._page_projects()
 
         with page_projects.table_projects.row(
                 name=project_name).dropdown_menu as menu:
@@ -70,7 +70,7 @@ class ProjectsSteps(BaseSteps):
     @pom.timeit('Step')
     def filter_projects(self, query, check=True):
         """Step to filter projects."""
-        page_projects = self.page_projects()
+        page_projects = self._page_projects()
 
         page_projects.field_filter_projects.value = query
         page_projects.button_filter_projects.click()

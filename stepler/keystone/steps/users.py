@@ -49,7 +49,7 @@ class UserSteps(BaseSteps):
             self.check_user_presence(user, present=False)
 
     @step
-    def find_user(self, *args, **kwgs):
+    def get_user(self, *args, **kwgs):
         """Step to find role."""
         return self._client.find(*args, **kwgs)
 

@@ -27,7 +27,7 @@ from .base import BaseSteps
 class FlavorsSteps(BaseSteps):
     """Flavors steps."""
 
-    def page_flavors(self):
+    def _page_flavors(self):
         """Open flavors page if it isn't opened."""
         return self._open(self.app.page_flavors)
 
@@ -36,7 +36,7 @@ class FlavorsSteps(BaseSteps):
     def create_flavor(self, flavor_name, cpu_count=1, ram=1024, root_disk=1,
                       check=True):
         """Step to create flavor."""
-        page_flavors = self.page_flavors()
+        page_flavors = self._page_flavors()
         page_flavors.button_create_flavor.click()
 
         with page_flavors.form_create_flavor as form:
@@ -55,7 +55,7 @@ class FlavorsSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_flavor(self, flavor_name, check=True):
         """Step to delete flavor."""
-        page_flavors = self.page_flavors()
+        page_flavors = self._page_flavors()
 
         with page_flavors.table_flavors.row(
                 name=flavor_name).dropdown_menu as menu:
@@ -73,7 +73,7 @@ class FlavorsSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_flavors(self, flavor_names, check=True):
         """Step to delete flavors as batch."""
-        page_flavors = self.page_flavors()
+        page_flavors = self._page_flavors()
 
         for flavor_name in flavor_names:
             page_flavors.table_flavors.row(
@@ -92,7 +92,7 @@ class FlavorsSteps(BaseSteps):
     @pom.timeit('Step')
     def update_flavor(self, flavor_name, new_flavor_name=None, check=True):
         """Step to update flavor."""
-        page_flavors = self.page_flavors()
+        page_flavors = self._page_flavors()
         page_flavors.table_flavors.row(
             name=flavor_name).dropdown_menu.item_default.click()
 
@@ -111,7 +111,7 @@ class FlavorsSteps(BaseSteps):
     @pom.timeit('Step')
     def update_metadata(self, flavor_name, metadata, check=True):
         """Step to update flavor metadata."""
-        page_flavors = self.page_flavors()
+        page_flavors = self._page_flavors()
 
         with page_flavors.table_flavors.row(
                 name=flavor_name).dropdown_menu as menu:
@@ -137,7 +137,7 @@ class FlavorsSteps(BaseSteps):
         """Step to get flavor metadata."""
         metadata = {}
 
-        page_flavors = self.page_flavors()
+        page_flavors = self._page_flavors()
 
         with page_flavors.table_flavors.row(
                 name=flavor_name).dropdown_menu as menu:
@@ -156,7 +156,7 @@ class FlavorsSteps(BaseSteps):
     @pom.timeit('Step')
     def modify_access(self, flavor_name, project, check=True):
         """Step to modify flavor access."""
-        page_flavors = self.page_flavors()
+        page_flavors = self._page_flavors()
 
         with page_flavors.table_flavors.row(
                 name=flavor_name).dropdown_menu as menu:

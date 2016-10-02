@@ -27,7 +27,7 @@ from .base import BaseSteps
 class RoutersSteps(BaseSteps):
     """Routers steps."""
 
-    def page_routers(self):
+    def _page_routers(self):
         """Open routers page if it isn't opened."""
         return self._open(self.app.page_routers)
 
@@ -36,7 +36,7 @@ class RoutersSteps(BaseSteps):
     def create_router(self, router_name, admin_state=None,
                       external_network=None, check=True):
         """Step to create router."""
-        page_routers = self.page_routers()
+        page_routers = self._page_routers()
         page_routers.button_create_router.click()
 
         with page_routers.form_create_router as form:
@@ -59,7 +59,7 @@ class RoutersSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_router(self, router_name, check=True):
         """Step to delete router."""
-        page_routers = self.page_routers()
+        page_routers = self._page_routers()
 
         with page_routers.table_routers.row(
                 name=router_name).dropdown_menu as menu:

@@ -49,7 +49,7 @@ NAMESPACE_TEMPLATE = '''{
 class NamespacesSteps(BaseSteps):
     """Namespaces steps."""
 
-    def page_metadata_definitions(self):
+    def _page_metadata_definitions(self):
         """Open namespaces page if it isn't opened."""
         return self._open(self.app.page_metadata_definitions)
 
@@ -58,7 +58,7 @@ class NamespacesSteps(BaseSteps):
     def create_namespace(self, namespace_name, namespace_source='Direct Input',
                          check=True):
         """Step to create namespace."""
-        page_metadata_definitions = self.page_metadata_definitions()
+        page_metadata_definitions = self._page_metadata_definitions()
         page_metadata_definitions.button_import_namespace.click()
 
         with page_metadata_definitions.form_import_namespace as form:
@@ -76,7 +76,7 @@ class NamespacesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_namespace(self, namespace_name, check=True):
         """Step to delete namespace."""
-        page_metadata_definitions = self.page_metadata_definitions()
+        page_metadata_definitions = self._page_metadata_definitions()
 
         with page_metadata_definitions.table_namespaces.row(
                 name=namespace_name).dropdown_menu as menu:

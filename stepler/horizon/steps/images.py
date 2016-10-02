@@ -18,6 +18,7 @@ Images steps.
 # limitations under the License.
 
 import pom
+from hamcrest import assert_that, equal_to
 
 from stepler.horizon.config import EVENT_TIMEOUT
 from stepler.third_party.steps_checker import step
@@ -31,7 +32,7 @@ CIRROS_URL = ('http://download.cirros-cloud.net/0.3.1/'
 class ImagesSteps(BaseSteps):
     """Images steps."""
 
-    def page_images(self):
+    def _page_images(self):
         """Open images page if it isn't opened."""
         return self._open(self.app.page_images)
 
@@ -41,7 +42,7 @@ class ImagesSteps(BaseSteps):
                      disk_format='QCOW2', min_disk=None, min_ram=None,
                      protected=False, check=True):
         """Step to create image."""
-        page_images = self.page_images()
+        page_images = self._page_images()
         page_images.button_create_image.click()
 
         with page_images.form_create_image as form:
@@ -78,7 +79,7 @@ class ImagesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_image(self, image_name, check=True):
         """Step to delete image."""
-        page_images = self.page_images()
+        page_images = self._page_images()
 
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -96,7 +97,7 @@ class ImagesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_images(self, image_names, check=True):
         """Step to delete images."""
-        page_images = self.page_images()
+        page_images = self._page_images()
 
         for image_name in image_names:
             page_images.table_images.row(
@@ -115,7 +116,7 @@ class ImagesSteps(BaseSteps):
     @pom.timeit('Step')
     def update_metadata(self, image_name, metadata, check=True):
         """Step to update image metadata."""
-        page_images = self.page_images()
+        page_images = self._page_images()
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
             menu.button_toggle.click()
@@ -140,7 +141,7 @@ class ImagesSteps(BaseSteps):
         """Step to get image metadata."""
         metadata = {}
 
-        page_images = self.page_images()
+        page_images = self._page_images()
 
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -160,7 +161,7 @@ class ImagesSteps(BaseSteps):
     def update_image(self, image_name, new_image_name=None, protected=False,
                      check=True):
         """Step to update image."""
-        page_images = self.page_images()
+        page_images = self._page_images()
 
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -190,18 +191,18 @@ class ImagesSteps(BaseSteps):
     @pom.timeit('Step')
     def view_image(self, image_name, check=True):
         """Step to view image."""
-        self.page_images().table_images.row(
+        self._page_images().table_images.row(
             name=image_name).link_image.click()
 
         if check:
-            assert self.app.page_image.info_image.label_name.value \
-                == image_name
+            assert_that(self.app.page_image.info_image.label_name.value,
+                        equal_to(image_name))
 
     @step
     @pom.timeit('Step')
     def create_volume(self, image_name, volume_name, check=True):
         """Step to create volume from image."""
-        page_images = self.page_images()
+        page_images = self._page_images()
 
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -212,15 +213,16 @@ class ImagesSteps(BaseSteps):
             form.field_name.value = volume_name
             form.submit()
 
-        if check:
-            self.close_notification('info')
+            if check:
+                self.close_notification('info')
+                form.wait_for_absence()
 
     @step
     @pom.timeit('Step')
     def launch_instance(self, image_name, instance_name, network_name,
                         check=True):
         """Step to launch instance from image."""
-        page_images = self.page_images()
+        page_images = self._page_images()
 
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -242,3 +244,6 @@ class ImagesSteps(BaseSteps):
                     name=network_name).button_add.click()
 
             form.submit()
+
+            if check:
+                form.wait_for_absence()

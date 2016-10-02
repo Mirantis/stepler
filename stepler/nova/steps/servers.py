@@ -17,7 +17,7 @@ Server steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_not, has_item
+from hamcrest import assert_that, is_not, has_item, equal_to
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -108,7 +108,7 @@ class ServerSteps(BaseSteps):
             return server.status.lower() not in transit_statuses
 
         wait(predicate, timeout_seconds=timeout)
-        assert server.status.lower() == status.lower()
+        assert_that(server.status.lower(), equal_to(status.lower()))
 
     @step
     def check_ssh_connect(self, server, keypair, username=None, password=None,
@@ -167,8 +167,7 @@ class ServerSteps(BaseSteps):
                                     'mac': net['OS-EXT-IPS-MAC:mac_addr'],
                                     'net': net_name,
                                     'ip': net['addr']}
-        if not ip_type:
-            return ips
-        else:
-            return {key: val for key, val in ips.items()
-                    if val['type'] == ip_type}
+        if ip_type:
+            ips = {key: val for key, val in ips.items()
+                   if val['type'] == ip_type}
+        return ips
