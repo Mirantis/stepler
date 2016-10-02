@@ -18,6 +18,7 @@ Volumes steps.
 # limitations under the License.
 
 import pom
+from hamcrest import assert_that, equal_to
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
@@ -29,13 +30,13 @@ from .base import BaseSteps
 class VolumesSteps(BaseSteps):
     """Volumes steps."""
 
-    def page_volumes(self):
+    def _page_volumes(self):
         """Open volumes page if it isn't opened."""
         return self._open(self.app.page_volumes)
 
-    def tab_volumes(self):
+    def _tab_volumes(self):
         """Open volumes tab."""
-        with self.page_volumes() as page:
+        with self._page_volumes() as page:
             page.label_volumes.click()
             return page.tab_volumes
 
@@ -44,7 +45,7 @@ class VolumesSteps(BaseSteps):
     def create_volume(self, volume_name, source_type='Image', volume_type='',
                       check=True):
         """Step to create volume."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
         tab_volumes.button_create_volume.click()
 
         with tab_volumes.form_create_volume as form:
@@ -70,7 +71,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_volume(self, volume_name, check=True):
         """Step to delete volume."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -88,7 +89,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def edit_volume(self, volume_name, new_volume_name, check=True):
         """Step to edit volume."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         tab_volumes.table_volumes.row(
             name=volume_name).dropdown_menu.item_default.click()
@@ -105,7 +106,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_volumes(self, volume_names, check=True):
         """Step to delete volumes."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         for volume_name in volume_names:
             tab_volumes.table_volumes.row(
@@ -124,18 +125,18 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def view_volume(self, volume_name, check=True):
         """Step to view volume."""
-        self.tab_volumes().table_volumes.row(
+        self._tab_volumes().table_volumes.row(
             name=volume_name).link_volume.click()
 
         if check:
-            assert self.app.page_volume.info_volume.label_name.value \
-                == volume_name
+            assert_that(self.app.page_volume.info_volume.label_name.value,
+                        equal_to(volume_name))
 
     @step
     @pom.timeit('Step')
     def change_volume_type(self, volume_name, volume_type=None, check=True):
         """Step to change volume type."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -157,7 +158,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def upload_volume_to_image(self, volume_name, image_name, check=True):
         """Step to upload volume to image."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -177,7 +178,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def extend_volume(self, volume_name, new_size=2, check=True):
         """Step to extend volume size."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -193,13 +194,13 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=volume_name, size=new_size).wait_for_presence()
 
-    def page_admin_volumes(self):
+    def _page_admin_volumes(self):
         """Open admin volumes page if it isn't opened."""
         return self._open(self.app.page_admin_volumes)
 
-    def tab_admin_volumes(self):
+    def _tab_admin_volumes(self):
         """Open admin volumes tab."""
-        with self.page_admin_volumes() as page:
+        with self._page_admin_volumes() as page:
             page.label_volumes.click()
             return page.tab_volumes
 
@@ -207,7 +208,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def change_volume_status(self, volume_name, status=None, check=True):
         """Step to change volume status."""
-        tab_volumes = self.tab_admin_volumes()
+        tab_volumes = self._tab_admin_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -230,7 +231,7 @@ class VolumesSteps(BaseSteps):
     def launch_volume_as_instance(self, volume_name, instance_name,
                                   network_name, count=1, check=True):
         """Step to launch volume as instance."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -255,11 +256,14 @@ class VolumesSteps(BaseSteps):
 
             form.submit()
 
+            if check:
+                form.wait_for_absence()
+
     @step
     @pom.timeit('Step')
     def attach_instance(self, volume_name, instance_name, check=True):
         """Step to attach instance."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -283,7 +287,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def detach_instance(self, volume_name, instance_name, check=True):
         """Step to detach instance."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -304,7 +308,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def create_transfer(self, volume_name, transfer_name, check=True):
         """Step to create transfer."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -322,18 +326,18 @@ class VolumesSteps(BaseSteps):
                 transfer_id = form.field_transfer_id.value
                 transfer_key = form.field_transfer_key.value
 
-            self.tab_admin_volumes().table_volumes.row(
+            self._tab_admin_volumes().table_volumes.row(
                 name=volume_name,
                 status='awaiting-transfer').wait_for_presence()
 
-            return transfer_id, transfer_key
+        return transfer_id, transfer_key
 
     @step
     @pom.timeit('Step')
     def accept_transfer(self, transfer_id, transfer_key, volume_name,
                         check=True):
         """Step to accept transfer."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         tab_volumes.button_accept_transfer.click()
 
@@ -351,7 +355,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def migrate_volume(self, volume_name, new_host=None, check=True):
         """Step to migrate host."""
-        tab_volumes = self.tab_admin_volumes()
+        tab_volumes = self._tab_admin_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -374,7 +378,7 @@ class VolumesSteps(BaseSteps):
                 name=volume_name, host=new_host,
                 status='Available').wait_for_presence()
 
-            page_volumes = self.page_admin_volumes()
+            page_volumes = self._page_admin_volumes()
 
             def is_old_host_volume_absent():
                 page_volumes.refresh()
@@ -384,17 +388,17 @@ class VolumesSteps(BaseSteps):
 
             wait(is_old_host_volume_absent, timeout_seconds=EVENT_TIMEOUT * 2)
 
-            return old_host, new_host
+        return old_host, new_host
 
-    def tab_snapshots(self):
+    def _tab_snapshots(self):
         """Open volume snapshots tab."""
-        with self.page_volumes() as page:
+        with self._page_volumes() as page:
             page.label_snapshots.click()
             return page.tab_snapshots
 
-    def tab_backups(self):
+    def _tab_backups(self):
         """Open volume backups tab."""
-        with self.page_volumes() as page:
+        with self._page_volumes() as page:
             page.label_backups.click()
             return page.tab_backups
 
@@ -403,7 +407,7 @@ class VolumesSteps(BaseSteps):
     def create_snapshot(self, volume_name, snapshot_name, description=None,
                         check=True):
         """Step to create volume snapshot."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -418,14 +422,14 @@ class VolumesSteps(BaseSteps):
 
         if check:
             self.close_notification('info')
-            self.tab_snapshots().table_snapshots.row(
+            self._tab_snapshots().table_snapshots.row(
                 name=snapshot_name, status='Available').wait_for_presence()
 
     @step
     @pom.timeit('Step')
     def delete_snapshot(self, snapshot_name, check=True):
         """Step to delete volume snapshot."""
-        tab_snapshots = self.tab_snapshots()
+        tab_snapshots = self._tab_snapshots()
 
         with tab_snapshots.table_snapshots.row(
                 name=snapshot_name).dropdown_menu as menu:
@@ -443,7 +447,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_snapshots(self, snapshot_names, check=True):
         """Step to delete volume snapshots."""
-        tab_snapshots = self.tab_snapshots()
+        tab_snapshots = self._tab_snapshots()
 
         for snapshot_name in snapshot_names:
             tab_snapshots.table_snapshots.row(
@@ -463,7 +467,7 @@ class VolumesSteps(BaseSteps):
     def update_snapshot(self, snapshot_name, new_snapshot_name,
                         description=None, check=True):
         """Step to update volume snapshot."""
-        tab_snapshots = self.tab_snapshots()
+        tab_snapshots = self._tab_snapshots()
 
         with tab_snapshots.table_snapshots.row(
                 name=snapshot_name).dropdown_menu as menu:
@@ -478,7 +482,7 @@ class VolumesSteps(BaseSteps):
 
         if check:
             self.close_notification('info')
-            self.tab_snapshots().table_snapshots.row(
+            self._tab_snapshots().table_snapshots.row(
                 name=new_snapshot_name,
                 status='Available').wait_for_presence()
 
@@ -486,7 +490,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def create_volume_from_snapshot(self, snapshot_name, check=True):
         """Step to create volume from spanshot."""
-        tab_snapshots = self.tab_snapshots()
+        tab_snapshots = self._tab_snapshots()
 
         with tab_snapshots.table_snapshots.row(
                 name=snapshot_name).dropdown_menu as menu:
@@ -497,7 +501,7 @@ class VolumesSteps(BaseSteps):
 
         if check:
             self.close_notification('info')
-            self.tab_volumes().table_volumes.row(
+            self._tab_volumes().table_volumes.row(
                 name=snapshot_name).wait_for_status('Available')
 
     @step
@@ -505,7 +509,7 @@ class VolumesSteps(BaseSteps):
     def create_backup(self, volume_name, backup_name, description=None,
                       container=None, check=True):
         """Step to create volume backup."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
@@ -525,7 +529,7 @@ class VolumesSteps(BaseSteps):
 
         if check:
             self.close_notification('success')
-            self.tab_backups().table_backups.row(
+            self._tab_backups().table_backups.row(
                 name=backup_name,
                 status='Available').wait_for_presence(EVENT_TIMEOUT)
 
@@ -533,7 +537,7 @@ class VolumesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_backups(self, backup_names, check=True):
         """Step to delete volume backups."""
-        tab_backups = self.tab_backups()
+        tab_backups = self._tab_backups()
 
         for backup_name in backup_names:
             tab_backups.table_backups.row(

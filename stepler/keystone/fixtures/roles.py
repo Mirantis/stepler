@@ -33,7 +33,7 @@ __all__ = [
 @pytest.fixture
 def admin_role(role_steps):
     """Fixture to get admin role."""
-    return role_steps.find_role(name='admin')
+    return role_steps.get_role(name='admin')
 
 
 @pytest.fixture

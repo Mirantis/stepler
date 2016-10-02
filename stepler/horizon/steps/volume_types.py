@@ -27,7 +27,7 @@ from .base import BaseSteps
 class VolumeTypesSteps(BaseSteps):
     """Volume types steps."""
 
-    def tab_volume_types(self):
+    def _tab_volume_types(self):
         """Open volume types tab."""
         with self._open(self.app.page_admin_volumes) as page:
             page.label_volume_types.click()
@@ -38,7 +38,7 @@ class VolumeTypesSteps(BaseSteps):
     def create_volume_type(self, volume_type_name, description=None,
                            check=True):
         """Step to create volume type."""
-        tab = self.tab_volume_types()
+        tab = self._tab_volume_types()
         tab.button_create_volume_type.click()
 
         with tab.form_create_volume_type as form:
@@ -56,7 +56,7 @@ class VolumeTypesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_volume_type(self, volume_type_name, check=True):
         """Step to delete volume type."""
-        tab = self.tab_volume_types()
+        tab = self._tab_volume_types()
 
         with tab.table_volume_types.row(
                 name=volume_type_name).dropdown_menu as menu:
@@ -74,7 +74,7 @@ class VolumeTypesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_volume_types(self, volume_type_names, check=True):
         """Step to delete volume types."""
-        tab = self.tab_volume_types()
+        tab = self._tab_volume_types()
 
         for volume_type_name in volume_type_names:
             tab.table_volume_types.row(name=volume_type_name).checkbox.click()
@@ -92,7 +92,7 @@ class VolumeTypesSteps(BaseSteps):
     @pom.timeit('Step')
     def create_qos_spec(self, qos_spec_name, consumer=None, check=True):
         """Step to create qos spec."""
-        tab = self.tab_volume_types()
+        tab = self._tab_volume_types()
         tab.button_create_qos_spec.click()
 
         with tab.form_create_qos_spec as form:
@@ -109,7 +109,7 @@ class VolumeTypesSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_qos_spec(self, qos_spec_name, check=True):
         """Step to delete qos spec."""
-        tab = self.tab_volume_types()
+        tab = self._tab_volume_types()
 
         with tab.table_qos_specs.row(
                 name=qos_spec_name).dropdown_menu as menu:
