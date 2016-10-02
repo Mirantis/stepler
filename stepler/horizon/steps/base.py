@@ -69,7 +69,7 @@ class BaseSteps(object):
 
     @step
     @pom.timeit('Step')
-    def close_notification(self, level):
+    def close_notification(self, level, check=True):
         """Close notification popup window.
 
         Arguments:
@@ -78,4 +78,5 @@ class BaseSteps(object):
         self.app.page_base.modal.wait_for_absence()
         with self.app.page_base.notification(level) as popup:
             popup.button_close.click()
-            popup.wait_for_absence()
+            if check:
+                popup.wait_for_absence()

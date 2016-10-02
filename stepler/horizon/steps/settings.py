@@ -54,7 +54,6 @@ class SettingsSteps(BaseSteps):
         if check:
             self.close_notification('success')
 
-    @property
     @step
     @pom.timeit('Step')
     def current_settings(self):
