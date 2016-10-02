@@ -167,8 +167,7 @@ class ServerSteps(BaseSteps):
                                     'mac': net['OS-EXT-IPS-MAC:mac_addr'],
                                     'net': net_name,
                                     'ip': net['addr']}
-        if not ip_type:
-            return ips
-        else:
-            return {key: val for key, val in ips.items()
-                    if val['type'] == ip_type}
+        if ip_type:
+            ips = {key: val for key, val in ips.items()
+                   if val['type'] == ip_type}
+        return ips
