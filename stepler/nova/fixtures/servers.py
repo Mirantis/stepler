@@ -20,11 +20,14 @@ Server fixtures.
 import pytest
 
 from stepler.nova.steps import ServerSteps
+from stepler.third_party.context import context
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_server',
+    'create_server_context',
     'create_servers',
+    'create_servers_context',
     'server',
     'server_steps',
     'ssh_proxy_data'
@@ -66,6 +69,72 @@ def create_server(create_servers):
         return create_servers([server_name], *args, **kwgs)[0]
 
     return _create_server
+
+
+@pytest.fixture
+def create_servers_context(server_steps):
+    """
+    Fixture to create servers inside context to guarantee their deletion after
+    context exit.
+
+    Should be used when ``servers`` must be deleted inside a test, and their
+    deletion can't be delegated to fixture finalization. Can be called several
+    times during a test.
+
+    Example:
+        .. code:: python
+
+           def test_something(create_servers_context):
+               for i in sequence:  # sequence can't be calculated outside test
+                   with create_servers_context(*args, **kwgs) as servers:
+                       [server.do_something() for server in servers]
+
+    Args:
+        server_steps (stepler.nova.steps.ServerSteps): instantiated steps
+            object to manipulate with ``server`` resource.
+
+    Returns:
+        function: function to use as context manager to create servers
+    """
+    @context
+    def _create_servers_context(server_names, *args, **kwgs):
+        servers = server_steps.create_servers(server_names, *args, **kwgs)
+        yield servers
+        server_steps.delete_servers(servers)
+
+    return _create_servers_context
+
+
+@pytest.fixture
+def create_server_context(create_servers_context):
+    """
+    Fixture to create server inside context to guarantee its deletion after
+    context exit.
+
+    Should be used when ``server`` must be deleted inside a test, and its
+    deletion can't be delegated to fixture finalization. Can be called several
+    times during a test.
+
+    Example:
+        .. code:: python
+
+           def test_something(create_server_context):
+               for i in sequence:  # sequence can't be calculated outside test
+                   with create_server_context(*args, **kwgs) as server:
+                       server.do_something()
+
+    Args:
+        create_servers_context (function): context manager to create servers
+
+    Returns:
+        function: function to use as context manager to create servers
+    """
+    @context
+    def _create_server_context(server_name, *args, **kwgs):
+        with create_servers_context([server_name], *args, **kwgs) as servers:
+            yield servers[0]
+
+    return _create_server_context
 
 
 @pytest.fixture
