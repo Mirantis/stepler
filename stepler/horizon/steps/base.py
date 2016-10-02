@@ -18,6 +18,7 @@ Horizon base steps.
 # limitations under the License.
 
 import pom
+from hamcrest import assert_that, equal_to
 
 from stepler.third_party.steps_checker import step
 
@@ -61,15 +62,15 @@ class BaseSteps(object):
 
             menu.click()
             menu.item_project(project_name).click()
+            self.app.current_project = project_name
 
         if check:
             self.close_notification('success')
-
-        self.app.current_project = project_name
+            assert_that(menu.label_project.value, equal_to(project_name))
 
     @step
     @pom.timeit('Step')
-    def close_notification(self, level):
+    def close_notification(self, level, check=True):
         """Close notification popup window.
 
         Arguments:
@@ -78,4 +79,5 @@ class BaseSteps(object):
         self.app.page_base.modal.wait_for_absence()
         with self.app.page_base.notification(level) as popup:
             popup.button_close.click()
-            popup.wait_for_absence()
+            if check:
+                popup.wait_for_absence()

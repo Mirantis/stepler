@@ -61,24 +61,30 @@ class NeutronSteps(BaseSteps):
         wait(predicate, timeout_seconds=timeout)
 
     @step
-    def find(self, name):
-        """Step to find network."""
+    def get_network(self, name):
+        """Step to get network."""
+        target_network = None
         networks = self._client.list_networks()['networks']
         for network in networks:
             if network['name'] == name:
-                return network
+                target_network = network
+                break
         else:
             raise LookupError("Network {!r} is absent".format(name))
 
+        return target_network
+
     @step
-    def network_id_by_mac(self, mac):
+    def get_network_id_by_mac(self, mac):
         """Step to get network ID by server MAC."""
-        return self._client.list_ports(
+        network_id = self._client.list_ports(
             mac_address=mac)['ports'][0]['network_id']
+        return network_id
 
     # TODO (schipiga): need refactor it after copy from mos-integration-tests.
     @step
-    def dhcp_host_by_network(self, net_id, filter_attr='host', is_alive=True):
+    def get_dhcp_host_by_network(self, net_id, filter_attr='host',
+                                 is_alive=True):
         """Step to get DHCP host name by network ID."""
         filter_fn = lambda x: x[filter_attr] if filter_attr else x
         result = self._client.list_dhcp_agent_hosting_networks(net_id)

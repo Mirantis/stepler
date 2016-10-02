@@ -27,7 +27,7 @@ from .base import BaseSteps
 class ContainersSteps(BaseSteps):
     """Containers steps."""
 
-    def page_containers(self):
+    def _page_containers(self):
         """Open containers page if it isn't opened."""
         return self._open(self.app.page_containers)
 
@@ -35,7 +35,7 @@ class ContainersSteps(BaseSteps):
     @pom.timeit('Step')
     def create_container(self, container_name, public=False, check=True):
         """Step to create container."""
-        page_containers = self.page_containers()
+        page_containers = self._page_containers()
         page_containers.button_create_container.click()
 
         with page_containers.form_create_container as form:
@@ -57,7 +57,7 @@ class ContainersSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_container(self, container_name, check=True):
         """Step to delete container."""
-        page_containers = self.page_containers()
+        page_containers = self._page_containers()
 
         with page_containers.list_containers.row(container_name) as row:
             row.click()
@@ -80,7 +80,7 @@ class ContainersSteps(BaseSteps):
 
     @step
     @pom.timeit('Step')
-    def container(self, container_name):
+    def get_container(self, container_name):
         """Step to enter to container."""
         self.app.page_containers.list_containers.row(container_name).click()
 
@@ -93,7 +93,7 @@ class ContainersSteps(BaseSteps):
 
     @step
     @pom.timeit('Step')
-    def folder(self, folder_name):
+    def get_folder(self, folder_name):
         """Step to enter to folder."""
         self.app.page_containers.table_objects.row(
             name=folder_name).link_folder.click()
@@ -136,15 +136,16 @@ class ContainersSteps(BaseSteps):
 
     @step
     @pom.timeit('Step')
-    def container_info(self, container_name):
+    def get_container_info(self, container_name):
         """Step to get container info."""
         with self.app.page_containers.list_containers.row(
                 container_name) as row:
-            return {
+            container_info = {
                 'objects_count': row.label_objects_count.value,
                 'size': row.label_size.value,
                 'created_date': row.label_created_date.value,
                 'public_url': row.link_public_url.href}
+            return container_info
 
     @step
     @pom.timeit('Step')

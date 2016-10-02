@@ -99,6 +99,7 @@ Deep to structure
 .. toctree::
    :maxdepth: 1
 
+   steps_concept
    common_fixtures
    glance
    horizon

@@ -18,6 +18,7 @@ Users steps.
 # limitations under the License.
 
 import pom
+from hamcrest import assert_that, equal_to
 from waiting import wait
 
 from stepler.third_party.steps_checker import step
@@ -28,7 +29,7 @@ from .base import BaseSteps
 class UsersSteps(BaseSteps):
     """Users steps."""
 
-    def page_users(self):
+    def _page_users(self):
         """Open users page if it isn't opened."""
         return self._open(self.app.page_users)
 
@@ -37,7 +38,7 @@ class UsersSteps(BaseSteps):
     def create_user(self, username, password, project=None, role=None,
                     check=True):
         """Step to create user."""
-        page_users = self.page_users()
+        page_users = self._page_users()
 
         page_users.button_create_user.click()
         with page_users.form_create_user as form:
@@ -62,7 +63,7 @@ class UsersSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_user(self, username, check=True):
         """Step to delete user."""
-        page_users = self.page_users()
+        page_users = self._page_users()
 
         with page_users.table_users.row(name=username).dropdown_menu as menu:
             menu.button_toggle.click()
@@ -78,7 +79,7 @@ class UsersSteps(BaseSteps):
     @pom.timeit('Step')
     def delete_users(self, usernames, check=True):
         """Step to delete users."""
-        page_users = self.page_users()
+        page_users = self._page_users()
 
         for username in usernames:
             page_users.table_users.row(name=username).checkbox.select()
@@ -96,7 +97,7 @@ class UsersSteps(BaseSteps):
     @pom.timeit('Step')
     def change_user_password(self, username, new_password, check=True):
         """Step to change user password."""
-        page_users = self.page_users()
+        page_users = self._page_users()
 
         with page_users.table_users.row(name=username).dropdown_menu as menu:
             menu.button_toggle.click()
@@ -107,14 +108,15 @@ class UsersSteps(BaseSteps):
             form.field_confirm_password.value = new_password
             form.submit()
 
-        if check:
-            self.close_notification('success')
+            if check:
+                self.close_notification('success')
+                form.wait_for_absence()
 
     @step
     @pom.timeit('Step')
     def filter_users(self, query, check=True):
         """Step to filter users."""
-        page_users = self.page_users()
+        page_users = self._page_users()
 
         page_users.field_filter_users.value = query
         page_users.button_filter_users.click()
@@ -135,7 +137,7 @@ class UsersSteps(BaseSteps):
     @pom.timeit('Step')
     def sort_users(self, reverse=False, check=True):
         """Step to sort users."""
-        with self.page_users().table_users as table:
+        with self._page_users().table_users as table:
 
             table.header.cell('name').click()
             if reverse:
@@ -153,7 +155,7 @@ class UsersSteps(BaseSteps):
 
                     return usernames == expected_usernames
 
-            wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
+                wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
 
     @step
     @pom.timeit('Step')
@@ -166,7 +168,7 @@ class UsersSteps(BaseSteps):
             curr_status = 'Yes'
             need_status = 'No'
 
-        with self.page_users().table_users.row(name=username) as row:
+        with self._page_users().table_users.row(name=username) as row:
             assert row.cell('enabled').value == curr_status
 
             with row.dropdown_menu as menu:
@@ -175,13 +177,13 @@ class UsersSteps(BaseSteps):
 
             if check:
                 self.close_notification('success')
-                assert row.cell('enabled').value == need_status
+                assert_that(row.cell('enabled').value, equal_to(need_status))
 
     @step
     @pom.timeit('Step')
     def update_user(self, username, new_username, check=True):
         """Step to update user."""
-        page_users = self.page_users()
+        page_users = self._page_users()
 
         with page_users.table_users.row(name=username).dropdown_menu as menu:
             menu.button_toggle.click()

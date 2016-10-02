@@ -61,6 +61,6 @@ class FlavorSteps(BaseSteps):
         wait(predicate, timeout_seconds=timeout)
 
     @step
-    def find(self, *args, **kwgs):
-        """Step to find flavor."""
+    def get_flavor(self, *args, **kwgs):
+        """Step to get flavor."""
         return self._client.find(*args, **kwgs)
