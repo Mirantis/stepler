@@ -428,3 +428,31 @@ epub_exclude_files = ['search.html']
 # If false, no index is generated.
 #
 # epub_use_index = True
+
+
+def setup(app):
+    """Customize function args retrieving to get args under decorator."""
+    import inspect
+    from functools import partial
+    from sphinx.ext import autodoc
+
+    orig_getargspec = autodoc.getargspec
+
+    def get_orig_func(func):
+        """Dive into decorators and retrieve original function."""
+        if func.__name__ != func.func_code.co_name:
+            for cell in func.func_closure:
+                obj = cell.cell_contents
+                if inspect.isfunction(obj):
+                    if func.__name__ == obj.func_code.co_name:
+                        return obj
+                    else:
+                        return get_orig_func(obj)
+        return func
+
+    def patched_getargspec(func):
+        if type(func) is not partial:
+            func = get_orig_func(func)
+        return orig_getargspec(func)
+
+    autodoc.getargspec = patched_getargspec
