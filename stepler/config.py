@@ -65,6 +65,7 @@ CURRENT_CINDER_VERSION = '2'
 NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
 
 # SERVICES
+KEYSTONE = 'keystone'
 NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
 
@@ -90,6 +91,9 @@ VOLUME_ATTACH_TIMEOUT = 60
 
 # Glance
 IMAGE_AVAILABLE_TIMEOUT = 5 * 60
+
+# Neutron
+ADMIN_INTERNAL_NETWORK_NAME = 'admin_internal_net'
 
 # Nova
 CREDENTIALS_PREFIX = 'stepler_credentials_'
