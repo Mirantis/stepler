@@ -1,7 +1,7 @@
 """
---------------
-Keystone steps
---------------
+---------------------
+Keystone tests config
+---------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +17,13 @@ Keystone steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from .domains import *  # noqa
-from .groups import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .users import *  # noqa
-
-__all__ = [
-    'DomainSteps',
-    'GroupSteps',
-    'ProjectSteps',
-    'RoleSteps',
-    'UserSteps'
-]
+AUTH_DATA = {
+    'openldap1': ('user01', '1111'),
+    'openldap2': ('user1', '1111'),
+    'AD2': ('user01', 'qwerty123!')
+}
+LDAP_DOMAIN_NAMES = AUTH_DATA.keys()
+LDAP_DOMAIN_GROUPS = {
+    'AD2': 'Administrators',
+    'openldap2': 'group01'
+}
