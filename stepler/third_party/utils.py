@@ -1,7 +1,7 @@
 """
-Utils.
-
-@author: schipiga@mirantis.com
+-----
+Utils
+-----
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ Utils.
 # limitations under the License.
 
 import email.utils
+import inspect
 import logging
 import os
 import tempfile
@@ -26,12 +27,17 @@ import uuid
 import requests
 
 from stepler import config
-from stepler.third_party.steps_checker import step
 
 LOGGER = logging.getLogger(__name__)
 
+__all__ = [
+    'generate_ids',
+    'generate_files',
+    'get_file_path',
+    'get_unwrapped_func'
+]
 
-@step
+
 def generate_ids(prefix=None, postfix=None, count=1, length=None):
     """Generate unique identificators, based on uuid.
 
@@ -55,7 +61,6 @@ def generate_ids(prefix=None, postfix=None, count=1, length=None):
         yield uid
 
 
-@step
 def generate_files(prefix=None, postfix=None, folder=None, count=1, size=1024):
     """Generate files with unique names.
 
@@ -124,3 +129,29 @@ def get_file_path(url, name=None):
 
     response.close()
     return file_path
+
+
+def get_unwrapped_func(func):
+    """Get original function under decorator.
+
+    Decorator hides original function inside itself. But in some cases it's
+    important to get access to original function, for ex: for documentation.
+
+    Args:
+        func (function): function that can be potentially a decorator which
+            hides original function
+
+        function: unwrapped function or the same function
+    """
+    if not inspect.isfunction(func) and not inspect.ismethod(func):
+        return func
+
+    if func.__name__ != func.func_code.co_name:
+        for cell in func.func_closure:
+            obj = cell.cell_contents
+            if inspect.isfunction(obj):
+                if func.__name__ == obj.func_code.co_name:
+                    return obj
+                else:
+                    return get_unwrapped_func(obj)
+    return func
