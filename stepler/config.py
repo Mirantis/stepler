@@ -35,6 +35,8 @@ CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-d
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa
 
+ADMIN_INTERNAL_NETWORK_NAME = 'admin_internal_net'
+
 # TIMEOUTS (in seconds)
 POLLING_TIME = .01
 
