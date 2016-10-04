@@ -7,3 +7,11 @@ Neutron
 
 .. automodule:: stepler.neutron.steps
    :members:
+
+
+-------------
+Neutron tests
+-------------
+
+.. automodule:: stepler.neutron.tests.test_ovs_restart
+   :members:
