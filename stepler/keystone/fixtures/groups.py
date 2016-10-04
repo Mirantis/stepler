@@ -1,9 +1,7 @@
 """
---------------
-Keystone steps
---------------
+Group fixtures.
 
-@author: mshalamov@mirantis.com
+@author: ssokolov@mirantis.com
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,17 +17,16 @@ Keystone steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 
-from .domains import *  # noqa
-from .groups import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .users import *  # noqa
+from stepler.keystone.steps import GroupSteps
 
 __all__ = [
-    'DomainSteps',
-    'GroupSteps',
-    'ProjectSteps',
-    'RoleSteps',
-    'UserSteps'
+    'group_steps'
 ]
+
+
+@pytest.fixture
+def group_steps(keystone_client):
+    """Fixture to get group steps."""
+    return GroupSteps(keystone_client.groups)

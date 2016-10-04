@@ -31,15 +31,15 @@ __all__ = [
 
 
 @pytest.fixture
-def admin(user_steps):
-    """Fixture to get admin."""
-    return user_steps.get_user(name='admin')
-
-
-@pytest.fixture
 def user_steps(keystone_client):
     """Fixture to get user steps."""
     return UserSteps(keystone_client.users)
+
+
+@pytest.fixture
+def admin(user_steps):
+    """Fixture to get admin."""
+    return user_steps.find_user(name='admin')
 
 
 @pytest.yield_fixture
@@ -50,8 +50,8 @@ def create_user(user_steps):
     """
     users = []
 
-    def _create_user(user_name, password):
-        user = user_steps.create_user(user_name, password)
+    def _create_user(user_name, password, domain='default'):
+        user = user_steps.create_user(user_name, password, domain=domain)
         users.append(user)
         return user
 
