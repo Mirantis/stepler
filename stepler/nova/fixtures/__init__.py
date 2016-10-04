@@ -44,7 +44,9 @@ __all__ = sorted([  # sort for documentation
     'security_group_steps',
 
     'create_server',
+    'create_server_context',
     'create_servers',
+    'create_servers_context',
     'server',
     'server_steps',
     'ssh_proxy_data'
