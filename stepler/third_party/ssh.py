@@ -89,10 +89,23 @@ class SshClient(object):
                  pkey=None,
                  timeout=None,
                  proxy_cmd=None):
-        """Constructor."""
+        """Constructor.
+
+        Args:
+            host (str): ip to connect
+            port (int, optional): ssh port
+            username (str): username
+            password (str, optional): password
+            pkey (str, optional): provate key content
+            timeout (int, optional): connection timeout
+            proxy_cmd (str, optional): ssh proxy command
+        """
         self._host = host
         self._port = port
-        self._pkey = paramiko.RSAKey.from_private_key(six.StringIO(pkey))
+        if pkey:
+            self._pkey = paramiko.RSAKey.from_private_key(six.StringIO(pkey))
+        else:
+            self._pkey = None
         self._timeout = timeout
         self._username = username
         self._password = password
