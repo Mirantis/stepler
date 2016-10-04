@@ -30,6 +30,7 @@ __all__ = sorted([  # sort for documentation
     'create_flavor',
     'flavor',
     'flavor_steps',
+    'tiny_flavor',
 
     'nova_create_floating_ip',
     'nova_floating_ip',
@@ -60,5 +61,5 @@ __all__ = sorted([  # sort for documentation
     'get_ssh_proxy_cmd',
     'server',
     'server_steps',
-    'servers_cleanup'
+    'servers_cleanup',
 ])

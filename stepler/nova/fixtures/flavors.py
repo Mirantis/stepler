@@ -19,13 +19,15 @@ Flavor fixtures
 
 import pytest
 
+from stepler import config
 from stepler.nova.steps import FlavorSteps
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_flavor',
     'flavor',
-    'flavor_steps'
+    'flavor_steps',
+    'tiny_flavor',
 ]
 
 
@@ -83,3 +85,16 @@ def flavor(create_flavor):
     """
     flavor_name = next(generate_ids('flavor'))
     return create_flavor(flavor_name, ram=1024, vcpus=1, disk=5)
+
+
+@pytest.fixture
+def tiny_flavor(flavor_steps):
+    """Function fixture to find tiny flavor before test.
+
+    Args:
+        flavor_steps (object): instantiated flavor steps
+
+    Returns:
+        object: tiny flavor
+    """
+    return flavor_steps.get_flavor(name=config.TINY_FLAVOR)
