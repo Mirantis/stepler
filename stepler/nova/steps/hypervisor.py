@@ -81,3 +81,28 @@ class HypervisorSteps(base.BaseSteps):
             assert_that(capacity, greater_than(0))
 
         return capacity
+
+    @steps_checker.step
+    def get_another_hypervisor(self, server, check=True):
+        """Step to get any hypervisor except server's.
+
+        Args:
+            server (obj): nova server
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            obj: nova hypervisor
+
+        Raises:
+            ValueError: if there is no one hypervisor except server's
+        """
+        server_hypervisor = getattr(server,
+                                    'OS-EXT-SRV-ATTR:hypervisor_hostname')
+
+        for hypervisor in self.get_hypervisors():
+            if hypervisor.hypervisor_hostname != server_hypervisor:
+                return hypervisor
+        else:
+            if check:
+                raise ValueError(
+                    'No available hypervisors expect ' + server_hypervisor)
