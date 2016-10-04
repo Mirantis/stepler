@@ -1,7 +1,7 @@
 """
-User fixtures.
-
-@author: mshalamov@mirantis.com
+-------------
+User fixtures
+-------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,27 +31,48 @@ __all__ = [
 
 
 @pytest.fixture
-def admin(user_steps):
-    """Fixture to get admin."""
-    return user_steps.get_user(name='admin')
+def user_steps(keystone_client):
+    """Fixture to get user steps.
+
+    Args:
+        keystone_client (object): instantiated keystone client
+
+    Returns:
+        stepler.keystone.steps.UserSteps: instantiated user steps
+    """
+    return UserSteps(keystone_client.users)
 
 
 @pytest.fixture
-def user_steps(keystone_client):
-    """Fixture to get user steps."""
-    return UserSteps(keystone_client.users)
+def admin(user_steps):
+    """Fixture to get admin.
+
+    Args:
+        user_steps (object): instantiated user steps
+
+    Returns:
+        object: user 'admin'
+    """
+    return user_steps.get_user(name='admin')
 
 
 @pytest.yield_fixture
 def create_user(user_steps):
     """Fixture to create user with options.
 
-    Can be called several times during test.
+    Can be called several times during a test.
+    After the test it destroys all created users.
+
+    Args:
+        user_steps (object): instantiated user steps
+
+    Yields:
+        function: function to create user with options
     """
     users = []
 
-    def _create_user(user_name, password):
-        user = user_steps.create_user(user_name, password)
+    def _create_user(user_name, password, *args, **kwgs):
+        user = user_steps.create_user(user_name, password, *args, **kwgs)
         users.append(user)
         return user
 
@@ -63,7 +84,14 @@ def create_user(user_steps):
 
 @pytest.fixture
 def user(create_user):
-    """Fixture to create user with default options before test."""
+    """Fixture to create user with default options before test.
+
+    Args:
+        create_user (function): function to create user with options
+
+    Returns:
+        object: user
+    """
     user_name = next(generate_ids('user'))
     password = next(generate_ids('password'))
     return create_user(user_name, password)

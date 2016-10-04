@@ -20,6 +20,7 @@ Neutron fixtures.
 from neutronclient.v2_0.client import Client
 import pytest
 
+from stepler import config
 from stepler.neutron.steps import NeutronSteps
 from stepler.third_party.utils import generate_ids
 
@@ -27,7 +28,8 @@ __all__ = [
     'create_network',
     'network',
     'neutron_client',
-    'neutron_steps'
+    'neutron_steps',
+    'admin_internal_network'
 ]
 
 
@@ -67,3 +69,17 @@ def network(create_network):
     """Fixture to create neutron with default options before test."""
     network_name = next(generate_ids('network'))
     return create_network(network_name)
+
+
+@pytest.fixture
+def admin_internal_network(neutron_steps):
+    """
+    Function fixture to find admin internal network before test.
+
+    Args:
+        neutron_steps (object): instantiated neutron steps
+
+    Returns:
+        object: admin internal network
+    """
+    return neutron_steps.get_network(name=config.ADMIN_INTERNAL_NETWORK_NAME)
