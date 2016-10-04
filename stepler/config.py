@@ -32,3 +32,6 @@ FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases
 
 # TODO (schipiga): copied from mos-integration-tests, need refactor.
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa
+
+ADMIN_NETWORK_NAME = 'admin_internal_net'
+
