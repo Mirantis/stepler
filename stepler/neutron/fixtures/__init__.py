@@ -23,5 +23,6 @@ __all__ = sorted([  # sort for documentation
     'create_network',
     'network',
     'neutron_client',
-    'neutron_steps'
+    'neutron_steps',
+    'admin_network'
 ])
