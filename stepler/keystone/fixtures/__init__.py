@@ -18,6 +18,7 @@ Keystone fixtures
 # limitations under the License.
 
 from .domains import *  # noqa
+from .groups import *  # noqa
 from .keystone import *  # noqa
 from .projects import *  # noqa
 from .roles import *  # noqa
@@ -27,6 +28,8 @@ __all__ = sorted([  # sort for documentation
     'create_domain',
     'domain_steps',
     'domain',
+
+    'group_steps',
 
     'keystone_client',
 
