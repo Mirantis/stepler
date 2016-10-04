@@ -1,0 +1,15 @@
+{
+  'cloud_management': {
+    'driver': 'fuel',
+    'args': {
+      'address': '10.109.0.2',
+      'username': 'root'
+    }
+  },
+  'power_management': {
+    'driver': 'libvirt',
+    'args': {
+      'connection_uri': "qemu+unix:///system"
+    }
+  }
+}

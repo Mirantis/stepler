@@ -1,7 +1,7 @@
 """
-----------------
-Neutron fixtures
-----------------
+------------------
+os_faults fixtures
+------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,23 +17,9 @@ Neutron fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .neutron import *  # noqa
-from .networks import *  # noqa
-from .routers import *  # noqa
-from .subnets import *  # noqa
+from .faults import *  # noqa
 
 __all__ = sorted([  # sort for documentation
-    'create_network',
-    'network',
-    'public_network',
-    'create_subnet',
-    'subnet',
-    'create_router',
-    'router',
-    'add_router_interfaces',
-    'neutron_client',
-    'network_steps',
-    'router_steps',
-    'subnet_steps',
-    'admin_internal_network'
+    'os_faults_client',
+    'os_faults_steps'
 ])
