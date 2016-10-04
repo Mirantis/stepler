@@ -31,6 +31,24 @@ class DomainSteps(BaseSteps):
     """Domain steps."""
 
     @step
+    def get_domains(self, check=True):
+        """Step to get domains."""
+        domains = self._client.list()
+
+        if check:
+            assert domains
+        return domains
+
+    @step
+    def find_domain(self, name, check=True):
+        """Step to find domain."""
+        domain = self._client.find(name=name)
+
+        if check:
+            assert domain
+        return domain
+
+    @step
     def create_domain(self, domain_name, check=True):
         """Step to create domain."""
         domain = self._client.create(domain_name)

@@ -42,6 +42,7 @@ __all__ = sorted([  # sort for documentation
     'create_domain',
     'domain_steps',
     'domain',
+    'group_steps',
     'keystone_client',
     'create_project',
     'project_steps',

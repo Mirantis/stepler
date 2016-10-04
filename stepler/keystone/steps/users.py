@@ -31,9 +31,10 @@ class UserSteps(BaseSteps):
     """User steps."""
 
     @step
-    def create_user(self, user_name, password, check=True):
+    def create_user(self, user_name, password, domain='default', check=True):
         """Step to create user."""
-        user = self._client.create(user_name, password)
+        user = self._client.create(name=user_name, password=password,
+                                   domain=domain)
 
         if check:
             self.check_user_presence(user)
@@ -49,21 +50,26 @@ class UserSteps(BaseSteps):
             self.check_user_presence(user, present=False)
 
     @step
-    def get_user(self, *args, **kwgs):
-        """Step to find role."""
-        return self._client.find(*args, **kwgs)
+    def find_user(self, name, domain='default', group=None, check=True):
+        """Step to find user by name."""
+        user = self._client.find(name=name, domain=domain, group=group)
+
+        if check:
+            assert user
+        return user
 
     @step
-    def get_users(self, check=True):
-        """Step to get projects."""
-        users = list(self._client.list())
+    def get_users(self, domain='default', group=None, check=True):
+        """Step to get users."""
+        users = self._client.list(domain=domain, group=group)
+
         if check:
             assert users
         return users
 
     @step
     def check_user_presence(self, user, present=True, timeout=0):
-        """Check step that user is present."""
+        """Step to check that user is present."""
         def predicate():
             try:
                 self._client.get(user.id)
