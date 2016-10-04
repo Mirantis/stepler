@@ -42,10 +42,12 @@ __all__ = sorted([  # sort for documentation
     'glance_client',
     'glance_steps',
     'ubuntu_image',
+    'cirros_image',
 
     'create_domain',
     'domain_steps',
     'domain',
+    'group_steps',
     'keystone_client',
     'create_project',
     'project_steps',
@@ -69,10 +71,13 @@ __all__ = sorted([  # sort for documentation
     'add_router_interfaces',
     'neutron_client',
     'neutron_steps',
+    'admin_internal_network',
 
     'create_flavor',
     'flavor',
     'flavor_steps',
+    'tiny_flavor',
+
     'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
