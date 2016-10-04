@@ -60,6 +60,7 @@ __all__ = sorted([  # sort for documentation
     'create_domain',
     'domain_steps',
     'domain',
+    'group_steps',
     'keystone_client',
     'create_project',
     'project_steps',
@@ -89,10 +90,13 @@ __all__ = sorted([  # sort for documentation
     'router_steps',
     'subnet_steps',
     'port_steps',
+    'admin_internal_network',
 
     'create_flavor',
     'flavor',
     'flavor_steps',
+    'tiny_flavor',
+
     'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
