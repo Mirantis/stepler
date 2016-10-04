@@ -1,7 +1,7 @@
 """
-----------------
-Neutron fixtures
-----------------
+--------------
+Group fixtures
+--------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,23 +17,23 @@ Neutron fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .neutron import *  # noqa
-from .networks import *  # noqa
-from .routers import *  # noqa
-from .subnets import *  # noqa
+import pytest
 
-__all__ = sorted([  # sort for documentation
-    'create_network',
-    'network',
-    'public_network',
-    'create_subnet',
-    'subnet',
-    'create_router',
-    'router',
-    'add_router_interfaces',
-    'neutron_client',
-    'network_steps',
-    'router_steps',
-    'subnet_steps',
-    'admin_internal_network'
-])
+from stepler.keystone.steps import GroupSteps
+
+__all__ = [
+    'group_steps'
+]
+
+
+@pytest.fixture
+def group_steps(keystone_client):
+    """Fixture to get group steps.
+
+    Args:
+        keystone_client (object): instantiated keystone client
+
+    Returns:
+        stepler.keystone.steps.GroupSteps: instantiated group steps
+    """
+    return GroupSteps(keystone_client.groups)
