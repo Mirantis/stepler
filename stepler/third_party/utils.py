@@ -25,8 +25,12 @@ import tempfile
 import uuid
 
 import requests
+import six
 
 from stepler import config
+
+if six.PY3:
+    basestring = str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +38,8 @@ __all__ = [
     'generate_ids',
     'generate_files',
     'get_file_path',
-    'get_unwrapped_func'
+    'is_iterable',
+    'get_unwrapped_func',
 ]
 
 
@@ -156,3 +161,23 @@ def get_unwrapped_func(func):
                 else:
                     return get_unwrapped_func(obj)
     return func
+
+
+def is_iterable(obj):
+    """Define whether object is iterable or no (skip strings).
+
+    Args:
+        obj (object): obj to define whether it's iterable or no
+
+    Returns:
+        bool: True or False
+    """
+    if isinstance(obj, basestring):
+        return False
+
+    try:
+        iter(obj)
+        return True
+
+    except TypeError:
+        return False
