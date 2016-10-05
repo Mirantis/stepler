@@ -32,6 +32,7 @@ import hamcrest
 import stepler
 
 __all__ = [
+    'pytest_addoption',
     'pytest_collection_modifyitems',
     'pytest_configure',
     'step'
@@ -60,13 +61,14 @@ RAISE_WORDS = ('assert_that',
                'wait')
 
 # step validation stages
-DOCSTRING_PRESENCE = 0
 ACTION_PRESENCE = 1
 IF_CHECK_PRESENCE = 2
 RAISE_PRESENCE = 3
-LAST_LINE_CHECK = 4
+RETURN_CHECK = 4
 
 DEFAULT_VALUE = object()
+
+DOC_LINK = ' See http://stepler.readthedocs.io/steps_concept.html'
 
 
 def step(func):
@@ -83,8 +85,18 @@ def step(func):
     return func
 
 
+def pytest_addoption(parser):
+    """Hook to register checker options."""
+    parser.addoption("--disable-steps-checker", action="store_true",
+                     help="disable steps checker (warning will be shown)")
+
+
 def pytest_collection_modifyitems(config, items):
     """Hook to detect forbidden calls inside test."""
+    if config.option.disable_steps_checker:
+        config.warn('P1', 'Permitted calls checker is disabled!')
+        return
+
     errors = []
     for item in items:
         fixtures = item.funcargnames
@@ -92,17 +104,10 @@ def pytest_collection_modifyitems(config, items):
 
         test_name = item.function.__name__
         file_name = item.function.__module__
-        source_lines = inspect.getsourcelines(item.function)[0]
+        func_lines = _get_func_lines(item.function, check=False)
 
-        while source_lines:
-            def_line = source_lines.pop(0).strip()
-            if def_line.startswith('def '):
-                break
-
-        for line in source_lines:
+        for line in func_lines:
             line = line.strip()
-            if line.startswith('#'):
-                continue
 
             result = REGEX_CALL.search(line)
             if not result:
@@ -112,7 +117,8 @@ def pytest_collection_modifyitems(config, items):
             if call_name not in permitted_calls:
 
                 error = ("Calling {!r} isn't allowed in test {!r}, "
-                         "module {!r}".format(call_name, test_name, file_name))
+                         "module {!r}. {}".format(call_name, test_name,
+                                                  file_name, DOC_LINK))
                 errors.append(error)
 
     if errors:
@@ -123,6 +129,10 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_configure(config):
     """Hook to check steps consistency."""
+    if config.option.disable_steps_checker:
+        config.warn('P1', 'Step consistency checker is disabled!')
+        return
+
     for step_cls in _get_step_classes():
         for attr_name in dir(step_cls):
 
@@ -139,7 +149,8 @@ def pytest_configure(config):
 
             elif step_func.__name__.startswith('check_'):
                 _validate_check_step(step_func)
-            else:  # set step to change a resource
+
+            else:  # change step
                 _validate_change_step(step_func)
 
 
@@ -148,28 +159,49 @@ def _validate_get_step(func):
     if 'check' in inspect.getargspec(func).args:
         _check_arg(func, 'check', True)
 
-    step_last_line = inspect.getsourcelines(func)[0][-1].strip()
-    assert step_last_line.startswith('return'), \
-        'Last line must be "return some_var"' + func_location
+    internal_def = False
+    func_lines = _get_func_lines(func)
+    for line in func_lines:
+        sline = line.strip()
+
+        if sline.startswith('def '):
+            internal_def = True
+
+        if internal_def or sline.startswith('return'):
+            break
+    else:
+        raise AssertionError(
+            'Step must return something' + func_location + DOC_LINK)
+
+    step_last_line = func_lines[-1].strip()
     assert not step_last_line.endswith('return'), \
-        'Last line must be "return some_var"' + func_location
+        'Step must return something' + func_location + DOC_LINK
     assert not step_last_line.endswith('None'), \
-        'Last line must be "return some_var"' + func_location
+        'Step must return something' + func_location + DOC_LINK
 
 
 def _validate_check_step(func):
     func_location = _get_func_location(func)
-    _check_arg(func, 'timeout', 0)
+    func_lines = _get_func_lines(func)
 
-    step_last_line = inspect.getsourcelines(func)[0][-1].strip()
-    assert not step_last_line.startswith('return'), \
-        'Last line must not contain "return"' + func_location
+    internal_def = False
+    for line in func_lines:
+        sline = line.strip()
 
-    for word in RAISE_WORDS:
-        if word in step_last_line:
-            break
+        if sline.startswith('def '):
+            internal_def = True
+
+        if not internal_def and sline.startswith('return'):
+            raise AssertionError(
+                'Step must not return anything' + func_location + DOC_LINK)
+
+    for line in func_lines:
+        for word in RAISE_WORDS:
+            if word in line:
+                return
     else:
-        raise AssertionError("No raise error" + func_location)
+        raise AssertionError(
+            "No call of method to raise exception" + func_location + DOC_LINK)
 
 
 def _validate_change_step(func):
@@ -200,35 +232,30 @@ def _get_step_classes():
 
 
 def _check_change_step_format(func):
-    func_lines = inspect.getsourcelines(func)[0]
-    func_lines = [line.rstrip() for line in func_lines
-                  if line.rstrip() and not line.strip().startswith('#')]
+    func_lines = _get_func_lines(func)
 
     last_line = func_lines[-1].rstrip()
     func_lines = iter(func_lines)
 
     func_location = _get_func_location(func)
     stage_errors = {
-        DOCSTRING_PRESENCE: "No docstring" + func_location,
-        ACTION_PRESENCE: "No action before 'if check:'" + func_location,
-        IF_CHECK_PRESENCE: "No 'if check:'" + func_location,
-        RAISE_PRESENCE: "No raise error under 'if check:'" + func_location,
-        LAST_LINE_CHECK: "Can't find line " + last_line + func_location
+        ACTION_PRESENCE: "No action before 'if check:'" + func_location +
+                         DOC_LINK,
+        IF_CHECK_PRESENCE: "No 'if check:'" + func_location + DOC_LINK,
+        RAISE_PRESENCE: "No call of method to raise exception under "
+                        "'if check:'" + func_location + DOC_LINK,
+        RETURN_CHECK: "Can't find line " + last_line + func_location
     }
-    stage = DOCSTRING_PRESENCE
+    stage = ACTION_PRESENCE
     if_check_indent = None
     line_indent = None
+    internal_def = False
 
     while True:
         try:
             line = func_lines.next()
         except StopIteration:
             raise AssertionError(stage_errors[stage])
-
-        if stage == DOCSTRING_PRESENCE:
-            if line.endswith('"""'):
-                stage = ACTION_PRESENCE
-                continue
 
         if stage == ACTION_PRESENCE:
             line = line.strip()
@@ -248,25 +275,46 @@ def _check_change_step_format(func):
             if line_indent > if_check_indent:
                 for word in RAISE_WORDS:
                     if word in sline:
-                        stage = LAST_LINE_CHECK
+                        stage = RETURN_CHECK
                         break
 
-        if stage == LAST_LINE_CHECK:
-            if line == last_line:
-                sline = line.strip()
-                line_indent = len(line) - len(sline)
+        if stage == RETURN_CHECK:
+            sline = line.strip()
+            if sline.startswith('def '):
+                internal_def = True
 
-                if line_indent > if_check_indent:
+            line_indent = len(line) - len(sline)
+
+            if line_indent > if_check_indent:
+                if not internal_def:
                     assert not sline.startswith('return'), \
-                        'Last line must not contain "return"' + func_location
-                else:
-                    assert sline.startswith('return'), \
-                        'Last line must be "return some_var"' + func_location
-                    assert not sline.endswith('return'), \
-                        'Last line must be "return some_var"' + func_location
-                    assert not sline.endswith('None'), \
-                        'Last line must be "return some_var"' + func_location
+                        ('Step must not return anything under "if check:"' +
+                         func_location + DOC_LINK)
+            else:
+                assert sline.startswith('return'), \
+                    'Step must return something' + func_location + DOC_LINK
+                assert not sline.endswith('return'), \
+                    'Step must return something' + func_location + DOC_LINK
+                assert not sline.endswith('None'), \
+                    'Step must return something' + func_location + DOC_LINK
+
+            if line == last_line:
                 break
+
+
+def _get_func_lines(func, check=True):
+    func_lines = inspect.getsourcelines(func)[0]
+    func_lines = [line.rstrip() for line in func_lines
+                  if line.rstrip() and not line.strip().startswith('#')]
+
+    while func_lines:  # loop until end of docstring
+        line = func_lines.pop(0).strip()
+        if line.endswith('"""'):
+            break
+
+    if check:
+        assert func_lines, "No code" + _get_func_location(func)
+    return func_lines
 
 
 def _get_func_location(func):
