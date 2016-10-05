@@ -5,7 +5,6 @@ Glance conftest
 
 Contains fixtures specific for glance.
 
-@author: schipiga@mirantis.com
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
