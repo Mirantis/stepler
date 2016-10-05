@@ -24,14 +24,23 @@ import tempfile
 import uuid
 
 import requests
+import six
 
 from stepler import config
-from stepler.third_party.steps_checker import step
+
+__all__ = [
+    'generate_ids',
+    'generate_files',
+    'get_file_path',
+    'is_iterable'
+]
 
 LOGGER = logging.getLogger(__name__)
 
+if six.PY3:
+    basestring = str
 
-@step
+
 def generate_ids(prefix=None, postfix=None, count=1, length=None):
     """Generate unique identificators, based on uuid.
 
@@ -55,7 +64,6 @@ def generate_ids(prefix=None, postfix=None, count=1, length=None):
         yield uid
 
 
-@step
 def generate_files(prefix=None, postfix=None, folder=None, count=1, size=1024):
     """Generate files with unique names.
 
@@ -124,3 +132,23 @@ def get_file_path(url, name=None):
 
     response.close()
     return file_path
+
+
+def is_iterable(obj):
+    """Define whether object is iterable or no (skip strings).
+
+    Args:
+        obj (object): obj to define whether it's iterable or no
+
+    Returns:
+        bool: True or False
+    """
+    if isinstance(obj, basestring):
+        return False
+
+    try:
+        iter(obj)
+        return True
+
+    except TypeError:
+        return False
