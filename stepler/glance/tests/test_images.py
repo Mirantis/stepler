@@ -2,8 +2,6 @@
 -----------
 Image tests
 -----------
-
-@author: schipiga@mirantis.com
 """
 
 #    Copyright 2016 Mirantis, Inc.
@@ -20,28 +18,27 @@ Image tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-# TODO(schipiga): Remove test_upload_image because steps of current test
-# is executed in another test scenarios
-# @pytest.mark.testrail_id('XXXXX')
-def test_upload_image(ubuntu_image):
-    """Check that image can be uploaded."""
+import pytest
 
 
-# @pytest.mark.testrail_id('XXXXX')
+@pytest.mark.testrail_id(1680099)
 def test_share_glance_image(ubuntu_image, project, glance_steps):
-    """Check sharing glance image to another project.
+    """**Scenario:** Check sharing glance image to another project.
 
-    Scenario:
+    **Setup:**
 
-    #. Create image from `image_file`
-    #. Check that image is present in list and image status is `active`
-    #. Bind another project to image
-    #. Check that binded project id is present in image member list
-    #. Unbind project from image
-    #. Check that project id is not present in image member list
-    #. Delete image
-    #. Check that image deleted
+        #. Create ubuntu image
+        #. Create project
+
+    **Steps:**
+
+        #. Bind another project to image
+        #. Unbind project from image
+
+    **Teardown:**
+
+        #. Delete project
+        #. Delete ubuntu image
     """
     glance_steps.bind_project(ubuntu_image, project)
     glance_steps.unbind_project(ubuntu_image, project)
