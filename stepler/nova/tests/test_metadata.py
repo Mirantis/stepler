@@ -29,8 +29,12 @@ def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
     network = network_steps.get_network_by_name('admin_internal_net')
 
     for server_name in generate_ids('server', count=1):
-        server = server_steps.create_server(server_name, ubuntu_image, flavor,
-                                            network, keypair, [security_group])
+        server = server_steps.create_server(server_name,
+                                            image=ubuntu_image,
+                                            flavor=flavor,
+                                            networks=[network],
+                                            keypair=keypair,
+                                            security_groups=[security_group])
 
         server_steps.attach_floating_ip(server, nova_floating_ip)
         server_steps.check_ssh_connect(server, keypair, username='ubuntu',
