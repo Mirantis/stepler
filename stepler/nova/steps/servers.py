@@ -42,9 +42,9 @@ class ServerSteps(BaseSteps):
     """Nova steps."""
 
     @step
-    def create_server(self, server_name, image, flavor, network, keypair=None,
-                      security_groups=None, availability_zone='nova',
-                      block_device_mapping=None,
+    def create_server(self, server_name, image, flavor, networks=(), ports=(),
+                      keypair=None, security_groups=None,
+                      availability_zone='nova', block_device_mapping=None,
                       check=True):
         """Step to create server.
 
@@ -52,7 +52,8 @@ class ServerSteps(BaseSteps):
             server_name (str): name of created server
             image (object|None): image or None (to use volume)
             flavor (object): flavor
-            network (dict): network
+            networks (list): networks objects
+            ports (list): ports objects
             keypair (object): keypair
             security_groups (list|tuple): security groups
             availability_zone (str): name of availability zone
@@ -65,10 +66,15 @@ class ServerSteps(BaseSteps):
         sec_groups = [s.id for s in security_groups or []]
         image_id = None if image is None else image.id
         keypair_id = None if keypair is None else keypair.id
+        nics = []
+        for network in networks:
+            nics.append({'net-id': network['id']})
+        for port in ports:
+            nics.append({'port-id': port['id']})
         server = self._client.create(name=server_name,
                                      image=image_id,
                                      flavor=flavor.id,
-                                     nics=[{'net-id': network['id']}],
+                                     nics=nics,
                                      key_name=keypair_id,
                                      availability_zone=availability_zone,
                                      security_groups=sec_groups,
@@ -79,8 +85,8 @@ class ServerSteps(BaseSteps):
         return server
 
     @step
-    def create_servers(self, server_names, image, flavor, network,
-                       keypair=None, security_groups=None,
+    def create_servers(self, server_names, image, flavor, networks=(),
+                       ports=(), keypair=None, security_groups=None,
                        availability_zone='nova', block_device_mapping=None,
                        check=True):
         """Step to create servers.
@@ -89,7 +95,8 @@ class ServerSteps(BaseSteps):
             server_names (list): names of created servers
             image (object|None): image or None (to use volume)
             flavor (object): flavor
-            network (dict): network
+            networks (list): networks objects
+            ports (list): ports objects
             keypair (object): keypair
             security_groups (list|tuple): security groups
             availability_zone (str): name of availability zone
@@ -105,7 +112,8 @@ class ServerSteps(BaseSteps):
                 server_name,
                 image=image,
                 flavor=flavor,
-                network=network,
+                networks=networks,
+                ports=ports,
                 keypair=keypair,
                 security_groups=security_groups,
                 availability_zone=availability_zone,

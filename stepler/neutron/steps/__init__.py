@@ -20,11 +20,14 @@ Neutron steps
 # limitations under the License.
 
 from .networks import *  # noqa
-from .subnets import *  # noqa
+from .ports import *  # noqa
 from .routers import *  # noqa
+from .subnets import *  # noqa
+
 
 __all__ = [
     "NetworkSteps",
     "SubnetSteps",
     "RouterSteps",
+    "PortSteps",
 ]
