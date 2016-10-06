@@ -17,38 +17,43 @@ Logger for steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import wraps
-from logging import getLogger
-from time import time
+import functools
+import logging
+import time
 
-from stepler.third_party.utils import get_unwrapped_func
+from stepler.third_party import utils
 
-LOGGER = getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def log(func):
     """Decorator to log function with arguments and execution time."""
-    @wraps(func)
+    @functools.wraps(func)
     def wrapper(*args, **kwgs):
         # reject self from log args if it is present
-        args = list(args)
-        largs = args[:]
-        if largs:
-            arg = largs[0]
-            im_func = getattr(
-                getattr(arg, func.__name__, None), 'im_func', None)
-            if get_unwrapped_func(im_func) is get_unwrapped_func(func):
-                largs.remove(arg)
+        log_args = _reject_self_from_args(func, args)
 
+        func_name = getattr(func, '__name__', str(func))
         LOGGER.debug(
             'Function {!r} starts with args {!r} and kwgs {!r}'.format(
-                func.__name__, largs, kwgs))
-        start = time()
+                func_name, log_args, kwgs))
+        start = time.time()
         try:
             result = func(*args, **kwgs)
         finally:
             LOGGER.debug('Function {!r} ended in {:.4f} sec'.format(
-                func.__name__, time() - start))
+                func_name, time.time() - start))
         return result
 
     return wrapper
+
+
+def _reject_self_from_args(func, args):
+    func_name = getattr(func, '__name__', str(func))
+    args = list(args)
+    if args:
+        arg = args[0]
+        im_func = getattr(getattr(arg, func_name, None), 'im_func', None)
+        if utils.get_unwrapped_func(im_func) is utils.get_unwrapped_func(func):
+            args.remove(arg)
+    return args
