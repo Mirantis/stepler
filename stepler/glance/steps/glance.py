@@ -45,28 +45,11 @@ class GlanceSteps(BaseSteps):
         Returns:
             object: glance image
         """
-        image = self._client.images.create(name=image_name,
-                                           disk_format=disk_format,
-                                           container_format=container_format)
-        self._client.images.upload(image.id, open(image_path, 'rb'))
-
-        if check:
-            self.check_image_status(image, 'active', timeout=180)
-
-        return image
-
-    @step
-    def delete_image(self, image, check=True):
-        """Step to delete image.
-
-        Args:
-            image (object): glance image
-            check (bool): flag whether to check step or not
-        """
-        self._client.images.delete(image.id)
-
-        if check:
-            self.check_image_presence(image, present=False, timeout=180)
+        images = self.create_images([image_name],
+                                    image_path,
+                                    disk_format,
+                                    container_format)
+        return images[0]
 
     @step
     def create_images(self, image_names, image_path, disk_format='qcow2',
@@ -84,16 +67,32 @@ class GlanceSteps(BaseSteps):
             list: glance images
         """
         images = []
+
         for image_name in image_names:
-            image = self.create_image(image_name, image_path, disk_format,
-                                      container_format, check=False)
-            images.append(image)
+            image = self._client.images.create(
+                name=image_name,
+                disk_format=disk_format,
+                container_format=container_format)
+            self._client.images.upload(image.id, open(image_path, 'rb'))
 
         if check:
             for image in images:
                 self.check_image_status(image, 'active', timeout=180)
 
         return images
+
+    @step
+    def delete_image(self, image, check=True):
+        """Step to delete image.
+
+        Args:
+            image (object): glance image
+            check (bool): flag whether to check step or not
+        """
+        self._client.images.delete(image.id)
+
+        if check:
+            self.check_image_presence(image, present=False, timeout=180)
 
     @step
     def delete_images(self, images, check=True):
