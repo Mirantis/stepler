@@ -30,6 +30,8 @@ import re
 import hamcrest
 
 import stepler
+from stepler.third_party.logger import log
+from stepler.third_party.utils import get_unwrapped_func
 
 __all__ = [
     'pytest_collection_modifyitems',
@@ -46,7 +48,9 @@ STEPS = [
     'put',  # TODO(schipiga): update attrdict method
     'range',
     'sorted',
-    'set_trace'
+    'set_trace',
+    'generate_ids',
+    'generate_files'
 ]
 
 # register hamcrest matchers
@@ -76,10 +80,10 @@ def step(func):
         func (function): function to add its name to list with permitted calls
 
     Returns:
-        function: the same function
+        function: the same function wrapped to log
     """
     STEPS.append(func.__name__)
-    return func
+    return log(func)
 
 
 def pytest_collection_modifyitems(config, items):
@@ -129,7 +133,7 @@ def pytest_configure(config):
                 continue
 
             step_func = getattr(step_cls, attr_name).im_func
-            step_func = _get_orig_func(step_func)
+            step_func = get_unwrapped_func(step_func)
 
             _check_docstring(step_func)
 
@@ -297,15 +301,3 @@ def _check_arg(func, arg_name, arg_val=DEFAULT_VALUE):
         assert kwgs[arg_name] == arg_val, \
             "Arg {!r} value must be '{}'".format(arg_name, arg_val) + \
             func_location
-
-
-def _get_orig_func(func):
-    if func.__name__ != func.func_code.co_name:
-        for cell in func.func_closure:
-            obj = cell.cell_contents
-            if inspect.isfunction(obj):
-                if func.__name__ == obj.func_code.co_name:
-                    return obj
-                else:
-                    return _get_orig_func(obj)
-    return func
