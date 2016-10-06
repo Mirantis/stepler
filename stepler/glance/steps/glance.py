@@ -146,7 +146,7 @@ class GlanceSteps(BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutError: if check was falsed after timeout
+            TimeoutExpired: if check was falsed after timeout
         """
         def predicate():
             try:
@@ -167,7 +167,7 @@ class GlanceSteps(BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutError: if check was falsed after timeout
+            TimeoutExpired: if check was falsed after timeout
         """
         def predicate():
             image.update(self._client.images.get(image.id))
@@ -187,7 +187,7 @@ class GlanceSteps(BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutError: if check was falsed after timeout
+            TimeoutExpired: if check was falsed after timeout
         """
         def predicate():
             members = self._client.image_members.list(image.id)

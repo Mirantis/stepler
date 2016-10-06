@@ -43,8 +43,9 @@ def create_flavor(flavor_steps):
     """
     flavors = []
 
-    def _create_flavor(flavor_name):
-        flavor = flavor_steps.create_flavor(flavor_name)
+    def _create_flavor(flavor_name, ram=1024, vcpus=1, disk=5):
+        flavor = flavor_steps.create_flavor(flavor_name, ram=ram, vcpus=vcpus,
+                                            disk=disk)
         flavors.append(flavor)
         return flavor
 

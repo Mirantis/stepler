@@ -17,12 +17,21 @@ Server steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+
 from hamcrest import assert_that, is_not, has_item, equal_to  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
+from stepler import config
 from stepler.third_party.ssh import SshClient
 from stepler.third_party.steps_checker import step
+
+if os.name == 'posix' and sys.version_info[0] < 3:
+    import subprocess32 as subprocess
+else:
+    import subprocess
 
 __all__ = [
     'ServerSteps'
@@ -33,33 +42,75 @@ class ServerSteps(BaseSteps):
     """Nova steps."""
 
     @step
-    def create_server(self, server_name, image, flavor, network, keypair,
+    def create_server(self, server_name, image, flavor, network, keypair=None,
                       security_groups=None, availability_zone='nova',
+                      block_device_mapping=None,
                       check=True):
-        """Step to create server."""
+        """Step to create server.
+
+        Args:
+            server_name (str): name of created server
+            image (object|None): image or None (to use volume)
+            flavor (object): flavor
+            network (dict): network
+            keypair (object): keypair
+            security_groups (list|tuple): security groups
+            availability_zone (str): name of availability zone
+            block_device_mapping (dict|None): block device mapping for server
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: nova server
+        """
         sec_groups = [s.id for s in security_groups or []]
+        image_id = None if image is None else image.id
+        keypair_id = None if keypair is None else keypair.id
         server = self._client.create(name=server_name,
-                                     image=image.id,
+                                     image=image_id,
                                      flavor=flavor.id,
                                      nics=[{'net-id': network['id']}],
-                                     key_name=keypair.id,
+                                     key_name=keypair_id,
                                      availability_zone=availability_zone,
-                                     security_groups=sec_groups)
+                                     security_groups=sec_groups,
+                                     block_device_mapping=block_device_mapping)
         if check:
             self.check_server_status(server, 'active', timeout=180)
 
         return server
 
     @step
-    def create_servers(self, server_names, image, flavor, network, keypair,
-                       security_groups=None, availability_zone='nova',
+    def create_servers(self, server_names, image, flavor, network,
+                       keypair=None, security_groups=None,
+                       availability_zone='nova', block_device_mapping=None,
                        check=True):
-        """Step to create servers."""
+        """Step to create servers.
+
+        Args:
+            server_names (list): names of created servers
+            image (object|None): image or None (to use volume)
+            flavor (object): flavor
+            network (dict): network
+            keypair (object): keypair
+            security_groups (list|tuple): security groups
+            availability_zone (str): name of availability zone
+            block_device_mapping (dict|None): block device mapping for servers
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: nova servers
+        """
         servers = []
         for server_name in server_names:
-            server = self.create_server(server_name, image, flavor, network,
-                                        keypair, security_groups,
-                                        availability_zone, check=False)
+            server = self.create_server(
+                server_name,
+                image=image,
+                flavor=flavor,
+                network=network,
+                keypair=keypair,
+                security_groups=security_groups,
+                availability_zone=availability_zone,
+                block_device_mapping=block_device_mapping,
+                check=False)
             servers.append(server)
 
         if check:
@@ -171,3 +222,28 @@ class ServerSteps(BaseSteps):
             ips = {key: val for key, val in ips.items()
                    if val['type'] == ip_type}
         return ips
+
+    @step
+    def check_ping_to_server_floating(self, server, timeout=0):
+        """Verify step to check ping to server floating ip address.
+
+        Each instance has a private, fixed IP address and can also have
+        a public, or floating IP address. Private IP addresses are used for
+        communication between instances, and public addresses are used for
+        communication with networks outside the cloud, including the Internet.
+
+        Args:
+            server (object): nova instance to ping its floating ip
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        floating_ip = self.get_ips(server, 'floating').keys()[0]
+
+        def predicate():
+            exit_code = subprocess.call(['ping', '-c1', floating_ip],
+                                        timeout=config.PING_CALL_TIMEOUT)
+            return exit_code == 0
+
+        wait(predicate, timeout_seconds=timeout)
