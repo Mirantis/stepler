@@ -24,18 +24,22 @@ from stepler.third_party.utils import generate_ids
 
 
 def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
-                                      ubuntu_image, keypair, flavor_steps,
+                                      cirros_image, keypair, flavor_steps,
                                       network_steps, server_steps):
     """Verify that image can be connected with SSH."""
-    flavor = flavor_steps.get_flavor(name='m1.small')
+    flavor = flavor_steps.get_flavor(name='m1.tiny')
     network = network_steps.get_network_by_name('admin_internal_net')
 
     for server_name in generate_ids('server', count=1):
-        server = server_steps.create_server(server_name, ubuntu_image, flavor,
-                                            network, keypair, [security_group])
+        server = server_steps.create_server(server_name,
+                                            image=cirros_image,
+                                            flavor=flavor,
+                                            networks=[network],
+                                            keypair=keypair,
+                                            security_groups=[security_group])
 
         server_steps.attach_floating_ip(server, nova_floating_ip)
-        server_steps.check_ssh_connect(server, keypair, username='ubuntu',
+        server_steps.check_ssh_connect(server, keypair, username='cirros',
                                        timeout=600)
 
         server_steps.detach_floating_ip(server, nova_floating_ip)
