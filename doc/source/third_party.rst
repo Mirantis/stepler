@@ -11,5 +11,11 @@ Third party modules
 .. automodule:: stepler.third_party.logger
    :members:
 
+.. automodule:: stepler.third_party.waiter
+   :members:
+
+.. automodule:: stepler.third_party.matchers
+   :members:
+
 .. automodule:: stepler.third_party.utils
    :members:
