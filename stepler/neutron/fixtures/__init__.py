@@ -17,20 +17,26 @@ Neutron fixtures package.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .neutron import *  # noqa
 from .networks import *  # noqa
+from .neutron import *  # noqa
+from .ports import *  # noqa
 from .routers import *  # noqa
 from .subnets import *  # noqa
+
 
 __all__ = sorted([  # sort for documentation
     'create_network',
     'network',
     'public_network',
+    'create_port',
+    'port',
     'create_subnet',
     'subnet',
     'create_router',
     'router',
     'add_router_interfaces',
+    'create_port',
+    'port_steps',
     'neutron_client',
     'network_steps',
     'router_steps',
