@@ -1,7 +1,9 @@
 """
-Neutron fixtures package.
+---------------
+Cinder conftest
+---------------
 
-@author: schipiga@mirantis.com
+Contains fixtures specific for cinder.
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +19,5 @@ Neutron fixtures package.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .neutron import *  # noqa
-
-__all__ = sorted([  # sort for documentation
-    'create_network',
-    'network',
-    'public_network',
-    'create_subnet',
-    'subnet',
-    'create_router',
-    'router',
-    'add_router_interfaces',
-    'neutron_client',
-    'neutron_steps'
-])
+from .fixtures import *  # noqa
+from .fixtures import __all__  # noqa

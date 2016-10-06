@@ -24,5 +24,6 @@ __all__ = sorted([  # sort for documentation
     'create_images',
     'glance_client',
     'glance_steps',
-    'ubuntu_image'
+    'ubuntu_image',
+    'cirros_image',
 ])
