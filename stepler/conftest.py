@@ -63,14 +63,20 @@ __all__ = sorted([  # sort for documentation
 
     'create_network',
     'network',
+    'create_port',
     'public_network',
     'create_subnet',
     'subnet',
     'create_router',
     'router',
     'add_router_interfaces',
+    'create_port',
     'neutron_client',
-    'neutron_steps',
+    'network_steps',
+    'router_steps',
+    'subnet_steps',
+    'port_steps',
+
 
     'create_flavor',
     'flavor',
