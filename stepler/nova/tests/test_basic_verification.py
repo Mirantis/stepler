@@ -63,9 +63,42 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     server = create_server(server_name,
                            image=None,
                            flavor=flavor,
-                           network=network,
+                           networks=[network],
                            security_groups=[security_group],
                            block_device_mapping=block_device_mapping)
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
+
+
+def test_delete_server_with_precreated_port(flavor, network, port,
+                                            cirros_image, create_port,
+                                            port_steps, server_steps):
+    """**Scenario:** Delete instance with pre-created port.
+
+    This test verify bug #1486727
+
+    **Setup:**
+        #. Create flavor
+        #. Create network
+        #. Create subnet
+        #. Upload cirros image
+        #. Create port
+    **Steps:**
+        #. Boot server with created port
+        #. Delete server
+        #. Check that port is still present
+    **Teardown:**
+        #. Delete port
+        #. Delete cirros image
+        #. Delete network
+        #. Delete subnet
+        #. Delete flavor
+    """
+    server_name = next(generate_ids('server'))
+    server = server_steps.create_server(server_name,
+                                        image=cirros_image,
+                                        flavor=flavor,
+                                        ports=[port])
+    server_steps.delete_server(server)
+    port_steps.check_presence(port)
