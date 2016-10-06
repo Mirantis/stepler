@@ -17,13 +17,11 @@ Glance fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .glance import *  # noqa
+from .cinder import *  # noqa
 
 __all__ = sorted([  # sort for documentation
-    'create_image',
-    'create_images',
-    'glance_client',
-    'glance_steps',
-    'ubuntu_image',
-    'cirros_image',
+    'create_volume',
+    'create_volumes',
+    'cinder_client',
+    'cinder_steps',
 ])
