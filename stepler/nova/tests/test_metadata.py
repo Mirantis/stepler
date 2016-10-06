@@ -25,10 +25,10 @@ from stepler.third_party.utils import generate_ids
 
 def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
                                       ubuntu_image, keypair, flavor_steps,
-                                      neutron_steps, server_steps):
+                                      network_steps, server_steps):
     """Verify that image can be connected with SSH."""
     flavor = flavor_steps.get_flavor(name='m1.small')
-    network = neutron_steps.get_network(name='admin_internal_net')
+    network = network_steps.get_network_by_name('admin_internal_net')
 
     for server_name in generate_ids('server', count=1):
         server = server_steps.create_server(server_name, ubuntu_image, flavor,

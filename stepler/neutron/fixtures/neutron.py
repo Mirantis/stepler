@@ -20,50 +20,15 @@ Neutron fixtures.
 from neutronclient.v2_0.client import Client
 import pytest
 
-from stepler.neutron.steps import NeutronSteps
-from stepler.third_party.utils import generate_ids
+from stepler.neutron.client import client
 
 __all__ = [
-    'create_network',
-    'network',
     'neutron_client',
-    'neutron_steps'
 ]
 
 
 @pytest.fixture
 def neutron_client(session):
-    """Fixture to get nova client."""
-    return Client(session=session)
-
-
-@pytest.fixture
-def neutron_steps(neutron_client):
-    """Fixture to get neutron steps."""
-    return NeutronSteps(neutron_client)
-
-
-@pytest.yield_fixture
-def create_network(neutron_steps):
-    """Fixture to create network with options.
-
-    Can be called several times during test.
-    """
-    networks = []
-
-    def _create_network(network_name):
-        network = neutron_steps.create_network(network_name)
-        networks.append(network)
-        return network
-
-    yield _create_network
-
-    for network in networks:
-        neutron_steps.delete_network(network)
-
-
-@pytest.fixture
-def network(create_network):
-    """Fixture to create neutron with default options before test."""
-    network_name = next(generate_ids('network'))
-    return create_network(network_name)
+    """Fixture to get neutron client wrapper."""
+    rest_client = Client(session=session)
+    return client.NeutronClient(rest_client)

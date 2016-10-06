@@ -43,8 +43,8 @@ def create_flavor(flavor_steps):
     """
     flavors = []
 
-    def _create_flavor(flavor_name):
-        flavor = flavor_steps.create_flavor(flavor_name)
+    def _create_flavor(flavor_name, *args, **kwargs):
+        flavor = flavor_steps.create_flavor(flavor_name, *args, **kwargs)
         flavors.append(flavor)
         return flavor
 
@@ -58,4 +58,4 @@ def create_flavor(flavor_steps):
 def flavor(create_flavor):
     """Fixture to create flavor with default options before test."""
     flavor_name = next(generate_ids('flavor'))
-    return create_flavor(flavor_name)
+    return create_flavor(flavor_name, ram=1024, vcpus=1, disk=5)
