@@ -34,8 +34,9 @@ CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-d
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa
 
-
 # TIMEOUTS (in seconds)
+POLLING_TIME = .01
+
 # Cinder
 VOLUME_AVAILABLE_TIMEOUT = 5 * 60
 VOLUME_DELETE_TIMEOUT = 3 * 60
