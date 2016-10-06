@@ -1,9 +1,3 @@
-"""
-----------------
-Neutron fixtures
-----------------
-"""
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,18 +11,17 @@ Neutron fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from neutronclient.v2_0.client import Client
-import pytest
-
-from stepler.neutron.client import client
-
-__all__ = [
-    'neutron_client',
-]
+from stepler.neutron.client import network
+from stepler.neutron.client import port
+from stepler.neutron.client import router
+from stepler.neutron.client import subnet
 
 
-@pytest.fixture
-def neutron_client(session):
-    """Fixture to get neutron client wrapper."""
-    rest_client = Client(session=session)
-    return client.NeutronClient(rest_client)
+class NeutronClient(object):
+    """Wrapper for python-neutronclient."""
+    def __init__(self, client):
+        self._client = client
+        self.networks = network.NetworkManager(self, client)
+        self.ports = port.PortManager(self, client)
+        self.routers = router.RouterManager(self, client)
+        self.subnets = subnet.SubnetManager(self, client)

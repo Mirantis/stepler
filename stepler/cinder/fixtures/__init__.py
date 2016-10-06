@@ -1,7 +1,7 @@
 """
-----------------
-Neutron fixtures
-----------------
+---------------
+Glance fixtures
+---------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,18 +17,11 @@ Neutron fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from neutronclient.v2_0.client import Client
-import pytest
+from .cinder import *  # noqa
 
-from stepler.neutron.client import client
-
-__all__ = [
-    'neutron_client',
-]
-
-
-@pytest.fixture
-def neutron_client(session):
-    """Fixture to get neutron client wrapper."""
-    rest_client = Client(session=session)
-    return client.NeutronClient(rest_client)
+__all__ = sorted([  # sort for documentation
+    'create_volume',
+    'create_volumes',
+    'cinder_client',
+    'cinder_steps',
+])

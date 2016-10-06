@@ -17,6 +17,7 @@ Security group steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, has_item, has_entries  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -73,11 +74,18 @@ class SecurityGroupSteps(BaseSteps):
     @step
     def check_rule_presence(self, group, rule, present=True, timeout=0):
         """Verify step to check security group is present."""
+
+        group_id = group.id
+
         def predicate():
+            rule_to_check = rule.copy()
+            cidr = rule_to_check.pop('cidr')
+            rule_to_check['ip_range'] = {'cidr': cidr}
             try:
-                self._client.security_group_rules.get(group, rule)
+                group = self._client.security_groups.get(group_id)
+                assert_that(group.rules, has_item(has_entries(rule_to_check)))
                 return present
-            except Exception:
+            except AssertionError:
                 return not present
 
         wait(predicate, timeout_seconds=timeout)

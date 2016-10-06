@@ -18,10 +18,21 @@ Neutron fixtures
 # limitations under the License.
 
 from .neutron import *  # noqa
+from .networks import *  # noqa
+from .routers import *  # noqa
+from .subnets import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_network',
     'network',
+    'public_network',
+    'create_subnet',
+    'subnet',
+    'create_router',
+    'router',
+    'add_router_interfaces',
     'neutron_client',
-    'neutron_steps'
+    'network_steps',
+    'router_steps',
+    'subnet_steps',
 ])

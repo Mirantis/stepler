@@ -1,7 +1,9 @@
 """
-----------------
-Neutron fixtures
-----------------
+------------
+Cinder steps
+------------
+
+Contains steps specific for cinder.
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,18 +19,8 @@ Neutron fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from neutronclient.v2_0.client import Client
-import pytest
-
-from stepler.neutron.client import client
+from .cinder import *  # noqa
 
 __all__ = [
-    'neutron_client',
+    'CinderSteps'
 ]
-
-
-@pytest.fixture
-def neutron_client(session):
-    """Fixture to get neutron client wrapper."""
-    rest_client = Client(session=session)
-    return client.NeutronClient(rest_client)
