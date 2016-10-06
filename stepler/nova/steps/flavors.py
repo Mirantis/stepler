@@ -17,6 +17,7 @@ Flavor steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from novaclient import exceptions
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -31,9 +32,10 @@ class FlavorSteps(BaseSteps):
     """Flavor steps."""
 
     @step
-    def create_flavor(self, flavor_name, check=True):
+    def create_flavor(self, flavor_name, ram, vcpus, disk, check=True):
         """Step to create flavor."""
-        flavor = self._client.create(flavor_name)
+        flavor = self._client.create(flavor_name, ram=ram, vcpus=vcpus,
+                                     disk=disk)
 
         if check:
             self.check_flavor_presence(flavor)
@@ -53,9 +55,11 @@ class FlavorSteps(BaseSteps):
         """Verify step to check flavor is present."""
         def predicate():
             try:
-                self._client.get(flavor.id)
+                # After deleting flavor `get` method still return object,
+                # so it was changed to find
+                self._client.find(id=flavor.id)
                 return present
-            except Exception:
+            except exceptions.NotFound:
                 return not present
 
         wait(predicate, timeout_seconds=timeout)
