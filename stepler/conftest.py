@@ -22,6 +22,7 @@ Includes fixtures available in global scope among all tests.
 # limitations under the License.
 
 from stepler.fixtures import *  # noqa
+from stepler.cinder.conftest import *  # noqa
 from stepler.glance.conftest import *  # noqa
 from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
@@ -32,6 +33,11 @@ __all__ = sorted([  # sort for documentation
     'auth_url',
     'ip_by_host',
     'session',
+
+    'create_volume',
+    'create_volumes',
+    'cinder_client',
+    'cinder_steps',
 
     'create_image',
     'create_images',
@@ -79,7 +85,7 @@ __all__ = sorted([  # sort for documentation
     'create_servers_context',
     'server',
     'server_steps',
-    'ssh_proxy_data'
+    'ssh_proxy_data',
 ])
 
 pytest_plugins = [
