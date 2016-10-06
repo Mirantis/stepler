@@ -1,9 +1,3 @@
-"""
-Neutron fixtures package.
-
-@author: schipiga@mirantis.com
-"""
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,22 +11,17 @@ Neutron fixtures package.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .neutron import *  # noqa
-from .networks import *  # noqa
-from .routers import *  # noqa
-from .subnets import *  # noqa
+from stepler.clients.neutron import network
+from stepler.clients.neutron import port
+from stepler.clients.neutron import router
+from stepler.clients.neutron import subnet
 
-__all__ = sorted([  # sort for documentation
-    'create_network',
-    'network',
-    'public_network',
-    'create_subnet',
-    'subnet',
-    'create_router',
-    'router',
-    'add_router_interfaces',
-    'neutron_client',
-    'network_steps',
-    'router_steps',
-    'subnet_steps',
-])
+
+class NeutronClient(object):
+    """Wrapper for python-neutronclient."""
+    def __init__(self, client):
+        self._client = client
+        self.networks = network.NetworkManager(self, client)
+        self.ports = port.PortManager(self, client)
+        self.routers = router.RouterManager(self, client)
+        self.subnets = subnet.SubnetManager(self, client)
