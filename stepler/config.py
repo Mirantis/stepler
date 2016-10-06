@@ -1,7 +1,7 @@
 """
-Config module.
-
-@author: schipiga@mirantis.com
+------
+Config
+------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,3 +32,5 @@ FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases
 
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa
+
+POLLING_TIME = .01  # seconds
