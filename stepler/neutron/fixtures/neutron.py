@@ -26,6 +26,7 @@ from stepler.third_party.utils import generate_ids
 __all__ = [
     'create_network',
     'network',
+    'create_port',
     'public_network',
     'create_subnet',
     'subnet',
@@ -73,6 +74,32 @@ def network(create_network):
     """Fixture to create network with default options before test."""
     network_name = next(generate_ids('network'))
     return create_network(network_name)
+
+
+@pytest.yield_fixture
+def create_port(neutron_steps):
+    """Function fixture to create port with options.
+
+    Can be called several times during a test.
+    After the test it destroys all created ports.
+
+    Args:
+        neutron_steps (object): instantiated neutron steps
+
+    Returns:
+        function: function to create port as batch with options
+    """
+    ports = []
+
+    def _create_port(network):
+        port = neutron_steps.create_port(network)
+        ports.append(port)
+        return port
+
+    yield _create_port
+
+    for port in ports:
+        neutron_steps.delete_port(port)
 
 
 @pytest.fixture

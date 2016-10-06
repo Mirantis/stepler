@@ -17,6 +17,7 @@ Neutron steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from neutronclient.common import exceptions
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -129,6 +130,56 @@ class NeutronSteps(BaseSteps):
         nodes = [filter_fn(node) for node in result['agents']
                  if node['alive'] == is_alive]
         return nodes[0]
+
+    @step
+    def create_port(self, network, check=True):
+        """Step to create port.
+
+        Args:
+            network (dict): network to create port on
+            check (bool): flag whether to check step or not
+
+        Returns:
+            dict: port
+        """
+        body = {'port': {'network_id': network['id']}}
+        port = self._client.create_port(body)['port']
+        if check:
+            self.check_port_presence(port)
+        return port
+
+    @step
+    def delete_port(self, port, check=True):
+        """Step to create port.
+
+        Args:
+            port (dict): port to delete
+            check (bool): flag whether to check step or not
+        """
+        self._client.delete_port(port['id'])
+        if check:
+            self.check_port_presence(port, present=False)
+
+    @step
+    def check_port_presence(self, port, present=True, timeout=0):
+        """Verify step to check port is present.
+
+        Args:
+            port (dict): neutron port to check presence status
+            presented (bool): flag whether port should present or no
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        def predicate():
+            try:
+                self._client.show_port(port['id'])
+                return present
+            except exceptions.NotFound:
+                return not present
+
+        wait(predicate, timeout_seconds=timeout)
 
     @step
     def create_subnet(self, subnet_name, network, cidr, check=True):
