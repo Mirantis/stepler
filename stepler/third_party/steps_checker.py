@@ -206,11 +206,6 @@ def _validate_change_step(func):
         ast_func_def, func_location, step_type=CHANGE)
     if error:
         errors.append(error)
-
-    error = _verify_step_has_if_check(
-        ast_func_def, func_location, step_type=CHANGE)
-    if error:
-        errors.append(error)
     return errors
 
 
