@@ -14,3 +14,6 @@ Nova tests
 
 .. automodule:: stepler.nova.tests.test_metadata
    :members:
+
+.. automodule:: stepler.nova.tests.test_basic_verification
+   :members:
