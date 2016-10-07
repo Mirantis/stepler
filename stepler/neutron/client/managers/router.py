@@ -1,9 +1,7 @@
 """
--------------
-Neutron steps
--------------
-
-@author: schipiga@mirantis.com
+--------------
+Router manager
+--------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,14 +17,16 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .networks import *  # noqa
-from .ports import *  # noqa
-from .subnets import *  # noqa
-from .routers import *  # noqa
+from stepler.neutron.client import base
 
-__all__ = [
-    "NetworkSteps",
-    "PortSteps",
-    "SubnetSteps",
-    "RouterSteps",
-]
+__all__ = ['RouterManager']
+
+
+class RouterManager(base.BaseNeutronManager):
+    """Router (neutron) manager."""
+
+    def create(self, name, distributed):
+        """Create router."""
+        query = {'name': name,
+                 'distributed': distributed}
+        return super(RouterManager, self).create(**query)

@@ -24,9 +24,10 @@ from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_network',
+    'delete_networks_cascade',
     'network',
     'public_network',
-    'network_steps'
+    'network_steps',
 ]
 
 
@@ -73,3 +74,15 @@ def public_network(network_steps):
         dict: public network
     """
     return network_steps.get_public_network()
+
+
+@pytest.fixture
+def delete_networks_cascade(network_steps, delete_subnets_cascade):
+    """Fixture to delete networks cascade."""
+
+    def _delete_networks_cascade(networks):
+        for network in networks:
+            delete_subnets_cascade(network['subnets'])
+            network_steps.delete_network(network['id'])
+
+    return _delete_networks_cascade

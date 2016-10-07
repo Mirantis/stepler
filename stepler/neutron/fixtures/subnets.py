@@ -24,6 +24,7 @@ from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_subnet',
+    'delete_subnets_cascade',
     'subnet',
     'subnet_steps'
 ]
@@ -74,3 +75,15 @@ def subnet(create_subnet, network):
     """
     subnet_name = next(generate_ids('subnet'))
     return create_subnet(subnet_name, network, cidr='10.0.1.0/24')
+
+
+@pytest.fixture
+def delete_subnets_cascade(subnet_steps, port_steps, delete_ports_cascade):
+    """Fixture to delete subnets cascade."""
+
+    def _delete_subnets_cascade(subnet_ids):
+        for subnet_id in subnet_ids:
+            delete_ports_cascade(port_steps.get_ports(subnet_id))
+            subnet_steps.delete_subnet(subnet_id)
+
+    return _delete_subnets_cascade
