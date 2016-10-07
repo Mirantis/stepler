@@ -1,3 +1,9 @@
+"""
+--------------------
+Base neutron manager
+--------------------
+"""
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,51 +17,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = ['BaseNeutronManager']
+
 
 class BaseNeutronManager(object):
     """Base Neutron components manager."""
 
-    NAME = ''
-
-    def __init__(self, client, rest_client):
+    def __init__(self, neutron_client):
         """Init base neutron manager
 
         Args:
             client (obj): initialized client wrapper (for access to another
                 managers)
-            rest_client (obj): initialized neutronclient object
+            neutron_client (obj): initialized neutronclient object
         """
-        self.client = client
-        self._rest_client = rest_client
+        self._neutron_client = neutron_client
+
+    @property
+    def _name(self):
+        return self.__class__.__name__.split('Manager')[0].lower()
 
     @property
     def _create_method(self):
         """Returns resource create callable."""
-        methodname = 'create_{}'.format(self.NAME)
-        return getattr(self._rest_client, methodname)
+        methodname = 'create_{}'.format(self._name)
+        return getattr(self._neutron_client, methodname)
 
     @property
     def _delete_method(self):
         """Returns resource delete callable."""
-        methodname = 'delete_{}'.format(self.NAME)
-        return getattr(self._rest_client, methodname)
+        methodname = 'delete_{}'.format(self._name)
+        return getattr(self._neutron_client, methodname)
 
     @property
     def _list_method(self):
         """Returns resource list callable."""
-        methodname = 'list_{}s'.format(self.NAME)
-        return getattr(self._rest_client, methodname)
+        methodname = 'list_{}s'.format(self._name)
+        return getattr(self._neutron_client, methodname)
 
     @property
     def _show_method(self):
         """Returns resource show callable."""
-        methodname = 'show_{}'.format(self.NAME)
-        return getattr(self._rest_client, methodname)
+        methodname = 'show_{}'.format(self._name)
+        return getattr(self._neutron_client, methodname)
 
     def create(self, **kwargs):
         """Base create."""
-        query = {self.NAME: kwargs}
-        obj = self._create_method(query)[self.NAME]
+        query = {self._name: kwargs}
+        obj = self._create_method(query)[self._name]
         return obj
 
     def delete(self, obj_id):
@@ -67,28 +76,28 @@ class BaseNeutronManager(object):
         return self.find_all()
 
     def find_all(self, **kwargs):
-        """Returns a list of objects by conditions.
+        """Return a list of objects by conditions.
 
         Results may be empty.
         """
-        objs = self._list_method(**kwargs)[self.NAME + 's']
+        objs = self._list_method(**kwargs)[self._name + 's']
         return objs
 
     def find(self, **kwargs):
-        """Returns one fond object.
+        """Return one found object.
 
         Raises LookupError if object is absent, or if there is more than one
-        object fond.
+        object is found.
         """
-        objs = self._list_method(**kwargs)[self.NAME + 's']
+        objs = self._list_method(**kwargs)[self._name + 's']
         if len(objs) == 0:
-            raise LookupError("{} with {!r} is absent".format(self.NAME,
+            raise LookupError("{} with {!r} is absent".format(self._name,
                                                               kwargs))
         if len(objs) > 1:
             raise LookupError("Founded more than one {} with {!r}".format(
-                self.NAME, kwargs))
+                self._name, kwargs))
         return objs[0]
 
     def get(self, obj_id):
         """Return object by id."""
-        return self._show_method(obj_id)[self.NAME]
+        return self._show_method(obj_id)[self._name]
