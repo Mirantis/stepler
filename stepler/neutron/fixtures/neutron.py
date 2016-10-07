@@ -17,10 +17,9 @@ Neutron fixtures.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from neutronclient.v2_0.client import Client
+from neutronclient.v2_0 import client
 import pytest
-
-from stepler.third_party.neutron import client
+from stepler.neutron import client as _client
 
 __all__ = [
     'neutron_client',
@@ -30,5 +29,4 @@ __all__ = [
 @pytest.fixture
 def neutron_client(session):
     """Fixture to get neutron client wrapper."""
-    rest_client = Client(session=session)
-    return client.NeutronClient(rest_client)
+    return _client.NeutronClient(client.Client(session=session))

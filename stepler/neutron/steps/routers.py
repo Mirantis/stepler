@@ -86,8 +86,8 @@ class RouterSteps(base.BaseSteps):
             router (dict): router
             network (dict): network
         """
-        self._client.set_gateway(router_id=router['id'],
-                                 network_id=network['id'])
+        self._client.add_gateway(router['id'], network['id'])
+
         if check:
             self.check_gateway_presence(router)
 
@@ -98,7 +98,8 @@ class RouterSteps(base.BaseSteps):
         Args:
             router (dict): router
         """
-        self._client.clear_gateway(router_id=router['id'])
+        self._client.remove_gateway(router['id'])
+
         if check:
             self.check_gateway_presence(router, present=False)
 
@@ -124,37 +125,34 @@ class RouterSteps(base.BaseSteps):
         waiting.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def add_subnet_interface(self, router, subnet, check=True):
+    def add_interface(self, router, subnet=None, port=None, check=True):
         """Step to add router to subnet interface.
 
         Args:
             router (dict): router
             subnet (dict): subnet
         """
-        self._client.add_subnet_interface(router_id=router['id'],
-                                          subnet_id=subnet['id'])
+        self._client.add_interface(router['id'], subnet, port)
+
         if check:
-            self.check_interface_subnet_presence(router, subnet)
+            self.check_interface_presence(router, subnet, port)
 
     @steps_checker.step
-    def remove_subnet_interface(self, router, subnet, check=True):
+    def remove_interface(self, router, subnet=None, port=None, check=True):
         """Step to remove router to subnet interface.
 
         Args:
             router (dict): router
             subnet (dict): subnet
         """
-        self._client.remove_subnet_interface(router_id=router['id'],
-                                             subnet_id=subnet['id'])
+        self._client.remove_interface(router['id'], subnet, port)
+
         if check:
-            self.check_interface_subnet_presence(router, subnet, present=False)
+            self.check_interface_presence(router, subnet, port, present=False)
 
     @steps_checker.step
-    def check_interface_subnet_presence(self,
-                                        router,
-                                        subnet,
-                                        present=True,
-                                        timeout=0):
+    def check_interface_presence(self, router, subnet=None, port=None,
+                                 present=True, timeout=0):
         """Verify step to check subnet is in router interfaces.
 
         Args:
@@ -167,9 +165,20 @@ class RouterSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check was falsed after timeout
         """
+        if not subnet and not port:
+            raise ValueError("subnet_id or port_id must be indicated.")
 
         def predicate():
-            subnet_ids = self._client.get_interfaces_subnets_ids(router['id'])
-            return present == (subnet['id'] in subnet_ids)
+            ports = self._client.get_interface_ports(router['id'])
+
+            if subnet is not None:
+                interface_id = subnet['id']
+                interface_ids = [fixed_ip['subnet_id'] for port in ports
+                                 for fixed_ip in port['fixed_ips']]
+            if port is not None:
+                interface_id = port['id']
+                interface_ids = [port['id'] for port in ports]
+
+            return present == (interface_id in interface_ids)
 
         waiting.wait(predicate, timeout_seconds=timeout)

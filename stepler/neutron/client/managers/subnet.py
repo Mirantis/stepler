@@ -1,3 +1,9 @@
+"""
+--------------
+Subnet manager
+--------------
+"""
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,13 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from stepler.third_party.neutron.models import base
+from stepler.neutron.client import base
+
+__all__ = ['SubnetManager']
 
 
 class SubnetManager(base.BaseNeutronManager):
     """Subnet (neutron) manager."""
-
-    NAME = 'subnet'
 
     def create(self,
                name,
@@ -35,21 +41,3 @@ class SubnetManager(base.BaseNeutronManager):
         if dns_nameservers is not None:
             query['dns_nameservers'] = dns_nameservers
         return super(SubnetManager, self).create(**query)
-
-    def get_ports(self, subnet_id):
-        """Return ports with interface to subnet."""
-        for port in self.client.ports.list():
-            for ip in port['fixed_ips']:
-                if subnet_id == ip['subnet_id']:
-                    yield port
-                    break
-
-    def delete(self, subnet_id):
-        """Delete subnet action.
-
-        Subnet can't be deleted until it has active ports, so we delete such
-        ports before deleting subnet.
-        """
-        for port in self.get_ports(subnet_id):
-            self.client.ports.delete(port['id'])
-        return super(SubnetManager, self).delete(subnet_id)
