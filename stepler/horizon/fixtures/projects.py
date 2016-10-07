@@ -1,7 +1,7 @@
 """
-Fixtures to manipulate with projects.
-
-@author: schipiga@mirantis.com
+------------------------------------
+Fixtures to manipulate with projects
+------------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

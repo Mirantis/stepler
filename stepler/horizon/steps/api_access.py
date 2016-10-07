@@ -1,7 +1,7 @@
 """
-Horizon steps for api access.
-
-@author: schipiga@mirantis.com
+----------------------------
+Horizon steps for api access
+----------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

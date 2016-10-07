@@ -1,7 +1,7 @@
 """
-Module with horizon application, pages and custom ui.
-
-@author: schipiga@mirantis.com
+----------------------------------------
+Horizon application, pages and custom UI
+----------------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

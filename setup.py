@@ -1,7 +1,7 @@
 """
-Setup module.
-
-@author: schipiga@mirantis.com
+-------------
+Setup package
+-------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

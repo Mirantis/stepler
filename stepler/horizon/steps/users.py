@@ -1,7 +1,7 @@
 """
-Users steps.
-
-@author: schipiga@mirantis.com
+-----------
+Users steps
+-----------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

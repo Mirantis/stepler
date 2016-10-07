@@ -1,9 +1,9 @@
 """
-Dropdown menu component.
+-------------
+Dropdown menu
+-------------
 
 Usually used in tables to add actions for rows.
-
-@author: schipiga@mirantis.com
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

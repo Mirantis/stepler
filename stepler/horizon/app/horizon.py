@@ -1,7 +1,7 @@
 """
-Horizon application implementation.
-
-@author: schipiga@mirantis.com
+----------------------------------
+Horizon application implementation
+----------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

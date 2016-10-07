@@ -1,7 +1,7 @@
 """
-Horizon steps for defaults.
-
-@author: schipiga@mirantis.com
+--------------------------
+Horizon steps for defaults
+--------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

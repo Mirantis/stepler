@@ -1,7 +1,7 @@
 """
-Host aggregates page.
-
-@author: schipiga@mirantis.com
+--------------------
+Host aggregates page
+--------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

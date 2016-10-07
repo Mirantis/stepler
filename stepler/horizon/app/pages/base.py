@@ -1,7 +1,7 @@
 """
-Base page of user account.
-
-@author: schipiga@mirantis.com
+-------------------------
+Base page of user account
+-------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

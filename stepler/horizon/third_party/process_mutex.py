@@ -1,7 +1,7 @@
 """
-Interprocess locker.
-
-@author: schipiga@mirantis.com
+-------------------
+Interprocess locker
+-------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

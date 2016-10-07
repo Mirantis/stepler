@@ -1,7 +1,7 @@
 """
-Module with custom ui components.
-
-@author: schipiga@mirantis.com
+--------------------
+Сustom UI components
+--------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

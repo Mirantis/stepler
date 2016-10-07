@@ -1,7 +1,7 @@
 """
-Network pages and their components.
-
-@author: schipiga@mirantis.com
+-------------
+Network pages
+-------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
