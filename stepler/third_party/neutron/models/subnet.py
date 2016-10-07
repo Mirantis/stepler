@@ -17,8 +17,6 @@ from stepler.third_party.neutron.models import base
 class SubnetManager(base.BaseNeutronManager):
     """Subnet (neutron) manager."""
 
-    NAME = 'subnet'
-
     def create(self,
                name,
                network_id,
@@ -35,14 +33,6 @@ class SubnetManager(base.BaseNeutronManager):
         if dns_nameservers is not None:
             query['dns_nameservers'] = dns_nameservers
         return super(SubnetManager, self).create(**query)
-
-    def get_ports(self, subnet_id):
-        """Return ports with interface to subnet."""
-        for port in self.client.ports.list():
-            for ip in port['fixed_ips']:
-                if subnet_id == ip['subnet_id']:
-                    yield port
-                    break
 
     def delete(self, subnet_id):
         """Delete subnet action.

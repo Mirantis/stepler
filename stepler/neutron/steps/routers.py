@@ -86,8 +86,9 @@ class RouterSteps(base.BaseSteps):
             router (dict): router
             network (dict): network
         """
-        self._client.set_gateway(router_id=router['id'],
-                                 network_id=network['id'])
+        self._client._neutron_client.add_gateway_router(
+            router['id'], {'network_id': network['id']})
+
         if check:
             self.check_gateway_presence(router)
 
@@ -98,7 +99,8 @@ class RouterSteps(base.BaseSteps):
         Args:
             router (dict): router
         """
-        self._client.clear_gateway(router_id=router['id'])
+        self._client._neutron_client.remove_gateway_router(router['id'])
+
         if check:
             self.check_gateway_presence(router, present=False)
 
@@ -124,37 +126,36 @@ class RouterSteps(base.BaseSteps):
         waiting.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def add_subnet_interface(self, router, subnet, check=True):
+    def add_interface(self, router, subnet=None, port=None, check=True):
         """Step to add router to subnet interface.
 
         Args:
             router (dict): router
             subnet (dict): subnet
         """
-        self._client.add_subnet_interface(router_id=router['id'],
-                                          subnet_id=subnet['id'])
+        body = self._get_interface_body(subnet, port)
+        self._client._neutron_client.add_interface_router(router['id'], body)
+
         if check:
-            self.check_interface_subnet_presence(router, subnet)
+            self.check_interface_presence(router, subnet, port)
 
     @steps_checker.step
-    def remove_subnet_interface(self, router, subnet, check=True):
+    def remove_interface(self, router, subnet=None, port=None, check=True):
         """Step to remove router to subnet interface.
 
         Args:
             router (dict): router
             subnet (dict): subnet
         """
-        self._client.remove_subnet_interface(router_id=router['id'],
-                                             subnet_id=subnet['id'])
+        body = self._get_interface_body(subnet, port)
+        self._client._neutron_client.remove_interface_router(router['id'],
+                                                             body)
         if check:
-            self.check_interface_subnet_presence(router, subnet, present=False)
+            self.check_interface_presence(router, subnet, port, present=False)
 
     @steps_checker.step
-    def check_interface_subnet_presence(self,
-                                        router,
-                                        subnet,
-                                        present=True,
-                                        timeout=0):
+    def check_interface_presence(self, router, subnet=None, port=None,
+                                 present=True, timeout=0):
         """Verify step to check subnet is in router interfaces.
 
         Args:
@@ -169,7 +170,29 @@ class RouterSteps(base.BaseSteps):
         """
 
         def predicate():
-            subnet_ids = self._client.get_interfaces_subnets_ids(router['id'])
-            return present == (subnet['id'] in subnet_ids)
+            ports = self._client.find_all(
+                device_owner='network:router_interface',
+                device_id=router['id'])
+
+            if subnet is not None:
+                resource_id = subnet['id']
+                resource_ids = [fixed_ip['subnet_id'] for port in ports
+                                for fixed_ip in port['fixed_ips']]
+            elif port is not None:
+                resource_id = port['id']
+                resource_ids = [port['id'] for port in ports]
+
+            return present == (resource_id in resource_ids)
 
         waiting.wait(predicate, timeout_seconds=timeout)
+
+    @staticmethod
+    def _get_interface_body(subnet=None, port=None):
+        body = {}
+        if subnet is not None:
+            body['subnet_id'] = subnet['id']
+        elif port is not None:
+            body['port_id'] = port['id']
+        else:
+            raise ValueError("subnet_id or port_id must be indicated.")
+        return body

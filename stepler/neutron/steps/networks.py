@@ -29,7 +29,7 @@ class NetworkSteps(base.BaseSteps):
     """Network steps."""
 
     @steps_checker.step
-    def create(self, network_name, check=True):
+    def create_network(self, network_name, admin_state_up=True, check=True):
         """Step to create network.
 
         Args:
@@ -38,7 +38,7 @@ class NetworkSteps(base.BaseSteps):
         Returns:
             dict: network
         """
-        network = self._client.create(network_name)
+        network = self._client.create(network_name, admin_state_up)
 
         if check:
             self.check_presence(network)
@@ -99,19 +99,6 @@ class NetworkSteps(base.BaseSteps):
         """
         params = {'router:external': True, 'status': 'ACTIVE'}
         return self._client.find(**params)
-
-    @steps_checker.step
-    def get_network_id_by_mac(self, mac):
-        """Step to get network ID by server MAC.
-
-        Args:
-            mac (string): mac address
-        Returns:
-            string: network ID
-        """
-        network_id = self._client.client.ports.find_all(
-            mac_address=mac)[0]['network_id']
-        return network_id
 
     @steps_checker.step
     def get_dhcp_host_by_network(self, network_id):

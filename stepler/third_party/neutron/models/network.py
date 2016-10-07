@@ -17,12 +17,10 @@ from stepler.third_party.neutron.models import base
 class NetworkManager(base.BaseNeutronManager):
     """Neutwork (neutron) manager."""
 
-    NAME = 'network'
-
-    def create(self, name):
+    def create(self, name, admin_state_up):
         """Create new neutron network."""
-        return super(NetworkManager, self).create(name=name,
-                                                  admin_state_up=True)
+        return super(NetworkManager, self).create(
+            name=name, admin_state_up=admin_state_up)
 
     def delete(self, network_id):
         """Delete network."""

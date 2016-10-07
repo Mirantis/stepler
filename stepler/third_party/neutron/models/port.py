@@ -17,8 +17,6 @@ from stepler.third_party.neutron.models import base
 class PortManager(base.BaseNeutronManager):
     """Port (neutron) maanger."""
 
-    NAME = 'port'
-
     def delete(self, port_id):
         """Delete port."""
         port = self.get(port_id)

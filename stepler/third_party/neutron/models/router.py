@@ -17,66 +17,10 @@ from stepler.third_party.neutron.models import base
 class RouterManager(base.BaseNeutronManager):
     """Router (neutron) manager."""
 
-    NAME = 'router'
-
     def create(self, name, distributed=False):
         """Create router."""
         query = {'name': name, 'distributed': distributed}
         return super(RouterManager, self).create(**query)
-
-    def set_gateway(self, router_id, network_id):
-        """Set router gateway."""
-        body = {'network_id': network_id}
-        self._rest_client.add_gateway_router(router_id, body)
-
-    def clear_gateway(self, router_id):
-        """Clear router gateway."""
-        self._rest_client.remove_gateway_router(router_id)
-
-    def get_interfaces_ports(self, router_id):
-        """Get router interface ports."""
-        return self.client.ports.find_all(
-            device_owner='network:router_interface',
-            device_id=router_id)
-
-    def get_interfaces_subnets_ids(self, router_id):
-        """Get router interfaces subnets ids list."""
-        ports = self.get_interfaces_ports(router_id)
-        return [ip['subnet_id'] for p in ports for ip in p['fixed_ips']]
-
-    def _add_interface(self, router_id, subnet_id=None, port_id=None):
-        """Add router interface base action."""
-        body = {}
-        if subnet_id is not None:
-            body['subnet_id'] = subnet_id
-        elif port_id is not None:
-            body['port_id'] = port_id
-        else:
-            raise ValueError("subnet_id or port_id must be indicated.")
-        self._rest_client.add_interface_router(router_id, body)
-
-    def add_subnet_interface(self, router_id, subnet_id):
-        """Add router subnet interface."""
-        self._add_interface(router_id=router_id, subnet_id=subnet_id)
-
-    def _remove_interface(self, router_id, subnet_id=None, port_id=None):
-        """Remove router interface base action."""
-        body = {}
-        if subnet_id is not None:
-            body['subnet_id'] = subnet_id
-        elif port_id is not None:
-            body['port_id'] = port_id
-        else:
-            raise ValueError("subnet_id or port_id must be indicated.")
-        self._rest_client.remove_interface_router(router_id, body)
-
-    def remove_subnet_interface(self, router_id, subnet_id):
-        """Remove router subnet interface."""
-        self._remove_interface(router_id=router_id, subnet_id=subnet_id)
-
-    def remove_port_interface(self, router_id, port_id):
-        """Remove router subnet interface."""
-        self._remove_interface(router_id=router_id, port_id=port_id)
 
     def delete(self, router_id):
         """Delete router action.

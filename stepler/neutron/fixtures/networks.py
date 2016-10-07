@@ -73,3 +73,23 @@ def public_network(network_steps):
         dict: public network
     """
     return network_steps.get_public_network()
+
+
+@pytest.fixture
+def cascade_delete_networks(network_steps, subnet_steps, port_steps,
+                            router_steps):
+    """Fixture to cascade delete networks."""
+
+    def _cascade_delete_networks(networks):
+        for network in networks:
+            for subnet_id in network['subnets']:
+                port_ids = port_steps.get_ports(subnet_id)
+
+                for port_id in port_ids:
+                    router_steps.remove_port_interface(port_id)
+
+                    port_steps.delete_port(port_id)
+                subnet_steps.delete_subnet(subnet_id)
+            network_steps.delete_network(network)
+
+    return _cascade_delete_networks
