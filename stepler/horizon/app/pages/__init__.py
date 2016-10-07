@@ -1,7 +1,7 @@
 """
-Module with horizon pages.
-
-@author: schipiga@mirantis.com
+-------------
+Horizon pages
+-------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

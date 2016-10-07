@@ -1,7 +1,7 @@
 """
-Users page.
-
-@author: schipiga@mirantis.com
+----------
+Users page
+----------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

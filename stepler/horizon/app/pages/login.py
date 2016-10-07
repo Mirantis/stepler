@@ -1,7 +1,7 @@
 """
-Login page with its components.
-
-@author: schipiga@mirantis.com
+----------
+Login page
+----------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

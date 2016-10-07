@@ -1,7 +1,7 @@
 """
-Fixtures for metadata definitions.
-
-@author: schipiga@mirantis.com
+---------------------------------
+Fixtures for metadata definitions
+---------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

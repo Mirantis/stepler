@@ -1,7 +1,7 @@
 """
-Neutron steps.
-
-@author: schipiga@mirantis.com
+-------------
+Neutron steps
+-------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

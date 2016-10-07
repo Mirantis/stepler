@@ -1,7 +1,7 @@
 """
-Third party components.
-
-@author: schipiga@mirantis.com
+-------------------
+Horizon third party
+-------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

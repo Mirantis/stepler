@@ -1,7 +1,7 @@
 """
-Floating IP steps.
-
-@author: schipiga@mirantis.com
+-----------------
+Floating IP steps
+-----------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

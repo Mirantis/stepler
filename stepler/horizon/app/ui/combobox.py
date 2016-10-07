@@ -1,7 +1,7 @@
 """
-Themable combobox.
-
-@author: chipiga86@gmail.com
+-----------------
+Themable combobox
+-----------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

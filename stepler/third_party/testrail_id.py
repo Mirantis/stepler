@@ -1,7 +1,7 @@
 """
-Pytest plugin to add mark `@pytest.mark.testrail_id(<id>)`.
-
-@author: schipiga@mirantis.com
+----------------------------------------------------------
+Pytest plugin to add mark `@pytest.mark.testrail_id(<id>)`
+----------------------------------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

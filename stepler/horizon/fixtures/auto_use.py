@@ -1,7 +1,7 @@
 """
-Auto use fixtures.
-
-@author: schipiga@mirantis.com
+-----------------
+Auto use fixtures
+-----------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

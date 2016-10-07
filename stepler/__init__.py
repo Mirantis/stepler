@@ -1,5 +1,7 @@
 """
-Stepler framework.
+-----------------
+Stepler framework
+-----------------
 
 Stepler is intended to provide the community with a testing framework that is
 capable of perform advanced scenario and destructive test cases, like batch

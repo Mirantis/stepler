@@ -1,7 +1,7 @@
 """
-Flavor fixtures.
-
-@author: schipiga@mirantis.com
+---------------
+Flavor fixtures
+---------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

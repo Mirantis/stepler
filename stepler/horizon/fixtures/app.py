@@ -1,7 +1,7 @@
 """
-Fixtures to run horizon, login, create demo user, etc.
-
-@author: schipiga@mirantis.com
+-----------------------------------------------------
+Fixtures to run horizon, login, create demo user, etc
+-----------------------------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

@@ -2,8 +2,6 @@
 --------------
 Keystone tests
 --------------
-
-@author: schipiga@mirantis.com
 """
 
 #    Copyright 2016 Mirantis, Inc.

@@ -1,7 +1,7 @@
 """
-Defaults page.
-
-@author: schipiga@mirantis.com
+-------------
+Defaults page
+-------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

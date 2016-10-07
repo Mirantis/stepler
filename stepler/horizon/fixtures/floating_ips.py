@@ -1,7 +1,7 @@
 """
-Fixtures for floating IPs.
-
-@author: schipiga@mirantis.com
+-------------------------
+Fixtures for floating IPs
+-------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

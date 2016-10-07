@@ -1,7 +1,7 @@
 """
-Module with horizon UI autotests.
-
-@author: schipiga@mirantis.com
+--------------------
+Horizon UI autotests
+--------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,7 +1,7 @@
 """
-Fixtures to manipulate with volume types and QoS Specs.
-
-@author: schipiga@mirantis.com
+------------------------------------------------------
+Fixtures to manipulate with volume types and QoS Specs
+------------------------------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
