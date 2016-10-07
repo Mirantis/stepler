@@ -1,9 +1,7 @@
 """
--------------
-Neutron steps
--------------
-
-@author: schipiga@mirantis.com
+----------------
+Neutron managers
+----------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,14 +17,14 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .networks import *  # noqa
-from .ports import *  # noqa
-from .subnets import *  # noqa
-from .routers import *  # noqa
+from .network import NetworkManager
+from .port import PortManager
+from .router import RouterManager
+from .subnet import SubnetManager
 
 __all__ = [
-    "NetworkSteps",
-    "PortSteps",
-    "SubnetSteps",
-    "RouterSteps",
+    'NetworkManager',
+    'PortManager',
+    'RouterManager',
+    'SubnetManager',
 ]

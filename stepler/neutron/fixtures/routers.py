@@ -23,10 +23,11 @@ from stepler.neutron import steps
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
-    'create_router',
-    'router',
     'add_router_interfaces',
-    'router_steps'
+    'create_router',
+    'delete_routers_cascade',
+    'router',
+    'router_steps',
 ]
 
 
@@ -106,3 +107,19 @@ def add_router_interfaces(router_steps):
     for router, subnets in _cleanup_data:
         for subnet in subnets:
             router_steps.remove_subnet_interface(router, subnet)
+
+
+@pytest.fixture
+def delete_routers_cascade(port_steps, router_steps):
+    """Fixture to delete routers cascade."""
+
+    def _delete_routers_cascade(routers):
+        for router in routers:
+            router_steps.clear_gateway(router)
+
+            for port in port_steps.get_ports(router['id']):
+                router_steps.remove_interface(router, port=port)
+
+            router_steps.delete(router)
+
+    return _delete_routers_cascade

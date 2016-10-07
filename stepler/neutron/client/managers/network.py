@@ -1,3 +1,9 @@
+"""
+---------------
+Network manager
+---------------
+"""
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,22 +17,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from stepler.third_party.neutron.models import base
+from stepler.neutron.client import base
+
+__all__ = ['NetworkManager']
 
 
 class NetworkManager(base.BaseNeutronManager):
     """Neutwork (neutron) manager."""
 
-    NAME = 'network'
-
-    def create(self, name):
+    def create(self, name, admin_state_up):
         """Create new neutron network."""
-        return super(NetworkManager, self).create(name=name,
-                                                  admin_state_up=True)
+        return super(NetworkManager, self).create(
+            name=name, admin_state_up=admin_state_up)
 
-    def delete(self, network_id):
-        """Delete network."""
-        network = self.get(network_id)
-        for subnet_id in network['subnets']:
-            self.client.subnets.delete(subnet_id)
-        super(NetworkManager, self).delete(network_id)
+    def list_dhcp_agent_hosting_networks(self, network_id):
+        """List DHCP agent hosting networks."""
+        return self._neutron_client.list_dhcp_agent_hosting_networks(
+            network_id)
