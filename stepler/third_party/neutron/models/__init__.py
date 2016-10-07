@@ -1,0 +1,1 @@
+"""Check, that I can create another patch set based on existing."""
