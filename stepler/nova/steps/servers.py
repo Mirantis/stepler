@@ -25,6 +25,7 @@ from waiting import wait
 
 from stepler.base import BaseSteps
 from stepler import config
+from stepler.third_party import chunk_serializer
 from stepler.third_party.ssh import SshClient
 from stepler.third_party.steps_checker import step
 
@@ -37,6 +38,8 @@ __all__ = [
     'ServerSteps'
 ]
 
+CREDENTIALS_PREFIX = 'stepler_credentials_'
+
 
 class ServerSteps(BaseSteps):
     """Nova steps."""
@@ -45,7 +48,7 @@ class ServerSteps(BaseSteps):
     def create_server(self, server_name, image, flavor, networks=(), ports=(),
                       keypair=None, security_groups=None,
                       availability_zone='nova', block_device_mapping=None,
-                      check=True):
+                      username=None, password=None, check=True):
         """Step to create server.
 
         Args:
@@ -58,6 +61,8 @@ class ServerSteps(BaseSteps):
             security_groups (list|tuple): security groups
             availability_zone (str): name of availability zone
             block_device_mapping (dict|None): block device mapping for server
+            username (str): username to store with server metadata
+            password (str): password to store with server metadata
             check (bool): flag whether to check step or not
 
         Returns:
@@ -71,6 +76,15 @@ class ServerSteps(BaseSteps):
             nics.append({'net-id': network['id']})
         for port in ports:
             nics.append({'port-id': port['id']})
+
+        # Store credentials to server metadata
+        private_key = None if keypair is None else keypair.private_key
+        credentials = {
+            'username': username,
+            'password': password,
+            'private_key': private_key
+        }
+        meta = chunk_serializer.dump(credentials, CREDENTIALS_PREFIX)
         server = self._client.create(name=server_name,
                                      image=image_id,
                                      flavor=flavor.id,
@@ -78,7 +92,8 @@ class ServerSteps(BaseSteps):
                                      key_name=keypair_id,
                                      availability_zone=availability_zone,
                                      security_groups=sec_groups,
-                                     block_device_mapping=block_device_mapping)
+                                     block_device_mapping=block_device_mapping,
+                                     meta=meta)
         if check:
             self.check_server_status(server, 'active', timeout=180)
 
@@ -88,7 +103,7 @@ class ServerSteps(BaseSteps):
     def create_servers(self, server_names, image, flavor, networks=(),
                        ports=(), keypair=None, security_groups=None,
                        availability_zone='nova', block_device_mapping=None,
-                       check=True):
+                       username=None, password=None, check=True):
         """Step to create servers.
 
         Args:
@@ -101,6 +116,8 @@ class ServerSteps(BaseSteps):
             security_groups (list|tuple): security groups
             availability_zone (str): name of availability zone
             block_device_mapping (dict|None): block device mapping for servers
+            username (str): username to store with server metadata
+            password (str): password to store with server metadata
             check (bool): flag whether to check step or not
 
         Returns:
@@ -118,6 +135,8 @@ class ServerSteps(BaseSteps):
                 security_groups=security_groups,
                 availability_zone=availability_zone,
                 block_device_mapping=block_device_mapping,
+                username=username,
+                password=password,
                 check=False)
             servers.append(server)
 
@@ -170,8 +189,21 @@ class ServerSteps(BaseSteps):
         assert_that(server.status.lower(), equal_to(status.lower()))
 
     @step
-    def check_ssh_connect(self, server, keypair, username=None, password=None,
-                          ip=None, proxy_cmd=None, ssh_timeout=60, timeout=0):
+    def get_server_creadentials(self, server):
+        """Step to retrieve server credentials.
+
+        Args:
+            server (object): nova server object
+        Returns:
+            dict: dict with username, password and (optionally) private_key
+        """
+        server.get()
+        meta = server.metadata
+        return chunk_serializer.load(meta, CREDENTIALS_PREFIX)
+
+    @step
+    def check_ssh_connect(self, server, ip=None, proxy_cmd=None,
+                          ssh_timeout=60, timeout=0):
         """Verify step to check ssh connect to server."""
         if not ip:
             if not proxy_cmd:
@@ -179,8 +211,12 @@ class ServerSteps(BaseSteps):
             else:
                 ip = self.get_ips(server, 'fixed').keys()[0]
 
-        ssh_client = SshClient(ip, pkey=keypair.private_key, username=username,
-                               password=password, timeout=ssh_timeout,
+        credentials = self.get_server_creadentials(server)
+        ssh_client = SshClient(ip,
+                               pkey=credentials.get('private_key'),
+                               username=credentials.get('username'),
+                               password=credentials.get('password'),
+                               timeout=ssh_timeout,
                                proxy_cmd=proxy_cmd)
 
         def predicate():
