@@ -34,11 +34,11 @@ def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
                                             flavor=flavor,
                                             networks=[network],
                                             keypair=keypair,
-                                            security_groups=[security_group])
+                                            security_groups=[security_group],
+                                            username='ubuntu')
 
         server_steps.attach_floating_ip(server, nova_floating_ip)
-        server_steps.check_ssh_connect(server, keypair, username='ubuntu',
-                                       timeout=600)
+        server_steps.check_ssh_connect(server, timeout=600)
 
         server_steps.detach_floating_ip(server, nova_floating_ip)
         server_steps.delete_server(server)
