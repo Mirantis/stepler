@@ -57,7 +57,7 @@ def test_keystone_permission_lose(admin, project, admin_role, project_steps,
 def test_restart_all_services(cirros_image, tiny_flavor, keypair,
                               admin_internal_network, security_group,
                               create_user, create_server,
-                              user_steps):
+                              user_steps, os_faults_steps):
     """**Scenario:** Check that keystone works after restarting services
 
     **Setup:**
@@ -70,7 +70,7 @@ def test_restart_all_services(cirros_image, tiny_flavor, keypair,
 
         #. Create new user 1
         #. Check that user 1 is present in user list
-        #. Restart apache2 services on all controllers
+        #. Restart keystone services
         #. Check that user 1 is present in user list
         #. Create new user 2
         #. Check that user 2 is present in user list
@@ -86,11 +86,7 @@ def test_restart_all_services(cirros_image, tiny_flavor, keypair,
     user_name = next(generate_ids('user'))
     user1 = create_user(user_name=user_name, password=user_name)
 
-    # TODO(ssokolov) apache restart is not yet implemented
-    # # Restart keystone services
-    # for node in env.get_nodes_by_role('controller'):
-    #     with node.ssh() as remote:
-    #         remote.check_call('service apache2 restart')
+    os_faults_steps.restart_service("keystone")
 
     user_steps.check_user_presence(user1)
     user_name = next(generate_ids('user'))

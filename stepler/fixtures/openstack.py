@@ -36,6 +36,8 @@ def session():
       keystoneauth1.session.Session: authenticated session object
     """
     assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
+    assert config.OS_FAULTS_CONFIG, ("Environment variable OS_FAULTS_CONFIG "
+                                     "is not defined")
 
     auth = v3.Password(auth_url=config.AUTH_URL,
                        username=config.USERNAME,

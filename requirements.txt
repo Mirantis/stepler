@@ -13,6 +13,8 @@ requests==2.11.1
 six==1.10.0
 waiting==1.3.0
 
+git+git://github.com/openstack/os-faults
+
 # ui testing
 attrdict==2.0.0
 PyHamcrest==1.9.0
