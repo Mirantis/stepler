@@ -1,7 +1,7 @@
 """
------------
-Group steps
------------
+---------------
+os_faults steps
+---------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,42 +23,42 @@ from stepler.base import BaseSteps
 from stepler.third_party.steps_checker import step
 
 __all__ = [
-    'GroupSteps'
+    'OsFaultsSteps'
 ]
 
 
-class GroupSteps(BaseSteps):
-    """Group steps."""
+class OsFaultsSteps(BaseSteps):
+    """os faults steps."""
 
     @step
-    def get_groups(self, domain='default', check=True):
-        """Step to get groups.
+    def get_nodes(self, check=True):
+        """Step to get nodes.
 
         Args:
-            domain (str or object): domain
             check (bool): flag whether to check step or not
 
         Returns:
-            list of objects: list of groups
+            list of nodes
         """
-        groups = list(self._client.list(domain=domain))
+        nodes = self._client.get_nodes()
 
         if check:
-            assert_that(groups, is_not(empty()))
-        return groups
+            assert_that(nodes, is_not(empty()))
+
+        return nodes
 
     @step
-    def get_group(self, name, domain='default'):
-        """Step to find group.
+    def restart_service(self, name, check=True):
+        """Step to restart a service.
 
         Args:
-            name (str) - group name
-            domain (str or object): domain
-
-        Raises:
-            NotFound: if such group does not exist
-
-        Returns:
-            object: group
+            name (str): service name
+            check (bool): flag whether to check step or not
         """
-        return self._client.find(name=name, domain=domain)
+        # TODO(ssokolov) add check of service names
+        service = self._client.get_service(name=name)
+        service.restart()
+
+        if check:
+            # TODO(ssokolov) replace by real check
+            assert_that([service], is_not(empty()))
