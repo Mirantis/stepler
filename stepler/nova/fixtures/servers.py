@@ -41,21 +41,22 @@ def server_steps(nova_client):
 
 
 @pytest.yield_fixture
-def create_servers(server_steps):
+def create_servers(server_steps, nova_client):
     """Fixture to create servers with options.
 
     Can be called several times during test.
     """
-    servers = []
+    names = []
 
     def _create_servers(server_names, *args, **kwgs):
+        names.extend(server_names)
         _servers = server_steps.create_servers(server_names, *args, **kwgs)
-        servers.extend(_servers)
         return _servers
 
     yield _create_servers
 
-    if servers:
+    if names:
+        servers = [s for s in nova_client.servers.list() if s.name in names]
         server_steps.delete_servers(servers)
 
 
