@@ -17,22 +17,18 @@ Server steps.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
+import contextlib
 
-from hamcrest import assert_that, is_not, has_item, equal_to  # noqa
+from hamcrest import (assert_that, is_not, has_item, equal_to,
+                      less_than_or_equal_to)  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
 from stepler import config
 from stepler.third_party import chunk_serializer
+from stepler.third_party import ping
 from stepler.third_party.ssh import SshClient
 from stepler.third_party.steps_checker import step
-
-if os.name == 'posix' and sys.version_info[0] < 3:
-    import subprocess32 as subprocess
-else:
-    import subprocess
 
 __all__ = [
     'ServerSteps'
@@ -167,6 +163,7 @@ class ServerSteps(BaseSteps):
     @step
     def check_server_presence(self, server, present=True, timeout=0):
         """Verify step to check server is present."""
+
         def predicate():
             try:
                 self._client.get(server.id)
@@ -177,9 +174,19 @@ class ServerSteps(BaseSteps):
         wait(predicate, timeout_seconds=timeout)
 
     @step
-    def check_server_status(self, server, status, timeout=0):
-        """Verify step to check server status."""
-        transit_statuses = ('build',)
+    def check_server_status(self, server, status, transit_statuses=('build', ),
+                            timeout=0):
+        """Verify step to check server status.
+
+        Args:
+            server (object): nova instance to ping its floating ip
+            status (str): expected server status
+            transit_statuses (iterable): allowed transit statuses
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
 
         def predicate():
             server.get()
@@ -286,8 +293,84 @@ class ServerSteps(BaseSteps):
         floating_ip = self.get_ips(server, 'floating').keys()[0]
 
         def predicate():
-            exit_code = subprocess.call(['ping', '-c1', floating_ip],
-                                        timeout=config.PING_CALL_TIMEOUT)
-            return exit_code == 0
+            result = ping.Pinger(floating_ip).ping(count=1)
+            return result.loss == 0
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def live_migrate(self,
+                     server,
+                     host=None,
+                     block_migration=True,
+                     check=True):
+        """Step to live migrate nova server.
+
+        Args:
+            server (object): nova instance to migrate
+            host (str): hypervisor's hostname to migrate to
+            block_migration (bool): should nova use block or true live
+                migration
+            check (bool): flag whether to check step or not
+        """
+        server.get()
+        current_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
+        server.live_migrate(host=host, block_migration=block_migration)
+        if check:
+            if host is not None:
+                self.check_instance_hypervisor_hostname(
+                    server, host,
+                    timeout=config.LIVE_MIGRATE_TIMEOUT)
+            else:
+                self.check_instance_hypervisor_hostname(
+                    server,
+                    current_host,
+                    equal=False,
+                    timeout=config.LIVE_MIGRATE_TIMEOUT)
+            self.check_server_status(server,
+                                     'active',
+                                     transit_statuses=('migrating', ),
+                                     timeout=180)
+
+    @step
+    def check_instance_hypervisor_hostname(self,
+                                           server,
+                                           host,
+                                           equal=True,
+                                           timeout=0):
+        """Verify step to check that server's hypervisor hostname.
+
+        Args:
+            server (object): nova instance to check hypervisor hostname
+            host (str): name of hypervisor hostname to compare with
+                server's hypervisor
+            equal (bool): flag whether servers's hypervisor hostname should be
+                equal to `hostname` or not
+            timeout (int): seconds to wait a result of check
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            server.get()
+            server_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
+            return server_host == host
+
+        wait(predicate, timeout_seconds=timeout)
+
+    @step
+    @contextlib.contextmanager
+    def check_ping_loss_context(self, ip_to_ping, max_loss=0):
+        """Context manager step to check that ping losses inside CM is less
+            than max_loss.
+
+        Args:
+            ip_to_ping (str): ip address to ping
+            max_loss (int): maximum allowed pings loss
+
+        Raises:
+            AssertionError: if ping loss is greater than `max_loss`
+        """
+        with ping.Pinger(ip_to_ping) as result:
+            yield
+        assert_that(result.loss, less_than_or_equal_to(max_loss))
