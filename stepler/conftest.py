@@ -25,6 +25,7 @@ from stepler.glance.conftest import *  # noqa
 from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
 from stepler.nova.conftest import *  # noqa
+from stepler.os_faults.conftest import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'admin_ssh_key_path',
@@ -90,6 +91,9 @@ __all__ = sorted([  # sort for documentation
     'server',
     'server_steps',
     'ssh_proxy_data',
+
+    'os_faults_client',
+    'os_faults_steps'
 ])
 
 pytest_plugins = [
