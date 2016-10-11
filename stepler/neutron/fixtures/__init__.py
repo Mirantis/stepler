@@ -35,5 +35,4 @@ __all__ = sorted([  # sort for documentation
     'network_steps',
     'router_steps',
     'subnet_steps',
-    'admin_internal_network'
 ])

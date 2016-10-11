@@ -1,7 +1,7 @@
 """
---------------
-Group fixtures
---------------
+---------------
+os_faults steps
+---------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,23 +17,8 @@ Group fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
-from stepler.keystone.steps import GroupSteps
+from .faults import *  # noqa
 
 __all__ = [
-    'group_steps'
+    'OsFaultsSteps'
 ]
-
-
-@pytest.fixture
-def group_steps(keystone_client):
-    """Fixture to get group steps.
-
-    Args:
-        keystone_client (object): instantiated keystone client
-
-    Returns:
-        stepler.keystone.steps.GroupSteps: instantiated group steps
-    """
-    return GroupSteps(keystone_client.groups)

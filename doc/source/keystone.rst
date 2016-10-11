@@ -14,6 +14,3 @@ Keystone tests
 
 .. automodule:: stepler.keystone.tests.test_keystone
    :members:
-
-.. automodule:: stepler.keystone.tests.test_keystone_ldap
-   :members:
