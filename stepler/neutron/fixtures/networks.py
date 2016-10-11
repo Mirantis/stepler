@@ -19,6 +19,7 @@ Networks fixtures
 
 import pytest
 
+from stepler import config
 from stepler.neutron import steps
 from stepler.third_party.utils import generate_ids
 
@@ -26,7 +27,8 @@ __all__ = [
     'create_network',
     'network',
     'public_network',
-    'network_steps'
+    'network_steps',
+    'admin_internal_network'
 ]
 
 
@@ -73,3 +75,17 @@ def public_network(network_steps):
         dict: public network
     """
     return network_steps.get_public_network()
+
+
+@pytest.fixture
+def admin_internal_network(network_steps):
+    """Fixture to find admin internal network before test.
+
+    Args:
+        neutron_steps (object): instantiated neutron steps
+
+    Returns:
+        object: admin internal network
+    """
+    return network_steps.get_network_by_name(
+        config.ADMIN_INTERNAL_NETWORK_NAME)
