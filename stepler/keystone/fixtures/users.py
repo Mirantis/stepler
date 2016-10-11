@@ -31,48 +31,27 @@ __all__ = [
 
 
 @pytest.fixture
-def user_steps(keystone_client):
-    """Fixture to get user steps.
-
-    Args:
-        keystone_client (object): instantiated keystone client
-
-    Returns:
-        stepler.keystone.steps.UserSteps: instantiated user steps
-    """
-    return UserSteps(keystone_client.users)
+def admin(user_steps):
+    """Fixture to get admin."""
+    return user_steps.get_user(name='admin')
 
 
 @pytest.fixture
-def admin(user_steps):
-    """Fixture to get admin.
-
-    Args:
-        user_steps (object): instantiated user steps
-
-    Returns:
-        object: user 'admin'
-    """
-    return user_steps.get_user(name='admin')
+def user_steps(keystone_client):
+    """Fixture to get user steps."""
+    return UserSteps(keystone_client.users)
 
 
 @pytest.yield_fixture
 def create_user(user_steps):
     """Fixture to create user with options.
 
-    Can be called several times during a test.
-    After the test it destroys all created users.
-
-    Args:
-        user_steps (object): instantiated user steps
-
-    Yields:
-        function: function to create user with options
+    Can be called several times during test.
     """
     users = []
 
-    def _create_user(user_name, password, *args, **kwgs):
-        user = user_steps.create_user(user_name, password, *args, **kwgs)
+    def _create_user(user_name, password):
+        user = user_steps.create_user(user_name, password)
         users.append(user)
         return user
 
@@ -84,14 +63,7 @@ def create_user(user_steps):
 
 @pytest.fixture
 def user(create_user):
-    """Fixture to create user with default options before test.
-
-    Args:
-        create_user (function): function to create user with options
-
-    Returns:
-        object: user
-    """
+    """Fixture to create user with default options before test."""
     user_name = next(generate_ids('user'))
     password = next(generate_ids('password'))
     return create_user(user_name, password)

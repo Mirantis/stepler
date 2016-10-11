@@ -25,8 +25,7 @@ from stepler.third_party.utils import generate_ids
 __all__ = [
     'create_flavor',
     'flavor',
-    'flavor_steps',
-    'tiny_flavor'
+    'flavor_steps'
 ]
 
 
@@ -60,16 +59,3 @@ def flavor(create_flavor):
     """Fixture to create flavor with default options before test."""
     flavor_name = next(generate_ids('flavor'))
     return create_flavor(flavor_name, ram=1024, vcpus=1, disk=5)
-
-
-@pytest.fixture
-def tiny_flavor(flavor_steps):
-    """Function fixture to find tiny flavor before test.
-
-    Args:
-        flavor_steps (object): instantiated flavor steps
-
-    Returns:
-        object: tiny flavor
-    """
-    return flavor_steps.get_flavor(name='m1.tiny')

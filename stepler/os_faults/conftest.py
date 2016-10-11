@@ -1,7 +1,7 @@
 """
----------------------
-Keystone tests config
----------------------
+------------------
+os_faults conftest
+------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +17,5 @@ Keystone tests config
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-AUTH_DATA = {
-    'openldap1': ('user01', '1111'),
-    'openldap2': ('user1', '1111'),
-    'AD2': ('user01', 'qwerty123!')
-}
-LDAP_DOMAIN_NAMES = AUTH_DATA.keys()
-LDAP_DOMAIN_GROUPS = {
-    'AD2': 'Administrators',
-    'openldap2': 'group01'
-}
+from .fixtures import *  # noqa
+from .fixtures import __all__  # noqa
