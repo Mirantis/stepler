@@ -20,9 +20,8 @@ Keystone LDAP tests
 
 import pytest
 
-from stepler.keystone.config import (AUTH_DATA, LDAP_DOMAIN_NAMES,
-                                     LDAP_DOMAIN_GROUPS)
-from stepler.third_party.utils import generate_ids
+from stepler.keystone.config import (LDAP_DOMAIN_NAMES,
+                                     LDAP_DOMAIN_GROUPS)  # noqa
 
 
 @pytest.mark.undestructive

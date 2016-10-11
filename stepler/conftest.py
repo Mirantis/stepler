@@ -95,6 +95,9 @@ __all__ = sorted([  # sort for documentation
     'server',
     'server_steps',
     'ssh_proxy_data',
+
+    'os_faults_client',
+    'os_faults_steps'
 ])
 
 pytest_plugins = [
