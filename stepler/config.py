@@ -26,6 +26,7 @@ PROJECT_NAME = os.environ.get('OS_PROJECT_NAME', 'admin')
 USERNAME = os.environ.get('OS_USERNAME', 'admin')
 PASSWORD = os.environ.get('OS_PASSWORD', 'password')
 AUTH_URL = os.environ.get('OS_AUTH_URL')  # should be defined!
+OS_FAULTS_CONFIG = os.environ.get('OS_FAULTS_CONFIG')  # should be defined!
 
 UBUNTU_QCOW2_URL = 'https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img'  # noqa
 FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases/23/Cloud/x86_64/Images/Fedora-Cloud-Base-23-20151030.x86_64.qcow2'  # noqa
