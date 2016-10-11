@@ -1,7 +1,7 @@
 """
------------------
-Keystone fixtures
------------------
+------------------
+os_faults fixtures
+------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,30 +17,9 @@ Keystone fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .domains import *  # noqa
-from .keystone import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .users import *  # noqa
+from .faults import *  # noqa
 
 __all__ = sorted([  # sort for documentation
-    'create_domain',
-    'domain_steps',
-    'domain',
-
-    'keystone_client',
-
-    'create_project',
-    'project_steps',
-    'project',
-
-    'admin_role',
-    'create_role',
-    'role_steps',
-    'role',
-
-    'admin',
-    'create_user',
-    'user_steps',
-    'user'
+    'os_faults_client',
+    'os_faults_steps'
 ])

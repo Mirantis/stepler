@@ -19,6 +19,7 @@ Networks fixtures
 
 import pytest
 
+from stepler import config
 from stepler.neutron import steps
 from stepler.third_party.utils import generate_ids
 
