@@ -21,6 +21,7 @@ import pytest
 
 from stepler.nova.steps import ServerSteps
 from stepler.third_party.context import context
+from stepler.third_party import ssh
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
@@ -30,7 +31,8 @@ __all__ = [
     'create_servers_context',
     'server',
     'server_steps',
-    'ssh_proxy_data'
+    'ssh_proxy_data',
+    'ssh_to_instance',
 ]
 
 
@@ -143,20 +145,52 @@ def server(create_server, image):
 
 
 @pytest.fixture
-def ssh_proxy_data(admin_ssh_key_path, ip_by_host,
-                   neutron_steps, server_steps):
+def ssh_proxy_data(request, network_steps, server_steps):
     """Fixture to get ssh proxy data of server."""
-    def _ssh_proxy_data(server):
-        ip_info = server_steps.get_ips(server, 'fixed').values()[0]
+    def _ssh_proxy_data(server, ip=None):
+        server_ips = server_steps.get_ips(server)
+        if ip is not None:
+            try:
+                ip_info = server_ips[ip]
+            except KeyError:
+                raise ValueError('Passed IP {!r} is not in server {!r} '
+                                 'addresses ({!r})'.format(ip, server,
+                                                           server_ips.keys()))
+        else:
+            ip_info = next(v for k, v in server_ips if v['type'] == 'fixed')
         server_ip = ip_info['ip']
-        server_mac = ip_info['mac']
-        net_id = neutron_steps.get_network_id_by_mac(server_mac)
-        dhcp_netns = "qdhcp-{}".format(net_id)
-        dhcp_host = neutron_steps.get_dhcp_host_by_network(net_id)
-        dhcp_server_ip = ip_by_host(dhcp_host)
-        cmd = 'ssh -i {} root@{} ip netns exec {} netcat {} 22'.format(
-            admin_ssh_key_path, dhcp_server_ip, dhcp_netns, server_ip)
+        if ip_info['type'] == 'floating':
+            cmd = None
+        else:
+            server_mac = ip_info['mac']
+            net_id = network_steps.get_network_id_by_mac(server_mac)
+            dhcp_netns = "qdhcp-{}".format(net_id)
+            dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
+            ip_by_host = request.getfixturevalue('ip_by_host')
+            admin_ssh_key_path = request.getfixturevalue('admin_ssh_key_path')
+            dhcp_server_ip = ip_by_host(dhcp_host)
+            cmd = 'ssh -i {} root@{} ip netns exec {} netcat {} 22'.format(
+                admin_ssh_key_path, dhcp_server_ip, dhcp_netns, server_ip)
 
         return cmd, server_ip
 
     return _ssh_proxy_data
+
+
+@pytest.fixture
+def ssh_to_instance(ssh_proxy_data, server_steps):
+    def _ssh_to_instance(server, ip=None):
+        proxy_cmd, ip = ssh_proxy_data(server, ip)
+        server_steps.check_ssh_connect(server,
+                                       ip=ip,
+                                       proxy_cmd=proxy_cmd,
+                                       timeout=60 * 5)
+        credentials = server_steps.get_server_creadentials(server)
+        ssh_client = ssh.SshClient(ip,
+                                   pkey=credentials.get('private_key'),
+                                   username=credentials.get('username'),
+                                   password=credentials.get('password'),
+                                   proxy_cmd=proxy_cmd)
+        return ssh_client
+
+    return _ssh_to_instance
