@@ -21,19 +21,17 @@ import logging
 import select
 import time
 
-
 import paramiko
 import six
 
-__all__ = [
-    'SshClient'
-]
+__all__ = ['SshClient']
 
 LOGGER = logging.getLogger(__name__)
 
 
 class CommandResult(object):
     """Remote command result."""
+
     def __init__(self, *args, **kwargs):
         super(CommandResult, self).__init__(*args, **kwargs)
         self.command = None
@@ -42,10 +40,10 @@ class CommandResult(object):
         self._stderr = ''
 
     def __repr__(self):
-        return (u'`{command}` result:\n'
-                u'exit code: {exit_code}\n'
-                u'stdout: {stdout}\n'
-                u'stderr: {stderr}').format(self)
+        return (u'`{0.command}` result:\n'
+                u'exit code: {0.exit_code}\n'
+                u'stdout: {0.stdout}\n'
+                u'stderr: {0.stderr}').format(self)
 
     @property
     def is_ok(self):
@@ -68,19 +66,28 @@ class CommandResult(object):
     def check_exit_code(self, expected=0):
         """Check that exit_code is 0."""
         if self.exit_code != expected:
-            raise Exception('Command {!r} exit code is not 0'.format(self))
+            raise Exception('Command {0.command!r} exit code is not 0'.format(
+                self))
 
     def check_stderr(self):
         """Check that stderr is empty."""
         if self.stderr:
-            raise Exception('Command {!r} stderr is not empty'.format(self))
+            raise Exception('Command {0.command!r} stderr '
+                            'is not empty:\n{0.stderr}'.format(self))
 
 
 class SshClient(object):
     """SSH client."""
 
-    def __init__(self, host, port=22, username=None, password=None, pkey=None,
-                 timeout=None, proxy_cmd=None, execution_timeout=3600):
+    def __init__(self,
+                 host,
+                 port=22,
+                 username=None,
+                 password=None,
+                 pkey=None,
+                 timeout=None,
+                 proxy_cmd=None,
+                 execution_timeout=3600):
         """Constructor."""
         self._host = host
         self._port = port
@@ -98,9 +105,13 @@ class SshClient(object):
         sock = paramiko.ProxyCommand(self._proxy_cmd) \
             if self._proxy_cmd else None
 
-        self._ssh.connect(self._host, self._port, pkey=self._pkey,
-                          timeout=self._timeout, banner_timeout=self._timeout,
-                          username=self._username, password=self._password,
+        self._ssh.connect(self._host,
+                          self._port,
+                          pkey=self._pkey,
+                          timeout=self._timeout,
+                          banner_timeout=self._timeout,
+                          username=self._username,
+                          password=self._password,
                           sock=sock)
 
     def close(self):
@@ -165,8 +176,7 @@ class SshClient(object):
             stdout=stdout)
         result = self.check_call(bg_command, verbose=False)
         pid = result.stdout
-        result = self.execute('ps -p {pid}'.format(pid=pid),
-                              verbose=False)
+        result = self.execute('ps -p {pid}'.format(pid=pid), verbose=False)
         assert result.is_ok, (
             "Can't find `{command}` (PID: {pid}) in "
             "processes".format(command=command, pid=pid))

@@ -59,8 +59,8 @@ class BaseSteps(object):
            - step should return nothing.
 
            - step should use code to raise exception: ``assert_that`` from
-             hamcrest, ``wait``-methods which raise ``TimeoutError``, ``raise``
-             for explicit exception, another ``check_``-steps.
+             hamcrest, ``wait``-methods which raise ``TimeoutExpired``,
+             ``raise`` for explicit exception, another ``check_``-steps.
 
              .. warning::
                 We don't use python ``assert``, prefer ``hamcrest`` library.
@@ -81,7 +81,7 @@ class BaseSteps(object):
 
            - inside ``if check:`` step should use code to raise exception:
              ``assert_that`` from hamcrest, ``wait``-methods which raise
-             ``TimeoutError``, ``raise`` for explicit exception, or
+             ``TimeoutExpired``, ``raise`` for explicit exception, or
              ``check_``-step.
 
            - inside ``if check:`` step should return nothing. Its section is
