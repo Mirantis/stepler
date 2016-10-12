@@ -49,5 +49,6 @@ __all__ = sorted([  # sort for documentation
     'create_servers_context',
     'server',
     'server_steps',
-    'ssh_proxy_data'
+    'ssh_proxy_data',
+    'ssh_to_instance',
 ])
