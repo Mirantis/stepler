@@ -44,7 +44,7 @@ class ServerSteps(BaseSteps):
     def create_server(self, server_name, image, flavor, networks=(), ports=(),
                       keypair=None, security_groups=None,
                       availability_zone='nova', block_device_mapping=None,
-                      username=None, password=None, check=True):
+                      username=None, password=None, userdata=None, check=True):
         """Step to create server.
 
         Args:
@@ -59,6 +59,7 @@ class ServerSteps(BaseSteps):
             block_device_mapping (dict|None): block device mapping for server
             username (str): username to store with server metadata
             password (str): password to store with server metadata
+            userdata (str): userdata (script) to execute on instance after boot
             check (bool): flag whether to check step or not
 
         Returns:
@@ -89,6 +90,7 @@ class ServerSteps(BaseSteps):
                                      availability_zone=availability_zone,
                                      security_groups=sec_groups,
                                      block_device_mapping=block_device_mapping,
+                                     userdata=userdata,
                                      meta=meta)
         if check:
             self.check_server_status(server, 'active', timeout=180)
@@ -99,7 +101,8 @@ class ServerSteps(BaseSteps):
     def create_servers(self, server_names, image, flavor, networks=(),
                        ports=(), keypair=None, security_groups=None,
                        availability_zone='nova', block_device_mapping=None,
-                       username=None, password=None, check=True):
+                       username=None, password=None, userdata=None,
+                       check=True):
         """Step to create servers.
 
         Args:
@@ -114,6 +117,7 @@ class ServerSteps(BaseSteps):
             block_device_mapping (dict|None): block device mapping for servers
             username (str): username to store with server metadata
             password (str): password to store with server metadata
+            userdata (str): userdata (script) to execute on instance after boot
             check (bool): flag whether to check step or not
 
         Returns:
@@ -131,6 +135,7 @@ class ServerSteps(BaseSteps):
                 security_groups=security_groups,
                 availability_zone=availability_zone,
                 block_device_mapping=block_device_mapping,
+                userdata=userdata,
                 username=username,
                 password=password,
                 check=False)
@@ -388,3 +393,35 @@ class ServerSteps(BaseSteps):
         with ping.Pinger(ip_to_ping) as result:
             yield
         assert_that(result.loss, less_than_or_equal_to(max_loss))
+
+    @step
+    def server_mem_workload(self, remote, check=True):
+        """Step to start server memory workload.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        """
+        pid = remote.background_call('stress --vm-bytes 5M --vm-keep -m 1')
+        if check:
+            assert_that(pid, is_not(None))
+
+    @step
+    def check_server_log(self, server, substring, timeout=0):
+        """Verify step to check server log contains substring.
+
+        Args:
+            server (object): nova instance to ping its floating ip
+            substring (str): substring to match
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            server.get()
+            console = server.get_console_output()
+            return substring in console
+
+        wait(predicate, timeout_seconds=timeout)
