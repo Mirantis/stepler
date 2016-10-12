@@ -103,6 +103,7 @@ Deep to structure
    steps_concept
    common_fixtures
    cinder
+   baremetal
    glance
    horizon
    keystone
