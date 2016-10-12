@@ -19,6 +19,12 @@ Nova live migration tests
 
 from stepler.third_party.utils import generate_ids
 
+USERDATA_DONE_MARKER = next(generate_ids('userdata-done'))
+
+INSTALL_WORKLOAD_USERDATA = """#!/bin/bash -v
+apt-get install -yq stress cpulimit sysstat iperf
+echo {}""".format(USERDATA_DONE_MARKER)
+
 
 def test_network_connectivity_to_vm_during_live_migration(
         keypair, flavor, security_group, nova_floating_ip, cirros_image,
@@ -64,3 +70,60 @@ def test_network_connectivity_to_vm_during_live_migration(
     with server_steps.check_ping_loss_context(nova_floating_ip.ip,
                                               max_loss=20):
         server_steps.live_migrate(server, block_migration=True)
+
+
+def test_migration_with_memory_workload(
+        keypair, flavor, security_group, nova_floating_ip, ubuntu_image,
+        network, subnet, router, add_router_interfaces, create_volume,
+        create_server, ssh_to_instance, server_steps):
+    """**Scenario:** LM of instance under memory workload.
+
+    **Setup:**
+        #. Upload ubuntu image
+        #. Create network
+        #. Create subnet
+        #. Create router
+        #. Set router default gateway to public network
+        #. Create security group with allow ping rule
+        #. Create flavor
+    **Steps:**
+        #. Add router interface to created network
+        #. Create volume from ubuntu image
+        #. Boot server from volume
+        #. Assign floating ip to server
+        #. Start memory workload on server
+        #. Migrate server to another hypervisor
+        #. Check that ping to server's floating ip is successful
+    **Teardown:**
+        #. Delete server
+        #. Delete flavor
+        #. Delete volume
+        #. Delete security group
+        #. Delete router
+        #. Delete subnet
+        #. Delete network
+        #. Delete ubuntu image
+    """
+    add_router_interfaces(router, [subnet])
+    volume = create_volume(
+        next(generate_ids('volume')),
+        size=20,
+        image=ubuntu_image)
+    block_device_mapping = {'vda': volume.id}
+
+    server_name = next(generate_ids('server'))
+    server = create_server(server_name,
+                           image=None,
+                           flavor=flavor,
+                           keypair=keypair,
+                           networks=[network],
+                           security_groups=[security_group],
+                           block_device_mapping=block_device_mapping,
+                           userdata=INSTALL_WORKLOAD_USERDATA,
+                           username='ubuntu')
+    server_steps.check_server_log(server, USERDATA_DONE_MARKER, timeout=5 * 60)
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    with ssh_to_instance(server, nova_floating_ip.ip) as remote:
+        server_steps.server_mem_workload(remote)
+    server_steps.live_migrate(server, block_migration=True)
+    server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
