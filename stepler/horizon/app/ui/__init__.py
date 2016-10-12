@@ -1,6 +1,6 @@
 """
 --------------------
-Сustom UI components
+Custom UI components
 --------------------
 """
 
