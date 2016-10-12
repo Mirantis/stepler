@@ -41,10 +41,20 @@ class ServerSteps(BaseSteps):
     """Nova steps."""
 
     @step
-    def create_server(self, server_name, image, flavor, networks=(), ports=(),
-                      keypair=None, security_groups=None,
-                      availability_zone='nova', block_device_mapping=None,
-                      username=None, password=None, check=True):
+    def create_server(self,
+                      server_name,
+                      image,
+                      flavor,
+                      networks=(),
+                      ports=(),
+                      keypair=None,
+                      security_groups=None,
+                      availability_zone='nova',
+                      block_device_mapping=None,
+                      username=None,
+                      password=None,
+                      userdata=None,
+                      check=True):
         """Step to create server.
 
         Args:
@@ -59,6 +69,7 @@ class ServerSteps(BaseSteps):
             block_device_mapping (dict|None): block device mapping for server
             username (str): username to store with server metadata
             password (str): password to store with server metadata
+            userdata (str): userdata (script) to execute on instance after boot
             check (bool): flag whether to check step or not
 
         Returns:
@@ -81,25 +92,37 @@ class ServerSteps(BaseSteps):
             'private_key': private_key
         }
         meta = chunk_serializer.dump(credentials, CREDENTIALS_PREFIX)
-        server = self._client.create(name=server_name,
-                                     image=image_id,
-                                     flavor=flavor.id,
-                                     nics=nics,
-                                     key_name=keypair_id,
-                                     availability_zone=availability_zone,
-                                     security_groups=sec_groups,
-                                     block_device_mapping=block_device_mapping,
-                                     meta=meta)
+        server = self._client.create(
+            name=server_name,
+            image=image_id,
+            flavor=flavor.id,
+            nics=nics,
+            key_name=keypair_id,
+            availability_zone=availability_zone,
+            security_groups=sec_groups,
+            block_device_mapping=block_device_mapping,
+            userdata=userdata,
+            meta=meta)
         if check:
             self.check_server_status(server, 'active', timeout=180)
 
         return server
 
     @step
-    def create_servers(self, server_names, image, flavor, networks=(),
-                       ports=(), keypair=None, security_groups=None,
-                       availability_zone='nova', block_device_mapping=None,
-                       username=None, password=None, check=True):
+    def create_servers(self,
+                       server_names,
+                       image,
+                       flavor,
+                       networks=(),
+                       ports=(),
+                       keypair=None,
+                       security_groups=None,
+                       availability_zone='nova',
+                       block_device_mapping=None,
+                       username=None,
+                       password=None,
+                       userdata=None,
+                       check=True):
         """Step to create servers.
 
         Args:
@@ -114,6 +137,7 @@ class ServerSteps(BaseSteps):
             block_device_mapping (dict|None): block device mapping for servers
             username (str): username to store with server metadata
             password (str): password to store with server metadata
+            userdata (str): userdata (script) to execute on instance after boot
             check (bool): flag whether to check step or not
 
         Returns:
@@ -131,6 +155,7 @@ class ServerSteps(BaseSteps):
                 security_groups=security_groups,
                 availability_zone=availability_zone,
                 block_device_mapping=block_device_mapping,
+                userdata=userdata,
                 username=username,
                 password=password,
                 check=False)
@@ -202,7 +227,10 @@ class ServerSteps(BaseSteps):
         wait(predicate, timeout_seconds=timeout)
 
     @step
-    def check_server_status(self, server, status, transit_statuses=('build', ),
+    def check_server_status(self,
+                            server,
+                            status,
+                            transit_statuses=('build',),
                             timeout=0):
         """Verify step to check server status.
 
@@ -237,8 +265,12 @@ class ServerSteps(BaseSteps):
         return chunk_serializer.load(meta, CREDENTIALS_PREFIX)
 
     @step
-    def check_ssh_connect(self, server, ip=None, proxy_cmd=None,
-                          ssh_timeout=60, timeout=0):
+    def check_ssh_connect(self,
+                          server,
+                          ip=None,
+                          proxy_cmd=None,
+                          ssh_timeout=60,
+                          timeout=0):
         """Verify step to check ssh connect to server."""
         if not ip:
             if not proxy_cmd:
@@ -247,12 +279,13 @@ class ServerSteps(BaseSteps):
                 ip = self.get_ips(server, 'fixed').keys()[0]
 
         credentials = self.get_server_credentials(server)
-        ssh_client = SshClient(ip,
-                               pkey=credentials.get('private_key'),
-                               username=credentials.get('username'),
-                               password=credentials.get('password'),
-                               timeout=ssh_timeout,
-                               proxy_cmd=proxy_cmd)
+        ssh_client = SshClient(
+            ip,
+            pkey=credentials.get('private_key'),
+            username=credentials.get('username'),
+            password=credentials.get('password'),
+            timeout=ssh_timeout,
+            proxy_cmd=proxy_cmd)
 
         def predicate():
             try:
@@ -273,7 +306,8 @@ class ServerSteps(BaseSteps):
         if check:
             server.get()
             floating_ips = self.get_ips(server, 'floating').keys()
-            assert_that(floating_ips, has_item(floating_ip.ip),
+            assert_that(floating_ips,
+                        has_item(floating_ip.ip),
                         "Floating IP not in a list of server's IPs.")
 
     @step
@@ -284,7 +318,8 @@ class ServerSteps(BaseSteps):
         if check:
             server.get()
             floating_ips = self.get_ips(server, 'floating').keys()
-            assert_that(floating_ips, is_not(has_item(floating_ip.ip)),
+            assert_that(floating_ips,
+                        is_not(has_item(floating_ip.ip)),
                         "Floating IP still in a list of server's IPs.")
 
     @step
@@ -293,13 +328,17 @@ class ServerSteps(BaseSteps):
         ips = {}
         for net_name, net_info in server.addresses.items():
             for net in net_info:
-                ips[net['addr']] = {'type': net['OS-EXT-IPS:type'],
-                                    'mac': net['OS-EXT-IPS-MAC:mac_addr'],
-                                    'net': net_name,
-                                    'ip': net['addr']}
+                ips[net['addr']] = {
+                    'type': net['OS-EXT-IPS:type'],
+                    'mac': net['OS-EXT-IPS-MAC:mac_addr'],
+                    'net': net_name,
+                    'ip': net['addr']
+                }
         if ip_type:
-            ips = {key: val for key, val in ips.items()
-                   if val['type'] == ip_type}
+            ips = {
+                key: val
+                for key, val in ips.items() if val['type'] == ip_type
+            }
         return ips
 
     @step
@@ -327,10 +366,7 @@ class ServerSteps(BaseSteps):
         wait(predicate, timeout_seconds=timeout)
 
     @step
-    def live_migrate(self,
-                     server,
-                     host=None,
-                     block_migration=True,
+    def live_migrate(self, server, host=None, block_migration=True,
                      check=True):
         """Step to live migrate nova server.
 
@@ -347,18 +383,18 @@ class ServerSteps(BaseSteps):
         if check:
             if host is not None:
                 self.check_instance_hypervisor_hostname(
-                    server, host,
-                    timeout=config.LIVE_MIGRATE_TIMEOUT)
+                    server, host, timeout=config.LIVE_MIGRATE_TIMEOUT)
             else:
                 self.check_instance_hypervisor_hostname(
                     server,
                     current_host,
                     equal=False,
                     timeout=config.LIVE_MIGRATE_TIMEOUT)
-            self.check_server_status(server,
-                                     'active',
-                                     transit_statuses=('migrating', ),
-                                     timeout=config.LIVE_MIGRATE_TIMEOUT)
+            self.check_server_status(
+                server,
+                'active',
+                transit_statuses=('migrating',),
+                timeout=config.LIVE_MIGRATE_TIMEOUT)
 
     @step
     def check_instance_hypervisor_hostname(self,
@@ -402,3 +438,39 @@ class ServerSteps(BaseSteps):
         with ping.Pinger(ip_to_ping) as result:
             yield
         assert_that(result.loss, less_than_or_equal_to(max_loss))
+
+    @step
+    def generate_server_memory_workload(self,
+                                        remote,
+                                        vm_bytes='5M',
+                                        check=True):
+        """Step to start server memory workload.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            vm_bytes (str): malloc `vm_bytes` bytes per vm worker
+            check (bool): flag whether to check step or not
+        """
+        pid = remote.background_call('stress --vm-bytes 5M --vm-keep -m 1')
+        if check:
+            assert_that(pid, is_not(None))
+
+    @step
+    def check_server_log(self, server, substring, timeout=0):
+        """Verify step to check server log contains substring.
+
+        Args:
+            server (object): nova instance to ping its floating ip
+            substring (str): substring to match
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            server.get()
+            console = server.get_console_output()
+            return substring in console
+
+        wait(predicate, timeout_seconds=timeout)
