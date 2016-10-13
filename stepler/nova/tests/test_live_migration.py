@@ -17,6 +17,8 @@ Nova live migration tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pytest
+
 from stepler.third_party.utils import generate_ids
 
 USERDATA_DONE_MARKER = next(generate_ids('userdata-done'))
@@ -77,11 +79,16 @@ def test_network_connectivity_to_vm_during_live_migration(
         server_steps.live_migrate(server, block_migration=True)
 
 
-def test_migration_with_memory_workload(
-        keypair, flavor, security_group, nova_floating_ip, ubuntu_image,
-        network, subnet, router, add_router_interfaces, create_volume,
-        create_server, ssh_to_instance, server_steps):
-    """**Scenario:** LM of instance under memory workload.
+@pytest.mark.parametrize(
+    'boot_from', ['image', 'volume'],
+    ids=['boot from image', 'boot_from_volume'])
+@pytest.mark.parametrize(
+    'workload', ['CPU', 'memory'], ids=['CPU workload', 'memory workload'])
+def test_instance_migration_with_workload(
+        boot_from, workload, keypair, flavor, security_group, nova_floating_ip,
+        ubuntu_image, network, subnet, router, add_router_interfaces,
+        create_volume, create_server, ssh_to_instance, server_steps):
+    """**Scenario:** LM of instance under workload.
 
     **Setup:**
 
@@ -96,10 +103,9 @@ def test_migration_with_memory_workload(
     **Steps:**
 
         #. Add router interface to created network
-        #. Create volume from ubuntu image
-        #. Boot server from volume
+        #. Create volume and boot server from it or boot server from image
         #. Assign floating ip to server
-        #. Start memory workload on server
+        #. Start workload on server
         #. Migrate server to another hypervisor
         #. Check that ping to server's floating ip is successful
 
@@ -107,7 +113,7 @@ def test_migration_with_memory_workload(
 
         #. Delete server
         #. Delete flavor
-        #. Delete volume
+        #. Delete volume (if created)
         #. Delete security group
         #. Delete router
         #. Delete subnet
@@ -115,26 +121,42 @@ def test_migration_with_memory_workload(
         #. Delete ubuntu image
     """
     add_router_interfaces(router, [subnet])
-    volume = create_volume(
-        next(generate_ids('volume')),
-        size=20, image=ubuntu_image)
-    block_device_mapping = {'vda': volume.id}
-
     server_name = next(generate_ids('server'))
-    server = create_server(server_name,
-                           image=None,
-                           flavor=flavor,
-                           keypair=keypair,
-                           networks=[network],
-                           security_groups=[security_group],
-                           block_device_mapping=block_device_mapping,
-                           userdata=INSTALL_WORKLOAD_USERDATA,
-                           username='ubuntu')
+    if boot_from == 'volume':
+        block_migration = False
+        volume = create_volume(
+            next(generate_ids('volume')), size=20, image=ubuntu_image)
+        block_device_mapping = {'vda': volume.id}
+
+        server = create_server(
+            server_name,
+            image=None,
+            flavor=flavor,
+            keypair=keypair,
+            networks=[network],
+            security_groups=[security_group],
+            block_device_mapping=block_device_mapping,
+            userdata=INSTALL_WORKLOAD_USERDATA,
+            username='ubuntu')
+    else:
+        block_migration = True
+        server = create_server(
+            server_name,
+            image=ubuntu_image,
+            flavor=flavor,
+            keypair=keypair,
+            networks=[network],
+            security_groups=[security_group],
+            userdata=INSTALL_WORKLOAD_USERDATA,
+            username='ubuntu')
     server_steps.check_server_log(server, USERDATA_DONE_MARKER, timeout=5 * 60)
     server_steps.attach_floating_ip(server, nova_floating_ip)
     with ssh_to_instance(server, nova_floating_ip.ip) as remote:
-        server_steps.server_mem_workload(remote)
-    server_steps.live_migrate(server, block_migration=True)
+        if workload == 'CPU':
+            server_steps.server_cpu_workload(remote)
+        elif workload == 'memory':
+            server_steps.server_mem_workload(remote)
+    server_steps.live_migrate(server, block_migration=block_migration)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
 
 

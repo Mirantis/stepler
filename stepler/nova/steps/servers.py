@@ -407,6 +407,19 @@ class ServerSteps(BaseSteps):
             assert_that(pid, is_not(None))
 
     @step
+    def server_cpu_workload(self, remote, check=True):
+        """Step to start server CPU workload.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        """
+        remote.check_call('cpulimit -b -l 50 -- gzip -9 '
+                          '< /dev/urandom > /dev/null')
+        if check:
+            remote.check_call('ps aux | grep cpulimit')
+
+    @step
     def check_server_log(self, server, substring, timeout=0):
         """Verify step to check server log contains substring.
 
