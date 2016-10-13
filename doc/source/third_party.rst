@@ -19,3 +19,6 @@ Third party modules
 
 .. automodule:: stepler.third_party.utils
    :members:
+
+.. automodule:: stepler.third_party.idempotent_id
+   :members:
