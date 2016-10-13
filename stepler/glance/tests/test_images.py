@@ -21,7 +21,7 @@ Image tests
 import pytest
 
 
-@pytest.mark.testrail_id(1680099)
+@pytest.mark.idempotent_id('1b1a0953-a772-4cfe-a7da-2f6de950eede')
 def test_share_glance_image(ubuntu_image, project, glance_steps):
     """**Scenario:** Check sharing glance image to another project.
 
