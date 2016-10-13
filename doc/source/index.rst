@@ -53,14 +53,15 @@ How to run tests
 
 *If you know how to launch tests with py.test, you may skip this section.*
 
-Before launching you should export some openstack environment variables (*keystone v3 authentication is supported only*):
+Before launching you should export some openstack environment variables:
 
 * ``OS_PROJECT_DOMAIN_NAME`` (default value ``'default'``)
 * ``OS_USER_DOMAIN_NAME`` (default value ``'default'``)
 * ``OS_PROJECT_NAME`` (default value ``'admin'``)
 * ``OS_USERNAME`` (default value ``'admin'``)
 * ``OS_PASSWORD`` (default value ``'password'``)
-* ``OS_AUTH_URL`` (should be defined explicitly)
+* ``OS_AUTH_URL`` (keystone auth url should be defined explicitly:
+**v3** - ``http://keystone/url/v3``, **v2** - ``http://keystone/url/v2.0``)
 
 To get details look into ``stepler/config.py``
 

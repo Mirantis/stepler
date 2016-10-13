@@ -25,5 +25,6 @@ __all__ = sorted([  # sort for documentation
     'auth_url',
     'ip_by_host',
 
-    'session'
+    'get_session',
+    'session',
 ])
