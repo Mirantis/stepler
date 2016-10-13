@@ -129,6 +129,7 @@ __all__ = sorted([  # sort for documentation
     'get_availability_zone_steps',
     'disable_nova_config_drive',
     'live_migration_server',
+    'generate_traffic',
 
     'os_faults_client',
     'os_faults_steps',

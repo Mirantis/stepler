@@ -654,6 +654,20 @@ class ServerSteps(base.BaseSteps):
             remote.check_process_present('cpulimit')
 
     @steps_checker.step
+    def server_network_listen(self, remote, port=5010, check=True):
+        """Step to start server TCP connection listening.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            port (int): port to send traffic
+            check (bool): flag whether to check step or not
+        """
+        pid = remote.background_call('nc -k -l {}'.format(port))
+
+        if check:
+            assert_that(pid, is_not(None))
+
+    @steps_checker.step
     def check_server_log_contains_record(self, server, substring, timeout=0):
         """Verify step to check server log contains substring.
 

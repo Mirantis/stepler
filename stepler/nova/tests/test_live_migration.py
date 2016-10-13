@@ -130,13 +130,15 @@ def test_server_migration_with_cpu_workload(live_migration_server,
 @pytest.mark.parametrize(
     'live_migration_server, block_migration', [
         ({'boot_from_volume': False}, True),
-        ({'boot_from_volume': True}, False)],
+        ({'boot_from_volume': True}, False)
+    ],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
 def test_server_migration_with_memory_workload(live_migration_server,
                                                nova_floating_ip, server_steps,
                                                block_migration):
     """**Scenario:** LM of instance under workload.
+        security_group_steps,
 
     **Setup:**
 
@@ -224,6 +226,67 @@ def test_server_migration_with_disk_workload(live_migration_server,
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.generate_server_disk_workload(server_ssh)
+    server_steps.live_migrate(server, block_migration=block_migration)
+    server_steps.check_ping_to_server_floating(
+        server, timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('f5bccac0-c45f-4dcc-b955-55af429de7b3',
+                           block_migration=True)
+@pytest.mark.idempotent_id('26d1cbf4-1c42-415a-9ce0-07293d504584',
+                           block_migration=False)
+@pytest.mark.parametrize(
+    'live_migration_server, block_migration', [
+        ({'boot_from_volume': False}, True),
+        ({'boot_from_volume': True}, False)],
+    ids=['boot_from_image', 'boot_from_volume'],
+    indirect=['live_migration_server'])
+def test_server_migration_with_network_workload(
+        live_migration_server, security_group, nova_floating_ip,
+        generate_traffic, security_group_steps, server_steps, block_migration):
+    """**Scenario:** LM of instance under network workload.
+
+    **Setup:**
+
+        #. Upload ubuntu image
+        #. Create network
+        #. Create subnet
+        #. Create router
+        #. Set router default gateway to public network
+        #. Create security group with allow ping rule
+        #. Create flavor
+        #. Add router interface to created network
+        #. Boot server from image or volume
+        #. Assign floating ip to server
+
+    **Steps:**
+
+        #. Start network workload on server
+        #. Migrate server to another hypervisor
+        #. Check that ping to server's floating ip is successful
+
+    **Teardown:**
+
+        #. Delete server
+        #. Delete flavor
+        #. Delete security group
+        #. Delete router
+        #. Delete subnet
+        #. Delete network
+        #. Delete ubuntu image
+    """
+    server = live_migration_server
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        port = 5010
+        security_group_steps.add_group_rules(security_group, [{
+            'ip_protocol': 'tcp',
+            'from_port': port,
+            'to_port': port,
+            'cidr': '0.0.0.0/0',
+        }])
+        server_steps.server_network_listen(server_ssh, port=port)
+        generate_traffic(nova_floating_ip.ip, port)
     server_steps.live_migrate(server, block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)

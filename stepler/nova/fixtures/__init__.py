@@ -22,10 +22,12 @@ from .flavors import *  # noqa
 from .floating_ips import *  # noqa
 from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
+from .network_workload import *  # noqa
 from .nova import *  # noqa
-from .servers import *  # noqa
 from .nova_volumes import *  # noqa
 from .security_groups import *  # noqa
+from .servers import *  # noqa
+
 
 __all__ = sorted([  # sort for documentation
     'get_availability_zone_steps',
@@ -67,4 +69,5 @@ __all__ = sorted([  # sort for documentation
     'server_steps',
     'live_migration_server',
     'servers_cleanup',
+    'generate_traffic',
 ])
