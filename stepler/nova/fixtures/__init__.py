@@ -37,6 +37,7 @@ __all__ = sorted([  # sort for documentation
     'keypair',
     'keypair_steps',
 
+    'get_nova_client',
     'nova_client',
 
     'create_security_group',
@@ -47,7 +48,8 @@ __all__ = sorted([  # sort for documentation
     'create_server_context',
     'create_servers',
     'create_servers_context',
+    'get_server_steps',
     'server',
     'server_steps',
-    'ssh_proxy_data'
+    'ssh_proxy_data',
 ])
