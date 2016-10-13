@@ -161,7 +161,7 @@ class ServerSteps(BaseSteps):
                 self.check_server_presence(server, present=False, timeout=180)
 
     @step
-    def get_servers(self, check=True):
+    def get_servers(self, name_prefix=None, check=True):
         """Step to retrieve servers from nova.
 
         Args:
@@ -170,14 +170,28 @@ class ServerSteps(BaseSteps):
             list: server list
         """
         servers = self._client.list()
+
+        if name_prefix:
+            servers = [server for server in servers
+                       if server.name.startswith(name_prefix)]
+
         if check:
             assert_that(servers, is_not(empty()))
+
         return servers
 
     @step
     def check_server_presence(self, server, present=True, timeout=0):
-        """Verify step to check server is present."""
+        """Check-step to check server presence.
 
+        Args:
+            server (object): nova server
+            present (bool): flag to check is server present or absent
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
         def predicate():
             try:
                 self._client.get(server.id)
