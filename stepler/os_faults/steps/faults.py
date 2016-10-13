@@ -35,7 +35,7 @@ class OsFaultsSteps(BaseSteps):
         """Step to get nodes.
 
         Args:
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             list of nodes
@@ -53,7 +53,7 @@ class OsFaultsSteps(BaseSteps):
 
         Args:
             name (str): service name
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         # TODO(ssokolov) add check of service names
         service = self._client.get_service(name=name)

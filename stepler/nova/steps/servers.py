@@ -70,7 +70,7 @@ class ServerSteps(BaseSteps):
             username (str): username to store with server metadata
             password (str): password to store with server metadata
             userdata (str): userdata (script) to execute on instance after boot
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             object: nova server
@@ -138,7 +138,7 @@ class ServerSteps(BaseSteps):
             username (str): username to store with server metadata
             password (str): password to store with server metadata
             userdata (str): userdata (script) to execute on instance after boot
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             list: nova servers
@@ -170,7 +170,7 @@ class ServerSteps(BaseSteps):
     @step
     def delete_server(self, server, check=True):
         """Step to delete server."""
-        server.force_delete()
+        server.delete()
 
         if check:
             self.check_server_presence(server, present=False, timeout=180)
@@ -190,7 +190,7 @@ class ServerSteps(BaseSteps):
         """Step to retrieve servers from nova.
 
         Args:
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         Returns:
             list: server list
         """
@@ -375,7 +375,7 @@ class ServerSteps(BaseSteps):
             host (str): hypervisor's hostname to migrate to
             block_migration (bool): should nova use block or true live
                 migration
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         server.get()
         current_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
@@ -449,7 +449,7 @@ class ServerSteps(BaseSteps):
         Args:
             remote (object): instance of stepler.third_party.ssh.SshClient
             vm_bytes (str): malloc `vm_bytes` bytes per vm worker
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         pid = remote.background_call('stress --vm-bytes 5M --vm-keep -m 1')
         if check:
@@ -481,7 +481,7 @@ class ServerSteps(BaseSteps):
 
         Args:
             remote (object): instance of stepler.third_party.ssh.SshClient
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         with remote.sudo():
             remote.check_call('date | tee /timestamp.txt /mnt/timestamp.txt')
@@ -494,9 +494,25 @@ class ServerSteps(BaseSteps):
 
         Args:
             remote (object): instance of stepler.third_party.ssh.SshClient
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         with remote.sudo():
             root_result = remote.check_call('cat /timestamp.txt')
             ephemeral_result = remote.check_call('cat /mnt/timestamp.txt')
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
+
+    @step
+    def resize(self, server, flavor, check=True):
+        """Step to resize server.
+
+        Args:
+            server (object): nova instance
+            flavor (object): flavor instance
+            check (bool): flag whether check step or not
+        """
+        self._client.resize(server, flavor)
+
+        if check:
+            self.check_server_status(server, 'verify_resize',
+                                     transit_statuses=('resize',),
+                                     timeout=config.VERIFY_RESIZE_TIMEOUT)

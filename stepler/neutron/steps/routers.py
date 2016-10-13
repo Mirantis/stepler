@@ -35,7 +35,7 @@ class RouterSteps(base.BaseSteps):
         Args:
             router_name (str): router name
             distributed (bool): should router be distributed
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         Returns:
             dict: router
         """
@@ -52,7 +52,7 @@ class RouterSteps(base.BaseSteps):
 
         Args:
             router (dict): router
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         self._client.delete(router['id'])
 
