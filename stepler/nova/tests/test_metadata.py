@@ -24,6 +24,7 @@ from stepler.third_party.utils import generate_ids
 def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
                                       ubuntu_image, keypair, flavor_steps,
                                       network_steps, server_steps):
+    # TODO(schipiga): expand docstring, add scenario
     """Verify that image can be connected with SSH."""
     flavor = flavor_steps.get_flavor(name='m1.small')
     network = network_steps.get_network_by_name('admin_internal_net')
