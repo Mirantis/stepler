@@ -25,7 +25,7 @@ from stepler.third_party.utils import generate_ids
 USERDATA_DONE_MARKER = next(generate_ids('userdata-done'))
 
 INSTALL_WORKLOAD_USERDATA = """#!/bin/bash -v
-apt-get install -yq stress cpulimit sysstat iperf
+apt-get install -yq stress cpulimit sysstat
 echo {}""".format(USERDATA_DONE_MARKER)
 
 
@@ -91,8 +91,10 @@ def test_network_connectivity_to_vm_during_live_migration(
 
 
 @pytest.mark.parametrize(
-    'workload', ['CPU', 'memory', 'disk'],
-    ids=['CPU workload', 'memory workload', 'disk workload'])
+    'workload', ['CPU', 'memory', 'disk', 'network'],
+    ids=[
+        'CPU workload', 'memory workload', 'disk workload', 'network workload'
+    ])
 def test_instance_booted_from_image_migration_with_workload(
         keypair,
         flavor,
@@ -105,8 +107,10 @@ def test_instance_booted_from_image_migration_with_workload(
         add_router_interfaces,
         create_volume,
         create_server,
+        generate_traffic,
         ssh_to_server,
         server_steps,
+        security_group_steps,
         workload):
     """**Scenario:** LM of instance booted from image under workload.
 
@@ -163,13 +167,25 @@ def test_instance_booted_from_image_migration_with_workload(
             server_steps.generate_server_memory_workload(server_ssh)
         elif workload == 'disk':
             server_steps.generate_server_disk_workload(server_ssh)
+        elif workload == 'network':
+            port = 5010
+            security_group_steps.add_group_rules(security_group, [{
+                'ip_protocol': 'tcp',
+                'from_port': port,
+                'to_port': port,
+                'cidr': '0.0.0.0/0',
+            }])
+            server_steps.server_network_listen(server_ssh, port=port)
+            generate_traffic(nova_floating_ip.ip, port)
     server_steps.live_migrate(server, block_migration=block_migration)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
 
 
 @pytest.mark.parametrize(
-    'workload', ['CPU', 'memory', 'disk'],
-    ids=['CPU workload', 'memory workload', 'disk workload'])
+    'workload', ['CPU', 'memory', 'disk', 'network'],
+    ids=[
+        'CPU workload', 'memory workload', 'disk workload', 'network workload'
+    ])
 def test_instance_booted_from_volume_migration_with_workload(
         keypair,
         flavor,
@@ -182,8 +198,10 @@ def test_instance_booted_from_volume_migration_with_workload(
         add_router_interfaces,
         create_volume,
         create_server,
+        generate_traffic,
         ssh_to_server,
         server_steps,
+        security_group_steps,
         workload):
     """**Scenario:** LM of instance booted from volume under workload.
 
@@ -248,6 +266,16 @@ def test_instance_booted_from_volume_migration_with_workload(
             server_steps.generate_server_memory_workload(server_ssh)
         elif workload == 'disk':
             server_steps.generate_server_disk_workload(server_ssh)
+        elif workload == 'network':
+            port = 5010
+            security_group_steps.add_group_rules(security_group, [{
+                'ip_protocol': 'tcp',
+                'from_port': port,
+                'to_port': port,
+                'cidr': '0.0.0.0/0',
+            }])
+            server_steps.server_network_listen(server_ssh, port=port)
+            generate_traffic(nova_floating_ip.ip, port)
     server_steps.live_migrate(server, block_migration=block_migration)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
 

@@ -101,6 +101,7 @@ __all__ = sorted([  # sort for documentation
     'server_steps',
     'ssh_proxy_data',
     'ssh_to_server',
+    'generate_traffic',
 
     'os_faults_client',
     'os_faults_steps'
