@@ -150,7 +150,7 @@ class ServerSteps(BaseSteps):
     @step
     def delete_server(self, server, check=True):
         """Step to delete server."""
-        server.force_delete()
+        server.delete()
 
         if check:
             self.check_server_presence(server, present=False, timeout=180)
@@ -451,3 +451,18 @@ class ServerSteps(BaseSteps):
             root_result = remote.check_call('cat /timestamp.txt')
             ephemeral_result = remote.check_call('cat /mnt/timestamp.txt')
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
+
+    @step
+    def resize(self, server, flavor, check=True):
+        """Step to resize server.
+
+        Args:
+            server (object): nova instance
+            flavor (object): flavor instance
+            check (bool): flag whether to check step or not
+        """
+        self._client.resize(server, flavor)
+
+        if check:
+            self.check_server_status(server, 'verify_resize',
+                                     timeout=config.VERIFY_RESIZE_TIMEOUT)
