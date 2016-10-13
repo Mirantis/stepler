@@ -19,25 +19,68 @@ Server fixtures
 
 import pytest
 
+from stepler import config
 from stepler.nova.steps import ServerSteps
 from stepler.third_party.context import context
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
+    'clear_stayed_servers',
     'create_server',
     'create_server_context',
     'create_servers',
     'create_servers_context',
+    'get_server_steps',
     'server',
     'server_steps',
-    'ssh_proxy_data'
+    'ssh_proxy_data',
 ]
+
+# servers which should be missed, when unexpected servers will be removed
+SKIPPED_SERVERS = []
+
+
+@pytest.fixture(autouse=True)
+def clear_stayed_servers(server_steps):
+    """Autouse function fixture to clear unexpected servers.
+
+    We should clear servers before tests which unexpectedly stayed after tests.
+
+    Args:
+        server_steps (ServerSteps): instantiated server steps
+    """
+    # check=False because in best case no stayed servers will be present
+    servers = server_steps.get_servers(name_prefix=config.STEPLER_PREFIX,
+                                       check=False)
+    servers = [server for server in servers if server not in SKIPPED_SERVERS]
+    server_steps.delete_servers(servers)
+
+
+@pytest.fixture(scope='session')
+def get_server_steps(get_nova_client):
+    """Callable session fixture to get server steps.
+
+    Args:
+        get_nova_client (function): function to get nova client.
+
+    Returns:
+        function: function to get server steps.
+    """
+    def _get_server_steps():
+        return ServerSteps(get_nova_client().servers)
 
 
 @pytest.fixture
-def server_steps(nova_client):
-    """Fixture to get nova steps."""
-    return ServerSteps(nova_client.servers)
+def server_steps(get_server_steps):
+    """Function fixture to get nova steps.
+
+    Args:
+        get_server_steps (function): function to get server steps.
+
+    Returns:
+        ServerSteps: instantiated server steps.
+    """
+    return get_server_steps()
 
 
 @pytest.yield_fixture
@@ -74,11 +117,11 @@ def create_server(create_servers):
 
 
 @pytest.fixture
-def create_servers_context(server_steps):
-    """Fixture to create servers inside context to guarantee their deletion
-    after context exit.
+def create_servers_context(get_server_steps):
+    """Function fixture to create servers inside context.
 
-    Should be used when ``servers`` must be deleted inside a test, and their
+    It guarantees servers deletion after context exit.
+    It should be used when ``servers`` must be deleted inside a test, and their
     deletion can't be delegated to fixture finalization. Can be called several
     times during a test.
 
@@ -108,10 +151,10 @@ def create_servers_context(server_steps):
 
 @pytest.fixture
 def create_server_context(create_servers_context):
-    """Fixture to create server inside context to guarantee its deletion after
-    context exit.
+    """Function fixture to create server inside context.
 
-    Should be used when ``server`` must be deleted inside a test, and its
+    It guarantees server deletion after context exit.
+    It should be used when ``server`` must be deleted inside a test, and its
     deletion can't be delegated to fixture finalization. Can be called several
     times during a test.
 
