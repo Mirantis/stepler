@@ -20,9 +20,11 @@ Nova fixtures
 from .flavors import *  # noqa
 from .floating_ips import *  # noqa
 from .keypairs import *  # noqa
+from .network_workload import *  # noqa
 from .nova import *  # noqa
-from .servers import *  # noqa
 from .security_groups import *  # noqa
+from .servers import *  # noqa
+
 
 __all__ = sorted([  # sort for documentation
     'create_flavor',
@@ -53,4 +55,6 @@ __all__ = sorted([  # sort for documentation
     'server_steps',
     'ssh_proxy_data',
     'ssh_to_server',
+
+    'generate_traffic',
 ])
