@@ -161,7 +161,7 @@ class ServerSteps(BaseSteps):
                 self.check_server_presence(server, present=False, timeout=180)
 
     @step
-    def get_servers(self, check=True):
+    def get_servers(self, name_prefix=None, check=True):
         """Step to retrieve servers from nova.
 
         Args:
@@ -170,8 +170,14 @@ class ServerSteps(BaseSteps):
             list: server list
         """
         servers = self._client.list()
+
+        if name_prefix:
+            servers = [server for server in servers
+                       if server.name.startswith(name_prefix)]
+
         if check:
             assert_that(servers, is_not(empty()))
+
         return servers
 
     @step

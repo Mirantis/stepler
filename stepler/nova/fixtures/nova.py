@@ -21,11 +21,36 @@ from novaclient.client import Client
 import pytest
 
 __all__ = [
-    'nova_client'
+    'get_nova_client',
+    'nova_client',
 ]
 
 
+@pytest.fixture(scope='session')
+def get_nova_client(get_session):
+    """Callable session fixture to get nova client.
+
+    Args:
+        get_session (keystoneauth1.session.Session): authenticated keystone
+            session
+
+    Returns:
+        function: function to get nova client
+    """
+    def _get_nova_client():
+        return Client(version=2, session=get_session())
+
+    return _get_nova_client
+
+
 @pytest.fixture
-def nova_client(session):
-    """Fixture to get nova client."""
-    return Client(version=2, session=session)
+def nova_client(get_nova_client):
+    """Function fixture to get nova client.
+
+    Args:
+        get_nova_client (function): function to get nova client
+
+    Returns:
+        novaclient.client.Client: authenticated nova client
+    """
+    return get_nova_client()
