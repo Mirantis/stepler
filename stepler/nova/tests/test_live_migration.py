@@ -17,6 +17,8 @@ Nova live migration tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import time
+
 from stepler import config
 from stepler.third_party.utils import generate_ids
 
@@ -145,3 +147,70 @@ def test_migration_with_memory_workload(
     server_steps.live_migrate(server, block_migration=True)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
+
+
+def test_migration_with_ephemeral_disk(
+        keypair, security_group, nova_floating_ip, cirros_image, network,
+        subnet, router, add_router_interfaces, create_flavor, create_server,
+        server_steps):
+    """**Scenario:** LM of VM with data on root and ephemeral disk.
+
+    **Setup:**
+
+        #. Upload cirros image
+        #. Create network
+        #. Create subnet
+        #. Create router
+        #. Set router default gateway to public network
+        #. Create security group with allow ping rule
+
+    **Steps:**
+
+        #. Add router interface to created network
+        #. Create flavor woth ephemeral disk
+        #. Boot server from cirros image with created flavor
+        #. Assign floating ip to server
+        #. Create timestamp on on root and ephemeral disks
+        #. Start ping instance
+        #. Migrate server to another hypervisor
+        #. Stop ping
+        #. Check that ping loss is not more than 20
+        #. Verify timestamp on root and ephemeral disks
+
+    **Teardown:**
+
+        #. Delete server
+        #. Delete flavor
+        #. Delete volume
+        #. Delete security group
+        #. Delete router
+        #. Delete subnet
+        #. Delete network
+        #. Delete cirros image
+    """
+    add_router_interfaces(router, [subnet])
+    flavor = create_flavor(
+        next(generate_ids('flavor')), ram=64, disk=1, vcpus=1, ephemeral=1)
+
+    server_name = next(generate_ids('server'))
+    server = create_server(
+        server_name,
+        image=cirros_image,
+        flavor=flavor,
+        keypair=keypair,
+        networks=[network],
+        security_groups=[security_group],
+        username='cirros')
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    timestamp = str(time.time())
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        server_steps.create_timestamps_on_root_and_ephemeral_disks(
+            server_ssh, timestamp=timestamp)
+    with server_steps.check_ping_loss_context(
+            nova_floating_ip.ip, max_loss=20):
+        server_steps.live_migrate(server, block_migration=True)
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        server_steps.check_timestamps_on_root_and_ephemeral_disks(
+            server_ssh, timestamp=timestamp)
