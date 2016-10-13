@@ -18,6 +18,7 @@ Server steps
 # limitations under the License.
 
 import contextlib
+import time
 
 from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
                       less_than_or_equal_to)  # noqa
@@ -35,6 +36,8 @@ __all__ = [
 ]
 
 CREDENTIALS_PREFIX = 'stepler_credentials_'
+ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
+EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
 
 
 class ServerSteps(BaseSteps):
@@ -475,3 +478,60 @@ class ServerSteps(BaseSteps):
             return substring in console
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def get_timestamp(self):
+        """Step to create timestamp string
+
+        Return:
+            str: timestamp string
+        """
+        return str(time.time())
+
+    @step
+    def create_timestamps_on_root_and_ephemeral_disks(self,
+                                                      server_ssh,
+                                                      timestamp,
+                                                      check=True):
+        """Step to create timestamp on root and ephemeral disks
+
+        Args:
+            server_ssh (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+            timestamp(str): timestamp to store on files
+
+        Raises:
+            AssertionError: if timestamp on root and ephemeral are not equal
+        """
+        with server_ssh.sudo():
+            server_ssh.check_call(
+                'echo "{timestamp}" | '
+                'tee "{root_ts_file}" "{ephemeral_ts_file}"'.format(
+                    timestamp=timestamp,
+                    root_ts_file=ROOT_DISK_TIMESTAMP_FILE,
+                    ephemeral_ts_file=EPHEMERAL_DISK_TIMESTAMP_FILE))
+        if check:
+            self.check_timestamps_on_root_and_ephemeral_disks(server_ssh,
+                                                              timestamp)
+
+    @step
+    def check_timestamps_on_root_and_ephemeral_disks(self, server_ssh,
+                                                     timestamp):
+        """Verify step to check timestamp on root and ephemeral disks
+
+        Args:
+            server_ssh (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+            timestamp(str): timestamp to check
+
+        Raises:
+            AssertionError: if timestamp on root and ephemeral are not equal
+        """
+        with server_ssh.sudo():
+            root_result = server_ssh.check_call('cat "{root_ts_file}"'.format(
+                root_ts_file=ROOT_DISK_TIMESTAMP_FILE))
+            ephemeral_result = server_ssh.check_call(
+                'cat "{ephemeral_ts_file}"'.format(
+                    ephemeral_ts_file=EPHEMERAL_DISK_TIMESTAMP_FILE))
+        assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
+        assert_that(timestamp, equal_to(root_result.stdout))
