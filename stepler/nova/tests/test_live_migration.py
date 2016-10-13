@@ -17,6 +17,8 @@ Nova live migration tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pytest
+
 from stepler import config
 from stepler.third_party.utils import generate_ids
 
@@ -28,9 +30,18 @@ echo {}""".format(USERDATA_DONE_MARKER)
 
 
 def test_network_connectivity_to_vm_during_live_migration(
-        keypair, flavor, security_group, nova_floating_ip, cirros_image,
-        network, subnet, router, add_router_interfaces, create_volume,
-        create_server, server_steps):
+        keypair,
+        flavor,
+        security_group,
+        nova_floating_ip,
+        cirros_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_volume,
+        create_server,
+        server_steps):
     """**Scenario:** Verify network connectivity to the VM during live
     migration.
 
@@ -79,11 +90,25 @@ def test_network_connectivity_to_vm_during_live_migration(
         server_steps.live_migrate(server, block_migration=True)
 
 
-def test_migration_with_memory_workload(
-        keypair, flavor, security_group, nova_floating_ip, ubuntu_image,
-        network, subnet, router, add_router_interfaces, create_volume,
-        create_server, ssh_to_server, server_steps):
-    """**Scenario:** LM of instance under memory workload.
+@pytest.mark.parametrize(
+    'workload', ['CPU', 'memory', 'disk'],
+    ids=['CPU workload', 'memory workload', 'disk workload'])
+def test_instance_booted_from_image_migration_with_workload(
+        keypair,
+        flavor,
+        security_group,
+        nova_floating_ip,
+        ubuntu_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_volume,
+        create_server,
+        ssh_to_server,
+        server_steps,
+        workload):
+    """**Scenario:** LM of instance booted from image under workload.
 
     **Setup:**
 
@@ -98,10 +123,87 @@ def test_migration_with_memory_workload(
     **Steps:**
 
         #. Add router interface to created network
-        #. Create volume from ubuntu image
-        #. Boot server from volume
+        #. Boot server from image
         #. Assign floating ip to server
-        #. Start memory workload on server
+        #. Start workload on server
+        #. Migrate server to another hypervisor
+        #. Check that ping to server's floating ip is successful
+
+    **Teardown:**
+
+        #. Delete server
+        #. Delete flavor
+        #. Delete security group
+        #. Delete router
+        #. Delete subnet
+        #. Delete network
+        #. Delete ubuntu image
+    """
+    add_router_interfaces(router, [subnet])
+    server_name = next(generate_ids('server'))
+    block_migration = True
+    server = create_server(
+        server_name,
+        image=ubuntu_image,
+        flavor=flavor,
+        keypair=keypair,
+        networks=[network],
+        security_groups=[security_group],
+        userdata=INSTALL_WORKLOAD_USERDATA,
+        username='ubuntu')
+    server_steps.check_server_log(
+        server,
+        USERDATA_DONE_MARKER,
+        timeout=config.USERDATA_EXECUTING_TIMEOUT)
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    with ssh_to_server(server, nova_floating_ip.ip) as server_ssh:
+        if workload == 'CPU':
+            server_steps.generate_server_cpu_workload(server_ssh)
+        elif workload == 'memory':
+            server_steps.generate_server_memory_workload(server_ssh)
+        elif workload == 'disk':
+            server_steps.generate_server_disk_workload(server_ssh)
+    server_steps.live_migrate(server, block_migration=block_migration)
+    server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
+
+
+@pytest.mark.parametrize(
+    'workload', ['CPU', 'memory', 'disk'],
+    ids=['CPU workload', 'memory workload', 'disk workload'])
+def test_instance_booted_from_volume_migration_with_workload(
+        keypair,
+        flavor,
+        security_group,
+        nova_floating_ip,
+        ubuntu_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_volume,
+        create_server,
+        ssh_to_server,
+        server_steps,
+        workload):
+    """**Scenario:** LM of instance booted from volume under workload.
+
+    **Setup:**
+
+        #. Upload ubuntu image
+        #. Create network
+        #. Create subnet
+        #. Create router
+        #. Set router default gateway to public network
+        #. Create security group with allow ping rule
+        #. Create flavor
+
+    **Steps:**
+
+        #. Add router interface to created network
+        #. Create volume from image
+        #. Boot server from it
+        #. Assign floating ip to server
+        #. Start workload on server
         #. Migrate server to another hypervisor
         #. Check that ping to server's floating ip is successful
 
@@ -117,11 +219,12 @@ def test_migration_with_memory_workload(
         #. Delete ubuntu image
     """
     add_router_interfaces(router, [subnet])
+    server_name = next(generate_ids('server'))
+    block_migration = False
     volume = create_volume(
         next(generate_ids('volume')), size=20, image=ubuntu_image)
     block_device_mapping = {'vda': volume.id}
 
-    server_name = next(generate_ids('server'))
     server = create_server(
         server_name,
         image=None,
@@ -132,21 +235,36 @@ def test_migration_with_memory_workload(
         block_device_mapping=block_device_mapping,
         userdata=INSTALL_WORKLOAD_USERDATA,
         username='ubuntu')
+
     server_steps.check_server_log(
         server,
         USERDATA_DONE_MARKER,
         timeout=config.USERDATA_EXECUTING_TIMEOUT)
     server_steps.attach_floating_ip(server, nova_floating_ip)
     with ssh_to_server(server, nova_floating_ip.ip) as server_ssh:
-        server_steps.generate_server_memory_workload(server_ssh)
-    server_steps.live_migrate(server, block_migration=True)
+        if workload == 'CPU':
+            server_steps.generate_server_cpu_workload(server_ssh)
+        elif workload == 'memory':
+            server_steps.generate_server_memory_workload(server_ssh)
+        elif workload == 'disk':
+            server_steps.generate_server_disk_workload(server_ssh)
+    server_steps.live_migrate(server, block_migration=block_migration)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
 
 
 def test_migration_with_ephemeral_disk(
-        keypair, security_group, nova_floating_ip, cirros_image, network,
-        subnet, router, add_router_interfaces, create_flavor, create_server,
-        ssh_to_server, server_steps):
+        keypair,
+        security_group,
+        nova_floating_ip,
+        cirros_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_flavor,
+        create_server,
+        ssh_to_server,
+        server_steps):
     """**Scenario:** LM of VM with data on root and ephemeral disk.
 
     **Setup:**
@@ -184,26 +302,23 @@ def test_migration_with_ephemeral_disk(
     """
     add_router_interfaces(router, [subnet])
     flavor = create_flavor(
-        next(generate_ids('flavor')),
-        ram=64,
-        disk=1,
-        vcpus=1,
-        ephemeral=1)
+        next(generate_ids('flavor')), ram=64, disk=1, vcpus=1, ephemeral=1)
 
     server_name = next(generate_ids('server'))
-    server = create_server(server_name,
-                           image=cirros_image,
-                           flavor=flavor,
-                           keypair=keypair,
-                           networks=[network],
-                           security_groups=[security_group],
-                           username='cirros')
+    server = create_server(
+        server_name,
+        image=cirros_image,
+        flavor=flavor,
+        keypair=keypair,
+        networks=[network],
+        security_groups=[security_group],
+        username='cirros')
     server_steps.attach_floating_ip(server, nova_floating_ip)
     with ssh_to_server(server, nova_floating_ip.ip) as server_ssh:
-        server_steps.create_timestamps_on_root_and_ephemeral(server_ssh,
-                                                             check=False)
-    with server_steps.check_ping_loss_context(nova_floating_ip.ip,
-                                              max_loss=20):
+        server_steps.create_timestamps_on_root_and_ephemeral(
+            server_ssh, check=False)
+    with server_steps.check_ping_loss_context(
+            nova_floating_ip.ip, max_loss=20):
         server_steps.live_migrate(server, block_migration=True)
     with ssh_to_server(server, nova_floating_ip.ip) as server_ssh:
         server_steps.check_timestamps_on_root_and_ephemeral(server_ssh)
