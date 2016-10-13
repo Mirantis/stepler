@@ -17,6 +17,7 @@ SSH client
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import contextlib
 import logging
 import select
 
@@ -96,6 +97,7 @@ class SshClient(object):
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._proxy_cmd = proxy_cmd
+        self._sudo = False
 
     def connect(self):
         """Connect to ssh server."""
@@ -122,6 +124,13 @@ class SshClient(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
+
+    @contextlib.contextmanager
+    def sudo(self):
+        """Context manager to run commmand with sudo."""
+        self._sudo = True
+        yield self
+        self._sudo = False
 
     def check_call(self, command, verbose=False):
         """Call command and check that exit_code is 0.
@@ -240,5 +249,8 @@ class SshClient(object):
         stdin = chan.makefile('wb')
         stdout = chan.makefile('rb')
         stderr = chan.makefile_stderr('rb')
+        if self._sudo:
+            command = "sudo -s $SHELL -c '{}'".format(command.replace("'",
+                                                                      "\\'"))
         chan.exec_command(command)
         return chan, stdin, stdout, stderr
