@@ -18,6 +18,7 @@ Server steps
 # limitations under the License.
 
 import contextlib
+import time
 
 from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
                       less_than_or_equal_to)  # noqa
@@ -381,20 +382,16 @@ class ServerSteps(BaseSteps):
         current_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
         server.live_migrate(host=host, block_migration=block_migration)
         if check:
-            if host is not None:
-                self.check_instance_hypervisor_hostname(
-                    server, host, timeout=config.LIVE_MIGRATE_TIMEOUT)
-            else:
-                self.check_instance_hypervisor_hostname(
-                    server,
-                    current_host,
-                    equal=False,
-                    timeout=config.LIVE_MIGRATE_TIMEOUT)
             self.check_server_status(
                 server,
                 'active',
                 transit_statuses=('migrating',),
                 timeout=config.LIVE_MIGRATE_TIMEOUT)
+            if host is not None:
+                self.check_instance_hypervisor_hostname(server, host)
+            else:
+                self.check_instance_hypervisor_hostname(
+                    server, current_host, equal=False)
 
     @step
     def check_instance_hypervisor_hostname(self,
@@ -454,6 +451,49 @@ class ServerSteps(BaseSteps):
         pid = remote.background_call('stress --vm-bytes 5M --vm-keep -m 1')
         if check:
             assert_that(pid, is_not(None))
+
+    @step
+    def generate_server_cpu_workload(self, remote, check=True):
+        """Step to start server CPU workload.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        Raises:
+            Exception: if commmand exit code is not 0
+        """
+        remote.check_call('cpulimit -b -l 50 -- gzip -9 '
+                          '< /dev/urandom > /dev/null')
+        if check:
+            remote.check_process_present('cpulimit')
+
+    @step
+    def generate_server_disk_workload(self, remote, check=True):
+        """Step to start server disk workload.
+
+        This step makes about 95% load on disk.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        Raises:
+            Exception: if commmand exit code is not 0
+        """
+        # To aviod inifine loop, count of workers to stress is limited to 3.
+        # This value is suitable for most cases.
+        for i in range(1, 4):
+            remote.kill_process('stress')
+            remote.background_call('stress --hdd {}'.format(i))
+            # Sleep to make iostat data updated
+            time.sleep(5)
+            result = remote.check_call(
+                "iostat -d -x -y 5 1 | grep -m1 '[hsv]d[abc]' | "
+                "awk '{print $14}'")
+            if float(result.stdout) > 95:
+                break
+
+        if check:
+            remote.check_process_present('cpulimit')
 
     @step
     def check_server_log(self, server, substring, timeout=0):
