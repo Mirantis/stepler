@@ -17,30 +17,62 @@ Openstack fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from keystoneauth1.identity import v3
+from keystoneauth1 import identity
 from keystoneauth1 import session as _session
 import pytest
 
 from stepler import config
 
 __all__ = [
+    'get_session',
     'session'
 ]
 
 
-@pytest.fixture
-def session():
-    """Fixture to get session.
+@pytest.fixture(scope='session')
+def get_session():
+    """Callable session fixture to get session.
+
+    Can be called several times during a test to regenerate keystone session.
 
     Returns:
-      keystoneauth1.session.Session: authenticated session object
+        function: function to get session.
     """
     assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
 
-    auth = v3.Password(auth_url=config.AUTH_URL,
-                       username=config.USERNAME,
-                       user_domain_name=config.USER_DOMAIN_NAME,
-                       password=config.PASSWORD,
-                       project_name=config.PROJECT_NAME,
-                       project_domain_name=config.PROJECT_DOMAIN_NAME)
-    return _session.Session(auth=auth)
+    def _get_session():
+        if config.KEYSTONE_API_VERSION == 3:
+
+            auth = identity.v3.Password(
+                auth_url=config.AUTH_URL,
+                username=config.USERNAME,
+                user_domain_name=config.USER_DOMAIN_NAME,
+                password=config.PASSWORD,
+                project_name=config.PROJECT_NAME,
+                project_domain_name=config.PROJECT_DOMAIN_NAME)
+
+        elif config.KEYSTONE_API_VERSION == 2:
+
+            auth = identity.v2.Password(
+                auth_url=config.AUTH_URL,
+                username=config.USERNAME,
+                password=config.PASSWORD,
+                tenant_name=config.PROJECT_NAME)
+
+        else:
+            raise ValueError("Unexpected keystone API version: {}".format(
+                config.KEYSTONE_API_VERSION))
+
+        return _session.Session(auth=auth)
+
+    return _get_session
+
+
+@pytest.fixture
+def session(get_session):
+    """Function fixture to get session.
+
+    Returns:
+      keystoneauth1.session.Session: instantiated keystone session
+    """
+    return get_session()
