@@ -168,6 +168,28 @@ class SshClient(object):
         result.check_stderr()
         return result
 
+    def check_process_present(self, name):
+        """Check that `name` is present in `ps aux` output.
+
+        Args:
+            name (str): command name to search
+
+        Raises:
+            Exception: if `name` is not found.
+        """
+        self.check_call('ps aux | grep {}'.format(name))
+
+    def kill_process(self, name):
+        """Kill all processes by `killall <name>`
+
+        Args:
+            name (str): command name to search
+
+        Returns:
+            object: CommandResult for execute command
+        """
+        self.execute('killall {}'.format(name))
+
     def background_call(self, command, stdout='/dev/null'):
         """Start long-running command in backgroung and return it's pid.
 
