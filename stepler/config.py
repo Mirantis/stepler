@@ -19,13 +19,26 @@ Config
 
 import os
 
-# keystone v3 authentication is supported only
 PROJECT_DOMAIN_NAME = os.environ.get('OS_PROJECT_DOMAIN_NAME', 'default')
 USER_DOMAIN_NAME = os.environ.get('OS_USER_DOMAIN_NAME', 'default')
 PROJECT_NAME = os.environ.get('OS_PROJECT_NAME', 'admin')
 USERNAME = os.environ.get('OS_USERNAME', 'admin')
 PASSWORD = os.environ.get('OS_PASSWORD', 'password')
-AUTH_URL = os.environ.get('OS_AUTH_URL')  # should be defined!
+# If AUTH_URL will be indefined, corresponding fixture raises exception.
+# AUTH_URL absence doesn't raise exception here, because for docs generation
+# and unittests launching this variable doesn't need.
+AUTH_URL = os.environ.get('OS_AUTH_URL')
+
+if AUTH_URL:  # figure out keystone API version
+    AUTH_URL = AUTH_URL.rstrip('/')  # remove last slash if it is present
+    version = AUTH_URL.rsplit('/')[-1]
+
+    if version == 'v2.0':
+        KEYSTONE_API_VERSION = 2
+    else:
+        KEYSTONE_API_VERSION = 3
+        if version != 'v3':
+            AUTH_URL = AUTH_URL + '/v3'
 
 UBUNTU_QCOW2_URL = 'https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img'  # noqa
 FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases/23/Cloud/x86_64/Images/Fedora-Cloud-Base-23-20151030.x86_64.qcow2'  # noqa
