@@ -18,6 +18,7 @@ Server steps
 # limitations under the License.
 
 import contextlib
+import time
 
 from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
                       less_than_or_equal_to)  # noqa
@@ -70,7 +71,7 @@ class ServerSteps(BaseSteps):
             username (str): username to store with server metadata
             password (str): password to store with server metadata
             userdata (str): userdata (script) to execute on instance after boot
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             object: nova server
@@ -138,7 +139,7 @@ class ServerSteps(BaseSteps):
             username (str): username to store with server metadata
             password (str): password to store with server metadata
             userdata (str): userdata (script) to execute on instance after boot
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             list: nova servers
@@ -170,7 +171,7 @@ class ServerSteps(BaseSteps):
     @step
     def delete_server(self, server, check=True):
         """Step to delete server."""
-        server.force_delete()
+        server.delete()
 
         if check:
             self.check_server_presence(server, present=False, timeout=180)
@@ -190,7 +191,7 @@ class ServerSteps(BaseSteps):
         """Step to retrieve servers from nova.
 
         Args:
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         Returns:
             list: server list
         """
@@ -375,26 +376,22 @@ class ServerSteps(BaseSteps):
             host (str): hypervisor's hostname to migrate to
             block_migration (bool): should nova use block or true live
                 migration
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         server.get()
         current_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
         server.live_migrate(host=host, block_migration=block_migration)
         if check:
-            if host is not None:
-                self.check_instance_hypervisor_hostname(
-                    server, host, timeout=config.LIVE_MIGRATE_TIMEOUT)
-            else:
-                self.check_instance_hypervisor_hostname(
-                    server,
-                    current_host,
-                    equal=False,
-                    timeout=config.LIVE_MIGRATE_TIMEOUT)
             self.check_server_status(
                 server,
                 'active',
                 transit_statuses=('migrating',),
                 timeout=config.LIVE_MIGRATE_TIMEOUT)
+            if host is not None:
+                self.check_instance_hypervisor_hostname(server, host)
+            else:
+                self.check_instance_hypervisor_hostname(
+                    server, current_host, equal=False)
 
     @step
     def check_instance_hypervisor_hostname(self,
@@ -449,12 +446,55 @@ class ServerSteps(BaseSteps):
         Args:
             remote (object): instance of stepler.third_party.ssh.SshClient
             vm_bytes (str): malloc `vm_bytes` bytes per vm worker
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         pid = remote.background_call(
             'stress --vm-bytes {} --vm-keep -m 1'.format(vm_bytes))
         if check:
             assert_that(pid, is_not(None))
+
+    @step
+    def generate_server_cpu_workload(self, remote, check=True):
+        """Step to start server CPU workload.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        Raises:
+            Exception: if commmand exit code is not 0
+        """
+        remote.check_call('cpulimit -b -l 50 -- gzip -9 '
+                          '< /dev/urandom > /dev/null')
+        if check:
+            remote.check_process_present('cpulimit')
+
+    @step
+    def generate_server_disk_workload(self, remote, check=True):
+        """Step to start server disk workload.
+
+        This step makes about 95% load on disk.
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        Raises:
+            Exception: if commmand exit code is not 0
+        """
+        # To aviod inifine loop, count of workers to stress is limited to 3.
+        # This value is suitable for most cases.
+        for i in range(1, 4):
+            remote.kill_process('stress')
+            remote.background_call('stress --hdd {}'.format(i))
+            # Sleep to make iostat data updated
+            time.sleep(5)
+            result = remote.check_call(
+                "iostat -d -x -y 5 1 | grep -m1 '[hsv]d[abc]' | "
+                "awk '{print $14}'")
+            if float(result.stdout) > 95:
+                break
+
+        if check:
+            remote.check_process_present('cpulimit')
 
     @step
     def check_server_log_contains_record(self, server, substring, timeout=0):
@@ -482,7 +522,7 @@ class ServerSteps(BaseSteps):
 
         Args:
             remote (object): instance of stepler.third_party.ssh.SshClient
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         with remote.sudo():
             remote.check_call('date | tee /timestamp.txt /mnt/timestamp.txt')
@@ -495,9 +535,25 @@ class ServerSteps(BaseSteps):
 
         Args:
             remote (object): instance of stepler.third_party.ssh.SshClient
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         with remote.sudo():
             root_result = remote.check_call('cat /timestamp.txt')
             ephemeral_result = remote.check_call('cat /mnt/timestamp.txt')
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
+
+    @step
+    def resize(self, server, flavor, check=True):
+        """Step to resize server.
+
+        Args:
+            server (object): nova instance
+            flavor (object): flavor instance
+            check (bool): flag whether check step or not
+        """
+        self._client.resize(server, flavor)
+
+        if check:
+            self.check_server_status(server, 'verify_resize',
+                                     transit_statuses=('resize',),
+                                     timeout=config.VERIFY_RESIZE_TIMEOUT)

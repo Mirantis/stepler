@@ -41,7 +41,7 @@ class GlanceSteps(BaseSteps):
             image_path (str): path to image at local machine
             disk_format (str): format of image disk
             container_format (str): format of image container
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             object: glance image
@@ -63,7 +63,7 @@ class GlanceSteps(BaseSteps):
             image_path (str): path to image at local machine
             disk_format (str): format of image disk
             container_format (str): format of image container
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             list: glance images
@@ -90,7 +90,7 @@ class GlanceSteps(BaseSteps):
 
         Args:
             image (object): glance image
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         self.delete_images([image], check)
 
@@ -100,7 +100,7 @@ class GlanceSteps(BaseSteps):
 
         Args:
             image (object): glance image
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         for image in images:
             self._client.images.delete(image.id)
