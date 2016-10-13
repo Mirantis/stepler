@@ -58,7 +58,8 @@ def generate_ids(prefix=None, postfix=None, count=1, length=None):
     for _ in range(count):
         uid = str(uuid.uuid4())
         if prefix:
-            uid = '{}-{}'.format(prefix, uid)
+            # mix constant stepler prefix to separate tested objects
+            uid = '{}-{}-{}'.format(config.STEPLER_PREFIX, prefix, uid)
         if postfix:
             uid = '{}-{}'.format(uid, postfix)
         if length:
