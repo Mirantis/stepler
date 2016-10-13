@@ -104,7 +104,7 @@ class OsFaultsSteps(base.BaseSteps):
 
         Args:
             name (str): service name
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors

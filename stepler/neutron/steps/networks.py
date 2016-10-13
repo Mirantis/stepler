@@ -35,7 +35,7 @@ class NetworkSteps(base.BaseSteps):
 
         Args:
             network_name (str): network name
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         Returns:
             dict: network
         """
@@ -52,7 +52,7 @@ class NetworkSteps(base.BaseSteps):
 
         Args:
             network (dict): network
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         self._client.delete(network['id'])
 

@@ -75,7 +75,7 @@ class ServerSteps(base.BaseSteps):
             username (str): username to store with server metadata
             password (str): password to store with server metadata
             userdata (str): userdata (script) to execute on instance after boot
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             object: nova server
@@ -145,7 +145,7 @@ class ServerSteps(base.BaseSteps):
             username (str): username to store with server metadata
             password (str): password to store with server metadata
             userdata (str): userdata (script) to execute on instance after boot
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             list: nova servers
@@ -207,7 +207,7 @@ class ServerSteps(base.BaseSteps):
         """Step to retrieve servers from nova.
 
         Args:
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         Returns:
             list: server list
         """
@@ -502,7 +502,7 @@ class ServerSteps(base.BaseSteps):
             host (str): hypervisor's hostname to migrate to
             block_migration (bool): should nova use block or true live
                 migration
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Raises:
             TimeoutExpired: if check was False after timeout
@@ -624,7 +624,7 @@ class ServerSteps(base.BaseSteps):
         Args:
             remote (object): instance of stepler.third_party.ssh.SshClient
             vm_bytes (str): malloc `vm_bytes` bytes per vm worker
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         pid = remote.background_call(
             'stress --vm-bytes {} --vm-keep -m 1'.format(vm_bytes))
@@ -818,3 +818,19 @@ class ServerSteps(base.BaseSteps):
             self.check_server_presence(
                 server, present=False,
                 timeout=config.SERVER_DELETE_TIMEOUT)
+
+    @steps_checker.step
+    def resize(self, server, flavor, check=True):
+        """Step to resize server.
+
+        Args:
+            server (object): nova instance
+            flavor (object): flavor instance
+            check (bool): flag whether check step or not
+        """
+        self._client.resize(server, flavor)
+
+        if check:
+            self.check_server_status(server, 'verify_resize',
+                                     transit_statuses=('resize',),
+                                     timeout=config.VERIFY_RESIZE_TIMEOUT)

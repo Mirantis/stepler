@@ -51,7 +51,7 @@ class FlavorSteps(BaseSteps):
             swap (int): Swap space in MB
             rxtx_factor (float): RX/TX factor
             is_public (bool): flag whether flavor should be public or not
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         Retuns:
             object: flavor object
         """

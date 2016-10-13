@@ -18,6 +18,7 @@ Glance steps v2
 # limitations under the License.
 
 from hamcrest import assert_that, empty, is_not, equal_to  # noqa
+import requests
 from waiting import wait
 
 from stepler.third_party import steps_checker
@@ -42,7 +43,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             image_path (str): path to image at local machine
             disk_format (str): format of image disk
             container_format (str): format of image container
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             object: glance image
@@ -64,7 +65,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             image_path (str): path to image at local machine
             disk_format (str): format of image disk
             container_format (str): format of image container
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             list: glance images
@@ -91,7 +92,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         Args:
             image (object): glance image
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         self.delete_images([image], check)
 
@@ -101,7 +102,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         Args:
             image (object): glance image
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         for image in images:
             self._client.images.delete(image.id)
@@ -255,3 +256,26 @@ class GlanceStepsV2(BaseGlanceSteps):
                 return project.id not in member_ids
 
         wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def send_put_request_to_image_endpoint(self,
+                                           image,
+                                           auth_headers,
+                                           headers=None,
+                                           check=True):
+        """Step to send put request to image endpoint.
+
+        Args:
+            image (object): image object
+            auth_headers (dict): keystone session auth_headers
+            headers (dict): additional headers to request
+            check (bool): flag whether to check this step or not
+        """
+        headers = headers or {}
+        headers.update(auth_headers)
+        endpoint = self._client.http_client.get_endpoint()
+        url = '{endpoint}/v1/images/{image_id}'.format(
+            endpoint=endpoint, image_id=image.id)
+        response = requests.put(url, headers=headers)
+        if check:
+            response.raise_for_status()
