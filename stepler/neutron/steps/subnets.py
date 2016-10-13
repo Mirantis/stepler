@@ -36,7 +36,7 @@ class SubnetSteps(base.BaseSteps):
             subnet_name (str): subnet name
             network (dict): network to create subnet on
             cidr (str): cidr for subnet (like 192.168.1.0/24"")
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         Returns:
             dict: subnet
         """
@@ -55,7 +55,7 @@ class SubnetSteps(base.BaseSteps):
 
         Args:
             subnet (dict): subnet
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         self._client.delete(subnet['id'])
 

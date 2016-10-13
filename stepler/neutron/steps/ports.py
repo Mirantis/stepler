@@ -34,7 +34,7 @@ class PortSteps(base.BaseSteps):
 
         Args:
             network (dict): network to create port on
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             dict: port
@@ -50,7 +50,7 @@ class PortSteps(base.BaseSteps):
 
         Args:
             port (dict): port to delete
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         self._client.delete(port['id'])
         if check:

@@ -46,7 +46,7 @@ class CinderSteps(base.BaseSteps):
             image (object): glance image to create volume from
             volume_type (str): type of volume
             description (str): description
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             object: cinder volume
@@ -81,7 +81,7 @@ class CinderSteps(base.BaseSteps):
             image (object): glance image to create volume from
             volume_type (str): type of volume
             description (str): description
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
 
         Returns:
             list: cinder volumes
@@ -112,7 +112,7 @@ class CinderSteps(base.BaseSteps):
 
         Args:
             volume (object): cinder volume
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         self._client.volumes.delete(volume.id)
 
@@ -127,7 +127,7 @@ class CinderSteps(base.BaseSteps):
 
         Args:
             volumes (list): cinder volumes
-            check (bool): flag whether to check step or not
+            check (bool): flag whether check step or not
         """
         for volume in volumes:
             self.delete_volume(volume, check=False)
