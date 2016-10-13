@@ -18,12 +18,15 @@ Server metadata tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pytest
+
 from stepler.third_party.utils import generate_ids
 
 
+@pytest.mark.parametrize('arg', [1, 2])
 def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
                                       ubuntu_image, keypair, flavor_steps,
-                                      network_steps, server_steps):
+                                      network_steps, server_steps, arg):
     """Verify that image can be connected with SSH."""
     flavor = flavor_steps.get_flavor(name='m1.small')
     network = network_steps.get_network_by_name('admin_internal_net')
@@ -38,3 +41,8 @@ def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
 
         server_steps.detach_floating_ip(server, nova_floating_ip)
         server_steps.delete_server(server)
+
+
+@pytest.mark.parametrize('arg', [1, 2])
+def test_foo(arg):
+    pass
