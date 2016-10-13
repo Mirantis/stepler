@@ -29,20 +29,25 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     This test verify bug #1517671
 
     **Setup:**
+
         #. Upload cirros image
         #. Create network
         #. Create subnet
         #. Create router
         #. Create security group with allow ping rule
         #. Create flavor
+
     **Steps:**
+
         #. Set router default gateway to public network
         #. Add router interface to created network
         #. Create volume from cirros image with disk size bigger than flavor
         #. Boot server from volume
         #. Assign floating ip to server
         #. Check that ping to server's floating ip is successful
+
     **Teardown:**
+
         #. Delete server
         #. Delete flavor
         #. Delete security group
@@ -79,16 +84,21 @@ def test_delete_server_with_precreated_port(flavor, network, port,
     This test verify bug #1486727
 
     **Setup:**
+
         #. Create flavor
         #. Create network
         #. Create subnet
         #. Upload cirros image
         #. Create port
+
     **Steps:**
+
         #. Boot server with created port
         #. Delete server
         #. Check that port is still present
+
     **Teardown:**
+
         #. Delete port
         #. Delete cirros image
         #. Delete network

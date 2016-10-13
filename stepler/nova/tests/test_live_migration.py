@@ -34,6 +34,7 @@ def test_network_connectivity_to_vm_during_live_migration(
     migration.
 
     **Setup:**
+
         #. Upload cirros image
         #. Create network
         #. Create subnet
@@ -41,7 +42,9 @@ def test_network_connectivity_to_vm_during_live_migration(
         #. Set router default gateway to public network
         #. Create security group with allow ping rule
         #. Create flavor
+
     **Steps:**
+
         #. Add router interface to created network
         #. Boot server from cirros image
         #. Assign floating ip to server
@@ -49,7 +52,9 @@ def test_network_connectivity_to_vm_during_live_migration(
         #. Migrate server to another hypervisor
         #. Stop ping
         #. Check that ping loss is not more than 20
+
     **Teardown:**
+
         #. Delete server
         #. Delete flavor
         #. Delete security group
@@ -79,6 +84,7 @@ def test_migration_with_memory_workload(
     """**Scenario:** LM of instance under memory workload.
 
     **Setup:**
+
         #. Upload ubuntu image
         #. Create network
         #. Create subnet
@@ -86,7 +92,9 @@ def test_migration_with_memory_workload(
         #. Set router default gateway to public network
         #. Create security group with allow ping rule
         #. Create flavor
+
     **Steps:**
+
         #. Add router interface to created network
         #. Create volume from ubuntu image
         #. Boot server from volume
@@ -94,7 +102,9 @@ def test_migration_with_memory_workload(
         #. Start memory workload on server
         #. Migrate server to another hypervisor
         #. Check that ping to server's floating ip is successful
+
     **Teardown:**
+
         #. Delete server
         #. Delete flavor
         #. Delete volume
@@ -107,8 +117,7 @@ def test_migration_with_memory_workload(
     add_router_interfaces(router, [subnet])
     volume = create_volume(
         next(generate_ids('volume')),
-        size=20,
-        image=ubuntu_image)
+        size=20, image=ubuntu_image)
     block_device_mapping = {'vda': volume.id}
 
     server_name = next(generate_ids('server'))
@@ -127,3 +136,69 @@ def test_migration_with_memory_workload(
         server_steps.server_mem_workload(remote)
     server_steps.live_migrate(server, block_migration=True)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
+
+
+def test_migration_with_ephemeral_disk(
+        keypair, security_group, nova_floating_ip, cirros_image, network,
+        subnet, router, add_router_interfaces, create_flavor, create_server,
+        ssh_to_instance, server_steps):
+    """**Scenario:** LM of VM with data on root and ephemeral disk.
+
+    **Setup:**
+
+        #. Upload cirros image
+        #. Create network
+        #. Create subnet
+        #. Create router
+        #. Set router default gateway to public network
+        #. Create security group with allow ping rule
+
+    **Steps:**
+
+        #. Add router interface to created network
+        #. Create flavor woth ephemeral disk
+        #. Boot server from cirros image with created flavor
+        #. Assign floating ip to server
+        #. Create timestamp on on root and ephemeral disks
+        #. Start ping instance
+        #. Migrate server to another hypervisor
+        #. Stop ping
+        #. Check that ping loss is not more than 20
+        #. Verify timestamp on root and ephemeral disks
+
+    **Teardown:**
+
+        #. Delete server
+        #. Delete flavor
+        #. Delete volume
+        #. Delete security group
+        #. Delete router
+        #. Delete subnet
+        #. Delete network
+        #. Delete cirros image
+    """
+    add_router_interfaces(router, [subnet])
+    flavor = create_flavor(
+        next(generate_ids('flavor')),
+        ram=64,
+        disk=1,
+        vcpus=1,
+        ephemeral=1)
+
+    server_name = next(generate_ids('server'))
+    server = create_server(server_name,
+                           image=cirros_image,
+                           flavor=flavor,
+                           keypair=keypair,
+                           networks=[network],
+                           security_groups=[security_group],
+                           username='cirros')
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    with ssh_to_instance(server, nova_floating_ip.ip) as remote:
+        server_steps.create_timestamps_on_root_and_ephemeral(remote,
+                                                             check=False)
+    with server_steps.check_ping_loss_context(nova_floating_ip.ip,
+                                              max_loss=20):
+        server_steps.live_migrate(server, block_migration=True)
+    with ssh_to_instance(server, nova_floating_ip.ip) as remote:
+        server_steps.check_timestamps_on_root_and_ephemeral(remote)
