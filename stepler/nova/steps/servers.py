@@ -425,3 +425,29 @@ class ServerSteps(BaseSteps):
             return substring in console
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def create_timestamps_on_root_and_ephemeral(self, remote, check=True):
+        """Step to create timestamp on root and ephemeral disks
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        """
+        with remote.sudo():
+            remote.check_call('date | tee /timestamp.txt /mnt/timestamp.txt')
+        if check:
+            self.check_timestamps_on_root_and_ephemeral(remote)
+
+    @step
+    def check_timestamps_on_root_and_ephemeral(self, remote):
+        """Verify step to check timestamp on root and ephemeral disks
+
+        Args:
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            check (bool): flag whether to check step or not
+        """
+        with remote.sudo():
+            root_result = remote.check_call('cat /timestamp.txt')
+            ephemeral_result = remote.check_call('cat /mnt/timestamp.txt')
+        assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
