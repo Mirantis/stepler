@@ -1,3 +1,4 @@
+# general
 paramiko==2.0.2
 pytest==3.0.2
 pytest-xdist==1.15.0
@@ -28,3 +29,6 @@ ipython==5.1.0
 # doc
 Sphinx==1.4.6
 oslosphinx==4.7.0
+
+# verification
+tox==2.4.1
