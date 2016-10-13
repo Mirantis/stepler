@@ -17,6 +17,7 @@ Nova basic verification tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from stepler import config
 from stepler.third_party.utils import generate_ids
 
 
@@ -54,18 +55,17 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     add_router_interfaces(router, [subnet])
     volume_size = flavor.disk + 1
     volume = create_volume(
-        next(generate_ids('volume')),
-        size=volume_size,
-        image=cirros_image)
+        next(generate_ids('volume')), size=volume_size, image=cirros_image)
     block_device_mapping = {'vda': volume.id}
 
     server_name = next(generate_ids('server'))
-    server = create_server(server_name,
-                           image=None,
-                           flavor=flavor,
-                           networks=[network],
-                           security_groups=[security_group],
-                           block_device_mapping=block_device_mapping)
+    server = create_server(
+        server_name,
+        image=None,
+        flavor=flavor,
+        networks=[network],
+        security_groups=[security_group],
+        block_device_mapping=block_device_mapping)
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
@@ -96,9 +96,50 @@ def test_delete_server_with_precreated_port(flavor, network, port,
         #. Delete flavor
     """
     server_name = next(generate_ids('server'))
-    server = server_steps.create_server(server_name,
-                                        image=cirros_image,
-                                        flavor=flavor,
-                                        ports=[port])
+    server = server_steps.create_server(
+        server_name, image=cirros_image, flavor=flavor, ports=[port])
     server_steps.delete_server(server)
     port_steps.check_presence(port)
+
+
+def test_delete_instance_during_resizing(cirros_image, network, subnet,
+                                         create_flavor, server_steps):
+    """**Scenario:** Verify that nova can delete instances in resize state.
+
+    **Note:**
+        This test verify bug #1489775
+
+    **Setup:**
+        #. Upload cirros image
+        #. Create network
+        #. Create subnet
+    **Steps:**
+        #. Create 2 flavors
+        #. Boot server with smaller flavor
+        #. Resize server to bigger flavor
+        #. Delete server immediately after it state will be 'RESIZE'
+        #. Repeat last 4 steps some times
+    **Teardown:**
+        #. Delete server
+        #. Delete network
+        #. Delete subnet
+        #. Delete flavors
+        #. Delete cirros image
+    """
+    small_flavor = create_flavor(
+        next(generate_ids('flavor-small')), ram=64, vcpus=1, disk=1)
+    big_flavor = create_flavor(
+        next(generate_ids('flavor-big')), ram=128, vcpus=1, disk=2)
+
+    server_name = next(generate_ids('server'))
+    for _ in range(5):
+        server = server_steps.create_server(
+            server_name,
+            image=cirros_image,
+            networks=[network],
+            flavor=small_flavor)
+
+        server_steps.resize(server, big_flavor, check=False)
+        server_steps.check_server_status(
+            server, 'resize', timeout=config.VERIFY_RESIZE_TIMEOUT)
+        server_steps.delete_server(server)
