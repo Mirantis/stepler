@@ -24,7 +24,7 @@ from stepler.third_party.utils import generate_ids
 USERDATA_DONE_MARKER = next(generate_ids('userdata-done'))
 
 INSTALL_WORKLOAD_USERDATA = """#!/bin/bash -v
-apt-get install -yq stress cpulimit sysstat iperf
+apt-get install -yq stress cpulimit sysstat
 echo {}""".format(USERDATA_DONE_MARKER)
 
 
@@ -83,12 +83,15 @@ def test_network_connectivity_to_vm_during_live_migration(
     'boot_from', ['image', 'volume'],
     ids=['boot from image', 'boot_from_volume'])
 @pytest.mark.parametrize(
-    'workload', ['CPU', 'memory', 'disk'],
-    ids=['CPU workload', 'memory workload', 'disk workload'])
+    'workload', ['CPU', 'memory', 'disk', 'network'],
+    ids=[
+        'CPU workload', 'memory workload', 'disk workload', 'network workload'
+    ])
 def test_instance_migration_with_workload(
         boot_from, workload, keypair, flavor, security_group, nova_floating_ip,
         ubuntu_image, network, subnet, router, add_router_interfaces,
-        create_volume, create_server, ssh_to_instance, server_steps):
+        create_volume, create_server, ssh_to_instance, make_traffic,
+        server_steps, security_group_steps):
     """**Scenario:** LM of instance under workload.
 
     **Setup:**
@@ -159,6 +162,16 @@ def test_instance_migration_with_workload(
             server_steps.server_mem_workload(remote)
         elif workload == 'disk':
             server_steps.server_disk_workload(remote)
+        elif workload == 'network':
+            port = 5010
+            security_group_steps.add_group_rules(security_group, [{
+                'ip_protocol': 'tcp',
+                'from_port': port,
+                'to_port': port,
+                'cidr': '0.0.0.0/0',
+            }])
+            server_steps.server_network_listen(remote, port=port)
+            make_traffic(nova_floating_ip.ip, port)
     server_steps.live_migrate(server, block_migration=block_migration)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
 
