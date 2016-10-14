@@ -27,18 +27,53 @@ def test_share_glance_image(ubuntu_image, project, glance_steps):
 
     **Setup:**
 
-        #. Create ubuntu image
-        #. Create project
+    #. Create ubuntu image
+    #. Create project
 
     **Steps:**
 
-        #. Bind another project to image
-        #. Unbind project from image
+    #. Bind another project to image
+    #. Unbind project from image
 
     **Teardown:**
 
-        #. Delete project
-        #. Delete ubuntu image
+    #. Delete project
+    #. Delete ubuntu image
     """
     glance_steps.bind_project(ubuntu_image, project)
     glance_steps.unbind_project(ubuntu_image, project)
+
+
+@pytest.mark.idempotent_id('1b1a0953-a772-4cfe-a7da-2f6de950eede')
+def test_change_image_status_directly(cirros_image,
+                                      auth_steps,
+                                      glance_steps_v1,
+                                      glance_steps_v2):
+    """**Scenario:** Verify that user can't change image status directly.
+
+    This test verify that user can't change image status directly with v1 API.
+
+    Note:
+        This test verify bug #1496798.
+
+    **Setup:**
+
+    #. Create cirros image
+
+    **Steps:**
+
+    #. Get token
+    #. Send PUT request to glance image endpoint with
+        {'x-image-meta-status': 'queued'} headers
+    #. Check that image's status is still active
+
+    **Teardown:**
+
+    #. Delete cirros image
+    """
+    auth_headers = auth_steps.get_auth_headers()
+    glance_steps_v1.send_put_request_to_image_endpoint(
+        cirros_image,
+        auth_headers, {'x-image-meta-status': 'queued'},
+        check=False)
+    glance_steps_v2.check_image_status(cirros_image, 'active')

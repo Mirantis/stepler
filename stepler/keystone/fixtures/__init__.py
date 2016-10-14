@@ -17,6 +17,7 @@ Keystone fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .auths import *  # noqa
 from .domains import *  # noqa
 from .groups import *  # noqa
 from .keystone import *  # noqa
@@ -26,6 +27,8 @@ from .tokens import *  # noqa
 from .users import *  # noqa
 
 __all__ = sorted([  # sort for documentation
+    'auth_steps',
+
     'create_domain',
     'domain_steps',
     'domain',
