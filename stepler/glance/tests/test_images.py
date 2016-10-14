@@ -42,3 +42,34 @@ def test_share_glance_image(ubuntu_image, project, glance_steps):
     """
     glance_steps.bind_project(ubuntu_image, project)
     glance_steps.unbind_project(ubuntu_image, project)
+
+
+def test_change_image_status_directly(cirros_image, auth_steps, glance_steps):
+    """**Scenario:** Verify that user can't change image status directly with
+        v1 API.
+
+    **Note:**
+
+        This test verify bug #1496798.
+
+    **Setup:**
+
+        #. Create cirros image
+
+    **Steps:**
+
+        #. Get token
+        #. Send PUT request to glance image endpoint with
+            {'x-image-meta-status': 'queued'} headers
+        #. Check that image's status is still active
+
+    **Teardown:**
+
+        #. Delete cirros image
+    """
+    auth_headers = auth_steps.get_auth_headers()
+    glance_steps.send_put_request(
+        cirros_image,
+        auth_headers, {'x-image-meta-status': 'queued'},
+        check=False)
+    glance_steps.check_image_status(cirros_image, 'active')
