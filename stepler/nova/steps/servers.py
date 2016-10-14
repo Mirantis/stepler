@@ -373,6 +373,32 @@ class ServerSteps(BaseSteps):
         return ips
 
     @step
+    def check_ping_for_ip(self,
+                          ip_to_ping,
+                          remote_from=None,
+                          ping_count=3,
+                          timeout=0):
+        """Verify step to check ping for ip from remote or local host.
+
+        Args:
+            ip_to_ping (str): nova instance to ping its floating ip
+            remote_from (object|None): instance of
+                stepler.third_party.ssh.SshClient. If None - ping executing
+                from local host.
+            timeout (int): seconds to wait for success ping
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+
+        def predicate():
+            result = ping.Pinger(
+                ip_to_ping, remote=remote_from).ping(count=ping_count)
+            return result.loss == 0
+
+        wait(predicate, timeout_seconds=timeout)
+
+    @step
     def check_ping_to_server_floating(self, server, timeout=0):
         """Verify step to check ping to server floating ip address.
 
@@ -383,18 +409,46 @@ class ServerSteps(BaseSteps):
 
         Args:
             server (object): nova instance to ping its floating ip
-            timeout (int): seconds to wait a result of check
+            timeout (int): seconds to wait for result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was False after timeout
         """
         floating_ip = self.get_ips(server, 'floating').keys()[0]
+        self.check_ping_for_ip(floating_ip, timeout=timeout)
 
-        def predicate():
-            result = ping.Pinger(floating_ip).ping(count=1)
-            return result.loss == 0
+    def _get_ping_plan(self, servers):
+        """Get dict which contains ip list to ping for each server"""
+        ping_plan = {}
+        for server1 in servers:
+            ping_plan[server1] = []
+            for server2 in servers:
+                if server1 != server2:
+                    for ip in self.get_ips(server2).keys():
+                        ping_plan[server1].append(ip)
+        return ping_plan
 
-        wait(predicate, timeout_seconds=timeout)
+    @step
+    def check_ping_between_servers_via_floating(self,
+                                                servers,
+                                                timeout=0):
+        """Step to check ping from each server to all other servers.
+
+        Args:
+            servers (list): nova instances to check ping between
+            timeout (int): seconds to wait for result of check
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        ping_plan = self._get_ping_plan(servers)
+        for server, ips in ping_plan.items():
+            floating_ip = self.get_ips(server, 'floating').keys()[0]
+
+            with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
+                    for ip in ips:
+                        self.check_ping_for_ip(ip, remote_from=server_ssh,
+                                               timeout=timeout)
 
     @step
     def live_migrate(self, server, host=None, block_migration=True,
@@ -407,6 +461,9 @@ class ServerSteps(BaseSteps):
             block_migration (bool): should nova use block or true live
                 migration
             check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
         """
         server.get()
         current_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
@@ -428,6 +485,52 @@ class ServerSteps(BaseSteps):
                 timeout=config.LIVE_MIGRATE_TIMEOUT)
 
     @step
+    def migrate_servers(self, servers, check=True):
+        """Step to migrate servers
+
+        Args:
+            servers (list): servers to migrate
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        old_hosts = {}
+        for server in servers:
+            server.get()
+            old_hosts[server.id] = getattr(server, 'OS-EXT-SRV-ATTR:host')
+            server.migrate()
+        if check:
+            for server in servers:
+                self.check_server_status(server, 'verify_resize',
+                                         transit_statuses=('resize', ),
+                                         timeout=config.VERIFY_RESIZE_TIMEOUT)
+                self.check_instance_hypervisor_hostname(
+                    server,
+                    old_hosts[server.id],
+                    equal=False,
+                    timeout=config.LIVE_MIGRATE_TIMEOUT)
+
+    @step
+    def confirm_resize_servers(self, servers, check=True):
+        """Step to confirm resize for servers
+
+        Args:
+            servers (list): servers to confirm resize
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        for server in servers:
+            server.confirm_resize()
+        if check:
+            for server in servers:
+                self.check_server_status(server, 'active',
+                                         transit_statuses=('verify_resize', ),
+                                         timeout=180)
+
+    @step
     def check_instance_hypervisor_hostname(self,
                                            server,
                                            host,
@@ -442,6 +545,7 @@ class ServerSteps(BaseSteps):
             equal (bool): flag whether servers's hypervisor hostname should be
                 equal to `hostname` or not
             timeout (int): seconds to wait a result of check
+
         Raises:
             TimeoutExpired: if check was falsed after timeout
         """
