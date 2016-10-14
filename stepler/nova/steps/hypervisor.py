@@ -1,7 +1,7 @@
 """
-----------
-Nova steps
-----------
+------------
+Server steps
+------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,18 +17,18 @@ Nova steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .flavors import *  # noqa
-from .floating_ips import *  # noqa
-from .hypervisor import *  # noqa
-from .keypairs import *  # noqa
-from .security_groups import *  # noqa
-from .servers import *  # noqa
+from stepler import base
+from stepler.third_party import steps_checker
 
 __all__ = [
-    'FlavorSteps',
-    'FloatingIpSteps',
-    'HypervisorSteps',
-    'KeypairSteps',
-    'SecurityGroupSteps',
-    'ServerSteps'
+    'HypervisorSteps'
 ]
+
+
+class HypervisorSteps(base.BaseSteps):
+    """Hypervisor steps."""
+
+    @steps_checker.step
+    def get_hypervisors(self):
+        """Step to get hypervisors"""
+        return self._client.list()
