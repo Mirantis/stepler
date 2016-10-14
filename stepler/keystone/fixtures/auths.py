@@ -1,6 +1,6 @@
 """
 --------------
-Keystone steps
+Token fixtures
 --------------
 """
 
@@ -17,17 +17,16 @@ Keystone steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 
-from .auths import *  # noqa
-from .domains import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .users import *  # noqa
+from stepler.keystone import steps
 
 __all__ = [
-    'AuthSteps',
-    'DomainSteps',
-    'ProjectSteps',
-    'RoleSteps',
-    'UserSteps',
+    'auth_steps',
 ]
+
+
+@pytest.fixture
+def auth_steps(session):
+    """Fixture to get auth steps."""
+    return steps.AuthSteps(session)

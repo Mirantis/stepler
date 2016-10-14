@@ -44,6 +44,7 @@ __all__ = sorted([  # sort for documentation
     'glance_steps',
     'ubuntu_image',
 
+    'auth_steps',
     'create_domain',
     'domain_steps',
     'domain',
