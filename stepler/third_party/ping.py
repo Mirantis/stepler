@@ -39,7 +39,7 @@ class PingResult(object):
     received, loss counts)
     """
     _transmitted_count_re = r'(?P<count>\d+)(?: packets transmitted)'
-    _received_count_re = r'(?P<count>\d+)(?: received)'
+    _received_count_re = r'(?P<count>\d+)(?:( packets)? received)'
 
     def __init__(self):
         self.stdout = ''
@@ -107,17 +107,17 @@ class Pinger(object):
     def _remote_ping(self, count):
         cmd = ' '.join(self._prepare_cmd(count))
         output_file = tempfile.mktemp()
-        pid = self.remote.background_execute(cmd, stdout=output_file)
+        pid = self.remote.background_call(cmd, stdout=output_file)
         result = PingResult()
         yield result
         if count:
             waiting.wait(
-                lambda: not self.remote.execute('ps -p {}'.format(pid)).is_ok,
+                lambda: not self.remote.execute('ps -o pid | grep {}'.format(
+                    pid)).is_ok,
                 timeout_seconds=count * 2 + 5)
         self.remote.execute('kill -SIGINT {}'.format(pid))
-        with self.remote.open(output_file) as f:
-            stdout = f.read()
-        result.stdout = stdout
+        result.stdout = self.remote.check_call("cat {}".format(
+            output_file)).stdout
         self.remote.execute('rm {}'.format(output_file))
 
     @contextlib.contextmanager

@@ -165,7 +165,7 @@ class SshClient(object):
             stdout=stdout)
         result = self.check_call(bg_command, verbose=False)
         pid = result.stdout
-        result = self.execute('ps -p {pid}'.format(pid=pid),
+        result = self.execute('ps -o pid | grep {pid}'.format(pid=pid),
                               verbose=False)
         assert result.is_ok, (
             "Can't find `{command}` (PID: {pid}) in "

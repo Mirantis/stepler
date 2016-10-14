@@ -19,6 +19,7 @@ Nova fixtures
 
 from .flavors import *  # noqa
 from .floating_ips import *  # noqa
+from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
 from .nova import *  # noqa
 from .servers import *  # noqa
@@ -32,6 +33,8 @@ __all__ = sorted([  # sort for documentation
     'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
+
+    'hypervisor_steps',
 
     'create_keypair',
     'keypair',
