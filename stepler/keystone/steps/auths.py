@@ -1,7 +1,7 @@
 """
---------------
-Keystone steps
---------------
+-----------
+Auth steps
+-----------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +17,20 @@ Keystone steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from .auths import *  # noqa
-from .domains import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .users import *  # noqa
+from stepler import base
+from stepler.third_party import steps_checker
 
 __all__ = [
-    'AuthSteps',
-    'DomainSteps',
-    'ProjectSteps',
-    'RoleSteps',
-    'UserSteps',
+    'AuthSteps'
 ]
+
+
+class AuthSteps(base.BaseSteps):
+    """Keystone auth steps."""
+
+    @steps_checker.step
+    def get_auth_headers(self):
+        """Step to get auth_headers."""
+        auth_headers = self._client.get_auth_headers()
+
+        return auth_headers
