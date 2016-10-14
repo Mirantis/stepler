@@ -104,6 +104,7 @@ def create_servers(server_steps):
     names = []
 
     def _create_servers(server_names, *args, **kwgs):
+        server_names = list(server_names)
         names.extend(server_names)
         _servers = server_steps.create_servers(server_names, *args, **kwgs)
         return _servers
