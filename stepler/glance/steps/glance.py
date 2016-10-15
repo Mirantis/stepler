@@ -17,6 +17,7 @@ Glance steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, empty, is_not  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -133,6 +134,26 @@ class GlanceSteps(BaseSteps):
         self._client.image_members.delete(image.id, project.id)
         if check:
             self.check_image_bind_status(image, project, binded=False)
+
+    @step
+    def get_images(self, name_prefix=None, check=True):
+        """Step to retrieve images from glance.
+
+        Args:
+            check (bool): flag whether to check step or not
+        Returns:
+            list: images list
+        """
+        images = list(self._client.list())
+
+        if name_prefix:
+            images = [image for image in images
+                      if image.name.startswith(name_prefix)]
+
+        if check:
+            assert_that(images, is_not(empty()))
+
+        return images
 
     @step
     def check_image_presence(self, image, present=True, timeout=0):
