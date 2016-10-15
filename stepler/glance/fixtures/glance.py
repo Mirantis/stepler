@@ -33,31 +33,83 @@ __all__ = [
     'cirros_image',
 ]
 
+# images which should be missed, when unexpected images will be removed
+SKIPPED_IMAGES = []
+
+
+def _remove_stayed_images(glance_steps):
+    """Clear unexpected images.
+
+    We should remove images which unexpectedly stayed after tests.
+
+    Args:
+        glance_steps (GlanceSteps): instantiated glance steps
+    """
+    # check=False because in best case no stayed images will be present
+    images = glance_steps.get_images(name_prefix=config.STEPLER_PREFIX,
+                                     check=False)
+    images = [image for image in images if image not in SKIPPED_IMAGES]
+    glance_steps.delete_images(images)
+
+
+@pytest.fixture(scope='session')
+def get_glance_client(get_session):
+    """Callable session fixture to get glance client.
+
+    Args:
+        get_session (function): function to get keystone session
+
+    Returns:
+        function: function to get glance client
+    """
+    def _get_glance_client():
+        return Client(session=get_session())
+
+    return _get_glance_client
+
 
 @pytest.fixture
-def glance_client(session):
+def glance_client(get_glance_client):
     """Function fixture to get glance client.
 
     Args:
-        session (object): authenticated keystone session
+        get_glance_client (function): function to get glance client
 
     Returns:
         glanceclient.v2.client.Client: instantiated glance client
     """
-    return Client(session=session)
+    return get_glance_client()
+
+
+@pytest.fixture(scope='session')
+def get_glance_steps(get_glance_client):
+    """Callable session fixture to get glance steps.
+
+    Args:
+        get_glance_client (function): function to get glance client
+
+    Returns:
+        function: function to get glance steps
+    """
+    def _get_glance_steps():
+        glance_steps = GlanceSteps(get_glance_client())
+        _remove_stayed_images(glance_steps)  # remove when steps are requested
+        return glance_steps
+
+    return _get_glance_steps
 
 
 @pytest.fixture
-def glance_steps(glance_client):
+def glance_steps(get_glance_steps):
     """Function fixture to get glance steps.
 
     Args:
-        glance_client (object): instantiated glance client
+        get_glance_steps (function): function to get glance steps
 
     Returns:
-        stepler.glance.steps.GlanceSteps: instantiated glance steps
+        GlanceSteps: instantiated glance steps
     """
-    return GlanceSteps(glance_client)
+    return get_glance_steps()
 
 
 @pytest.yield_fixture
@@ -105,8 +157,8 @@ def create_image(create_images):
     return _create_image
 
 
-@pytest.fixture
-def ubuntu_image(create_image):
+@pytest.yield_fixture(scope='session')
+def ubuntu_image(get_glance_steps):
     """Fixture to create ubuntu image with default options before test.
 
     Args:
@@ -117,10 +169,18 @@ def ubuntu_image(create_image):
     """
     image_name = next(generate_ids('ubuntu'))
     image_path = get_file_path(config.UBUNTU_QCOW2_URL)
-    return create_image(image_name, image_path)
+
+    _ubuntu_image = get_glance_steps().create_images([image_name],
+                                                     image_path)[0]
+    SKIPPED_IMAGES.append(_ubuntu_image)
+
+    yield _ubuntu_image
+
+    SKIPPED_IMAGES.remove(_ubuntu_image)
+    get_glance_steps().delete_images([_ubuntu_image])
 
 
-@pytest.fixture
+@pytest.yield_fixture(scope='session')
 def cirros_image(create_image):
     """Fixture to create cirros image with default options before test.
 
@@ -132,4 +192,12 @@ def cirros_image(create_image):
     """
     image_name = next(generate_ids('cirros'))
     image_path = get_file_path(config.CIRROS_QCOW2_URL)
-    return create_image(image_name, image_path)
+
+    _cirros_image = get_glance_steps().create_images([image_name],
+                                                     image_path)[0]
+    SKIPPED_IMAGES.append(_cirros_image)
+
+    yield _cirros_image
+
+    SKIPPED_IMAGES.remove(_cirros_image)
+    get_glance_steps().delete_images([_cirros_image])
