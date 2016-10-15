@@ -22,6 +22,8 @@ from .glance import *  # noqa
 __all__ = sorted([  # sort for documentation
     'create_image',
     'create_images',
+    'get_glance_client',
+    'get_glance_steps',
     'glance_client',
     'glance_steps',
     'ubuntu_image',
