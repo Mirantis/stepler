@@ -1,5 +1,5 @@
 =========
-os_faults
+OS faults
 =========
 
 ----------
@@ -19,21 +19,23 @@ Configuration
 
 Before using os_faults, the cloud configuration file in JSON format must be created. This file defines cloud type, IP address and other data. Its example for a cloud based on Fuel is shown below.
 
-{
-  'cloud_management': {
-    'driver': 'fuel',
-    'args': {
-      'address': '10.109.0.2',
-      'username': 'root'
-    }
-  },
-  'power_management': {
-    'driver': 'libvirt',
-    'args': {
-      'connection_uri': "qemu+unix:///system"
-    }
-  }
-}
+.. code:: json
+
+   {
+     'cloud_management': {
+       'driver': 'fuel',
+       'args': {
+         'address': '10.109.0.2',
+         'username': 'root'
+       }
+     },
+     'power_management': {
+       'driver': 'libvirt',
+       'args': {
+          'connection_uri': "qemu+unix:///system"
+       }
+     }
+   }
 
 Pathname of such configuration file must be set via the environment variable OS_FAULTS_CONFIG, ex:
 export OS_FAULTS_CONFIG="/home/smith/os_fault_config.json"

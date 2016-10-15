@@ -45,7 +45,7 @@ Make following commands in terminal::
    virtualenv .venv
    . .venv/bin/activate
    pip install -U pip
-   pip install -r requirements.txt
+   pip install -r requirements.txt -r c-requirements.txt
 
 ----------------
 How to run tests
@@ -106,4 +106,5 @@ Deep to structure
    keystone
    neutron
    nova
+   os_faults
    third_party

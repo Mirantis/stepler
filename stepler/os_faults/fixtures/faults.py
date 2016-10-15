@@ -17,7 +17,13 @@ os_faults fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os_faults
+try:
+    import os_faults
+except ImportError:
+    import warnings
+    warnings.warn(
+        'os_faults import is skipped for docs generating only', ImportWarning)
+
 import pytest
 
 from stepler import config
