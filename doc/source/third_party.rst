@@ -8,6 +8,9 @@ Third party modules
 .. automodule:: stepler.third_party.context
    :members:
 
+.. automodule:: stepler.third_party.destructive_dispatcher
+   :members:
+
 .. automodule:: stepler.third_party.logger
    :members:
 

@@ -105,5 +105,6 @@ __all__ = sorted([  # sort for documentation
 
 pytest_plugins = [
     'stepler.third_party.steps_checker',
-    'stepler.third_party.testrail_id'
+    'stepler.third_party.destructive_dispatcher',
+    'stepler.third_party.testrail_id',
 ]
