@@ -53,6 +53,8 @@ TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images
 
 STEPLER_PREFIX = 'stepler'  # project specific prefix for created resources
 
+TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                'test_reports'))
 # TIMEOUTS (in seconds)
 POLLING_TIME = .01
 

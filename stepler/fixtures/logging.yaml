@@ -1,0 +1,19 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+    func_formatter:
+        format: "%(asctime)s - %(message)s"
+
+handlers:
+    func_handler:
+        class: logging.FileHandler
+        level: DEBUG
+        formatter: func_formatter
+        filename: {REPORT_DIR}/called_functions.log
+        encoding: utf8
+
+loggers:
+    stepler.func_logger:
+        level: DEBUG
+        handlers: [func_handler]
