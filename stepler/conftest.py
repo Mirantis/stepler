@@ -32,6 +32,8 @@ __all__ = sorted([  # sort for documentation
     'auth_url',
     'ip_by_host',
     'session',
+    'report_log',
+    'report_dir',
 
     'create_volume',
     'create_volumes',
