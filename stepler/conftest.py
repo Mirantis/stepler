@@ -32,6 +32,8 @@ __all__ = sorted([  # sort for documentation
     'auth_url',
     'ip_by_host',
     'session',
+    'report_log',
+    'report_dir',
 
     'create_volume',
     'create_volumes',
@@ -104,6 +106,7 @@ __all__ = sorted([  # sort for documentation
 ])
 
 pytest_plugins = [
+    'stepler.third_party.reports_cleaner',
     'stepler.third_party.steps_checker',
     'stepler.third_party.testrail_id'
 ]
