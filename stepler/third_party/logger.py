@@ -23,7 +23,7 @@ import time
 
 from stepler.third_party import utils
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger('stepler.func_logger')
 
 
 def log(func):
