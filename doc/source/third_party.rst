@@ -17,5 +17,8 @@ Third party modules
 .. automodule:: stepler.third_party.matchers
    :members:
 
+.. automodule:: stepler.third_party.reports_cleaner
+   :members:
+
 .. automodule:: stepler.third_party.utils
    :members:
