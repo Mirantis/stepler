@@ -24,6 +24,7 @@ import six
 __all__ = ["context"]
 
 
+# TODO(schipiga): add unittests for that
 class ContextGenerator(object):
     """Helper for @context decorator."""
 

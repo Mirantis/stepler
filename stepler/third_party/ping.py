@@ -103,6 +103,7 @@ class Pinger(object):
         cmd.append(self.ip_to_ping)
         return cmd
 
+    # TODO(schipiga): seems, refactoring is required
     @contextlib.contextmanager
     def _remote_ping(self, count):
         cmd = ' '.join(self._prepare_cmd(count))
@@ -120,6 +121,7 @@ class Pinger(object):
         result.stdout = stdout
         self.remote.execute('rm {}'.format(output_file))
 
+    # TODO(schipiga): seems, refactoring is required
     @contextlib.contextmanager
     def _local_ping(self, count):
         cmd = self._prepare_cmd(count)

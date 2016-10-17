@@ -19,5 +19,6 @@ Contains fixtures specific for cinder.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO(schipiga): add cinder to documentation
 from .fixtures import *  # noqa
 from .fixtures import __all__  # noqa
