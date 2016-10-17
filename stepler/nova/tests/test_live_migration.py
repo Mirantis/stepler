@@ -137,7 +137,11 @@ def test_migration_with_memory_workload(
         USERDATA_DONE_MARKER,
         timeout=config.USERDATA_EXECUTING_TIMEOUT)
     server_steps.attach_floating_ip(server, nova_floating_ip)
-    with ssh_to_server(server, nova_floating_ip.ip) as server_ssh:
+
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
         server_steps.generate_server_memory_workload(server_ssh)
+
     server_steps.live_migrate(server, block_migration=True)
-    server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
+    server_steps.check_ping_to_server_floating(
+        server, timeout=config.PING_CALL_TIMEOUT)
