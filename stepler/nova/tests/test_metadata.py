@@ -18,7 +18,7 @@ Server metadata tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from stepler.third_party.utils import generate_ids
+from stepler.third_party import utils
 
 
 def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
@@ -29,7 +29,7 @@ def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
     flavor = flavor_steps.get_flavor(name='m1.small')
     network = network_steps.get_network_by_name('admin_internal_net')
 
-    for server_name in generate_ids('server', count=1):
+    for server_name in utils.generate_ids('server', count=1):
         server = server_steps.create_server(server_name,
                                             image=ubuntu_image,
                                             flavor=flavor,
@@ -39,7 +39,7 @@ def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
                                             username='ubuntu')
 
         server_steps.attach_floating_ip(server, nova_floating_ip)
-        server_steps.check_ssh_connect(server, timeout=600)
+        server_steps.get_server_ssh(server)
 
         server_steps.detach_floating_ip(server, nova_floating_ip)
         server_steps.delete_server(server)
