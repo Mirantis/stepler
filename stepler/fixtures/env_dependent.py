@@ -17,6 +17,7 @@ Environment dependent fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO(schipiga): seems these fixtures are not used now and may be remove them
 import pytest
 
 __all__ = [

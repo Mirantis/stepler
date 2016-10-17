@@ -17,6 +17,7 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO(schipiga): this module should be deleted because it's obsolete.
 from waiting import wait
 
 from stepler.base import BaseSteps

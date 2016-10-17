@@ -25,6 +25,7 @@ import json
 from six import moves
 
 
+# TODO(schipiga): add unittests for that
 def dump(obj, prefix):
     """Transform object to dict with small chunks of jsoned object.
 

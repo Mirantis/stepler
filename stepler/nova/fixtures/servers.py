@@ -199,6 +199,7 @@ def server(create_server, image):
     return create_server(server_name, image)
 
 
+# TODO(schipiga): that looks so complicated and refactoring required
 @pytest.fixture
 def ssh_proxy_data(request, network_steps, server_steps):
     """Fixture to get ssh proxy data of server."""
@@ -231,6 +232,7 @@ def ssh_proxy_data(request, network_steps, server_steps):
     return _ssh_proxy_data
 
 
+# TODO(schipiga): that looks to be a step. Btw, docstring is absent.
 @pytest.fixture
 def ssh_to_server(ssh_proxy_data, server_steps):
     def _ssh_to_server(server, ip=None):

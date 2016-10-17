@@ -39,7 +39,7 @@ __all__ = [
 
 LOGGER = logging.getLogger(__name__)
 # images which should be missed, when unexpected images will be removed
-SKIPPED_IMAGES = []
+SKIPPED_IMAGES = []  # TODO(schipiga): describe its mechanism in docs
 
 
 def _remove_stayed_images(glance_steps):
