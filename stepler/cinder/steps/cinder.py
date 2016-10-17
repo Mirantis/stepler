@@ -17,7 +17,9 @@ Cinder steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import (assert_that, is_not, empty)
 from cinderclient import exceptions
+
 import waiting
 
 from stepler import base
@@ -179,3 +181,17 @@ class CinderSteps(base.BaseSteps):
             return volume.status.lower() == status.lower()
 
         waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_volumes(self, check=True):
+        """Step to retrieve volumes
+
+        Args:
+            check (bool): flag whether to check step or not
+        Raises:
+            list: volume list
+        """
+        volumes = self._client.volumes.list()
+        if check:
+            assert_that(volumes, is_not(empty()))
+        return volumes
