@@ -99,8 +99,7 @@ __all__ = sorted([  # sort for documentation
     'create_servers_context',
     'server',
     'server_steps',
-    'ssh_proxy_data',
-    'ssh_to_server',
+    'get_ssh_proxy_cmd',
 
     'os_faults_client',
     'os_faults_steps'
