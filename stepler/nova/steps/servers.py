@@ -18,16 +18,18 @@ Server steps
 # limitations under the License.
 
 import contextlib
+import socket
 
 from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
                       less_than_or_equal_to)  # noqa
+import paramiko
 from waiting import wait
 
 from stepler.base import BaseSteps
 from stepler import config
 from stepler.third_party import chunk_serializer
 from stepler.third_party import ping
-from stepler.third_party.ssh import SshClient
+from stepler.third_party import ssh
 from stepler.third_party.steps_checker import step
 
 __all__ = [
@@ -265,36 +267,62 @@ class ServerSteps(BaseSteps):
         return chunk_serializer.load(meta, CREDENTIALS_PREFIX)
 
     @step
-    def check_ssh_connect(self,
-                          server,
-                          ip=None,
-                          proxy_cmd=None,
-                          ssh_timeout=60,
-                          timeout=0):
-        """Verify step to check ssh connect to server."""
+    def get_server_ssh(self, server, ip=None, proxy_cmd=None,
+                       ssh_timeout=config.SSH_CLIENT_TIMEOUT, check=True):
+        """Step to get SSH connect to server.
+
+        Args:
+            server (object): nova server
+            ip (str): ip of server
+            proxy_cmd (str): ssh client proxy command
+            ssh_timeout (int): timeout to establish ssh connection
+            check (bool): flag whether to check step or not
+
+        Returns:
+            ssh.SshClient: instantiated ssh client to server ip
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
         if not ip:
-            if not proxy_cmd:
+            if not proxy_cmd:  # server is available via floating IP directly
                 ip = self.get_ips(server, 'floating').keys()[0]
             else:
                 ip = self.get_ips(server, 'fixed').keys()[0]
 
         credentials = self.get_server_credentials(server)
-        ssh_client = SshClient(
-            ip,
-            pkey=credentials.get('private_key'),
-            username=credentials.get('username'),
-            password=credentials.get('password'),
-            timeout=ssh_timeout,
-            proxy_cmd=proxy_cmd)
 
+        server_ssh = ssh.SshClient(ip,
+                                   pkey=credentials.get('private_key'),
+                                   username=credentials.get('username'),
+                                   password=credentials.get('password'),
+                                   timeout=ssh_timeout,
+                                   proxy_cmd=proxy_cmd)
+        if check:
+            self.check_server_ssh_connect(server_ssh,
+                                          config.SSH_CONNECT_TIMEOUT)
+
+        return server_ssh
+
+    @step
+    def check_server_ssh_connect(self, server_ssh, timeout=0):
+        """Step to check ssh connect to server.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh client to server ip
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
         def predicate():
             try:
-                ssh_client.connect()
+                server_ssh.connect()
                 return True
-            except Exception:
+            except (paramiko.SSHException, socket.error):
                 return False
             finally:
-                ssh_client.close()
+                server_ssh.close()
 
         wait(predicate, timeout_seconds=timeout)
 
