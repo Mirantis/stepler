@@ -12,12 +12,16 @@
 # limitations under the License.
 
 from .node import *  # noqa
+from .port import *  # noqa
 from .ironic import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'ironic_client',
 
+    'ironic_port_steps',
+    'ironic_port',
+
     'ironic_node_steps',
     'create_ironic_node',
-    'ironic_node'
+    'ironic_node',
 ])

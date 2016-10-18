@@ -12,7 +12,9 @@
 # limitations under the License.
 
 from .node import *  # noqa
+from .port import *  # noqa
 
 __all__ = [
-    'IronicNodeSteps'
+    'IronicNodeSteps',
+    'IronicPortSteps'
 ]
