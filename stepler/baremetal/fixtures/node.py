@@ -24,7 +24,7 @@ from stepler.baremetal.steps import IronicNodeSteps
 __all__ = [
     'create_ironic_node',
     'ironic_node',
-    'ironic_node_steps'
+    'ironic_node_steps',
 ]
 
 
