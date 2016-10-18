@@ -1,3 +1,9 @@
+"""
+--------------------
+Ironic node fixtures
+--------------------
+"""
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -44,7 +50,7 @@ def create_ironic_node(ironic_node_steps):
     yield _create_ironic_node
 
     for node in nodes:
-        ironic_node_steps.delete_node(node)
+        ironic_node_steps.delete_ironic_node(node)
 
 
 @pytest.fixture
