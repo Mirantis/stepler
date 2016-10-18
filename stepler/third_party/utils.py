@@ -21,6 +21,7 @@ import email.utils
 import inspect
 import logging
 import os
+import random
 import tempfile
 import uuid
 
@@ -41,6 +42,24 @@ __all__ = [
     'get_unwrapped_func',
     'is_iterable',
 ]
+
+
+def generate_mac_addresses(count=1):
+    """Generate unique mac addresses.
+
+     Arguments:
+         - count: count of uniq  mac addresses, default is 1.
+
+    Returns:
+        - generator of uniq mac addresses.
+    """
+    for _ in range(count):
+        mac = [0x00, 0x24, 0x81,
+               random.randint(0x00, 0x7f),
+               random.randint(0x00, 0xff),
+               random.randint(0x00, 0xff)]
+        mac_addresses = ':'.join(map(lambda x: "%02x" % x, mac))
+        yield mac_addresses
 
 
 def generate_ids(prefix=None, postfix=None, count=1, length=None):

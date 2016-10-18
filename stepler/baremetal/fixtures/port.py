@@ -11,10 +11,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .node import *  # noqa
-from .port import *  # noqa
+import pytest
+
+from stepler.baremetal.steps import IronicPortSteps
+from stepler.third_party.utils import generate_mac_addresses
 
 __all__ = [
-    'IronicNodeSteps',
-    'IronicPortSteps'
+    'ironic_port_steps',
+    'ironic_port'
 ]
+
+
+@pytest.fixture
+def ironic_port_steps(ironic_client):
+    """Fixture to get ironic port steps."""
+    return IronicPortSteps(ironic_client)
+
+
+@pytest.fixture
+def ironic_port(ironic_node, ironic_port_steps):
+    mac_address = next(generate_mac_addresses())
+    return ironic_port_steps.create_port(mac_address, ironic_node)
