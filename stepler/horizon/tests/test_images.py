@@ -50,35 +50,7 @@ class TestAnyOne(object):
         image_names = sorted(list(generate_ids('image', count=2, length=20)))
         create_images(*image_names)
         update_settings(items_per_page=1)
-        # TODO(schipiga): move it to check step
-        # page_images = images_steps.page_images()
-        # page_images.table_images.row(name=image_names[0]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert not page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_next.click()
-
-        # page_images.table_images.row(name=image_names[1]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_next.click()
-
-        # page_images.table_images.row(name='TestVM').wait_for_presence()
-        # assert not page_images.table_images.link_next.is_present
-        # assert page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_prev.click()
-
-        # page_images.table_images.row(name=image_names[1]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_prev.click()
-
-        # page_images.table_images.row(name=image_names[0]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert not page_images.table_images.link_prev.is_present
+        images_steps.check_images_pagination(image_names)
 
     def test_update_image_metadata(self, image, images_steps):
         """Verify that user can update image metadata."""
@@ -95,9 +67,7 @@ class TestAnyOne(object):
         create_image(image_name, protected=True)
         images_steps.delete_images([image_name], check=False)
         images_steps.close_notification('error')
-        # TODO(schipiga): move it to check step
-        # horizon.page_images.table_images.row(
-        #     name=image_name).wait_for_presence()
+        images_steps.check_image_present(image_name)
         images_steps.update_image(image_name, protected=False)
 
     def test_edit_image(self, image, images_steps):
@@ -111,51 +81,23 @@ class TestAnyOne(object):
         """Verify that user can create volume from image."""
         volume_name = next(generate_ids('volume'))
         images_steps.create_volume(image.name, volume_name)
-
-        # TODO(schipiga): move it to check step
-        # volumes_steps.tab_volumes().table_volumes.row(
-        #     name=volume_name, status='Available').wait_for_presence(90)
+        volumes_steps.check_volume_present(volume_name, timeout=90)
         volumes_steps.delete_volume(volume_name)
 
-    def test_set_image_disk_and_ram_size(self, horizon, create_image):
+    def test_set_image_disk_and_ram_size(self, create_image, images_steps):
         """Verify that image limits has influence to flavor choice."""
         ram_size = 1024
         disk_size = 4
 
         image_name = next(generate_ids('image', length=20))
         create_image(image_name, min_disk=disk_size, min_ram=ram_size)
-        # TODO(schipiga): move it to check step
-        # with horizon.page_images as page:
-        #     page.table_images.row(
-        #         name=image_name).dropdown_menu.item_default.click()
+        images_steps.check_flavors_limited_in_launch_instance_form(image_name,
+                                                                   disk_size,
+                                                                   ram_size)
 
-        #     with page.form_launch_instance as form:
-        #         form.item_flavor.click()
-        #         wait(lambda: form.tab_flavor.table_available_flavors.rows,
-        #              timeout_seconds=30, sleep_seconds=0.1)
-
-        #         for row in form.tab_flavor.table_available_flavors.rows:
-
-        #             ram_cell = row.cell('ram')
-        #             if get_size(ram_cell.value, to='mb') < ram_size:
-        #                 assert ram_cell.label_alert.is_present
-        #             else:
-        #                 assert not ram_cell.label_alert.is_present
-
-        #             disk_cell = row.cell('root_disk')
-        #             if get_size(disk_cell.value, to='gb') < disk_size:
-        #                 assert disk_cell.label_alert.is_present
-        #             else:
-        #                 assert not disk_cell.label_alert.is_present
-        #         form.cancel()
-
-    def test_public_image_visibility(self, horizon, login):
+    def test_public_image_visibility(self, images_steps):
         """Verify that public image is visible for other users."""
-        # TODO(schipiga): move it to check step
-        # with horizon.page_images as page:
-        #     page.open()
-        #     page.button_public_images.click()
-        #     page.table_images.row(name='TestVM').wait_for_presence()
+        images_steps.check_public_image_visible('TestVM')
 
     def test_launch_instance_from_image(self, image, images_steps,
                                         instances_steps):
@@ -163,7 +105,5 @@ class TestAnyOne(object):
         instance_name = next(generate_ids('instance'))
         images_steps.launch_instance(image.name, instance_name,
                                      network_name=config.INTERNAL_NETWORK_NAME)
-        # TODO(schipiga): move it to check step
-        # instances_steps.page_instances().table_instances.row(
-        #     name=instance_name).wait_for_status('Active')
+        instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)

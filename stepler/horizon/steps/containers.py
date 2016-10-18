@@ -17,7 +17,8 @@ Containers steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
+from hamcrest import assert_that, contains_string  # noqa
+import requests
 
 from stepler.third_party.steps_checker import step
 
@@ -32,7 +33,6 @@ class ContainersSteps(BaseSteps):
         return self._open(self.app.page_containers)
 
     @step
-    @pom.timeit('Step')
     def create_container(self, container_name, public=False, check=True):
         """Step to create container."""
         page_containers = self._page_containers()
@@ -54,7 +54,6 @@ class ContainersSteps(BaseSteps):
                 container_name).wait_for_presence()
 
     @step
-    @pom.timeit('Step')
     def delete_container(self, container_name, check=True):
         """Step to delete container."""
         page_containers = self._page_containers()
@@ -79,7 +78,6 @@ class ContainersSteps(BaseSteps):
         self._callback()
 
     @step
-    @pom.timeit('Step')
     def get_container(self, container_name):
         """Step to enter to container."""
         self.app.page_containers.list_containers.row(container_name).click()
@@ -92,7 +90,6 @@ class ContainersSteps(BaseSteps):
         return self
 
     @step
-    @pom.timeit('Step')
     def get_folder(self, folder_name):
         """Step to enter to folder."""
         self.app.page_containers.table_objects.row(
@@ -105,7 +102,6 @@ class ContainersSteps(BaseSteps):
         return self
 
     @step
-    @pom.timeit('Step')
     def create_folder(self, folder_name, check=True):
         """Step to create folder."""
         with self.app.page_containers as page:
@@ -121,7 +117,6 @@ class ContainersSteps(BaseSteps):
                 name=folder_name).wait_for_presence()
 
     @step
-    @pom.timeit('Step')
     def delete_folder(self, folder_name, check=True):
         """Step to delete folder."""
         with self.app.page_containers as page:
@@ -135,7 +130,6 @@ class ContainersSteps(BaseSteps):
                 name=folder_name).wait_for_absence()
 
     @step
-    @pom.timeit('Step')
     def get_container_info(self, container_name):
         """Step to get container info."""
         with self.app.page_containers.list_containers.row(
@@ -148,7 +142,6 @@ class ContainersSteps(BaseSteps):
             return container_info
 
     @step
-    @pom.timeit('Step')
     def upload_file(self, file_path, file_name=None, check=True):
         """Step to upload file."""
         self.app.page_containers.button_upload_file.click()
@@ -170,7 +163,6 @@ class ContainersSteps(BaseSteps):
         return file_name
 
     @step
-    @pom.timeit('Step')
     def delete_file(self, file_name, check=True):
         """Step to delete file."""
         with self.app.page_containers.table_objects.row(
@@ -184,3 +176,9 @@ class ContainersSteps(BaseSteps):
             self.close_notification('success')
             self.app.page_containers.table_objects.row(
                 name=file_name).wait_for_absence()
+
+    @step
+    def check_folder_avaiable_by_public_url(self, folder_name, public_url):
+        """Step to check that folder is available by public URL."""
+        assert_that(requests.get(public_url).text,
+                    contains_string(folder_name))

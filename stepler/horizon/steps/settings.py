@@ -17,7 +17,8 @@ Settings steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
+from hamcrest import assert_that, equal_to  # noqa
+from urlparse import urlparse
 
 from stepler.third_party.steps_checker import step
 
@@ -32,7 +33,6 @@ class SettingsSteps(BaseSteps):
         return self._open(self.app.page_settings)
 
     @step
-    @pom.timeit('Step')
     def update_settings(self,
                         lang=None,
                         timezone=None,
@@ -56,7 +56,6 @@ class SettingsSteps(BaseSteps):
                 form.wait_for_presence()
 
     @step
-    @pom.timeit('Step')
     def get_current_settings(self):
         """Current user settings."""
         with self._page_settings().form_settings as form:
@@ -72,7 +71,6 @@ class SettingsSteps(BaseSteps):
         return self._open(self.app.page_password)
 
     @step
-    @pom.timeit('Step')
     def change_user_password(self, current_password, new_password, check=True):
         """Step to change user password."""
         page_password = self._page_password()
@@ -85,3 +83,12 @@ class SettingsSteps(BaseSteps):
 
         if check:
             self.app.page_login.label_error_message.wait_for_presence()
+
+    @step
+    def check_dashboard_help_url(self, help_url):
+        """Step to check dashboard help URL."""
+        with self.app.page_base.dropdown_menu_account as menu:
+            menu.click()
+            netloc = urlparse(menu.item_help.href).netloc
+            assert_that(netloc, equal_to(help_url))
+            menu.click()

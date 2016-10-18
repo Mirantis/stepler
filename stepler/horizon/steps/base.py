@@ -17,7 +17,6 @@ Horizon base steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
 from hamcrest import assert_that, equal_to  # noqa
 
 from stepler.third_party.steps_checker import step
@@ -47,7 +46,6 @@ class BaseSteps(object):
         return page
 
     @step
-    @pom.timeit('Step')
     def switch_project(self, project_name, check=True):
         """Switch project in user account.
 
@@ -69,7 +67,6 @@ class BaseSteps(object):
             assert_that(menu.label_project.value, equal_to(project_name))
 
     @step
-    @pom.timeit('Step')
     def close_notification(self, level, check=True):
         """Close notification popup window.
 
@@ -81,3 +78,12 @@ class BaseSteps(object):
             popup.button_close.click()
             if check:
                 popup.wait_for_absence()
+
+    @step
+    def refresh_page(self, check=True):
+        """Step to refresh page."""
+        url = self.app.page_base.url
+        self.app.page_base.refresh()
+
+        if check:
+            assert_that(self.app.page_base.url, equal_to(url))

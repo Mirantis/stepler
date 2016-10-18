@@ -17,8 +17,7 @@ Instances steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, equal_to, is_not  # noqa
 from waiting import wait
 
 from stepler.horizon import config
@@ -35,7 +34,6 @@ class InstancesSteps(BaseSteps):
         return self._open(self.app.page_instances)
 
     @step
-    @pom.timeit('Step')
     def create_instance(self, instance_name, network_name='admin_internal_net',
                         count=1, check=True):
         """Step to create instance."""
@@ -82,7 +80,6 @@ class InstancesSteps(BaseSteps):
         return instance_names
 
     @step
-    @pom.timeit('Step')
     def delete_instances(self, instance_names, check=True):
         """Step to delete instances."""
         page_instances = self._page_instances()
@@ -101,7 +98,6 @@ class InstancesSteps(BaseSteps):
                     name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @step
-    @pom.timeit('Step')
     def delete_instance(self, instance_name, check=True):
         """Step to delete instance."""
         page_instances = self._page_instances()
@@ -119,7 +115,6 @@ class InstancesSteps(BaseSteps):
                 name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @step
-    @pom.timeit('Step')
     def lock_instance(self, instance_name, check=True):
         """Step to lock instance."""
         with self._page_instances().table_instances.row(
@@ -132,7 +127,6 @@ class InstancesSteps(BaseSteps):
                 menu.wait_for_absence()
 
     @step
-    @pom.timeit('Step')
     def unlock_instance(self, instance_name, check=True):
         """Step to unlock instance."""
         with self._page_instances().table_instances.row(
@@ -145,7 +139,6 @@ class InstancesSteps(BaseSteps):
                 menu.wait_for_absence()
 
     @step
-    @pom.timeit('Step')
     def view_instance(self, instance_name, check=True):
         """Step to view instance."""
         self._page_instances().table_instances.row(
@@ -156,7 +149,6 @@ class InstancesSteps(BaseSteps):
                         equal_to(instance_name))
 
     @step
-    @pom.timeit('Step')
     def filter_instances(self, query, check=True):
         """Step to filter instances."""
         page_instances = self._page_instances()
@@ -176,7 +168,6 @@ class InstancesSteps(BaseSteps):
                  sleep_seconds=0.1)
 
     @step
-    @pom.timeit('Step')
     def reset_instances_filter(self, check=True):
         """Step to reset instances filter."""
         page_instances = self._page_instances()
@@ -186,3 +177,63 @@ class InstancesSteps(BaseSteps):
         if check:
             assert_that(page_instances.field_filter_instances.value,
                         equal_to(''))
+
+    @step
+    def check_flavor_absent_in_instance_launch_form(self, flavor):
+        """Step to check flavor is absent in instance launch form."""
+        page_instances = self._page_instances()
+        page_instances.button_launch_instance.click()
+
+        with page_instances.form_launch_instance as form:
+            form.item_flavor.click()
+
+            wait(lambda: form.tab_flavor.table_available_flavors.rows,
+                 timeout_seconds=30, sleep_seconds=0.1)
+
+            for row in form.tab_flavor.table_available_flavors.rows:
+                assert_that(row.cell('name').value,
+                            is_not(equal_to(flavor.name)))
+            form.cancel()
+
+    @step
+    def check_instance_active(self, instance_name):
+        """Step to check instance has active status."""
+        self._page_instances().table_instances.row(
+            name=instance_name).wait_for_status('Active')
+
+    @step
+    def check_instances_pagination(self, instances):
+        """Step to check instances pagination."""
+        page_instances = self._page_instances()
+        page_instances.table_instances.row(
+            name=instances[2].name).wait_for_presence(30)
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_absence()
+
+        page_instances.table_instances.link_next.click()
+
+        page_instances.table_instances.row(
+            name=instances[1].name).wait_for_presence(30)
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_presence()
+
+        page_instances.table_instances.link_next.click()
+
+        page_instances.table_instances.row(
+            name=instances[0].name).wait_for_presence(30)
+        page_instances.table_instances.link_next.wait_for_absence()
+        page_instances.table_instances.link_prev.wait_for_presence()
+
+        page_instances.table_instances.link_prev.click()
+
+        page_instances.table_instances.row(
+            name=instances[1].name).wait_for_presence(30)
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_presence()
+
+        page_instances.table_instances.link_prev.click()
+
+        page_instances.table_instances.row(
+            name=instances[2].name).wait_for_presence(30)
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_absence()

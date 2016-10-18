@@ -34,7 +34,6 @@ class UsersSteps(BaseSteps):
         return self._open(self.app.page_users)
 
     @step
-    @pom.timeit('Step')
     def create_user(self, username, password, project=None, role=None,
                     check=True):
         """Step to create user."""
@@ -60,7 +59,6 @@ class UsersSteps(BaseSteps):
             page_users.table_users.row(name=username).wait_for_presence()
 
     @step
-    @pom.timeit('Step')
     def delete_user(self, username, check=True):
         """Step to delete user."""
         page_users = self._page_users()
@@ -76,7 +74,6 @@ class UsersSteps(BaseSteps):
             page_users.table_users.row(name=username).wait_for_absence()
 
     @step
-    @pom.timeit('Step')
     def delete_users(self, usernames, check=True):
         """Step to delete users."""
         page_users = self._page_users()
@@ -94,7 +91,6 @@ class UsersSteps(BaseSteps):
                 page_users.table_users.row(name=username).wait_for_absence()
 
     @step
-    @pom.timeit('Step')
     def change_user_password(self, username, new_password, check=True):
         """Step to change user password."""
         page_users = self._page_users()
@@ -113,7 +109,6 @@ class UsersSteps(BaseSteps):
                 form.wait_for_absence()
 
     @step
-    @pom.timeit('Step')
     def filter_users(self, query, check=True):
         """Step to filter users."""
         page_users = self._page_users()
@@ -134,7 +129,6 @@ class UsersSteps(BaseSteps):
             wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
 
     @step
-    @pom.timeit('Step')
     def sort_users(self, reverse=False, check=True):
         """Step to sort users."""
         with self._page_users().table_users as table:
@@ -158,7 +152,6 @@ class UsersSteps(BaseSteps):
                 wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
 
     @step
-    @pom.timeit('Step')
     def toggle_user(self, username, enable, check=True):
         """Step to disable user."""
         if enable:
@@ -180,7 +173,6 @@ class UsersSteps(BaseSteps):
                 assert_that(row.cell('enabled').value, equal_to(need_status))
 
     @step
-    @pom.timeit('Step')
     def update_user(self, username, new_username, check=True):
         """Step to update user."""
         page_users = self._page_users()
@@ -196,3 +188,32 @@ class UsersSteps(BaseSteps):
         if check:
             self.close_notification('success')
             page_users.table_users.row(name=new_username).wait_for_presence()
+
+    @step
+    def check_user_present(self, user_name):
+        """Step to check user is present."""
+        with self._page_users().table_users.row(name=user_name) as row:
+            assert_that(row.is_present, equal_to(True))
+
+    @step
+    def check_user_not_deleted(self, user_name):
+        """Step to check user is not deleted."""
+        with self._page_users().table_users.row(
+                name=user_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            assert_that(menu.item_delete.is_present, equal_to(False))
+
+    @step
+    def check_user_enable_status(self, user_name, is_enabled=True):
+        """Step to check user enable status."""
+        enable_value = 'Yes' if is_enabled else 'No'
+        with self._page_users().table_users.row(
+                name=user_name).cell('enabled') as cell:
+            assert_that(cell.value, equal_to(enable_value))
+
+    @step
+    def check_empty_users_list(self):
+        """Step to check users list is empty."""
+        page_users = self._page_users()
+        self.close_notification('info')
+        assert_that(page_users.table_users.rows, equal_to(False))

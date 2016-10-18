@@ -551,3 +551,153 @@ class VolumesSteps(BaseSteps):
             for backup_name in backup_names:
                 tab_backups.table_backups.row(
                     name=backup_name).wait_for_absence(EVENT_TIMEOUT)
+
+    @step
+    def check_volume_present(self, volume_name, timeout=None):
+        """Check volume is present."""
+        self.tab_volumes().table_volumes.row(
+            name=volume_name, status='Available').wait_for_presence(timeout)
+
+    @step
+    def check_volumes_pagination(self, volume_names):
+        """Step to check volumes pagination."""
+        tab_volumes = self.tab_volumes()
+        tab_volumes.table_volumes.row(
+            name=volume_names[2]).wait_for_presence(30)
+
+        assert_that(tab_volumes.table_volumes.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+                    equal_to(False))
+
+        tab_volumes.table_volumes.link_next.click()
+        tab_volumes.table_volumes.row(
+            name=volume_names[1]).wait_for_presence(30)
+
+        assert_that(tab_volumes.table_volumes.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+                    equal_to(True))
+
+        tab_volumes.table_volumes.link_next.click()
+        tab_volumes.table_volumes.row(
+            name=volume_names[0]).wait_for_presence(30)
+
+        assert_that(tab_volumes.table_volumes.link_next.is_present,
+                    equal_to(False))
+        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+                    equal_to(True))
+
+        tab_volumes.table_volumes.link_prev.click()
+        tab_volumes.table_volumes.row(
+            name=volume_names[1]).wait_for_presence(30)
+
+        assert_that(tab_volumes.table_volumes.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+                    equal_to(True))
+
+        tab_volumes.table_volumes.link_prev.click()
+        tab_volumes.table_volumes.row(
+            name=volume_names[2]).wait_for_presence(30)
+
+        assert_that(tab_volumes.table_volumes.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+                    equal_to(False))
+
+    @step
+    def check_snapshots_pagination(self, snapshot_names):
+        """Step to check snapshots pagination."""
+        tab_snapshots = self.tab_snapshots()
+        tab_snapshots.table_snapshots.row(
+            name=snapshot_names[2]).wait_for_presence(30)
+
+        assert_that(tab_snapshots.table_snapshots.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
+                    equal_to(False))
+
+        tab_snapshots.table_snapshots.link_next.click()
+        tab_snapshots.table_snapshots.row(
+            name=snapshot_names[1]).wait_for_presence(30)
+
+        assert_that(tab_snapshots.table_snapshots.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
+                    equal_to(True))
+
+        tab_snapshots.table_snapshots.link_next.click()
+        tab_snapshots.table_snapshots.row(
+            name=snapshot_names[0]).wait_for_presence(30)
+
+        assert_that(tab_snapshots.table_snapshots.link_next.is_present,
+                    equal_to(False))
+        assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
+                    equal_to(True))
+
+        tab_snapshots.table_snapshots.link_prev.click()
+        tab_snapshots.table_snapshots.row(
+            name=snapshot_names[1]).wait_for_presence(30)
+
+        assert_that(tab_snapshots.table_snapshots.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
+                    equal_to(True))
+
+        tab_snapshots.table_snapshots.link_prev.click()
+        tab_snapshots.table_snapshots.row(
+            name=snapshot_names[2]).wait_for_presence(30)
+
+        assert_that(tab_snapshots.table_snapshots.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
+                    equal_to(False))
+
+    @step
+    def check_backups_pagination(self, backup_names):
+        """Step to check backups pagination."""
+        tab_backups = self.tab_backups()
+        tab_backups.table_backups.row(
+            name=backup_names[2]).wait_for_presence(30)
+
+        assert_that(tab_backups.table_backups.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_backups.table_backups.link_prev.is_present,
+                    equal_to(False))
+
+        tab_backups.table_backups.link_next.click()
+        tab_backups.table_backups.row(
+            name=backup_names[1]).wait_for_presence(30)
+
+        assert_that(tab_backups.table_backups.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_backups.table_backups.link_prev.is_present,
+                    equal_to(True))
+
+        tab_backups.table_backups.link_next.click()
+        tab_backups.table_backups.row(
+            name=backup_names[0]).wait_for_presence(30)
+
+        assert_that(tab_backups.table_backups.link_next.is_present,
+                    equal_to(False))
+        assert_that(tab_backups.table_backups.link_prev.is_present,
+                    equal_to(True))
+
+        tab_backups.table_backups.link_prev.click()
+        tab_backups.table_backups.row(
+            name=backup_names[1]).wait_for_presence(30)
+
+        assert_that(tab_backups.table_backups.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_backups.table_backups.link_prev.is_present,
+                    equal_to(True))
+
+        tab_backups.table_backups.link_prev.click()
+        tab_backups.table_backups.row(
+            name=backup_names[2]).wait_for_presence(30)
+
+        assert_that(tab_backups.table_backups.link_next.is_present,
+                    equal_to(True))
+        assert_that(tab_backups.table_backups.link_prev.is_present,
+                    equal_to(False))

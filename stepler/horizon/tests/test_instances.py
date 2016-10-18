@@ -45,42 +45,9 @@ class TestAnyOne(object):
                                   update_settings):
         """Verify that instances pagination works right and back."""
         instance_name = next(generate_ids('instance'))
-        create_instance(instance_name, count=3)
+        instances = create_instance(instance_name, count=3)
         update_settings(items_per_page=1)
-        # TODO(schipiga): move it to check step
-        # page_instances = instances_steps.page_instances()
-        # page_instances.table_instances.row(
-        #     name=instances[2].name).wait_for_presence(30)
-        # page_instances.table_instances.link_next.wait_for_presence()
-        # page_instances.table_instances.link_prev.wait_for_absence()
-
-        # page_instances.table_instances.link_next.click()
-
-        # page_instances.table_instances.row(
-        #     name=instances[1].name).wait_for_presence(30)
-        # page_instances.table_instances.link_next.wait_for_presence()
-        # page_instances.table_instances.link_prev.wait_for_presence()
-
-        # page_instances.table_instances.link_next.click()
-
-        # page_instances.table_instances.row(
-        #     name=instances[0].name).wait_for_presence(30)
-        # page_instances.table_instances.link_next.wait_for_absence()
-        # page_instances.table_instances.link_prev.wait_for_presence()
-
-        # page_instances.table_instances.link_prev.click()
-
-        # page_instances.table_instances.row(
-        #     name=instances[1].name).wait_for_presence(30)
-        # page_instances.table_instances.link_next.wait_for_presence()
-        # page_instances.table_instances.link_prev.wait_for_presence()
-
-        # page_instances.table_instances.link_prev.click()
-
-        # page_instances.table_instances.row(
-        #     name=instances[2].name).wait_for_presence(30)
-        # page_instances.table_instances.link_next.wait_for_presence()
-        # page_instances.table_instances.link_prev.wait_for_absence()
+        instances_steps.check_instances_pagination(instances)
 
     def test_filter_instances(self, instances_steps, create_instance):
         """Verify that user can filter instances."""

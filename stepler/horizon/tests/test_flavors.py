@@ -44,27 +44,14 @@ class TestAdminOnly(object):
                                         new_flavor_name=new_flavor_name)
 
     def test_modify_flavor_access(self, horizon, flavor, auth_steps,
-                                  flavors_steps):
+                                  flavors_steps, instances_steps):
         """Verify that admin can modify flavor access."""
         flavors_steps.modify_access(flavor.name, project=config.ADMIN_PROJECT)
 
         auth_steps.logout()
         auth_steps.login(config.USER_NAME, config.USER_PASSWD)
 
-        # TODO(schipiga): move it to check step
-        # horizon.page_instances.open()
-        # horizon.page_instances.button_launch_instance.click()
-
-        # with horizon.page_instances.form_launch_instance as form:
-        #     form.item_flavor.click()
-
-        #     wait(lambda: form.tab_flavor.table_available_flavors.rows,
-        #          timeout_seconds=30, sleep_seconds=0.1)
-
-        #     for row in form.tab_flavor.table_available_flavors.rows:
-        #         assert row.cell('name').value != flavor.name
-
-        #     form.cancel()
+        instances_steps.check_flavor_absent_in_instance_launch_form(flavor)
 
         auth_steps.logout()
         auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)

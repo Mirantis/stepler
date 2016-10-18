@@ -36,16 +36,14 @@ class TestAnyOne(object):
 class TestAdminOnly(object):
     """Tests for admin only."""
 
-    def test_create_shared_network(self, horizon, networks_steps):
+    def test_create_shared_network(self, networks_steps):
         """Verify that admin can create shared network."""
         network_name = next(generate_ids('network'))
         networks_steps.create_network(network_name, shared=True)
 
         networks_steps.delete_networks([network_name], check=False)
         networks_steps.close_notification('error')
-        # TODO(schipiga): move it to check step
-        # horizon.page_networks.table_networks.row(
-        #     name=network_name).wait_for_presence()
+        networks_steps.check_network_present(network_name)
         networks_steps.admin_delete_network(network_name)
 
 
@@ -53,10 +51,9 @@ class TestAdminOnly(object):
 class TestUserOnly(object):
     """Tests for demo only."""
 
-    def test_not_create_shared_network(self, horizon, create_network):
+    def test_not_create_shared_network(self, create_network, networks_steps):
         """Verify that demo can not create shared network."""
         network_name = next(generate_ids('network'))
         create_network(network_name, shared=True)
-        # TODO(schipiga): move it to check step
-        # assert horizon.page_networks.table_networks.row(
-        #     name=network_name).cell('shared').value == 'No'
+        networks_steps.check_network_share_status(network_name,
+                                                  is_shared=False)
