@@ -1,3 +1,9 @@
+"""
+-----------------
+Ironic node steps
+-----------------
+"""
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,12 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, equal_to  # noqa
 from ironicclient import exceptions
 
-from waiting import wait
-
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party.matchers import expect_that
+from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = [
     'IronicNodeSteps'
@@ -26,7 +33,7 @@ __all__ = [
 class IronicNodeSteps(BaseSteps):
     """Node steps."""
 
-    @step
+    @steps_checker.step
     def create_ironic_node(self, driver='fake', check=True, **kwargs):
         """Step to create a ironic node.
 
@@ -57,7 +64,7 @@ class IronicNodeSteps(BaseSteps):
 
         return node
 
-    @step
+    @steps_checker.step
     def delete_ironic_node(self, node, check=True):
         """Step to delete node.
 
@@ -68,15 +75,18 @@ class IronicNodeSteps(BaseSteps):
         self._client.node.delete(node.uuid)
 
         if check:
-            self.check_ironic_node_presence(node, present=False)
+            self.check_ironic_node_presence(node, must_present=False)
 
-    @step
-    def check_ironic_node_presence(self, node, present=True, timeout=0):
+    @steps_checker.step
+    def check_ironic_node_presence(self,
+                                   node,
+                                   must_present=True,
+                                   timeout=0):
         """Verify step to check ironic node is present.
 
         Args:
             node (object): ironic node to check presence status
-            present (bool): flag whether node should present or no
+            must_present (bool): flag whether node should present or no
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -85,8 +95,63 @@ class IronicNodeSteps(BaseSteps):
         def predicate():
             try:
                 self._client.node.get(node.uuid)
-                return present
+                is_present = True
             except exceptions.NotFound:
-                return not present
+                is_present = False
 
-        wait(predicate, timeout_seconds=timeout)
+            return expect_that(is_present, equal_to(must_present))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def set_ironic_node_maintenance(self,
+                                    node,
+                                    state,
+                                    reason=None,
+                                    check=True):
+        """Set the maintenance mode for the node.
+
+        Args:
+            node_id (str): The UUID of the node.
+            state (Bool): the maintenance mode; either a Boolean or a string
+                representation of a Boolean (eg, 'true', 'on', 'false',
+                'off'). True to put the node in maintenance mode; False
+                to take the node out of maintenance mode.
+            reason (str): Optional string. Reason for putting node
+                into maintenance mode.
+            check (bool): flag whether to check step or not
+
+        Raises:
+            InvalidAttribute: if state is an invalid string
+        """
+        self._client.node.set_maintenance(node_id=node.uuid,
+                                          state=state, maint_reason=reason)
+        if check:
+            self.check_ironic_node_maintenance(node=node, state=state)
+
+    @steps_checker.step
+    def check_ironic_node_maintenance(self,
+                                      node,
+                                      state,
+                                      maintenance_must_changed=True,
+                                      timeout=0):
+        """Check ironic node maintenance was changed.
+
+        Args:
+            node_id (str): The UUID of the node.
+            state (Bool): the maintenance mode; either a Boolean or a string
+                representation of a Boolean (eg, 'true', 'on', 'false',
+                'off'). True to put the node in maintenance mode; False
+                to take the node out of maintenance mode.
+            maintenance_must_changed (Bool): flag whether maintenance should
+                changed or not
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was triggered to to an error after timeout
+        """
+        def predicate():
+            node.get()
+            return expect_that(node.maintenance, equal_to(state))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
