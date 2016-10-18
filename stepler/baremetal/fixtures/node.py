@@ -18,7 +18,8 @@ from stepler.baremetal.steps import IronicNodeSteps
 __all__ = [
     'create_ironic_node',
     'ironic_node',
-    'ironic_node_steps'
+    'ironic_node_steps',
+    'set_ironic_node_maintenance'
 ]
 
 
@@ -51,3 +52,9 @@ def create_ironic_node(ironic_node_steps):
 def ironic_node(create_ironic_node):
     """Fixture to create ironic node with default options before test."""
     return create_ironic_node()
+
+
+@pytest.fixture
+def set_ironic_node_maintenance(ronic_node_steps):
+    """Fixture to set node maintenance with default options before test."""
+    return ironic_node_steps.set_ironic_node_maintenance()

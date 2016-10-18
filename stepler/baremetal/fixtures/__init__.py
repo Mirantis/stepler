@@ -19,5 +19,6 @@ __all__ = sorted([  # sort for documentation
 
     'ironic_node_steps',
     'create_ironic_node',
-    'ironic_node'
+    'ironic_node',
+    'set_ironic_node_maintenance'
 ])

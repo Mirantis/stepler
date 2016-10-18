@@ -73,3 +73,39 @@ class IronicNodeSteps(BaseSteps):
                 return not present
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def set_ironic_node_maintenance(self, node_id, state,
+                                    reason=None, check=True):
+        """Set the maintenance mode for the node.
+
+        Args:
+            :param node_id: The UUID of the node.
+            :param state: the maintenance mode; either a Boolean or a string
+                      representation of a Boolean (eg, 'true', 'on', 'false',
+                      'off'). True to put the node in maintenance mode; False
+                      to take the node out of maintenance mode.
+            :param maint_reason: Optional string. Reason for putting node
+                             into maintenance mode.
+            :raises: InvalidAttribute if state is an invalid string
+                      (that doesn't represent a Boolean).
+        """
+        self._client.node.set_maintenance(node_id=node_id,
+                                          state=state, maint_reason=reason)
+        if check:
+            self.check_ironic_node_maintenance(node_id=node_id, state=state)
+
+    @step
+    def check_ironic_node_maintenance(self, node_id, state,
+                                      maintenance_changed=True, timeout=0):
+        """Check ironic node maintenance was changed
+        Args:
+        """
+        def predicate():
+            node = self._client.node.get(node_id)
+            if node.maintenance == state:
+                return maintenance_changed
+            else:
+                return not maintenance_changed
+
+        wait(predicate, timeout_seconds=timeout)
