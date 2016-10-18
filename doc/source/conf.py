@@ -18,7 +18,24 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../..'))  # add stepler root path
+
+# mock modules with C-extensions, according to
+# http://read-the-docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules  # noqa
+from mock import Mock as MagicMock
+
+
+class Mock(MagicMock):
+
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
+
+MOCK_MODULES = [
+    'os_faults',
+]
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- General configuration ------------------------------------------------
 
