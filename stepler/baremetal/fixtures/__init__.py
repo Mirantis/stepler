@@ -1,3 +1,9 @@
+"""
+---------------
+Ironic fixtures
+---------------
+"""
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,12 +18,16 @@
 # limitations under the License.
 
 from .node import *  # noqa
+from .port import *  # noqa
 from .ironic import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'ironic_client',
 
+    'ironic_port_steps',
+    'ironic_port',
+
     'ironic_node_steps',
     'create_ironic_node',
-    'ironic_node'
+    'ironic_node',
 ])
