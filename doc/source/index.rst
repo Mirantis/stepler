@@ -42,11 +42,7 @@ Make following commands in terminal::
 
    git clone https://github.com/Mirantis/stepler.git
    cd stepler
-   virtualenv .venv
-   . .venv/bin/activate
-   pip install -U pip
-   pip install -r requirements.txt -r c-requirements.txt
-
+   tox -e venv --notest
 ----------------
 How to run tests
 ----------------
