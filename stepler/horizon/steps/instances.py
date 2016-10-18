@@ -18,7 +18,7 @@ Instances steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, equal_to, is_not  # noqa
 from waiting import wait
 
 from stepler.horizon import config
@@ -186,3 +186,19 @@ class InstancesSteps(BaseSteps):
         if check:
             assert_that(page_instances.field_filter_instances.value,
                         equal_to(''))
+
+    def check_flavor_absent_in_instance_launch_form(self, flavor):
+        """Step to check flavor is absent in instance launch form."""
+        page_instances = self._page_instances()
+        page_instances.button_launch_instance.click()
+
+        with page_instances.form_launch_instance as form:
+            form.item_flavor.click()
+
+            wait(lambda: form.tab_flavor.table_available_flavors.rows,
+                 timeout_seconds=30, sleep_seconds=0.1)
+
+            for row in form.tab_flavor.table_available_flavors.rows:
+                assert_that(row.cell('name').value,
+                            is_not(equal_to(flavor.name)))
+            form.cancel()

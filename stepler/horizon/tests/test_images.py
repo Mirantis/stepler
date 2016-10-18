@@ -50,35 +50,7 @@ class TestAnyOne(object):
         image_names = sorted(list(generate_ids('image', count=2, length=20)))
         create_images(*image_names)
         update_settings(items_per_page=1)
-        # TODO(schipiga): move it to check step
-        # page_images = images_steps.page_images()
-        # page_images.table_images.row(name=image_names[0]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert not page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_next.click()
-
-        # page_images.table_images.row(name=image_names[1]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_next.click()
-
-        # page_images.table_images.row(name='TestVM').wait_for_presence()
-        # assert not page_images.table_images.link_next.is_present
-        # assert page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_prev.click()
-
-        # page_images.table_images.row(name=image_names[1]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert page_images.table_images.link_prev.is_present
-
-        # page_images.table_images.link_prev.click()
-
-        # page_images.table_images.row(name=image_names[0]).wait_for_presence()
-        # assert page_images.table_images.link_next.is_present
-        # assert not page_images.table_images.link_prev.is_present
+        images_steps.check_images_pagination(image_names)
 
     def test_update_image_metadata(self, image, images_steps):
         """Verify that user can update image metadata."""

@@ -247,3 +247,45 @@ class ImagesSteps(BaseSteps):
 
             if check:
                 form.wait_for_absence()
+
+    def check_images_pagination(self, image_names):
+        """Step to check images pagination."""
+        page_images = self._page_images()
+        page_images.table_images.row(name=image_names[0]).wait_for_presence()
+
+        assert_that(page_images.table_images.link_next.is_present,
+                    equal_to(True))
+        assert_that(page_images.table_images.link_prev.is_present,
+                    equal_to(False))
+
+        page_images.table_images.link_next.click()
+        page_images.table_images.row(name=image_names[1]).wait_for_presence()
+
+        assert_that(page_images.table_images.link_next.is_present,
+                    equal_to(True))
+        assert_that(page_images.table_images.link_prev.is_present,
+                    equal_to(True))
+
+        page_images.table_images.link_next.click()
+        page_images.table_images.row(name='TestVM').wait_for_presence()
+
+        assert_that(page_images.table_images.link_next.is_present,
+                    equal_to(False))
+        assert_that(page_images.table_images.link_prev.is_present,
+                    equal_to(True))
+
+        page_images.table_images.link_prev.click()
+        page_images.table_images.row(name=image_names[1]).wait_for_presence()
+
+        assert_that(page_images.table_images.link_next.is_present,
+                    equal_to(True))
+        assert_that(page_images.table_images.link_prev.is_present,
+                    equal_to(True))
+
+        page_images.table_images.link_prev.click()
+        page_images.table_images.row(name=image_names[0]).wait_for_presence()
+
+        assert_that(page_images.table_images.link_next.is_present,
+                    equal_to(True))
+        assert_that(page_images.table_images.link_prev.is_present,
+                    equal_to(False))
