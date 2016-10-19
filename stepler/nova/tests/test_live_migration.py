@@ -19,6 +19,8 @@ Nova live migration tests
 
 import time
 
+import pytest
+
 from stepler import config
 from stepler.third_party.utils import generate_ids
 
@@ -28,7 +30,10 @@ INSTALL_WORKLOAD_USERDATA = """#!/bin/bash -v
 apt-get install -yq stress cpulimit sysstat iperf
 echo {}""".format(USERDATA_DONE_MARKER)
 
+pytestmark = pytest.mark.usefixtures('disable_nova_config_drive')
 
+
+# TODO(gdyuldin): reformat arguments (one argumet on each line)
 def test_network_connectivity_to_vm_during_live_migration(
         keypair, flavor, security_group, nova_floating_ip, cirros_image,
         network, subnet, router, add_router_interfaces, create_volume,
@@ -77,7 +82,7 @@ def test_network_connectivity_to_vm_during_live_migration(
         security_groups=[security_group])
     server_steps.attach_floating_ip(server, nova_floating_ip)
     with server_steps.check_ping_loss_context(
-            nova_floating_ip.ip, max_loss=20):
+            nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
         server_steps.live_migrate(server, block_migration=True)
 
 
@@ -144,11 +149,12 @@ def test_migration_with_memory_workload(
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.generate_server_memory_workload(server_ssh)
 
-    server_steps.live_migrate(server, block_migration=True)
+    server_steps.live_migrate(server, block_migration=False)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
 
+# TODO(gdyuldin): reformat arguments (one argumet on each line)
 def test_migration_with_ephemeral_disk(
         keypair, security_group, nova_floating_ip, cirros_image, network,
         subnet, router, add_router_interfaces, create_flavor, create_server,
@@ -208,7 +214,7 @@ def test_migration_with_ephemeral_disk(
         server_steps.create_timestamps_on_root_and_ephemeral_disks(
             server_ssh, timestamp=timestamp)
     with server_steps.check_ping_loss_context(
-            nova_floating_ip.ip, max_loss=20):
+            nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
         server_steps.live_migrate(server, block_migration=True)
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
