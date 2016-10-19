@@ -34,22 +34,52 @@ class OsFaultsSteps(BaseSteps):
     """os-faults steps."""
 
     @step
-    def get_nodes(self, fqdns=None, check=True):
+    def get_nodes(self, fqdns=None, service_names=None, check=True):
         """Step to get nodes.
 
         Args:
             fqdns (list): nodes hostnames to filter
+            service_names (list): names of services to filter nodes with
             check (bool): flag whether check step or not
 
         Returns:
             list of nodes
         """
+        if service_names:
+            service_fqdns = set()
+            for service_name in service_names:
+                nodes = self._client.get_service(service_name).get_nodes()
+                for host in nodes.hosts:
+                    service_fqdns.add(host['fqdn'])
+            if not fqdns:
+                fqdns = service_fqdns
+            else:
+                fqdns &= service_fqdns
         nodes = self._client.get_nodes(fqdns=fqdns)
 
         if check:
             assert_that(nodes, is_not(empty()))
 
         return nodes
+
+    @step
+    def get_service(self, name, fqdns=None, check=True):
+        """Step to get services.
+
+        Args:
+            name (str): service name
+            fqdns (list|None): nodes hostnames to filter
+            check (bool): flag whether check step or not
+
+        Returns:
+            object: service
+        """
+        service = self._client.get_service(name=name)
+
+        if check:
+            assert_that(service, is_not(None))
+
+        return service
 
     @step
     def restart_service(self, name, check=True):
@@ -60,7 +90,7 @@ class OsFaultsSteps(BaseSteps):
             check (bool): flag whether to check step or not
         """
         # TODO(ssokolov) add check of service names
-        service = self._client.get_service(name=name)
+        service = self.get_service(name=name)
         # TODO(ssokolov) add check of exceptions
         service.restart()
 
