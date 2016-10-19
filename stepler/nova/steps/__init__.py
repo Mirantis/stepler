@@ -17,6 +17,7 @@ Nova steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .availability_zones import *  # noqa
 from .flavors import *  # noqa
 from .floating_ips import *  # noqa
 from .hypervisor import *  # noqa
@@ -26,6 +27,7 @@ from .nova_volumes import *  # noqa
 from .servers import *  # noqa
 
 __all__ = [
+    'AvailabilityZoneSteps',
     'FlavorSteps',
     'FloatingIpSteps',
     'HypervisorSteps',
