@@ -17,15 +17,25 @@ Glance fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .glance import *  # noqa
+from .clients import *  # noqa
+from .images import *  # noqa
 
 __all__ = sorted([  # sort for documentation
+    'api_glance_client_v1',
+    'api_glance_client_v2',
+    'get_glance_client',
+    'glance_client_v1',
+    'glance_client_v2',
+
+    'api_glance_steps',
+    'api_glance_steps_v1',
+    'api_glance_steps_v2',
+    'cirros_image',
     'create_image',
     'create_images',
-    'get_glance_client',
     'get_glance_steps',
-    'glance_client',
     'glance_steps',
+    'glance_steps_v1',
+    'glance_steps_v2',
     'ubuntu_image',
-    'cirros_image',
 ])

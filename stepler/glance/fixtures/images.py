@@ -19,22 +19,24 @@ Glance fixtures
 
 import logging
 
-from glanceclient.v2.client import Client
 import pytest
 
 from stepler import config
-from stepler.glance.steps import GlanceSteps
-from stepler.third_party.utils import generate_ids, get_file_path  # noqa
+from stepler.glance import steps
+from stepler.third_party import utils
 
 __all__ = [
+    'api_glance_steps',
+    'api_glance_steps_v1',
+    'api_glance_steps_v2',
+    'cirros_image',
     'create_image',
     'create_images',
-    'get_glance_client',
     'get_glance_steps',
-    'glance_client',
     'glance_steps',
+    'glance_steps_v1',
+    'glance_steps_v2',
     'ubuntu_image',
-    'cirros_image',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -62,35 +64,7 @@ def _remove_stayed_images(glance_steps):
     glance_steps.delete_images(images)
 
 
-@pytest.fixture(scope='session')
-def get_glance_client(get_session):
-    """Callable session fixture to get glance client.
-
-    Args:
-        get_session (function): function to get keystone session
-
-    Returns:
-        function: function to get glance client
-    """
-    def _get_glance_client():
-        return Client(session=get_session())
-
-    return _get_glance_client
-
-
-@pytest.fixture
-def glance_client(get_glance_client):
-    """Function fixture to get glance client.
-
-    Args:
-        get_glance_client (function): function to get glance client
-
-    Returns:
-        glanceclient.v2.client.Client: instantiated glance client
-    """
-    return get_glance_client()
-
-
+# TODO(schipiga): In future will rename `glance_steps` -> `image_steps`
 @pytest.fixture(scope='session')
 def get_glance_steps(get_glance_client):
     """Callable session fixture to get glance steps.
@@ -101,25 +75,105 @@ def get_glance_steps(get_glance_client):
     Returns:
         function: function to get glance steps
     """
-    def _get_glance_steps():
-        glance_steps = GlanceSteps(get_glance_client())
-        _remove_stayed_images(glance_steps)  # remove when steps are requested
+    def _get_glance_steps(version, is_api):
+        glance_client = get_glance_client(version, is_api)
+
+        glance_steps_cls = {
+            '1': steps.GlanceStepsV1,
+            '2': steps.GlanceStepsV2,
+        }[version]
+
+        glance_steps = glance_steps_cls(glance_client)
+
+        # TODO(schipiga): provide this mechanism for all glance steps fixtures.
+        if version == '2' and not is_api:
+            # Remove when steps are requested. Make it for glance pythonclient
+            # v2 only, because now it is actual most useful client version.
+            _remove_stayed_images(glance_steps)
+
         return glance_steps
 
     return _get_glance_steps
 
 
 @pytest.fixture
-def glance_steps(get_glance_steps):
-    """Function fixture to get glance steps.
+def glance_steps_v1(get_glance_steps):
+    """Function fixture to get glance steps for v1.
 
     Args:
         get_glance_steps (function): function to get glance steps
 
     Returns:
+        GlanceStepsV1: instantiated glance steps v1
+    """
+    return get_glance_steps(version='1', is_api=False)
+
+
+@pytest.fixture
+def glance_steps_v2(get_glance_steps):
+    """Function fixture to get glance steps for v2.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+
+    Returns:
+        GlanceStepsV2: instantiated glance steps v2
+    """
+    return get_glance_steps(version='2', is_api=False)
+
+
+@pytest.fixture
+def api_glance_steps_v1(get_glance_steps):
+    """Function fixture to get API glance steps for v1.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+
+    Returns:
+        GlanceStepsV1: instantiated glance steps v1
+    """
+    return get_glance_steps(version='1', is_api=True)
+
+
+@pytest.fixture
+def api_glance_steps_v2(get_glance_steps):
+    """Function fixture to get API glance steps for v2.
+
+    Args:
+        get_glance_steps (function): function to get API glance steps
+
+    Returns:
         GlanceSteps: instantiated glance steps
     """
-    return get_glance_steps()
+    return get_glance_steps(version='1', is_api=True)
+
+
+@pytest.fixture
+def glance_steps(get_glance_steps):
+    """Function fixture to get API glance steps.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+
+    Returns:
+        GlanceStepsV1: instantiated glance steps v1
+    """
+    return get_glance_steps(
+        version=config.CURRENT_GLANCE_VERSION, is_api=False)
+
+
+@pytest.fixture
+def api_glance_steps(get_glance_steps):
+    """Function fixture to get API glance steps.
+
+    Args:
+        get_glance_steps (function): function to get API glance steps
+
+    Returns:
+        GlanceSteps: instantiated glance steps
+    """
+    return get_glance_steps(
+        version=config.CURRENT_GLANCE_VERSION, is_api=True)
 
 
 @pytest.yield_fixture
@@ -177,8 +231,8 @@ def ubuntu_image(get_glance_steps):
     Returns:
         object: ubuntu glance image
     """
-    image_name = next(generate_ids('ubuntu'))
-    image_path = get_file_path(config.UBUNTU_QCOW2_URL)
+    image_name = next(utils.generate_ids('ubuntu'))
+    image_path = utils.get_file_path(config.UBUNTU_QCOW2_URL)
 
     _ubuntu_image = get_glance_steps().create_images([image_name],
                                                      image_path)[0]
@@ -200,8 +254,8 @@ def cirros_image(get_glance_steps):
     Returns:
         object: cirros glance image
     """
-    image_name = next(generate_ids('cirros'))
-    image_path = get_file_path(config.CIRROS_QCOW2_URL)
+    image_name = next(utils.generate_ids('cirros'))
+    image_path = utils.get_file_path(config.CIRROS_QCOW2_URL)
 
     _cirros_image = get_glance_steps().create_images([image_name],
                                                      image_path)[0]
