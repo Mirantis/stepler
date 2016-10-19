@@ -17,6 +17,7 @@ Nova fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .availability_zones import *  # noqa
 from .flavors import *  # noqa
 from .floating_ips import *  # noqa
 from .hypervisor import *  # noqa
@@ -27,6 +28,8 @@ from .nova_volumes import *  # noqa
 from .security_groups import *  # noqa
 
 __all__ = sorted([  # sort for documentation
+    'get_availability_zone_steps',
+
     'create_flavor',
     'flavor',
     'flavor_steps',
@@ -43,6 +46,7 @@ __all__ = sorted([  # sort for documentation
 
     'get_nova_client',
     'nova_client',
+    'disable_nova_config_drive',
 
     'create_security_group',
     'security_group',
