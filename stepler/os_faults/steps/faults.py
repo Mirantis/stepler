@@ -51,6 +51,25 @@ class OsFaultsSteps(BaseSteps):
         return nodes
 
     @step
+    def get_service(self, name, fqdns=None, check=True):
+        """Step to get services.
+
+        Args:
+            name (str): service name
+            fqdns (list|None): nodes hostnames to filter
+            check (bool): flag whether check step or not
+
+        Returns:
+            object: service
+        """
+        service = self._client.get_service(name=name)
+
+        if check:
+            assert_that(service, is_not(None))
+
+        return service
+
+    @step
     def restart_service(self, name, check=True):
         """Step to restart a service.
 
@@ -59,7 +78,7 @@ class OsFaultsSteps(BaseSteps):
             check (bool): flag whether to check step or not
         """
         # TODO(ssokolov) add check of service names
-        service = self._client.get_service(name=name)
+        service = self.get_service(name=name)
         # TODO(ssokolov) add check of exceptions
         service.restart()
 
