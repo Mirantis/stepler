@@ -137,8 +137,7 @@ class Pinger(object):
         result = PingResult()
         yield result
         if count:
-            waiting.wait(lambda: p.poll() is not None,
-                         timeout_seconds=count * 2 + 5)
+            p.wait()
         # Check if process still alive
         elif p.poll() is None:
             p.send_signal(signal.SIGINT)
