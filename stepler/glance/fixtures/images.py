@@ -191,8 +191,10 @@ def create_images(glance_steps):
     """
     images = []
 
-    def _create_images(image_names, *args, **kwgs):
-        _images = glance_steps.create_images(image_names, *args, **kwgs)
+    def _create_images(image_names, image_url, *args, **kwgs):
+        image_path = utils.get_file_path(image_url)
+        _images = glance_steps.create_images(
+            image_names, image_path, *args, **kwgs)
         images.extend(_images)
         return _images
 
@@ -215,8 +217,8 @@ def create_image(create_images):
     Returns:
         function: function to create single image with options
     """
-    def _create_image(image_name, *args, **kwgs):
-        return create_images([image_name], *args, **kwgs)[0]
+    def _create_image(image_name, image_url, *args, **kwgs):
+        return create_images([image_name], image_url, *args, **kwgs)[0]
 
     return _create_image
 
