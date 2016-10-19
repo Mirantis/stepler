@@ -24,7 +24,6 @@ import pytest
 from stepler import config
 from stepler.nova.steps import ServerSteps
 from stepler.third_party.context import context
-from stepler.third_party import ssh
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
@@ -33,10 +32,9 @@ __all__ = [
     'create_servers',
     'create_servers_context',
     'get_server_steps',
+    'get_ssh_proxy_cmd',
     'server',
     'server_steps',
-    'ssh_proxy_data',
-    'ssh_to_server',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -129,7 +127,7 @@ def create_server(create_servers):
 
 
 @pytest.fixture
-def create_servers_context(get_server_steps):
+def create_servers_context(server_steps):
     """Function fixture to create servers inside context.
 
     It guarantees servers deletion after context exit.
@@ -194,60 +192,42 @@ def create_server_context(create_servers_context):
 
 @pytest.fixture
 def server(create_server, image):
+    # TODO(schipiga): expand documentation
     """Fixture to create server with default options before test."""
     server_name = next(generate_ids('server'))
     return create_server(server_name, image)
 
 
-# TODO(schipiga): that looks so complicated and refactoring required
+# TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.
 @pytest.fixture
-def ssh_proxy_data(request, network_steps, server_steps):
-    """Fixture to get ssh proxy data of server."""
-    def _ssh_proxy_data(server, ip=None):
-        server_ips = server_steps.get_ips(server)
-        if ip is not None:
-            try:
-                ip_info = server_ips[ip]
-            except KeyError:
-                raise ValueError('Passed IP {!r} is not in server {!r} '
-                                 'addresses ({!r})'.format(ip, server,
-                                                           server_ips.keys()))
-        else:
-            ip_info = next(v for k, v in server_ips if v['type'] == 'fixed')
+def get_ssh_proxy_cmd(admin_ssh_key_path,
+                      ip_by_host,
+                      network_steps,
+                      server_steps):
+    """Callable function fixture to get ssh proxy data of server.
+
+    Args:
+        admin_ssh_key_path (str): path to admin ssh key
+        ip_by_host (function): function to get IP by host
+        network_steps (NetworkSteps): instantiated network steps
+        server_steps (ServerSteps): instantiated server steps
+
+    Returns:
+        function: function to get ssh proxy command
+    """
+    def _get_ssh_proxy_cmd(server, ip=None):
+        # proxy command is actual for fixed IP only
+        server_ips = server_steps.get_ips(server, 'fixed')
+        ip_info = server_ips[ip] if ip else server_ips.values()[0]
         server_ip = ip_info['ip']
-        cmd = None
-        if ip_info['type'] == 'fixed':
-            server_mac = ip_info['mac']
-            net_id = network_steps.get_network_id_by_mac(server_mac)
-            dhcp_netns = "qdhcp-{}".format(net_id)
-            dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
-            ip_by_host = request.getfixturevalue('ip_by_host')
-            admin_ssh_key_path = request.getfixturevalue('admin_ssh_key_path')
-            dhcp_server_ip = ip_by_host(dhcp_host)
-            cmd = 'ssh -i {} root@{} ip netns exec {} netcat {} 22'.format(
-                admin_ssh_key_path, dhcp_server_ip, dhcp_netns, server_ip)
+        server_mac = ip_info['mac']
+        net_id = network_steps.get_network_id_by_mac(server_mac)
+        dhcp_netns = "qdhcp-{}".format(net_id)
+        dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
+        dhcp_server_ip = ip_by_host(dhcp_host)
+        proxy_cmd = 'ssh -i {} root@{} ip netns exec {} netcat {} 22'.format(
+            admin_ssh_key_path, dhcp_server_ip, dhcp_netns, server_ip)
 
-        return cmd, server_ip
+        return proxy_cmd
 
-    return _ssh_proxy_data
-
-
-# TODO(schipiga): that looks to be a step. Btw, docstring is absent.
-@pytest.fixture
-def ssh_to_server(ssh_proxy_data, server_steps):
-    def _ssh_to_server(server, ip=None):
-        proxy_cmd, server_ip = ssh_proxy_data(server, ip)
-        ip = ip or server_ip
-        server_steps.check_ssh_connect(server,
-                                       ip=ip,
-                                       proxy_cmd=proxy_cmd,
-                                       timeout=60 * 5)
-        credentials = server_steps.get_server_credentials(server)
-        ssh_client = ssh.SshClient(ip,
-                                   pkey=credentials.get('private_key'),
-                                   username=credentials.get('username'),
-                                   password=credentials.get('password'),
-                                   proxy_cmd=proxy_cmd)
-        return ssh_client
-
-    return _ssh_to_server
+    return _get_ssh_proxy_cmd

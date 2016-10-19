@@ -18,28 +18,58 @@ Server metadata tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from stepler.third_party.utils import generate_ids
+import pytest
+
+from stepler.third_party import utils
 
 
-def test_metadata_reach_all_booted_vm(security_group, nova_floating_ip,
-                                      ubuntu_image, keypair, flavor_steps,
-                                      network_steps, server_steps):
-    # TODO(schipiga): expand docstring, add scenario
-    """Verify that image can be connected with SSH."""
+@pytest.mark.idempotent_id('fb831027-2663-4b76-b81f-868a85ca08fe')
+def test_metadata_reach_all_booted_vm(
+        security_group,
+        nova_floating_ip,
+        ubuntu_image,
+        keypair,
+        create_server_context,
+        flavor_steps,
+        network_steps,
+        server_steps):
+    """**Scenario:** Verify that image can be connected with SSH.
+
+    **Setup:**
+
+    #. Create security group
+    #. Create floating IP
+    #. Get or create ubuntu image
+    #. Create keypair
+
+    **Steps:**
+
+    #. Get flavor ``m1.small``
+    #. Get admin internal network
+    #. Create nova server
+    #. Attach floating IP to nova server
+    #. Check that server is available via SSH
+    #. Detach floating IP
+    #. Delete nova server
+
+    **Teardown:**
+
+    #. Delete keypair
+    #. Release floating IP
+    #. Delete security group
+    """
     flavor = flavor_steps.get_flavor(name='m1.small')
     network = network_steps.get_network_by_name('admin_internal_net')
 
-    for server_name in generate_ids('server', count=1):
-        server = server_steps.create_server(server_name,
-                                            image=ubuntu_image,
-                                            flavor=flavor,
-                                            networks=[network],
-                                            keypair=keypair,
-                                            security_groups=[security_group],
-                                            username='ubuntu')
+    server_name = next(utils.generate_ids('server'))
+    with create_server_context(server_name,
+                               image=ubuntu_image,
+                               flavor=flavor,
+                               networks=[network],
+                               keypair=keypair,
+                               security_groups=[security_group],
+                               username='ubuntu') as server:
 
         server_steps.attach_floating_ip(server, nova_floating_ip)
-        server_steps.check_ssh_connect(server, timeout=600)
-
+        server_steps.get_server_ssh(server)
         server_steps.detach_floating_ip(server, nova_floating_ip)
-        server_steps.delete_server(server)
