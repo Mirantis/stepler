@@ -108,7 +108,8 @@ class ServerSteps(BaseSteps):
             userdata=userdata,
             meta=meta)
         if check:
-            self.check_server_status(server, 'active', timeout=180)
+            self.check_server_status(server, 'active',
+                                     timeout=config.BUILD_INTERVAL)
 
         return server
 
@@ -167,7 +168,8 @@ class ServerSteps(BaseSteps):
 
         if check:
             for server in servers:
-                self.check_server_status(server, 'active', timeout=180)
+                self.check_server_status(server, 'active',
+                                         timeout=config.BUILD_INTERVAL)
 
         return servers
 
@@ -177,7 +179,8 @@ class ServerSteps(BaseSteps):
         server.force_delete()
 
         if check:
-            self.check_server_presence(server, present=False, timeout=180)
+            self.check_server_presence(server, present=False,
+                                       timeout=config.BUILD_INTERVAL)
 
     @step
     def delete_servers(self, servers, check=True):
@@ -187,7 +190,8 @@ class ServerSteps(BaseSteps):
 
         if check:
             for server in servers:
-                self.check_server_presence(server, present=False, timeout=180)
+                self.check_server_presence(server, present=False,
+                                           timeout=config.BUILD_INTERVAL)
 
     @step
     def get_servers(self, name_prefix=None, check=True):
@@ -660,3 +664,55 @@ class ServerSteps(BaseSteps):
                     ephemeral_ts_file=EPHEMERAL_DISK_TIMESTAMP_FILE))
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
         assert_that(timestamp, equal_to(root_result.stdout))
+
+    @step
+    def rebuild_server(self, server, image=None, check=True):
+        """Step to rebuild nova server.
+
+        Args:
+            server (object): nova instance to migrate
+            image (object): image used for instance rebuild
+            check (bool): flag whether to check step or not
+        """
+        server.get()
+        server.rebuild(image)
+        if check:
+            self.check_server_status(
+                server,
+                'active',
+                transit_statuses=('rebuilding', 'rebuild_spawning',),
+                timeout=config.BUILD_TIMEOUT)
+
+    @step
+    def pause_server(self, server, check=True):
+        """Step to pause nova server.
+
+        Args:
+            server (object): nova instance to pause
+            check (bool): flag whether to check step or not
+        """
+        server.get()
+        server.pause()
+        if check:
+            self.check_server_status(
+                server,
+                'paused',
+                transit_statuses=('active', 'pausing',),
+                timeout=config.BUILD_TIMEOUT)
+
+    @step
+    def rescue_server(self, server, check=True):
+        """Step to rescue nova server.
+
+        Args:
+            server (object): nova instance to rescue
+            check (bool): flag whether to check step or not
+        """
+        server.get()
+        server.rescue()
+        if check:
+            self.check_server_status(
+                server,
+                'rescue',
+                transit_statuses=('active', 'rescuing',),
+                timeout=config.BUILD_TIMEOUT)
