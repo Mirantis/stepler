@@ -23,6 +23,7 @@ import pytest
 __all__ = [
     'get_nova_client',
     'nova_client',
+    'disable_nova_config_drive',
 ]
 
 
@@ -54,3 +55,37 @@ def nova_client(get_nova_client):
         novaclient.client.Client: authenticated nova client
     """
     return get_nova_client()
+
+
+@pytest.yield_fixture(scope='module')
+def disable_nova_config_drive(os_faults_steps, get_availability_zone_steps):
+    """Module fixture to disable nova config drive.
+
+    Note:
+        Workaround for bug https://bugs.launchpad.net/mos/+bug/1589460/
+        This should be removed in MOS 10.0
+
+    Args:
+        os_faults_steps (obj): os-faults steps
+        get_availability_zone_steps (function): callable fixture to get
+            availability zone steps
+    """
+    NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
+    NOVA_API = 'nova-api'
+    NOVA_COMPUTE = 'nova-compute'
+    nodes = os_faults_steps.get_nodes(service_names=[NOVA_API, NOVA_COMPUTE])
+
+    with os_faults_steps.patch_ini(
+            nodes, path=NOVA_CONFIG_PATH, option='force_config_drive',
+            value=False):
+        os_faults_steps.restart_service(NOVA_API)
+        os_faults_steps.restart_service(NOVA_COMPUTE)
+        zone_steps = get_availability_zone_steps()
+        zone_steps.check_all_active_hosts_available()
+
+        yield
+
+    os_faults_steps.restart_service(NOVA_API)
+    os_faults_steps.restart_service(NOVA_COMPUTE)
+    zone_steps = get_availability_zone_steps()
+    zone_steps.check_all_active_hosts_available()
