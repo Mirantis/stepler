@@ -28,4 +28,6 @@ __all__ = sorted([  # sort for documentation
     'glance_steps',
     'ubuntu_image',
     'cirros_image',
+    'ubuntu_qcow2_image_for_cinder',
+    'ubuntu_raw_image_for_cinder'
 ])
