@@ -18,6 +18,7 @@ Base
 # limitations under the License.
 
 __all__ = [
+    'BaseApiClient',
     'BaseSteps',
 ]
 
@@ -193,3 +194,24 @@ class BaseSteps(object):
             client (object): client for resources manipulation.
         """
         self._client = client
+
+
+class BaseApiClient(object):
+    """Base API Client."""
+
+    def __init__(self, session):
+        """Constructor.
+
+        Args:
+          session (object): keystone session.
+        """
+        self._session = session
+
+    @property
+    def _auth_headers(self):
+        """Get auth headers.
+
+        Returns:
+            dict: authentication headers.
+        """
+        return self._session.get_auth_headers()

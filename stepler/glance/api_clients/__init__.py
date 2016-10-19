@@ -1,9 +1,7 @@
 """
-------------
-Glance steps
-------------
-
-Contains steps specific for glance.
+------------------
+Glance API clients
+------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +21,6 @@ from .v1 import *  # noqa
 from .v2 import *  # noqa
 
 __all__ = [
-    'GlanceStepsV1',
-    'GlanceStepsV2',
+    'ApiClientV1',
+    'ApiClientV2',
 ]
