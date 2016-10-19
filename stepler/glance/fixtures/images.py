@@ -37,6 +37,8 @@ __all__ = [
     'glance_steps_v1',
     'glance_steps_v2',
     'ubuntu_image',
+    'ubuntu_qcow2_image_for_cinder',
+    'ubuntu_raw_image_for_cinder',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -275,3 +277,46 @@ def cirros_image(get_glance_steps):
         is_api=False).delete_images([_cirros_image])
 
     SKIPPED_IMAGES.remove(_cirros_image)
+
+
+@pytest.yield_fixture(scope='session')
+def ubuntu_qcow2_image_for_cinder(get_glance_steps):
+    """Session fixture to create ubuntu image with default options.
+    Args:
+        get_glance_steps (function): function to get glance steps
+    Returns:
+        object: ubuntu glance image
+    """
+    image_name = next(generate_ids('ubuntu'))
+    image_path = get_file_path(config.UBUNTU_ISO_URL)
+
+    _ubuntu_image = get_glance_steps().create_images([image_name],
+                                                     image_path, )[0]
+    SKIPPED_IMAGES.append(_ubuntu_image)
+
+    yield _ubuntu_image
+
+    get_glance_steps().delete_images([_ubuntu_image])
+    SKIPPED_IMAGES.remove(_ubuntu_image)
+
+
+@pytest.yield_fixture(scope='session')
+def ubuntu_raw_image_for_cinder(get_glance_steps):
+    """Session fixture to create ubuntu image with default options.
+    Args:
+        get_glance_steps (function): function to get glance steps
+    Returns:
+        object: ubuntu glance image
+    """
+    image_name = next(generate_ids('ubuntu'))
+    image_path = get_file_path(config.UBUNTU_ISO_URL)
+
+    _ubuntu_image = get_glance_steps().create_images([image_name],
+                                                     image_path,
+                                                     disk_format='raw')[0]
+    SKIPPED_IMAGES.append(_ubuntu_image)
+
+    yield _ubuntu_image
+
+    get_glance_steps().delete_images([_ubuntu_image])
+    SKIPPED_IMAGES.remove(_ubuntu_image)
