@@ -35,7 +35,7 @@ __all__ = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def os_faults_client():
     """Fixture to get os_faults client.
 
@@ -50,7 +50,7 @@ def os_faults_client():
     return destructor
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def os_faults_steps(os_faults_client):
     """Fixture to get os_faults steps.
 
