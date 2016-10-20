@@ -36,6 +36,7 @@ __all__ = [
     'get_ssh_proxy_cmd',
     'server',
     'server_steps',
+    'live_migration_server',
     'servers_cleanup'
 ]
 
@@ -248,3 +249,84 @@ def get_ssh_proxy_cmd(admin_ssh_key_path,
         return proxy_cmd
 
     return _get_ssh_proxy_cmd
+
+
+@pytest.fixture
+def live_migration_server(request,
+                          keypair,
+                          flavor,
+                          security_group,
+                          nova_floating_ip,
+                          ubuntu_image,
+                          network,
+                          subnet,
+                          router,
+                          add_router_interfaces,
+                          create_volume,
+                          create_server,
+                          server_steps):
+    """Fixture to create server for live migration tests.
+
+
+    This fixture create server and add floating ip to it.
+    It can boot server from ubuntu image or volume with parametrization.
+    Default is boot from image.
+
+    Example:
+        @pytest.mark.parametrized('live_migration_server', [
+                {'boot_from_volume': True},
+                {'boot_from_volume': False}
+            ], indirect=True)
+        def test_foo(live_migration_server):
+            pass
+
+
+    Args:
+        request (obj): pytest SubRequest instance
+        keypair (obj): keypair
+        flavor (obj): flavor
+        security_group (obj): security group
+        nova_floating_ip (obj): nova floating ip
+        ubuntu_image (obj): ubuntu image
+        network (obj): network
+        subnet (obj): subnet
+        router (obj): router
+        add_router_interfaces (function): callable fixture to add interface to
+            router
+        create_volume (function): callable fixture to create volume
+        create_server (function): callable fixture to create server
+        server_steps (obj): instance of ServerSteps
+
+    Returns:
+        object: nova server instance
+    """
+    add_router_interfaces(router, [subnet])
+
+    params = getattr(request, "param", {})
+    boot_from_volume = params.get('boot_from_volume', False)
+
+    if boot_from_volume:
+        volume = create_volume(
+            next(generate_ids('volume')), size=20, image=ubuntu_image)
+        block_device_mapping = {'vda': volume.id}
+        kwargs = dict(image=None, block_device_mapping=block_device_mapping)
+    else:
+        kwargs = dict(image=ubuntu_image)
+
+    server_name = next(generate_ids('server'))
+    server = create_server(
+        server_name,
+        flavor=flavor,
+        keypair=keypair,
+        networks=[network],
+        security_groups=[security_group],
+        userdata=config.INSTALL_LM_WORKLOAD_USERDATA,
+        username='ubuntu',
+        **kwargs)
+
+    server_steps.check_server_log_contains_record(
+        server,
+        config.USERDATA_DONE_MARKER,
+        timeout=config.USERDATA_EXECUTING_TIMEOUT)
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    return server
