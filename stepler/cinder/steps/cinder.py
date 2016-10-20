@@ -18,6 +18,7 @@ Cinder steps
 # limitations under the License.
 
 from cinderclient import exceptions
+from hamcrest import assert_that, equal_to  # noqa
 import waiting
 
 from stepler import base
@@ -179,3 +180,33 @@ class CinderSteps(base.BaseSteps):
             return volume.status.lower() == status.lower()
 
         waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def volume_upload_to_image(self, volume, image_name,
+                               force=False, container_format='bare',
+                               disk_format='raw', check=True):
+        """Step to volume to image.
+
+        Args:
+            volume (str): The :class:`Volume` to upload
+            image_name (str): The new image name
+            force (bool): Enables or disables upload of a volume that is
+            attached to an instance
+            container_format (str): Container format type
+            disk_format (str): Disk format type
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: image
+        """
+        response, image = self._client.volumes.upload_to_image(
+            volume=volume,
+            force=force,
+            image_name=image_name,
+            container_format=container_format,
+            disk_format=disk_format)
+
+        if check:
+            assert_that(response.status_code, equal_to(202))
+
+        return image
