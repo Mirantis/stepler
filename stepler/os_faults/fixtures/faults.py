@@ -17,13 +17,7 @@ os_faults fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import os_faults
-except ImportError:
-    import warnings
-    warnings.warn(
-        'os_faults import is skipped for docs generating only', ImportWarning)
-
+import os_faults
 import pytest
 
 from stepler import config
@@ -31,19 +25,19 @@ from stepler.os_faults.steps import OsFaultsSteps
 
 __all__ = [
     'os_faults_client',
-    'os_faults_steps'
+    'os_faults_steps',
 ]
 
 
 @pytest.fixture
 def os_faults_client():
-    """Fixture to get os_faults client.
+    """Function fixture to get os_faults client.
 
-     Returns:
-         destructor: instantiated os_faults client
-     """
-    assert config.OS_FAULTS_CONFIG, ("Environment variable OS_FAULTS_CONFIG "
-                                     "is not defined")
+    Returns:
+        object: instantiated os_faults client
+    """
+    assert config.OS_FAULTS_CONFIG, \
+        "Environment variable OS_FAULTS_CONFIG is not defined"
 
     destructor = os_faults.connect(config_filename=config.OS_FAULTS_CONFIG)
     destructor.verify()
@@ -52,7 +46,7 @@ def os_faults_client():
 
 @pytest.fixture
 def os_faults_steps(os_faults_client):
-    """Fixture to get os_faults steps.
+    """Function fixture to get os_faults steps.
 
     Args:
         os_faults_client (object): instantiated os_faults client
