@@ -56,12 +56,21 @@ STEPLER_PREFIX = 'stepler'  # project specific prefix for created resources
 
 TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 'test_reports'))
+
+# CONFIGS
+NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
+
+# SERVICES
+NOVA_API = 'nova-api'
+NOVA_COMPUTE = 'nova-compute'
+
 # TIMEOUTS (in seconds)
 POLLING_TIME = .01
 
 # Cinder
 VOLUME_AVAILABLE_TIMEOUT = 5 * 60
 VOLUME_DELETE_TIMEOUT = 3 * 60
+VOLUME_IN_USE_TIMEOUT = 60
 
 # Nova
 PING_CALL_TIMEOUT = 5 * 60
@@ -71,3 +80,9 @@ SSH_CLIENT_TIMEOUT = 60
 SSH_CONNECT_TIMEOUT = 5 * 60
 LIVE_MIGRATE_TIMEOUT = 5 * 60
 VERIFY_RESIZE_TIMEOUT = 3 * 60
+SOFT_DELETED_TIMEOUT = 30
+SERVER_DELETE_TIMEOUT = 3 * 60
+
+SMALL_RECLAIM_INTERVAL = str(30)
+BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
+SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_TIMEOUT)
