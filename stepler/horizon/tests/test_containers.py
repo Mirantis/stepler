@@ -38,15 +38,16 @@ class TestAnyOne(object):
         create_container(container_name, public=True)
 
         with containers_steps.get_container(container_name):
-            containers_steps.get_container_info(container_name)
+            container_info = \
+                containers_steps.get_container_info(container_name)
 
             folder_name = next(generate_ids('folder'))
             containers_steps.create_folder(folder_name)
 
-            # TODO(schipiga): move it to check step
-            # assert folder_name in requests.get(
-            #     container_info['public_url']).text
-            # containers_steps.delete_folder(folder_name)
+            containers_steps.check_folder_avaiable_by_public_url(
+                folder_name, container_info['public_url'])
+
+            containers_steps.delete_folder(folder_name)
 
     def test_upload_file_to_container(self, container, containers_steps):
         """Verify that one can upload file to container."""

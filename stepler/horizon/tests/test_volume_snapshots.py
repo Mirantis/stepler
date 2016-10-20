@@ -38,41 +38,7 @@ class TestAnyOne(object):
         snapshot_names = list(generate_ids(prefix='snapshot', count=3))
         create_snapshots(snapshot_names)
         update_settings(items_per_page=1)
-        # TODO(schipiga): move it to check step
-        # tab_snapshots = volumes_steps.tab_snapshots()
-
-        # tab_snapshots.table_snapshots.row(
-        #     name=snapshot_names[2]).wait_for_presence(30)
-        # assert tab_snapshots.table_snapshots.link_next.is_present
-        # assert not tab_snapshots.table_snapshots.link_prev.is_present
-
-        # tab_snapshots.table_snapshots.link_next.click()
-
-        # tab_snapshots.table_snapshots.row(
-        #     name=snapshot_names[1]).wait_for_presence(30)
-        # assert tab_snapshots.table_snapshots.link_next.is_present
-        # assert tab_snapshots.table_snapshots.link_prev.is_present
-
-        # tab_snapshots.table_snapshots.link_next.click()
-
-        # tab_snapshots.table_snapshots.row(
-        #     name=snapshot_names[0]).wait_for_presence(30)
-        # assert not tab_snapshots.table_snapshots.link_next.is_present
-        # assert tab_snapshots.table_snapshots.link_prev.is_present
-
-        # tab_snapshots.table_snapshots.link_prev.click()
-
-        # tab_snapshots.table_snapshots.row(
-        #     name=snapshot_names[1]).wait_for_presence(30)
-        # assert tab_snapshots.table_snapshots.link_next.is_present
-        # assert tab_snapshots.table_snapshots.link_prev.is_present
-
-        # tab_snapshots.table_snapshots.link_prev.click()
-
-        # tab_snapshots.table_snapshots.row(
-        #     name=snapshot_names[2]).wait_for_presence(30)
-        # assert tab_snapshots.table_snapshots.link_next.is_present
-        # assert not tab_snapshots.table_snapshots.link_prev.is_present
+        volumes_steps.check_snapshots_pagination(snapshot_names)
 
     def test_create_volume_from_snapshot(self, snapshot, volumes_steps):
         """Verify that user cat create volume from snapshot."""

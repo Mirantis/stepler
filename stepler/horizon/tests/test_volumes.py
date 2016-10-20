@@ -47,41 +47,7 @@ class TestAnyOne(object):
         volume_names = list(generate_ids('volume', count=3))
         create_volumes(volume_names)
         update_settings(items_per_page=1)
-        # TODO(schipiga): move it to check step
-        # tab_volumes = volumes_steps.tab_volumes()
-
-        # tab_volumes.table_volumes.row(
-        #     name=volume_names[2]).wait_for_presence(30)
-        # assert tab_volumes.table_volumes.link_next.is_present
-        # assert not tab_volumes.table_volumes.link_prev.is_present
-
-        # tab_volumes.table_volumes.link_next.click()
-
-        # tab_volumes.table_volumes.row(
-        #     name=volume_names[1]).wait_for_presence(30)
-        # assert tab_volumes.table_volumes.link_next.is_present
-        # assert tab_volumes.table_volumes.link_prev.is_present
-
-        # tab_volumes.table_volumes.link_next.click()
-
-        # tab_volumes.table_volumes.row(
-        #     name=volume_names[0]).wait_for_presence(30)
-        # assert not tab_volumes.table_volumes.link_next.is_present
-        # assert tab_volumes.table_volumes.link_prev.is_present
-
-        # tab_volumes.table_volumes.link_prev.click()
-
-        # tab_volumes.table_volumes.row(
-        #     name=volume_names[1]).wait_for_presence(30)
-        # assert tab_volumes.table_volumes.link_next.is_present
-        # assert tab_volumes.table_volumes.link_prev.is_present
-
-        # tab_volumes.table_volumes.link_prev.click()
-
-        # tab_volumes.table_volumes.row(
-        #     name=volume_names[2]).wait_for_presence(30)
-        # assert tab_volumes.table_volumes.link_next.is_present
-        # assert not tab_volumes.table_volumes.link_prev.is_present
+        volumes_steps.check_volumes_pagination(volume_names)
 
     def test_view_volume(self, volume, volumes_steps):
         """Verify that user can view volume info."""
@@ -97,9 +63,7 @@ class TestAnyOne(object):
         """Verify that user can upload volume to image."""
         image_name = next(generate_ids('image', length=20))
         volumes_steps.upload_volume_to_image(volume.name, image_name)
-        # TODO(schipiga): move it to check step
-        # images_steps.page_images().table_images.row(
-        #     name=image_name).wait_for_presence(30)
+        images_steps.check_image_present(image_name, timeout=30)
         images_steps.delete_image(image_name)
 
     def test_volume_extend(self, volume, volumes_steps):
@@ -113,9 +77,7 @@ class TestAnyOne(object):
         volumes_steps.launch_volume_as_instance(
             volume.name, instance_name,
             network_name=config.INTERNAL_NETWORK_NAME)
-        # TODO(schipiga): move it to check step
-        # instances_steps.page_instances().table_instances.row(
-        #     name=instance_name).wait_for_status('Active')
+        instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)
 
 

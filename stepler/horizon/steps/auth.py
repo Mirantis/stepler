@@ -17,8 +17,6 @@ Horizon steps for authentication
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-
 from stepler.third_party.steps_checker import step
 
 from .base import BaseSteps
@@ -32,7 +30,6 @@ class AuthSteps(BaseSteps):
         return self._open(self.app.page_login)
 
     @step
-    @pom.timeit('Step')
     def login(self, username, password, check=True):
         """Step to log in user account.
 
@@ -50,7 +47,6 @@ class AuthSteps(BaseSteps):
             self.app.page_base.dropdown_menu_account.wait_for_presence(30)
 
     @step
-    @pom.timeit('Step')
     def logout(self, check=True):
         """Step to log out user account."""
         with self.app.page_base.dropdown_menu_account as menu:
@@ -61,3 +57,8 @@ class AuthSteps(BaseSteps):
 
         if check:
             self.app.page_login.form_login.wait_for_presence(30)
+
+    @step
+    def check_alert_present(self):
+        """Step to check alert message is present."""
+        self._page_login().label_alert_message.wait_for_presence()

@@ -39,30 +39,24 @@ def new_user_account(user, auth_steps):
 class TestAdminOnly(object):
     """Tests for admin only."""
 
-    def test_dashboard_help_url(self, new_user_account, horizon):
+    def test_dashboard_help_url(self, new_user_account):
         """Verify that user can open dashboard help url."""
-        # TODO(schipiga): move it to check step
-        # with horizon.page_base.dropdown_menu_account as menu:
-        #     menu.click()
-        #   assert urlparse(menu.item_help.href).netloc == "docs.openstack.org"
-        #             "docs.openstack.org")
-        #     menu.click()
+        self.check_dashboard_help_url("docs.openstack.org")
 
-    def test_change_own_password(self, horizon, user, new_user_account,
-                                 auth_steps, settings_steps):
+    def test_change_own_password(self, user, new_user_account, auth_steps,
+                                 settings_steps):
         """Verify that user can change it's password."""
         new_password = 'new-' + user.password
         with user.put(password=new_password):
             settings_steps.change_user_password(user.password, new_password)
 
             auth_steps.login(user.name, user.password, check=False)
-            # TODO(schipiga): move it to check step
-            # horizon.page_login.label_alert_message.wait_for_presence()
+            auth_steps.check_alert_present()
 
         auth_steps.login(user.name, user.password)
 
-    def test_change_own_settings(self, horizon, new_user_account,
-                                 update_settings, settings_steps):
+    def test_change_own_settings(self, new_user_account, update_settings,
+                                 settings_steps):
         """Verify that user can change his settings."""
         new_settings = {
             'lang': 'British English (en-gb)',
@@ -71,8 +65,7 @@ class TestAdminOnly(object):
             'instance_log_length': '1'}
 
         update_settings(**new_settings)
-        # TODO(schipiga): move it to check step
-        # horizon.page_settings.refresh()
+        settings_steps.refresh_page()
 
         assert_that(settings_steps.get_current_settings(),
                     equal_to(new_settings))
