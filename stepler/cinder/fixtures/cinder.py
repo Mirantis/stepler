@@ -21,12 +21,14 @@ from cinderclient import client as cinderclient
 import pytest
 
 from stepler.cinder import steps
+from stepler import config
 
 __all__ = [
     'create_volume',
     'create_volumes',
     'cinder_client',
     'cinder_steps',
+    'upload_volume_to_image',
 ]
 
 
@@ -99,3 +101,37 @@ def create_volume(create_volumes):
         return create_volumes([name], *args, **kwgs)[0]
 
     return _create_volume
+
+
+@pytest.yield_fixture
+def upload_volume_to_image(create_volume, cinder_steps, glance_steps):
+    """Function fixture to upload volume to image.
+
+    Can be called several times during a test.
+    After the test it destroys all created objects.
+
+    Args:
+        create_volume (function): function to create volume with options
+        cinder_steps (CinderSteps): instantiated cinder steps
+        glance_steps (GlanceSteps): instantiated glance steps
+
+    Returns:
+        object: glance image
+    """
+    images = []
+
+    def _upload_volume_to_image(volume_name, image_name, disk_format):
+        volume = create_volume(volume_name)
+        image_info = cinder_steps.volume_upload_to_image(
+            volume=volume, image_name=image_name, disk_format=disk_format)
+        image = glance_steps.get_image(
+            image_info['os-volume_upload_image']['image_id'])
+        images.append(image)
+        glance_steps.check_image_status(image, status='active',
+                                        timeout=config.IMAGE_AVAILABLE_TIMEOUT)
+        return image
+
+    yield _upload_volume_to_image
+
+    if images:
+        glance_steps.delete_images(images)
