@@ -18,6 +18,7 @@ Config
 # limitations under the License.
 
 import os
+import uuid
 
 PROJECT_DOMAIN_NAME = os.environ.get('OS_PROJECT_DOMAIN_NAME', 'default')
 USER_DOMAIN_NAME = os.environ.get('OS_USER_DOMAIN_NAME', 'default')
@@ -112,6 +113,12 @@ NOVA_AVAILABILITY_TIMEOUT = 2 * 60
 NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
 NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
+
+USERDATA_DONE_MARKER = 'userdata-done %s' % uuid.uuid4()
+
+INSTALL_LM_WORKLOAD_USERDATA = """#!/bin/bash -v
+apt-get install -yq stress cpulimit sysstat iperf
+echo {}""".format(USERDATA_DONE_MARKER)
 SMALL_RECLAIM_INTERVAL = str(30)
 BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
 SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
