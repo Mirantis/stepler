@@ -172,18 +172,34 @@ class ServerSteps(BaseSteps):
         return servers
 
     @step
-    def delete_server(self, server, check=True):
-        """Step to delete server."""
-        server.force_delete()
+    def delete_server(self, server, force=True, soft=False, check=True):
+        """Step to delete server.
+
+        Args:
+            server (object): nova server
+            force (bool): delete option
+            soft (bool): indicator that server is expected soft-deleted
+            check (bool): flag whether to check step or not
+        """
+        if force:
+            server.force_delete()
+        else:
+            server.delete()
 
         if check:
-            self.check_server_presence(server, present=False, timeout=180)
+            if soft:
+                self.check_server_presence(
+                    server, present=False, by_name=True,
+                    timeout=config.SOFT_DELETED_TIMEOUT)
+                self.check_server_status(server, 'soft_deleted')
+            else:
+                self.check_server_presence(server, present=False, timeout=180)
 
     @step
-    def delete_servers(self, servers, check=True):
+    def delete_servers(self, servers, force=True, soft=False, check=True):
         """Step to delete servers."""
         for server in servers:
-            self.delete_server(server, check=False)
+            self.delete_server(server, force=force, soft=soft, check=False)
 
         if check:
             for server in servers:
@@ -210,23 +226,32 @@ class ServerSteps(BaseSteps):
         return servers
 
     @step
-    def check_server_presence(self, server, present=True, timeout=0):
+    def check_server_presence(self, server, present=True, by_name=False,
+                              timeout=0):
         """Check-step to check server presence.
 
         Args:
             server (object): nova server
             present (bool): flag to check is server present or absent
+            by_name (bool): indicator of check method - by id or by name
+                            in server list. For soft-deleted servers,
+                            result = False for by_name=True, else True)
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check was falsed after timeout
         """
-        def predicate():
-            try:
-                self._client.get(server.id)
-                return present
-            except Exception:
-                return not present
+        if by_name:
+            def predicate():
+                names = [s.name for s in self._client.list()]
+                return present == (server.name in names)
+        else:
+            def predicate():
+                try:
+                    self._client.get(server.id)
+                    return present
+                except Exception:
+                    return not present
 
         wait(predicate, timeout_seconds=timeout)
 
@@ -660,3 +685,17 @@ class ServerSteps(BaseSteps):
                     ephemeral_ts_file=EPHEMERAL_DISK_TIMESTAMP_FILE))
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
         assert_that(timestamp, equal_to(root_result.stdout))
+
+    @step
+    def restore_server(self, server, check=True):
+        """Step to restore soft-deleted server.
+
+        Args:
+            server (object): nova instance
+            check (bool): flag whether to check step or not
+
+        """
+        server.restore()
+
+        if check:
+            self.check_server_presence(server, present=True, timeout=180)
