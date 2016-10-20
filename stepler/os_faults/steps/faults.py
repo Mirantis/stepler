@@ -25,6 +25,7 @@ from hamcrest import assert_that, is_not, empty, only_contains, has_properties  
 
 from stepler.base import BaseSteps
 from stepler.third_party.steps_checker import step
+from stepler.third_party import utils
 
 __all__ = ['OsFaultsSteps']
 
@@ -204,10 +205,11 @@ class OsFaultsSteps(BaseSteps):
                 if `section` is None
             check (bool): flag whether check step or not
         """
-        self.make_backup(nodes, path)
+        suffix = next(utils.generate_ids('backup'))
+        self.make_backup(nodes, path, suffix=suffix)
         task = {
             'ini_file': {
-                'backup': True,
+                'backup': False,
                 'dest': path,
                 'section': section or 'DEFAULT',
                 'option': option,
@@ -219,4 +221,4 @@ class OsFaultsSteps(BaseSteps):
             self.check_file_contains_line(nodes, path, "{} = {}".format(option,
                                                                         value))
         yield
-        self.restore_backup(nodes, path)
+        self.restore_backup(nodes, path, suffix=suffix)
