@@ -33,16 +33,27 @@ class OsFaultsSteps(base.BaseSteps):
     """os-faults steps."""
 
     @steps_checker.step
-    def get_nodes(self, fqdns=None, check=True):
+    def get_nodes(self, fqdns=None, service_names=None, check=True):
         """Step to get nodes.
 
         Args:
             fqdns (list): nodes hostnames to filter
+            service_names (list): names of services to filter nodes with
             check (bool): flag whether check step or not
 
         Returns:
             list of nodes
         """
+        if service_names:
+            service_fqdns = set()
+            for service_name in service_names:
+                nodes = self._client.get_service(service_name).get_nodes()
+                for host in nodes.hosts:
+                    service_fqdns.add(host['fqdn'])
+            if not fqdns:
+                fqdns = service_fqdns
+            else:
+                fqdns &= service_fqdns
         nodes = self._client.get_nodes(fqdns=fqdns)
 
         if check:
@@ -51,12 +62,34 @@ class OsFaultsSteps(base.BaseSteps):
         return nodes
 
     @steps_checker.step
+    def get_service(self, name, fqdns=None, check=True):
+        """Step to get services.
+
+        Args:
+            name (str): service name
+            fqdns (list|None): nodes hostnames to filter
+            check (bool): flag whether check step or not
+
+        Returns:
+            object: service
+        """
+        service = self._client.get_service(name=name)
+
+        if check:
+            assert_that(service, is_not(None))
+
+        return service
+
+    @steps_checker.step
     def restart_services(self, names, check=True):
-        """Step to restart a service.
+        """Step to restart a services.
 
         Args:
             name (str): service name
             check (bool): flag whether to check step or not
+
+        Raises:
+            ServiceError: if wrong service name or other errors
         """
         for name in names:
             # TODO(ssokolov) add check of service names
@@ -70,7 +103,7 @@ class OsFaultsSteps(base.BaseSteps):
 
     @steps_checker.step
     def download_file(self, node, file_path, check=True):
-        """Copy file from remote host to tempfile.
+        """Step to download file from remote host to tempfile.
 
         Args:
             node (obj): node to fetch file from
@@ -102,7 +135,7 @@ class OsFaultsSteps(base.BaseSteps):
 
     @steps_checker.step
     def check_file_contains_line(self, nodes, file_path, line):
-        """Check that remote file contains line.
+        """Step to check that remote file contains line.
 
         Args:
             nodes (obj): nodes to check file on them
@@ -121,7 +154,7 @@ class OsFaultsSteps(base.BaseSteps):
 
     @steps_checker.step
     def make_backup(self, nodes, file_path, suffix=None, check=True):
-        """Make backup of file with `path`.
+        """Step to make backup of file with `path`.
 
         This step makes a copy of file to new file with `suffix` in same
             folder.
@@ -148,13 +181,13 @@ class OsFaultsSteps(base.BaseSteps):
         nodes.run_task(task)
 
         if check:
-            self.check_file_exists(nodes, path=backup_path)
+            self.check_file_exists(nodes, backup_path)
 
         return backup_path
 
     @steps_checker.step
     def restore_backup(self, nodes, file_path, backup_path, check=True):
-        """Restore file with `path` from backup.
+        """Step to restore file with `path` from backup.
 
         This step restore file from backup with `suffix` placed in same folder.
 
@@ -175,11 +208,11 @@ class OsFaultsSteps(base.BaseSteps):
         nodes.run_task(task)
 
         if check:
-            self.check_file_exists(nodes, path=backup_path, present=False)
+            self.check_file_exists(nodes, backup_path, present=False)
 
     @steps_checker.step
     def check_file_exists(self, nodes, file_path, present=True):
-        """Check that remote file exists.
+        """Step to check that remote file exists.
 
         Args:
             nodes (obj): nodes to check file on them
@@ -197,9 +230,9 @@ class OsFaultsSteps(base.BaseSteps):
         assert_that(result, only_contains(has_properties(status='OK')))
 
     @steps_checker.step
-    def patch_ini_file(self, nodes, file_path, option, value, section=None,
-                       check=True):
-        """Patch INI like file.
+    def patch_ini_file(self, nodes, file_path, option, value,
+                       section='DEFAULT', check=True):
+        """Step to patch INI like file.
 
         Args:
             nodes (obj): nodes hostnames to patch file on it
@@ -218,7 +251,7 @@ class OsFaultsSteps(base.BaseSteps):
             'ini_file': {
                 'backup': False,
                 'dest': file_path,
-                'section': section or 'DEFAULT',
+                'section': section,
                 'option': option,
                 'value': value,
             }

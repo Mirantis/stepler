@@ -79,6 +79,7 @@ def create_volumes(cinder_steps):
     yield _create_volumes
 
     if volumes:
+        cinder_steps.detach_volumes(volumes)
         cinder_steps.delete_volumes(volumes)
 
 
