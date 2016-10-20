@@ -44,7 +44,7 @@ LOGGER = logging.getLogger(__name__)
 SKIPPED_IMAGES = []  # TODO(schipiga): describe its mechanism in docs
 
 
-def _remove_stayed_images(glance_steps):
+def _remove_stayed_images(glance_steps, test_name):
     """Clear unexpected images.
 
     We should remove images which unexpectedly stayed after tests.
@@ -66,7 +66,7 @@ def _remove_stayed_images(glance_steps):
 
 # TODO(schipiga): In future will rename `glance_steps` -> `image_steps`
 @pytest.fixture(scope='session')
-def get_glance_steps(get_glance_client):
+def get_glance_steps(request, get_glance_client):
     """Callable session fixture to get glance steps.
 
     Args:
@@ -89,7 +89,8 @@ def get_glance_steps(get_glance_client):
         if version == '2' and not is_api:
             # Remove when steps are requested. Make it for glance pythonclient
             # v2 only, because now it is actual most useful client version.
-            _remove_stayed_images(glance_steps)
+            _remove_stayed_images(glance_steps,
+                                  test_name=request._pyfuncitem.name)
 
         return glance_steps
 
