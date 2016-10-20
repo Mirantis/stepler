@@ -22,6 +22,7 @@ from .floating_ips import *  # noqa
 from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
 from .security_groups import *  # noqa
+from .nova_volumes import *  # noqa
 from .servers import *  # noqa
 
 __all__ = [
@@ -30,5 +31,6 @@ __all__ = [
     'HypervisorSteps',
     'KeypairSteps',
     'SecurityGroupSteps',
+    'NovaVolumeSteps',
     'ServerSteps'
 ]
