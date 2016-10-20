@@ -41,9 +41,6 @@ if AUTH_URL:  # figure out keystone API version
 
     KEYSTONE_API_VERSION = 3 if version == 'v3' else 2
 
-# CURRENT API VERSIONS
-CURRENT_GLANCE_VERSION = '2'
-
 UBUNTU_QCOW2_URL = 'https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img'  # noqa
 FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases/23/Cloud/x86_64/Images/Fedora-Cloud-Base-23-20151030.x86_64.qcow2'  # noqa
 CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'  # noqa
@@ -52,18 +49,50 @@ UBUNTU_ISO_URL = 'http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-a
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa
 
-STEPLER_PREFIX = 'stepler'  # project specific prefix for created resources
-
 TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 'test_reports'))
+
+STEPLER_PREFIX = 'stepler'  # project specific prefix for created resources
+
+# IMAGE / SERVER CREDENTIALS
+CIRROS_USERNAME = 'cirros'
+
+# CURRENT API VERSIONS
+CURRENT_GLANCE_VERSION = '2'
+CURRENT_CINDER_VERSION = '2'
+
+# CONFIG PATHS
+NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
+
+# SERVICES
+NOVA_API = 'nova-api'
+NOVA_COMPUTE = 'nova-compute'
+
+# STATUSES
+STATUS_ACTIVE = 'active'
+STATUS_AVAILABLE = 'available'
+STATUS_BUILD = 'build'
+STATUS_INUSE = 'in-use'
+STATUS_MIGRATING = 'migrating'
+STATUS_OK = 'ok'
+STATUS_RESIZE = 'resize'
+STATUS_SOFT_DELETED = 'soft_deleted'
+STATUS_VERIFY_RESIZE = 'verify_resize'
+
 # TIMEOUTS (in seconds)
 POLLING_TIME = .01
 
 # Cinder
 VOLUME_AVAILABLE_TIMEOUT = 5 * 60
 VOLUME_DELETE_TIMEOUT = 3 * 60
+VOLUME_IN_USE_TIMEOUT = 60
+VOLUME_ATTACH_TIMEOUT = 60
 
 # Nova
+CREDENTIALS_PREFIX = 'stepler_credentials_'
+ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
+EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
+
 PING_CALL_TIMEOUT = 5 * 60
 PING_BETWEEN_SERVERS_TIMEOUT = 5 * 60
 USERDATA_EXECUTING_TIMEOUT = 5 * 60
@@ -71,3 +100,10 @@ SSH_CLIENT_TIMEOUT = 60
 SSH_CONNECT_TIMEOUT = 5 * 60
 LIVE_MIGRATE_TIMEOUT = 5 * 60
 VERIFY_RESIZE_TIMEOUT = 3 * 60
+SOFT_DELETED_TIMEOUT = 30
+SERVER_DELETE_TIMEOUT = 3 * 60
+SERVER_ACTIVE_TIMEOUT = 3 * 60
+
+SMALL_RECLAIM_INTERVAL = str(30)
+BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
+SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)

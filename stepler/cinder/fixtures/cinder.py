@@ -21,6 +21,7 @@ from cinderclient import client as cinderclient
 import pytest
 
 from stepler.cinder import steps
+from stepler import config
 
 __all__ = [
     'create_volume',
@@ -40,7 +41,8 @@ def cinder_client(session):
     Returns:
         cinderclient.client.Client: instantiated cinder client
     """
-    return cinderclient.Client(version=2, session=session)
+    return cinderclient.Client(
+        version=config.CURRENT_CINDER_VERSION, session=session)
 
 
 @pytest.fixture
@@ -79,6 +81,7 @@ def create_volumes(cinder_steps):
     yield _create_volumes
 
     if volumes:
+        cinder_steps.detach_volumes(volumes)
         cinder_steps.delete_volumes(volumes)
 
 
