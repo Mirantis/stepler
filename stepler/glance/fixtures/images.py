@@ -37,6 +37,7 @@ __all__ = [
     'glance_steps_v1',
     'glance_steps_v2',
     'ubuntu_image',
+    'cirros_image',
 ]
 
 LOGGER = logging.getLogger(__name__)

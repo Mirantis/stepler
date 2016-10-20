@@ -17,7 +17,7 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, is_not  # noqa
+from hamcrest import assert_that, empty, is_not, equal_to  # noqa
 from waiting import wait
 
 from stepler.third_party.steps_checker import step
@@ -220,3 +220,24 @@ class GlanceStepsV2(BaseGlanceSteps):
                 return project.id not in member_ids
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def get_image(self, image_id, check=True):
+        """Step to retrieve image from glance by image_id.
+
+        Args:
+            image_id (str): image uuid
+
+        Raises:
+                TimeoutExpired: if check was triggered to False after timeout
+
+        Returns:
+            image: object image
+
+        """
+        image = self._client.images.get(image_id)
+
+        if check:
+            assert_that(image.id, equal_to(image_id))
+
+        return image

@@ -24,4 +24,5 @@ __all__ = sorted([  # sort for documentation
     'create_volumes',
     'cinder_client',
     'cinder_steps',
+    'volume_upload_to_image',
 ])

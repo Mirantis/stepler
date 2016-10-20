@@ -27,6 +27,7 @@ __all__ = [
     'create_volumes',
     'cinder_client',
     'cinder_steps',
+    'volume_upload_to_image',
 ]
 
 
@@ -99,3 +100,25 @@ def create_volume(create_volumes):
         return create_volumes([name], *args, **kwgs)[0]
 
     return _create_volume
+
+
+@pytest.fixture
+def volume_upload_to_image(cinder_steps):
+    """Function fixture to upload volume to image with options.
+
+    Can be called several times during a test.
+    After the test it destroys all created images.
+
+    Args:
+        cinder_steps (object): instantiated cinder steps
+
+    Returns:
+        function: function to create single image with options
+    """
+    def _volume_upload_to_image(volume, image_name, force, container_format,
+                                disk_format):
+        return cinder_steps.volume_upload_to_image(volume, image_name,
+                                                   force, container_format,
+                                                   disk_format)
+
+    return _volume_upload_to_image
