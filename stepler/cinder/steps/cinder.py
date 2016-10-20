@@ -114,6 +114,7 @@ class CinderSteps(base.BaseSteps):
             volume (object): cinder volume
             check (bool): flag whether to check step or not
         """
+        self._client.volumes.detach(volume.id)
         self._client.volumes.delete(volume.id)
 
         if check:
@@ -177,5 +178,25 @@ class CinderSteps(base.BaseSteps):
         def predicate():
             volume.get()
             return volume.status.lower() == status.lower()
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_volume_attachments(self, volume, attach_num,
+                                 timeout=0):
+        """Check step volume attachments.
+
+        Args:
+            volume (object): cinder volume
+            attach_num (int): number of instances attached
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            volume.get()
+            return len(volume.attachments) == attach_num
 
         waiting.wait(predicate, timeout_seconds=timeout)

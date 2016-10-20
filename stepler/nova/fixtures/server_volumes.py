@@ -1,7 +1,7 @@
 """
-----------
-Nova steps
-----------
+-----------------------
+Server volumes fixtures
+-----------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +17,23 @@ Nova steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .flavors import *  # noqa
-from .floating_ips import *  # noqa
-from .hypervisor import *  # noqa
-from .keypairs import *  # noqa
-from .security_groups import *  # noqa
-from .server_volumes import *  # noqa
-from .servers import *  # noqa
+import pytest
+
+from stepler.nova.steps import ServerVolumeSteps
 
 __all__ = [
-    'FlavorSteps',
-    'FloatingIpSteps',
-    'HypervisorSteps',
-    'KeypairSteps',
-    'SecurityGroupSteps',
-    'ServerVolumeSteps',
-    'ServerSteps'
+    'server_volume_steps'
 ]
+
+
+@pytest.fixture
+def server_volume_steps(nova_client):
+    """Fixture to get server volumes steps.
+
+    Args:
+        nova_client (stepler.nova): instantiated nova object.
+
+    Returns:
+        object: instantiated steps objects for server volumes
+    """
+    return ServerVolumeSteps(nova_client.volumes)

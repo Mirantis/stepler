@@ -23,6 +23,7 @@ from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
 from .nova import *  # noqa
 from .servers import *  # noqa
+from .server_volumes import *  # noqa
 from .security_groups import *  # noqa
 
 __all__ = sorted([  # sort for documentation
@@ -46,6 +47,8 @@ __all__ = sorted([  # sort for documentation
     'create_security_group',
     'security_group',
     'security_group_steps',
+
+    'server_volume_steps',
 
     'create_server',
     'create_server_context',
