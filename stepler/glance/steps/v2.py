@@ -1,7 +1,7 @@
 """
-------------
-Glance steps
-------------
+---------------
+Glance steps v2
+---------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,16 +20,17 @@ Glance steps
 from hamcrest import assert_that, empty, is_not  # noqa
 from waiting import wait
 
-from stepler.base import BaseSteps
 from stepler.third_party.steps_checker import step
 
+from .base import BaseGlanceSteps
+
 __all__ = [
-    'GlanceSteps'
+    'GlanceStepsV2',
 ]
 
 
-class GlanceSteps(BaseSteps):
-    """Glance steps."""
+class GlanceStepsV2(BaseGlanceSteps):
+    """Glance steps for v2."""
 
     @step
     def create_image(self, image_name, image_path, disk_format='qcow2',

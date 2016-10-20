@@ -1,9 +1,7 @@
 """
-------------
-Glance steps
-------------
-
-Contains steps specific for glance.
+----------------------
+Glance Base API client
+----------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +17,8 @@ Contains steps specific for glance.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .v1 import *  # noqa
-from .v2 import *  # noqa
+from stepler import base
 
-__all__ = [
-    'GlanceStepsV1',
-    'GlanceStepsV2',
-]
+
+class BaseApiClient(base.BaseApiClient):
+    """Glance base API client."""

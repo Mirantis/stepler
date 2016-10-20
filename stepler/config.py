@@ -26,7 +26,6 @@ USERNAME = os.environ.get('OS_USERNAME', 'admin')
 PASSWORD = os.environ.get('OS_PASSWORD', 'password')
 OS_FAULTS_CONFIG = os.environ.get('OS_FAULTS_CONFIG')  # should be defined!
 AUTH_URL = os.environ.get('OS_AUTH_URL')  # should be defined!
-
 # If AUTH_URL is undefined, corresponding fixture raises exception.
 # AUTH_URL absence doesn't raise exception here, because for docs generation
 # and unittests launching this variable doesn't need.
@@ -41,6 +40,9 @@ if AUTH_URL:  # figure out keystone API version
         "OS_AUTH_URL must have tail among values {!r}.".format(versions)
 
     KEYSTONE_API_VERSION = 3 if version == 'v3' else 2
+
+# CURRENT API VERSIONS
+CURRENT_GLANCE_VERSION = '2'
 
 UBUNTU_QCOW2_URL = 'https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img'  # noqa
 FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases/23/Cloud/x86_64/Images/Fedora-Cloud-Base-23-20151030.x86_64.qcow2'  # noqa
