@@ -34,16 +34,27 @@ class OsFaultsSteps(BaseSteps):
     """os-faults steps."""
 
     @step
-    def get_nodes(self, fqdns=None, check=True):
+    def get_nodes(self, fqdns=None, service_names=None, check=True):
         """Step to get nodes.
 
         Args:
             fqdns (list): nodes hostnames to filter
+            service_names (list): names of services to filter nodes with
             check (bool): flag whether check step or not
 
         Returns:
             list of nodes
         """
+        if service_names:
+            service_fqdns = set()
+            for service_name in service_names:
+                nodes = self._client.get_service(service_name).get_nodes()
+                for host in nodes.hosts:
+                    service_fqdns.add(host['fqdn'])
+            if not fqdns:
+                fqdns = service_fqdns
+            else:
+                fqdns &= service_fqdns
         nodes = self._client.get_nodes(fqdns=fqdns)
 
         if check:
@@ -52,16 +63,36 @@ class OsFaultsSteps(BaseSteps):
         return nodes
 
     @step
+    def get_service(self, name, fqdns=None, check=True):
+        """Step to get services.
+
+        Args:
+            name (str): service name
+            fqdns (list|None): nodes hostnames to filter
+            check (bool): flag whether check step or not
+
+        Returns:
+            object: service
+        """
+        service = self._client.get_service(name=name)
+
+        if check:
+            assert_that(service, is_not(None))
+
+        return service
+
+    @step
     def restart_service(self, name, check=True):
         """Step to restart a service.
 
         Args:
             name (str): service name
             check (bool): flag whether to check step or not
+
+        Raises:
+            ServiceError: if wrong service name or other errors
         """
-        # TODO(ssokolov) add check of service names
-        service = self._client.get_service(name=name)
-        # TODO(ssokolov) add check of exceptions
+        service = self.get_service(name=name)
         service.restart()
 
         if check:
@@ -190,6 +221,39 @@ class OsFaultsSteps(BaseSteps):
         task = {'shell': command}
         result = nodes.run_task(task)
         assert_that(result, only_contains(has_properties(status='OK')))
+
+    # TODO(ssokolov) update for new patch_ini and calls it from patch_ini
+    @step
+    def modify_file(self, nodes, path, option, value, section=None,
+                    check=True):
+        """Modify file on nodes.
+
+        Args:
+            nodes (obj): nodes
+            path (str): path to file on remote host
+            option (str): name of option to add/override
+            value (str): value to add/override
+            section (str): name of section to process. 'DEFAULT' will be used
+                if `section` is None
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError: if any of nodes doesn't contains file
+        """
+        self.make_backup(nodes, path)
+        task = {
+            'ini_file': {
+                'backup': True,
+                'dest': path,
+                'section': section or 'DEFAULT',
+                'option': option,
+                'value': value,
+            }
+        }
+        nodes.run_task(task)
+        if check:
+            self.check_file_contains_line(nodes, path, "{} = {}".format(option,
+                                                                        value))
 
     @step
     @contextlib.contextmanager
