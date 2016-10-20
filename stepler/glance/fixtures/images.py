@@ -66,7 +66,7 @@ def _remove_stayed_images(glance_steps):
 
 # TODO(schipiga): In future will rename `glance_steps` -> `image_steps`
 @pytest.fixture(scope='session')
-def get_glance_steps(get_glance_client):
+def get_glance_steps(request, get_glance_client):
     """Callable session fixture to get glance steps.
 
     Args:
