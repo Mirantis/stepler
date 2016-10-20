@@ -37,6 +37,8 @@ __all__ = [
     'glance_steps_v1',
     'glance_steps_v2',
     'ubuntu_image',
+    'cirros_image',
+    'get_glance_image',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -275,3 +277,19 @@ def cirros_image(get_glance_steps):
         is_api=False).delete_images([_cirros_image])
 
     SKIPPED_IMAGES.remove(_cirros_image)
+
+
+@pytest.fixture
+def get_glance_image(get_image):
+    """Function fixture to get glance image via image id.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+
+    Returns:
+        GlanceSteps: instantiated glance steps
+    """
+    def _get_image(image_id):
+        return get_image(image_id)
+
+    return _get_image
