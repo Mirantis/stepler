@@ -51,16 +51,33 @@ class OsFaultsSteps(BaseSteps):
         return nodes
 
     @step
-    def restart_service(self, name, check=True):
+    def get_nodes_for_service(self, service_name, check=True):
+        """Step to get nodes where service is running
+
+        Args:
+            service_names (str): service name
+            check (bool): flag whether check step or not
+
+        Returns:
+            list of nodes
+        """
+        service = self._client.get_service(name=service_name)
+        nodes = service.get_nodes()
+
+        if check:
+            assert_that(nodes, is_not(empty()))
+
+        return nodes
+
+    @step
+    def restart_service(self, service_name, check=True):
         """Step to restart a service.
 
         Args:
-            name (str): service name
+            service_name (str): service name
             check (bool): flag whether to check step or not
         """
-        # TODO(ssokolov) add check of service names
-        service = self._client.get_service(name=name)
-        # TODO(ssokolov) add check of exceptions
+        service = self._client.get_service(name=service_name)
         service.restart()
 
         if check:
@@ -189,6 +206,39 @@ class OsFaultsSteps(BaseSteps):
         task = {'shell': command}
         result = nodes.run_task(task)
         assert_that(result, only_contains(has_properties(status='OK')))
+
+    # TODO(ssokolov) update for new patch_ini and calls it from patch_ini
+    @step
+    def modify_file(self, nodes, path, option, value, section=None,
+                    check=True):
+        """Modify file on nodes.
+
+        Args:
+            nodes (obj): nodes
+            path (str): path to file on remote host
+            option (str): name of option to add/override
+            value (str): value to add/override
+            section (str): name of section to process. 'DEFAULT' will be used
+                if `section` is None
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError: if any of nodes doesn't contains file
+        """
+        self.make_backup(nodes, path)
+        task = {
+            'ini_file': {
+                'backup': True,
+                'dest': path,
+                'section': section or 'DEFAULT',
+                'option': option,
+                'value': value,
+            }
+        }
+        nodes.run_task(task)
+        if check:
+            self.check_file_contains_line(nodes, path, "{} = {}".format(option,
+                                                                        value))
 
     @step
     @contextlib.contextmanager

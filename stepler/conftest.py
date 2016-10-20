@@ -93,6 +93,7 @@ __all__ = sorted([  # sort for documentation
     'create_security_group',
     'security_group',
     'security_group_steps',
+    'server_volume_steps',
     'create_server',
     'create_server_context',
     'create_servers',
@@ -102,7 +103,8 @@ __all__ = sorted([  # sort for documentation
     'get_ssh_proxy_cmd',
 
     'os_faults_client',
-    'os_faults_steps'
+    'os_faults_steps',
+    'modify_config_file'
 ])
 
 pytest_plugins = [

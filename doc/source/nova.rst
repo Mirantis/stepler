@@ -17,3 +17,6 @@ Nova tests
 
 .. automodule:: stepler.nova.tests.test_basic_verification
    :members:
+
+.. automodule:: stepler.nova.tests.test_deferred_delete
+   :members:

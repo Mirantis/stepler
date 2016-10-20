@@ -31,7 +31,8 @@ from stepler.os_faults.steps import OsFaultsSteps
 
 __all__ = [
     'os_faults_client',
-    'os_faults_steps'
+    'os_faults_steps',
+    'modify_config_file'
 ]
 
 
@@ -61,3 +62,32 @@ def os_faults_steps(os_faults_client):
         stepler.os_faults.steps.OsFaultsSteps: instantiated os_faults steps
     """
     return OsFaultsSteps(os_faults_client)
+
+
+@pytest.fixture
+def modify_config_file(os_faults_steps):
+    """Fixture to modify config files and restart service.
+
+    Can be called several times during test.
+
+    Args:
+        os_faults_steps: instantiated os_faults steps.
+    """
+    nodes_paths = []
+    service_names = []
+
+    def _correct_config_file(nodes, path, option, value, section=None,
+                             service_name=None):
+        os_faults_steps.modify_file(nodes, path, option, value, section)
+        nodes_paths.append([nodes, path])
+        if service_name:
+            os_faults_steps.restart_service(service_name)
+            service_names.append(service_name)
+
+    yield _correct_config_file
+
+    for nodes, path in nodes_paths:
+        os_faults_steps.restore_backup(nodes, path)
+
+    for service_name in service_names:
+        os_faults_steps.restart_service(service_name)

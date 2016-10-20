@@ -21,5 +21,6 @@ from .faults import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'os_faults_client',
-    'os_faults_steps'
+    'os_faults_steps',
+    'modify_config_file'
 ])
