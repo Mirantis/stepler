@@ -102,6 +102,7 @@ Deep to structure
 
    steps_concept
    common_fixtures
+   cinder
    glance
    horizon
    keystone
