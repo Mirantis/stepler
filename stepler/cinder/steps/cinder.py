@@ -109,6 +109,22 @@ class CinderSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
+    def detach_volume(self, volume, check=True):
+        """Step to detach volume.
+
+        Args:
+            volume (object): cinder volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if some attachments are present
+        """
+        self._client.volumes.detach(volume.id)
+        if check:
+            volume.get()
+            assert_that(volume.attachments, empty())
+
+    @steps_checker.step
     def delete_volume(self, volume, check=True):
         """Step to delete volume.
 
@@ -199,3 +215,24 @@ class CinderSteps(base.BaseSteps):
         if check:
             assert_that(volumes, is_not(empty()))
         return volumes
+
+    @steps_checker.step
+    def check_volume_attachments(self, volume, server_ids=None, timeout=0):
+        """Step to check volume attachments.
+
+        Args:
+            volume (object): cinder volume
+            server_ids (list): list of nova servers ids
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        server_ids = server_ids or []
+
+        def predicate():
+            volume.get()
+            attached_ids = [a['server_id'] for a in volume.attachments]
+            return sorted(server_ids) == sorted(attached_ids)
+
+        waiting.wait(predicate, timeout_seconds=timeout)
