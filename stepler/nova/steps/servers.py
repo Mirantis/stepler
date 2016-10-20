@@ -22,29 +22,26 @@ import socket
 
 from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
                       less_than_or_equal_to)  # noqa
+from novaclient import exceptions as nova_exceptions
 import paramiko
 from waiting import wait
 
-from stepler.base import BaseSteps
+from stepler import base
 from stepler import config
 from stepler.third_party import chunk_serializer
 from stepler.third_party import ping
 from stepler.third_party import ssh
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'ServerSteps'
 ]
 
-CREDENTIALS_PREFIX = 'stepler_credentials_'
-ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
-EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
 
-
-class ServerSteps(BaseSteps):
+class ServerSteps(base.BaseSteps):
     """Nova steps."""
 
-    @step
+    @steps_checker.step
     def create_server(self,
                       server_name,
                       image,
@@ -95,7 +92,7 @@ class ServerSteps(BaseSteps):
             'password': password,
             'private_key': private_key
         }
-        meta = chunk_serializer.dump(credentials, CREDENTIALS_PREFIX)
+        meta = chunk_serializer.dump(credentials, config.CREDENTIALS_PREFIX)
         server = self._client.create(
             name=server_name,
             image=image_id,
@@ -107,12 +104,14 @@ class ServerSteps(BaseSteps):
             block_device_mapping=block_device_mapping,
             userdata=userdata,
             meta=meta)
+
         if check:
-            self.check_server_status(server, 'active', timeout=180)
+            self.check_server_status(server, config.STATUS_ACTIVE,
+                                     timeout=config.SERVER_ACTIVE_TIMEOUT)
 
         return server
 
-    @step
+    @steps_checker.step
     def create_servers(self,
                        server_names,
                        image,
@@ -167,29 +166,39 @@ class ServerSteps(BaseSteps):
 
         if check:
             for server in servers:
-                self.check_server_status(server, 'active', timeout=180)
+                self.check_server_status(server, config.STATUS_ACTIVE,
+                                         timeout=config.SERVER_ACTIVE_TIMEOUT)
 
         return servers
 
-    @step
-    def delete_server(self, server, check=True):
-        """Step to delete server."""
-        server.force_delete()
+    @steps_checker.step
+    def delete_server(self, server, soft=False, check=True):
+        """Step to delete server.
 
-        if check:
-            self.check_server_presence(server, present=False, timeout=180)
+        Args:
+            server (object): nova server
+            force (bool): delete option
+            soft (bool): indicator that server is expected soft-deleted
+            check (bool): flag whether to check step or not
+        """
+        if soft:
+            self._soft_delete_server(server, check)
+        else:
+            self._hard_delete_server(server, check)
 
-    @step
-    def delete_servers(self, servers, check=True):
+    @steps_checker.step
+    def delete_servers(self, servers, soft=False, check=True):
         """Step to delete servers."""
         for server in servers:
-            self.delete_server(server, check=False)
+            self.delete_server(server, soft=soft, check=False)
 
         if check:
             for server in servers:
-                self.check_server_presence(server, present=False, timeout=180)
+                self.check_server_presence(
+                    server, present=False,
+                    timeout=config.SERVER_DELETE_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def get_servers(self, name_prefix=None, check=True):
         """Step to retrieve servers from nova.
 
@@ -209,32 +218,41 @@ class ServerSteps(BaseSteps):
 
         return servers
 
-    @step
-    def check_server_presence(self, server, present=True, timeout=0):
+    @steps_checker.step
+    def check_server_presence(self, server, present=True, by_name=False,
+                              timeout=0):
         """Check-step to check server presence.
 
         Args:
             server (object): nova server
             present (bool): flag to check is server present or absent
+            by_name (bool): indicator of check method - by id or by name
+                            in server list. For soft-deleted servers,
+                            result = False for by_name=True, else True)
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check was falsed after timeout
         """
-        def predicate():
-            try:
-                self._client.get(server.id)
-                return present
-            except Exception:
-                return not present
+        if by_name:
+            def predicate():
+                names = [s.name for s in self._client.list()]
+                return present == (server.name in names)
+        else:
+            def predicate():
+                try:
+                    self._client.get(server.id)
+                    return present
+                except nova_exceptions.NotFound:
+                    return not present
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def check_server_status(self,
                             server,
                             status,
-                            transit_statuses=('build',),
+                            transit_statuses=[config.STATUS_BUILD],
                             timeout=0):
         """Verify step to check server status.
 
@@ -255,7 +273,7 @@ class ServerSteps(BaseSteps):
         wait(predicate, timeout_seconds=timeout)
         assert_that(server.status.lower(), equal_to(status.lower()))
 
-    @step
+    @steps_checker.step
     def get_server_credentials(self, server):
         """Step to retrieve server credentials.
 
@@ -266,9 +284,9 @@ class ServerSteps(BaseSteps):
         """
         server.get()
         meta = server.metadata
-        return chunk_serializer.load(meta, CREDENTIALS_PREFIX)
+        return chunk_serializer.load(meta, config.CREDENTIALS_PREFIX)
 
-    @step
+    @steps_checker.step
     def get_server_ssh(self, server, ip=None, proxy_cmd=None,
                        ssh_timeout=config.SSH_CLIENT_TIMEOUT, check=True):
         """Step to get SSH connect to server.
@@ -306,7 +324,7 @@ class ServerSteps(BaseSteps):
 
         return server_ssh
 
-    @step
+    @steps_checker.step
     def check_server_ssh_connect(self, server_ssh, timeout=0):
         """Step to check ssh connect to server.
 
@@ -328,7 +346,7 @@ class ServerSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def attach_floating_ip(self, server, floating_ip, check=True):
         # TODO(schipiga): expand documentation
         """Step to attach floating IP to server."""
@@ -341,7 +359,7 @@ class ServerSteps(BaseSteps):
                         has_item(floating_ip.ip),
                         "Floating IP not in a list of server's IPs.")
 
-    @step
+    @steps_checker.step
     def detach_floating_ip(self, server, floating_ip, check=True):
         # TODO(schipiga): expand documentation
         """Step to detach floating IP from server."""
@@ -354,7 +372,7 @@ class ServerSteps(BaseSteps):
                         is_not(has_item(floating_ip.ip)),
                         "Floating IP still in a list of server's IPs.")
 
-    @step
+    @steps_checker.step
     def get_ips(self, server, ip_type=None):
         # TODO(schipiga): expand documentation
         """Step to get server IPs."""
@@ -374,7 +392,7 @@ class ServerSteps(BaseSteps):
             }
         return ips
 
-    @step
+    @steps_checker.step
     def check_ping_for_ip(self,
                           ip_to_ping,
                           remote_from=None,
@@ -400,7 +418,7 @@ class ServerSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def check_ping_to_server_floating(self, server, timeout=0):
         """Verify step to check ping to server floating ip address.
 
@@ -430,7 +448,7 @@ class ServerSteps(BaseSteps):
                         ping_plan[server1].append(ip)
         return ping_plan
 
-    @step
+    @steps_checker.step
     def check_ping_between_servers_via_floating(self,
                                                 servers,
                                                 timeout=0):
@@ -452,7 +470,7 @@ class ServerSteps(BaseSteps):
                         self.check_ping_for_ip(ip, remote_from=server_ssh,
                                                timeout=timeout)
 
-    @step
+    @steps_checker.step
     def live_migrate(self, server, host=None, block_migration=True,
                      check=True):
         """Step to live migrate nova server.
@@ -482,11 +500,11 @@ class ServerSteps(BaseSteps):
                     timeout=config.LIVE_MIGRATE_TIMEOUT)
             self.check_server_status(
                 server,
-                'active',
-                transit_statuses=('migrating',),
+                config.STATUS_ACTIVE,
+                transit_statuses=[config.STATUS_MIGRATING],
                 timeout=config.LIVE_MIGRATE_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def migrate_servers(self, servers, check=True):
         """Step to migrate servers
 
@@ -504,16 +522,17 @@ class ServerSteps(BaseSteps):
             server.migrate()
         if check:
             for server in servers:
-                self.check_server_status(server, 'verify_resize',
-                                         transit_statuses=('resize', ),
-                                         timeout=config.VERIFY_RESIZE_TIMEOUT)
+                self.check_server_status(
+                    server, config.STATUS_VERIFY_RESIZE,
+                    transit_statuses=[config.STATUS_RESIZE],
+                    timeout=config.VERIFY_RESIZE_TIMEOUT)
                 self.check_instance_hypervisor_hostname(
                     server,
                     old_hosts[server.id],
                     equal=False,
                     timeout=config.LIVE_MIGRATE_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def confirm_resize_servers(self, servers, check=True):
         """Step to confirm resize for servers
 
@@ -528,11 +547,12 @@ class ServerSteps(BaseSteps):
             server.confirm_resize()
         if check:
             for server in servers:
-                self.check_server_status(server, 'active',
-                                         transit_statuses=('verify_resize', ),
-                                         timeout=180)
+                self.check_server_status(
+                    server, config.STATUS_ACTIVE,
+                    transit_statuses=[config.STATUS_VERIFY_RESIZE],
+                    timeout=config.SERVER_ACTIVE_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def check_instance_hypervisor_hostname(self,
                                            server,
                                            host,
@@ -559,7 +579,7 @@ class ServerSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     @contextlib.contextmanager
     def check_ping_loss_context(self, ip_to_ping, max_loss=0):
         """Context manager step to check that ping losses inside CM is less
@@ -576,7 +596,7 @@ class ServerSteps(BaseSteps):
             yield
         assert_that(result.loss, less_than_or_equal_to(max_loss))
 
-    @step
+    @steps_checker.step
     def generate_server_memory_workload(self,
                                         remote,
                                         vm_bytes='5M',
@@ -593,7 +613,7 @@ class ServerSteps(BaseSteps):
         if check:
             assert_that(pid, is_not(None))
 
-    @step
+    @steps_checker.step
     def check_server_log_contains_record(self, server, substring, timeout=0):
         """Verify step to check server log contains substring.
 
@@ -613,7 +633,7 @@ class ServerSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def create_timestamps_on_root_and_ephemeral_disks(self,
                                                       server_ssh,
                                                       timestamp,
@@ -633,13 +653,13 @@ class ServerSteps(BaseSteps):
                 'echo "{timestamp}" | '
                 'tee "{root_ts_file}" "{ephemeral_ts_file}"'.format(
                     timestamp=timestamp,
-                    root_ts_file=ROOT_DISK_TIMESTAMP_FILE,
-                    ephemeral_ts_file=EPHEMERAL_DISK_TIMESTAMP_FILE))
+                    root_ts_file=config.ROOT_DISK_TIMESTAMP_FILE,
+                    ephemeral_ts_file=config.EPHEMERAL_DISK_TIMESTAMP_FILE))
         if check:
             self.check_timestamps_on_root_and_ephemeral_disks(server_ssh,
                                                               timestamp)
 
-    @step
+    @steps_checker.step
     def check_timestamps_on_root_and_ephemeral_disks(self, server_ssh,
                                                      timestamp):
         """Verify step to check timestamp on root and ephemeral disks
@@ -654,9 +674,44 @@ class ServerSteps(BaseSteps):
         """
         with server_ssh.sudo():
             root_result = server_ssh.check_call('cat "{root_ts_file}"'.format(
-                root_ts_file=ROOT_DISK_TIMESTAMP_FILE))
+                root_ts_file=config.ROOT_DISK_TIMESTAMP_FILE))
+
             ephemeral_result = server_ssh.check_call(
                 'cat "{ephemeral_ts_file}"'.format(
-                    ephemeral_ts_file=EPHEMERAL_DISK_TIMESTAMP_FILE))
+                    ephemeral_ts_file=config.EPHEMERAL_DISK_TIMESTAMP_FILE))
+
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
         assert_that(timestamp, equal_to(root_result.stdout))
+
+    @steps_checker.step
+    def restore_server(self, server, check=True):
+        """Step to restore soft-deleted server.
+
+        Args:
+            server (object): nova instance
+            check (bool): flag whether to check step or not
+
+        """
+        server.restore()
+
+        if check:
+            self.check_server_presence(server, present=True, timeout=180)
+
+    def _soft_delete_server(self, server, check):
+        # it doesn't delete server really, just hides server and marks it as
+        # trash for nova garbage collection after reclaim timeout.
+        server.delete()
+
+        if check:
+            self.check_server_presence(
+                server, present=False, by_name=True,
+                timeout=config.SOFT_DELETED_TIMEOUT)
+            self.check_server_status(server, config.STATUS_SOFT_DELETED)
+
+    def _hard_delete_server(self, server, check):
+        server.force_delete()  # delete server really
+
+        if check:
+            self.check_server_presence(
+                server, present=False,
+                timeout=config.SERVER_DELETE_TIMEOUT)
