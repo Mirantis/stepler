@@ -18,7 +18,8 @@ Volume steps
 # limitations under the License.
 
 from cinderclient import exceptions
-from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
+from hamcrest import assert_that, calling, raises, equal_to, has_entries,\
+    is_not, empty  # noqa
 import waiting
 
 from stepler import base
@@ -65,6 +66,23 @@ class VolumeSteps(base.BaseSteps):
                                      timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
         return volume
+
+    @steps_checker.step
+    def create_volume_name_negative(self, name=None):
+        """Step for negative test cases of volume creation.
+
+        Args:
+            name (str): name for volume
+
+        Raises:
+            AssertionError: if check triggered an error
+        """
+        ex_text = "Name has more than 255 characters"
+
+        assert_that(
+            calling(self.create_volume).with_args(
+                name=name, check=False),
+            raises(exceptions.BadRequest, ex_text))
 
     @steps_checker.step
     def create_volumes(self,
