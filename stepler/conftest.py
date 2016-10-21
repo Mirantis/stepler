@@ -21,6 +21,7 @@ Includes fixtures available in global scope among all tests.
 
 from stepler.fixtures import *  # noqa
 from stepler.cinder.conftest import *  # noqa
+from stepler.heat.conftest import *  # noqa
 from stepler.glance.conftest import *  # noqa
 from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
@@ -39,6 +40,11 @@ __all__ = sorted([  # sort for documentation
     'create_volumes',
     'cinder_client',
     'cinder_steps',
+
+    'heat_client',
+    'stack_steps',
+    'create_stack',
+    'read_heat_template',
 
     'api_glance_client_v1',
     'api_glance_client_v2',
