@@ -23,4 +23,5 @@ __all__ = sorted([  # sort for documentation
     'os_faults_client',
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
+    'execute_command_with_rollback',
 ])
