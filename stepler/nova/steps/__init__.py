@@ -23,6 +23,7 @@ from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
 from .security_groups import *  # noqa
 from .servers import *  # noqa
+from .zones import *  # noqa
 
 __all__ = [
     'FlavorSteps',
@@ -30,5 +31,6 @@ __all__ = [
     'HypervisorSteps',
     'KeypairSteps',
     'SecurityGroupSteps',
-    'ServerSteps'
+    'ServerSteps',
+    'ZoneSteps'
 ]
