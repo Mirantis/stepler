@@ -18,7 +18,8 @@ Cinder steps
 # limitations under the License.
 
 from cinderclient import exceptions
-from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
+from hamcrest import assert_that, calling, raises, equal_to, has_entries,\
+    is_in, is_not, empty  # noqa
 import waiting
 
 from stepler import base
@@ -65,6 +66,40 @@ class CinderSteps(base.BaseSteps):
                                      timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
         return volume
+
+    @steps_checker.step
+    def create_volume_negative(self,
+                               name=None,
+                               size=1,
+                               image=None,
+                               volume_type=None,
+                               description=None,
+                               ex_text=None,
+                               check=True):
+        """Step for negative test cases of volume creation.
+
+        Args:
+            name (str): name of created volume
+            size (int): size of created volume (in GB)
+            image (object): glance image to create volume from
+            volume_type (str): type of volume
+            description (str): description
+            ex_text (str): exception message
+            check (bool): flag whether to check step or not
+
+        Raises:
+            exception: BadRequest
+        """
+        image_id = None if image is None else image.id
+
+        assert_that(
+            calling(self._client.volumes.create).with_args(
+                size,
+                name=name,
+                imageRef=image_id,
+                volume_type=volume_type,
+                description=description),
+            raises(exceptions.BadRequest))
 
     @steps_checker.step
     def create_volumes(self,
