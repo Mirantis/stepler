@@ -47,13 +47,13 @@ def generate_ids(prefix=None, postfix=None, count=1, length=None):
     """Generate unique identificators, based on uuid.
 
     Arguments:
-        - prefix: prefix of uniq ids, default is None.
-        - postfix: postfix of uniq ids, default is None.
-        - count: count of uniq ids, default is 1.
-        - length: length of uniq ids, default is not limited.
+        - prefix: prefix of unique ids, default is None.
+        - postfix: postfix of unique ids, default is None.
+        - count: count of unique ids, default is 1.
+        - length: length of unique ids, default is not limited.
 
     Returns:
-        - generator of uniq ids.
+        - generator of unique ids.
     """
     for _ in range(count):
         uid = str(uuid.uuid4())
@@ -71,14 +71,14 @@ def generate_files(prefix=None, postfix=None, folder=None, count=1, size=1024):
     """Generate files with unique names.
 
     Arguments:
-        - prefix: prefix of uniq ids, default is None.
-        - postfix: postfix of uniq ids, default is None.
-        - folder: folder to create uniq files.
-        - count: count of uniq ids, default is 1.
-        - size: size of uniq files, default is 1Mb.
+        - prefix: prefix of unique ids, default is None.
+        - postfix: postfix of unique ids, default is None.
+        - folder: folder to create unique files.
+        - count: count of unique ids, default is 1.
+        - size: size of unique files, default is 1Mb.
 
     Returns:
-        - generator of files with uniq names.
+        - generator of files with unique names.
     """
     folder = folder or tempfile.mkdtemp()
     if not os.path.isdir(folder):
