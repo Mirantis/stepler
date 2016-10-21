@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template to test Neutron resources
+Parameters:
+  external_network:
+    Description: UUID of an existing external network
+    Type: String
+  internal_network:
+    Description: UUID of an existing internal network
+    Type: String
+  internal_subnet:
+    Description: UUID of an existing internal subnet
+    Type: String
+
+Resources:
+  port_floating:
+    Type: OS::Neutron::Port
+    Properties:
+      network_id:
+        Ref: internal_network
+      fixed_ips:
+      - subnet_id:
+          Ref: internal_subnet
+  floating_ip:
+    Type: OS::Neutron::FloatingIP
+    Properties:
+      floating_network_id:
+        Ref: external_network
+  floating_ip_assoc:
+    Type: OS::Neutron::FloatingIPAssociation
+    Properties:
+      floatingip_id:
+        Ref: floating_ip
+      port_id:
+        Ref: port_floating
+Outputs: {}
