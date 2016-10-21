@@ -31,15 +31,29 @@ __all__ = [
 
 @pytest.fixture
 def flavor_steps(nova_client):
-    """Fixture to get flavor steps."""
+    """Callable function fixture to get nova flavor steps.
+
+    Args:
+        nova_client (function): function to get nova client
+
+    Returns:
+        function: function to instantiated flavor steps
+    """
     return FlavorSteps(nova_client.flavors)
 
 
 @pytest.yield_fixture
 def create_flavor(flavor_steps):
-    """Fixture to create flavor with options.
+    """Callable function fixture to create nova flavor with options.
 
-    Can be called several times during test.
+    Can be called several times during a test.
+    After the test it destroys all created nodes.
+
+    Args:
+        flavor_steps (object): instantiated flavor steps
+
+    Returns:
+        function: function to create flavors as batch with options
     """
     flavors = []
 
@@ -56,6 +70,16 @@ def create_flavor(flavor_steps):
 
 @pytest.fixture
 def flavor(create_flavor):
-    """Fixture to create flavor with default options before test."""
+    """Callable function fixture to create single ova flavor with options.
+
+    Can be called several times during a test.
+    After the test it destroys all created nodes.
+
+    Args:
+        create_flavor (function): function to create flavor with options
+
+    Returns:
+        function: function to create single flavor with options
+    """
     flavor_name = next(generate_ids('flavor'))
     return create_flavor(flavor_name, ram=1024, vcpus=1, disk=5)
