@@ -17,23 +17,22 @@ os_faults steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import contextlib
 import os
 import tempfile
 
 from hamcrest import assert_that, is_not, empty, only_contains, has_properties  # noqa
 
-from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler import base
+from stepler.third_party import steps_checker
 from stepler.third_party import utils
 
 __all__ = ['OsFaultsSteps']
 
 
-class OsFaultsSteps(BaseSteps):
+class OsFaultsSteps(base.BaseSteps):
     """os-faults steps."""
 
-    @step
+    @steps_checker.step
     def get_nodes(self, fqdns=None, check=True):
         """Step to get nodes.
 
@@ -51,24 +50,25 @@ class OsFaultsSteps(BaseSteps):
 
         return nodes
 
-    @step
-    def restart_service(self, name, check=True):
+    @steps_checker.step
+    def restart_services(self, names, check=True):
         """Step to restart a service.
 
         Args:
             name (str): service name
             check (bool): flag whether to check step or not
         """
-        # TODO(ssokolov) add check of service names
-        service = self._client.get_service(name=name)
-        # TODO(ssokolov) add check of exceptions
-        service.restart()
+        for name in names:
+            # TODO(ssokolov) add check of service names
+            service = self._client.get_service(name=name)
+            # TODO(ssokolov) add check of exceptions
+            service.restart()
 
-        if check:
-            # TODO(ssokolov) replace by real check
-            assert_that([service], is_not(empty()))
+            if check:
+                # TODO(ssokolov) replace by real check
+                assert_that([service], is_not(empty()))
 
-    @step
+    @steps_checker.step
     def download_file(self, node, path, check=True):
         """Copy file from remote host to tempfile.
 
@@ -81,7 +81,7 @@ class OsFaultsSteps(BaseSteps):
             str: path to destination file
 
         Raises:
-            Exception: if destination file is not a regular file
+            ValueError: if destination file is not a regular file
         """
         dest = tempfile.mktemp()
         task = {
@@ -94,10 +94,10 @@ class OsFaultsSteps(BaseSteps):
         node.run_task(task)
         if check:
             if not os.path.isfile(dest):
-                raise Exception('Destination path is not a regular file')
+                raise ValueError('Destination path is not a regular file')
         return dest
 
-    @step
+    @steps_checker.step
     def check_file_contains_line(self, nodes, path, line):
         """Check that remote file contains line.
 
@@ -116,8 +116,8 @@ class OsFaultsSteps(BaseSteps):
         result = nodes.run_task(task)
         assert_that(result, only_contains(has_properties(status='OK')))
 
-    @step
-    def make_backup(self, nodes, path, suffix='backup', check=True):
+    @steps_checker.step
+    def make_backup(self, nodes, file_path, suffix=None, check=True):
         """Make backup of file with `path`.
 
         This step makes a copy of file to new file with `suffix` in same
@@ -125,34 +125,40 @@ class OsFaultsSteps(BaseSteps):
 
         Args:
             nodes (obj): nodes to backup file on them
-            path (str): path to file on remote hosts
+            file_path (str): path to file on remote hosts
             suffix (str): suffix to append to original file name
             check (bool): flag whether check step or not
 
         Raises:
             AssertionError: if backup file not exists after step.
+
+        Returns:
+            str: path to backup file
         """
+        suffix = suffix or utils.generate_ids('backup', length=30)
+        backup_path = "{}.{}".format(file_path, suffix)
+
         task = {
-            'command': 'cp "{path}" "{path}.{suffix}"'.format(
-                path=path, suffix=suffix)
+            'command': 'cp "{path}" "{backup_path}"'.format(
+                path=file_path, backup_path=backup_path)
         }
         nodes.run_task(task)
 
         if check:
-            self.check_file_exists(
-                nodes,
-                path='"{path}.{suffix}"'.format(
-                    path=path, suffix=suffix))
+            self.check_file_exists(nodes, path=backup_path)
 
-    @step
-    def restore_backup(self, nodes, path, suffix='backup', check=True):
+        return backup_path
+
+    @steps_checker.step
+    def restore_backup(self, nodes, file_path, backup_path, check=True):
         """Restore file with `path` from backup.
 
         This step restore file from backup with `suffix` placed in same folder.
 
         Args:
             nodes (obj): nodes to restore file on them
-            path (str): path to file on remote hosts
+            file_path (str): path to file on remote hosts
+            backup_path (str): path to backup
             suffix (str): suffix to make backup file name
             check (bool): flag whether check step or not
 
@@ -160,57 +166,55 @@ class OsFaultsSteps(BaseSteps):
             AssertionError: if backup file exists after step.
         """
         task = {
-            'command': 'mv "{path}.{suffix}" "{path}"'.format(
-                path=path, suffix=suffix)
+            'command': 'mv "{backup_path}" "{path}"'.format(
+                backup_path=backup_path, path=file_path)
         }
         nodes.run_task(task)
 
         if check:
-            self.check_file_exists(
-                nodes,
-                path='"{path}.{suffix}"'.format(
-                    path=path, suffix=suffix),
-                present=False)
+            self.check_file_exists(nodes, path=backup_path, present=False)
 
-    @step
-    def check_file_exists(self, nodes, path, present=True):
+    @steps_checker.step
+    def check_file_exists(self, nodes, file_path, present=True):
         """Check that remote file exists.
 
         Args:
             nodes (obj): nodes to check file on them
-            path (str): path to file on remote hosts
+            file_path (str): path to file on remote hosts
             present (bool): should file be present or not
 
         Raises:
             AssertionError: if any of nodes doesn't contains file
         """
-        command = 'ls "{path}"'.format(path=path)
+        command = 'ls "{path}"'.format(path=file_path)
         if not present:
             command = '! ' + command
         task = {'shell': command}
         result = nodes.run_task(task)
         assert_that(result, only_contains(has_properties(status='OK')))
 
-    @step
-    @contextlib.contextmanager
-    def patch_ini(self, nodes, path, option, value, section=None, check=True):
+    @steps_checker.step
+    def patch_ini_file(self, nodes, file_path, option, value, section=None,
+                       check=True):
         """Patch INI like file.
 
         Args:
             nodes (obj): nodes hostnames to patch file on it
-            path (str): path to ini file on remote host
+            file_path (str): path to ini file on remote host
             option (str): name of option to add/override
             value (str): value to add/override
             section (str): name of section to process. 'DEFAULT' will be used
                 if `section` is None
             check (bool): flag whether check step or not
+
+        Returns:
+            str: path to original file
         """
-        suffix = next(utils.generate_ids('backup'))
-        self.make_backup(nodes, path, suffix=suffix)
+        backup_path = self.make_backup(nodes, file_path)
         task = {
             'ini_file': {
                 'backup': False,
-                'dest': path,
+                'dest': file_path,
                 'section': section or 'DEFAULT',
                 'option': option,
                 'value': value,
@@ -218,7 +222,6 @@ class OsFaultsSteps(BaseSteps):
         }
         nodes.run_task(task)
         if check:
-            self.check_file_contains_line(nodes, path, "{} = {}".format(option,
-                                                                        value))
-        yield
-        self.restore_backup(nodes, path, suffix=suffix)
+            self.check_file_contains_line(
+                nodes, file_path, "{} = {}".format(option, value))
+        return backup_path

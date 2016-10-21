@@ -22,14 +22,16 @@ import pytest
 
 from stepler import config
 from stepler.os_faults.steps import OsFaultsSteps
+from stepler.third_party import context
 
 __all__ = [
     'os_faults_client',
     'os_faults_steps',
+    'patch_ini_file_and_restart_services',
 ]
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def os_faults_client():
     """Function fixture to get os_faults client.
 
@@ -44,7 +46,7 @@ def os_faults_client():
     return destructor
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def os_faults_steps(os_faults_client):
     """Function fixture to get os_faults steps.
 
@@ -55,3 +57,34 @@ def os_faults_steps(os_faults_client):
         stepler.os_faults.steps.OsFaultsSteps: instantiated os_faults steps
     """
     return OsFaultsSteps(os_faults_client)
+
+
+@pytest.fixture(scope='session')
+def patch_ini_file_and_restart_services(os_faults_steps):
+    """Session callable fixture to modify config files and restart services.
+
+    It can be called several times during test. It is used as context manager
+    to guarantee the result.
+
+    Args:
+        os_faults_steps: instantiated os_faults steps.
+
+    Returns:
+        context.context: context manager to restore backup and restart services
+    """
+
+    @context.context
+    def _patch_ini_file_and_restart_services(
+            service_names, file_path, option, value, section=None):
+        nodes = os_faults_steps.get_nodes(service_names=service_names)
+
+        backup_path = os_faults_steps.patch_ini_file(
+            nodes, file_path, option, value, section)
+        os_faults_steps.restart_services(service_names)
+
+        yield
+
+        os_faults_steps.restore_backup(nodes, file_path, backup_path)
+        os_faults_steps.restart_services(service_names)
+
+    return _patch_ini_file_and_restart_services
