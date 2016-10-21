@@ -23,7 +23,7 @@ Stepler's architecture is based on STEPS-methodology, that considers a test as a
 
 Architecture has following abstraction levels, where code lives (from higher to less):
 
-* **clients** are able to manipulate resources: *users, roles, servers, etc*. For ex: *keystone client, nova client, node client, etc*. 
+* **clients** are able to manipulate resources: *users, roles, servers, etc*. For ex: *keystone client, nova client, node client, etc*.
 * **steps** are actions, that we want to make over resources via **clients**: *create, delete, update, migrate, etc*. They should end with check, that step was finished correct.
 * **fixtures** manage resources *construction, destruction, etc* via **steps**.
 * **tests** combine **steps** and **fixtures** according to scenario.
@@ -105,6 +105,7 @@ Deep to structure
    cinder
    baremetal
    glance
+   heat
    horizon
    keystone
    neutron
