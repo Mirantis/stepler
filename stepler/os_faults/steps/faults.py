@@ -17,23 +17,22 @@ os_faults steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import contextlib
 import os
 import tempfile
 
 from hamcrest import assert_that, is_not, empty, only_contains, has_properties  # noqa
 
-from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler import base
+from stepler.third_party import steps_checker
 from stepler.third_party import utils
 
 __all__ = ['OsFaultsSteps']
 
 
-class OsFaultsSteps(BaseSteps):
+class OsFaultsSteps(base.BaseSteps):
     """os-faults steps."""
 
-    @step
+    @steps_checker.step
     def get_nodes(self, fqdns=None, check=True):
         """Step to get nodes.
 
@@ -51,7 +50,7 @@ class OsFaultsSteps(BaseSteps):
 
         return nodes
 
-    @step
+    @steps_checker.step
     def restart_service(self, name, check=True):
         """Step to restart a service.
 
@@ -68,7 +67,7 @@ class OsFaultsSteps(BaseSteps):
             # TODO(ssokolov) replace by real check
             assert_that([service], is_not(empty()))
 
-    @step
+    @steps_checker.step
     def download_file(self, node, path, check=True):
         """Copy file from remote host to tempfile.
 
@@ -81,7 +80,7 @@ class OsFaultsSteps(BaseSteps):
             str: path to destination file
 
         Raises:
-            Exception: if destination file is not a regular file
+            ValueError: if destination file is not a regular file
         """
         dest = tempfile.mktemp()
         task = {
@@ -94,10 +93,10 @@ class OsFaultsSteps(BaseSteps):
         node.run_task(task)
         if check:
             if not os.path.isfile(dest):
-                raise Exception('Destination path is not a regular file')
+                raise ValueError('Destination path is not a regular file')
         return dest
 
-    @step
+    @steps_checker.step
     def check_file_contains_line(self, nodes, path, line):
         """Check that remote file contains line.
 
@@ -116,8 +115,8 @@ class OsFaultsSteps(BaseSteps):
         result = nodes.run_task(task)
         assert_that(result, only_contains(has_properties(status='OK')))
 
-    @step
-    def make_backup(self, nodes, path, suffix='backup', check=True):
+    @steps_checker.step
+    def make_backup(self, nodes, path, suffix=None, check=True):
         """Make backup of file with `path`.
 
         This step makes a copy of file to new file with `suffix` in same
@@ -131,21 +130,27 @@ class OsFaultsSteps(BaseSteps):
 
         Raises:
             AssertionError: if backup file not exists after step.
+
+        Returns:
+            str: path to backup file
         """
+        suffix = suffix or utils.generate_ids('backup', length=30)
+        backup_path = "{}.{}".format(path, suffix)
+
         task = {
-            'command': 'cp "{path}" "{path}.{suffix}"'.format(
-                path=path, suffix=suffix)
+            'command': 'cp "{path}" "{backup_path}"'.format(
+                path=path, backup_path)
         }
         nodes.run_task(task)
 
         if check:
-            self.check_file_exists(
-                nodes,
-                path='"{path}.{suffix}"'.format(
-                    path=path, suffix=suffix))
+            self.check_file_exists(nodes, path=backup_path)
 
-    @step
-    def restore_backup(self, nodes, path, suffix='backup', check=True):
+        return backup_path
+
+
+    @steps_checker.step
+    def restore_backup(self, nodes, path, backup_path, check=True):
         """Restore file with `path` from backup.
 
         This step restore file from backup with `suffix` placed in same folder.
@@ -153,6 +158,7 @@ class OsFaultsSteps(BaseSteps):
         Args:
             nodes (obj): nodes to restore file on them
             path (str): path to file on remote hosts
+            backup_path (str): path to backup
             suffix (str): suffix to make backup file name
             check (bool): flag whether check step or not
 
@@ -160,19 +166,15 @@ class OsFaultsSteps(BaseSteps):
             AssertionError: if backup file exists after step.
         """
         task = {
-            'command': 'mv "{path}.{suffix}" "{path}"'.format(
-                path=path, suffix=suffix)
+            'command': 'mv "{backup_path}" "{path}"'.format(
+                backup_path=backup_path, path=path)
         }
         nodes.run_task(task)
 
         if check:
-            self.check_file_exists(
-                nodes,
-                path='"{path}.{suffix}"'.format(
-                    path=path, suffix=suffix),
-                present=False)
+            self.check_file_exists(nodes, path=backup_path, present=False)
 
-    @step
+    @steps_checker.step
     def check_file_exists(self, nodes, path, present=True):
         """Check that remote file exists.
 
@@ -191,9 +193,9 @@ class OsFaultsSteps(BaseSteps):
         result = nodes.run_task(task)
         assert_that(result, only_contains(has_properties(status='OK')))
 
-    @step
-    @contextlib.contextmanager
-    def patch_ini(self, nodes, path, option, value, section=None, check=True):
+    @steps_checker.step
+    def patch_ini_file(self, nodes, path, option, value, section=None,
+                       check=True):
         """Patch INI like file.
 
         Args:
@@ -204,9 +206,11 @@ class OsFaultsSteps(BaseSteps):
             section (str): name of section to process. 'DEFAULT' will be used
                 if `section` is None
             check (bool): flag whether check step or not
+
+        Returns:
+            str: path to original file
         """
-        suffix = next(utils.generate_ids('backup'))
-        self.make_backup(nodes, path, suffix=suffix)
+        backup_path = self.make_backup(nodes, path)
         task = {
             'ini_file': {
                 'backup': False,
@@ -220,5 +224,4 @@ class OsFaultsSteps(BaseSteps):
         if check:
             self.check_file_contains_line(nodes, path, "{} = {}".format(option,
                                                                         value))
-        yield
-        self.restore_backup(nodes, path, suffix=suffix)
+        return backup_path
