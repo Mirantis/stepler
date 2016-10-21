@@ -101,7 +101,8 @@ CREDENTIALS_PREFIX = 'stepler_credentials_'
 ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
 EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
 
-TINY_FLAVOR = 'm1.tiny'
+FLAVOR_TINY = 'm1.tiny'
+FLAVOR_SMALL = 'm1.small'
 
 PING_CALL_TIMEOUT = 5 * 60
 PING_BETWEEN_SERVERS_TIMEOUT = 5 * 60
