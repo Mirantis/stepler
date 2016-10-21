@@ -29,6 +29,9 @@ from .security_groups import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'get_availability_zone_steps',
+    'availability_zone_steps',
+    'nova_availability_zone',
+    'nova_availability_zone_hosts',
 
     'create_flavor',
     'flavor',
@@ -66,4 +69,5 @@ __all__ = sorted([  # sort for documentation
     'server',
     'server_steps',
     'servers_cleanup',
+
 ])
