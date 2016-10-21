@@ -56,6 +56,7 @@ PERMITTED_CALLS = [
     'time',
     'str',
     'format',
+    'pick'
 ]
 
 # register hamcrest matchers

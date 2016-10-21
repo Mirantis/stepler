@@ -126,9 +126,14 @@ __all__ = sorted([  # sort for documentation
     'get_availability_zone_steps',
     'disable_nova_config_drive',
 
+    'zone_steps',
+    'nova_zone',
+    'nova_zone_hosts',
+
     'os_faults_client',
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
+    'exec_cmd_with_rollback'
 ])
 
 pytest_plugins = [

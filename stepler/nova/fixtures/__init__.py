@@ -26,6 +26,7 @@ from .nova import *  # noqa
 from .servers import *  # noqa
 from .nova_volumes import *  # noqa
 from .security_groups import *  # noqa
+from .zones import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'get_availability_zone_steps',
@@ -66,4 +67,8 @@ __all__ = sorted([  # sort for documentation
     'server',
     'server_steps',
     'servers_cleanup',
+
+    'zone_steps',
+    'nova_zone',
+    'nova_zone_hosts'
 ])
