@@ -28,6 +28,7 @@ __all__ = [
     'os_faults_client',
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
+    'execute_command_with_rollback',
 ]
 
 
@@ -88,3 +89,27 @@ def patch_ini_file_and_restart_services(os_faults_steps):
         os_faults_steps.restart_services(service_names)
 
     return _patch_ini_file_and_restart_services
+
+
+@pytest.fixture(scope='session')
+def execute_command_with_rollback(os_faults_steps):
+    """Callable fixture to execute provided bash command on nodes.
+    Then performs execution of a provided rollback command.
+
+    It can be called several times during test. It is used as context manager
+    to guarantee the result.
+
+    Args:
+        os_faults_steps: instantiated os_faults steps.
+
+    Returns:
+        context.context: context manager to run cmd and run rollback cmd
+    """
+
+    @context.context
+    def _exec_cmd_with_rollback(nodes, cmd, rollback_cmd, check=True):
+        os_faults_steps.execute_cmd(nodes, cmd, check=check)
+        yield
+        os_faults_steps.execute_cmd(nodes, rollback_cmd, check=check)
+
+    return _exec_cmd_with_rollback
