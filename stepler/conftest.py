@@ -79,7 +79,6 @@ __all__ = sorted([  # sort for documentation
     'subnet_steps',
     'port_steps',
 
-
     'create_flavor',
     'flavor',
     'flavor_steps',
@@ -101,6 +100,10 @@ __all__ = sorted([  # sort for documentation
     'server_steps',
     'ssh_proxy_data',
     'ssh_to_server',
+
+    'zone_steps',
+    'nova_zone',
+    'nova_zone_hosts',
 
     'os_faults_client',
     'os_faults_steps'

@@ -22,11 +22,13 @@ from .floating_ips import *  # noqa
 from .keypairs import *  # noqa
 from .security_groups import *  # noqa
 from .servers import *  # noqa
+from .zones import *  # noqa
 
 __all__ = [
     'FlavorSteps',
     'FloatingIpSteps',
     'KeypairSteps',
     'SecurityGroupSteps',
-    'ServerSteps'
+    'ServerSteps',
+    'ZoneSteps'
 ]
