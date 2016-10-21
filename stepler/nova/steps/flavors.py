@@ -71,7 +71,12 @@ class FlavorSteps(BaseSteps):
 
     @step
     def delete_flavor(self, flavor, check=True):
-        """Step to delete flavor."""
+        """Step to delete flavor.
+
+        Args:
+            flavor (object): nova flavor
+            check (bool): flag whether to check step or not
+        """
         self._client.delete(flavor.id)
 
         if check:
@@ -79,7 +84,16 @@ class FlavorSteps(BaseSteps):
 
     @step
     def check_flavor_presence(self, flavor, present=True, timeout=0):
-        """Verify step to check flavor is present."""
+        """Verify step to check flavor is present.
+
+        Args:
+            flavor (object): nova flavor to check presence status
+            present (bool): flag whether flavor should present or no
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was triggered to False after timeout
+        """
         def predicate():
             try:
                 # After deleting flavor `get` method still return object,
@@ -93,5 +107,20 @@ class FlavorSteps(BaseSteps):
 
     @step
     def get_flavor(self, *args, **kwgs):
-        """Step to get flavor."""
+        """Step to find a single item with attributes matching **kwargs.
+
+        Parameters:
+            :param name: Descriptive name of the flavor
+            :param ram: Memory in MB for the flavor
+            :param vcpus: Number of VCPUs for the flavor
+            :param disk: Size of local disk in GB
+            :param flavorid: ID for the flavor (optional). You can use the
+                reserved value ``"auto"`` to have Nova generate a UUID for
+                the flavor in cases where you cannot simply pass ``None``.
+            :param swap: Swap space in MB
+            :param rxtx_factor: RX/TX factor
+
+        Returns:
+            object: nova flavor
+        """
         return self._client.find(*args, **kwgs)
