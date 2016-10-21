@@ -20,9 +20,11 @@ os_faults steps
 import os
 import tempfile
 
-from hamcrest import assert_that, is_not, empty, only_contains, has_properties  # noqa
+from hamcrest import (assert_that, empty, has_properties, is_not,
+                      only_contains)  # noqa
 
 from stepler import base
+from stepler import config
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 
@@ -261,3 +263,22 @@ class OsFaultsSteps(base.BaseSteps):
             self.check_file_contains_line(
                 nodes, file_path, "{} = {}".format(option, value))
         return backup_path
+
+    @steps_checker.step
+    def execute_cmd(self, nodes, cmd, check=True):
+        """Execute provided bash command on nodes.
+
+        Args:
+            nodes (obj): nodes to backup file on them
+            cmd (str): bash command to execute
+            check (bool): flag whether check step or not
+
+        Returns:
+            list: AnsibleExecutionRecord(s)
+        """
+        task = {'shell': cmd}
+        result = nodes.run_task(task)
+
+        if check:
+            assert_that(
+                result, only_contains(has_properties(status=config.STATUS_OK)))
