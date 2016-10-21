@@ -90,7 +90,6 @@ __all__ = sorted([  # sort for documentation
     'subnet_steps',
     'port_steps',
 
-
     'create_flavor',
     'flavor',
     'flavor_steps',
@@ -113,7 +112,8 @@ __all__ = sorted([  # sort for documentation
     'get_ssh_proxy_cmd',
 
     'os_faults_client',
-    'os_faults_steps'
+    'os_faults_steps',
+    'patch_ini_file_and_restart_services',
 ])
 
 pytest_plugins = [
