@@ -98,8 +98,8 @@ def get_file_path(url, name=None):
     """Download file by url to local cached storage."""
     def _get_file_name(url):
         keepcharacters = (' ', '.', '_', '-')
-        name = url.rsplit('/')[-1]
-        return "".join(c for c in name
+        filename = url.rsplit('/')[-1]
+        return "".join(c for c in filename
                        if c.isalnum() or c in keepcharacters).rstrip()
 
     if os.path.isfile(url):
@@ -112,7 +112,10 @@ def get_file_path(url, name=None):
             LOGGER.warning("Can't make dir for files: {}".format(e))
             return None
 
-    file_path = os.path.join(config.TEST_IMAGE_PATH, _get_file_name(url))
+    if not name:
+        name = _get_file_name(url)
+
+    file_path = os.path.join(config.TEST_IMAGE_PATH, name)
     headers = {}
     if os.path.exists(file_path):
         file_date = os.path.getmtime(file_path)
