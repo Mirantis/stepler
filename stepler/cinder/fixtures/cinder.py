@@ -16,7 +16,7 @@ Cinder fixtures
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import six
 from cinderclient import client as cinderclient
 import pytest
 
@@ -137,3 +137,24 @@ def upload_volume_to_image(create_volume, cinder_steps, glance_steps):
 
     if images:
         glance_steps.delete_images(images)
+
+
+@pytest.yield_fixture
+def create_volume_negative(create_volumes):
+    """Function fixture to negative attempts create single volume with options.
+
+    Can be called several times during a test.
+    After the test it destroys all created volumes.
+
+    Args:
+        create_volumes (function): function to create volumes with options
+
+    Raises:
+        function: function to create single volume with options
+    """
+    def _create_volume_negative(ex_text, name=None, *args, **kwgs):
+        six.assertRaisesRegex(cinderclient.exceptions.BadRequest, ex_text,
+                              create_volumes,
+                              [name], *args, **kwgs)
+
+    return _create_volume_negative

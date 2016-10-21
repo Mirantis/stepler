@@ -22,6 +22,7 @@ from .cinder import *  # noqa
 __all__ = sorted([  # sort for documentation
     'create_volume',
     'create_volumes',
+    'create_volume_negative',
     'cinder_client',
     'cinder_steps',
     'upload_volume_to_image',
