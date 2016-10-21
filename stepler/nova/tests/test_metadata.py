@@ -22,6 +22,18 @@ import pytest
 
 from stepler.third_party import utils
 
+TEST_METADATA_INFO = {'key': str(next(utils.generate_ids('test_meta')))}
+
+SET_META_CMD_TEMPLATE = (
+    '. /root/openrc ; nova host-meta {host} set {key}={value}'.format(
+        host='{host}',
+        key=TEST_METADATA_INFO.keys()[0],
+        value=TEST_METADATA_INFO.values()[0]))
+DEL_META_CMD_TEMPLATE = (
+    '. /root/openrc ; nova host-meta {host} delete {key}'.format(
+        host='{host}',
+        key=TEST_METADATA_INFO.keys()[0]))
+
 
 @pytest.mark.idempotent_id('fb831027-2663-4b76-b81f-868a85ca08fe')
 def test_metadata_reach_all_booted_vm(
@@ -73,3 +85,83 @@ def test_metadata_reach_all_booted_vm(
         server_steps.attach_floating_ip(server, nova_floating_ip)
         server_steps.get_server_ssh(server)
         server_steps.detach_floating_ip(server, nova_floating_ip)
+
+
+# TODO(akoryagin) need to add check that we have 2 or more computes
+@pytest.mark.idempotent_id('2af40022-a2ca-4615-aff3-2c07354ce983')
+def test_put_metadata_on_instances_on_single_compute(
+        security_group, ubuntu_image, keypair, network, subnet,
+        nova_zone_hosts, create_servers, flavor_steps, server_steps,
+        os_faults_client, os_faults_steps, exec_cmd_with_rollback):
+    """**Scenario:** Put metadata on all instances scheduled on a single
+    compute node.
+
+    **Setup:**
+
+    #. Create security group
+    #. Get or create ubuntu image
+    #. Create keypair
+    #. Create network and subnetwork
+
+    **Steps:**
+
+    #. Get flavor ``m1.small``
+    #. Get FQDNs of nova hosts
+    #. Create 2 nova servers on host 1
+    #. Create 2 nova servers on host 2
+    #. From controller node add new 'key=value' to metadata of servers,
+        located on host 1.
+    #. Check that servers from host 1 have 'key=value' in their metadata
+    #. Check that servers from host 2 do NOT have 'key=value' in their metadata
+    #. From controller node delete 'key=value' from metadata of servers,
+        located on host 1.
+    #. Check that servers from host 1 and host 2 do NOT have 'key=value' in
+        their metadata
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete keypair
+    #. Delete security group
+    #. Delete network and subnetwork
+    """
+    flavor = flavor_steps.get_flavor(name='m1.small')
+    host1 = nova_zone_hosts[0]
+    host2 = nova_zone_hosts[1]
+    controller_node = (os_faults_client.get_service('nova-api')
+                       .get_nodes().pick())
+
+    cmd_set_meta = SET_META_CMD_TEMPLATE.format(host=host1)
+    cmd_del_meta = DEL_META_CMD_TEMPLATE.format(host=host1)
+
+    host1_servers = create_servers(
+        server_names=list(utils.generate_ids('server_host1', count=2)),
+        image=ubuntu_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        availability_zone='nova:{}'.format(host1))
+
+    host2_servers = create_servers(
+        server_names=list(utils.generate_ids('server_host2', count=2)),
+        image=ubuntu_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        availability_zone='nova:{}'.format(host2))
+
+    with exec_cmd_with_rollback(
+            nodes=controller_node,
+            cmd=cmd_set_meta,
+            rollback_cmd=cmd_del_meta):
+
+        server_steps.check_metadata_presence(
+            host1_servers, TEST_METADATA_INFO)
+
+        server_steps.check_metadata_presence(
+            host2_servers, TEST_METADATA_INFO, present=False)
+
+    server_steps.check_metadata_presence(
+        host1_servers + host2_servers, TEST_METADATA_INFO, present=False)
