@@ -63,16 +63,16 @@ def generate_mac_addresses(count=1):
 
 
 def generate_ids(prefix=None, postfix=None, count=1, length=None):
-    """Generate unique identificators, based on uuid.
+    """Generate unique identificators, based on UUID.
 
     Arguments:
-        - prefix: prefix of uniq ids, default is None.
-        - postfix: postfix of uniq ids, default is None.
-        - count: count of uniq ids, default is 1.
-        - length: length of uniq ids, default is not limited.
+        prefix (string|None): prefix of unique ids.
+        postfix (string|None): postfix of unique ids.
+        count (int|1): count of unique ids.
+        length (int|None): length of unique ids.
 
     Returns:
-        - generator of uniq ids.
+        generator: unique ids.
     """
     for _ in range(count):
         uid = str(uuid.uuid4())
@@ -90,14 +90,14 @@ def generate_files(prefix=None, postfix=None, folder=None, count=1, size=1024):
     """Generate files with unique names.
 
     Arguments:
-        - prefix: prefix of uniq ids, default is None.
-        - postfix: postfix of uniq ids, default is None.
-        - folder: folder to create uniq files.
-        - count: count of uniq ids, default is 1.
-        - size: size of uniq files, default is 1Mb.
+        prefix (string|None): prefix of unique ids.
+        postfix (string|None): postfix of unique ids.
+        folder (string|None): folder to create unique files.
+        count (int|1): count of unique ids.
+        size (int|1024): size of unique files.
 
     Returns:
-        - generator of files with uniq names.
+        generator: files with unique names.
     """
     folder = folder or tempfile.mkdtemp()
     if not os.path.isdir(folder):
