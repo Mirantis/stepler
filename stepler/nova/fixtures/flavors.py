@@ -97,4 +97,4 @@ def tiny_flavor(flavor_steps):
     Returns:
         object: tiny flavor
     """
-    return flavor_steps.get_flavor(name=config.TINY_FLAVOR)
+    return flavor_steps.get_flavor(name=config.FLAVOR_TINY)
