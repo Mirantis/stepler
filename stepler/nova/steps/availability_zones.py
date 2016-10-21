@@ -18,7 +18,7 @@ Availability zone steps
 # limitations under the License.
 
 from dateutil import parser
-from hamcrest import assert_that, only_contains, any_of, has_entries  # noqa
+from hamcrest import assert_that, empty, has_entries, is_not, only_contains  # noqa
 from novaclient import exceptions as nova_exceptions
 import waiting
 
@@ -70,3 +70,43 @@ class AvailabilityZoneSteps(base.BaseSteps):
         active_hosts = [x for x in _get_hosts() if x['active']]
 
         assert_that(active_hosts, only_contains(has_entries(available=True)))
+
+    @steps_checker.step
+    def get_zones(self, check=True, **kwargs):
+        """Step to find all zones matching **kwargs.
+
+        Args:
+            check (bool): flag whether to check step or not
+            **kwargs: like: {'zoneName': 'nova'},
+                            {'zoneState': {u'available': True}}
+
+        Returns:
+            list: nova zones
+        """
+        zones = self._client.findall(**kwargs)
+
+        if check:
+            assert_that(zones, is_not(empty()))
+            for zone in zones:
+                assert_that(zone.to_dict(), has_entries(kwargs))
+
+        return zones
+
+    @steps_checker.step
+    def get_zone(self, check=True, **kwargs):
+        """Step to find one zone matching **kwargs.
+
+        Args:
+            check (bool): flag whether to check step or not
+            **kwargs: like: {'zoneName': 'nova'},
+                            {'zoneState': {u'available': True}}
+
+        Returns:
+            object: nova zone
+        """
+        zone = self._client.find(**kwargs)
+
+        if check:
+            assert_that(zone.to_dict(), has_entries(kwargs))
+
+        return zone
