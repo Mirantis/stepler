@@ -125,12 +125,17 @@ __all__ = sorted([  # sort for documentation
     'server',
     'server_steps',
     'get_ssh_proxy_cmd',
-    'get_availability_zone_steps',
     'disable_nova_config_drive',
+
+    'get_availability_zone_steps',
+    'availability_zone_steps',
+    'nova_availability_zone',
+    'nova_availability_zone_hosts'
 
     'os_faults_client',
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
+    'execute_command_with_rollback'
 ])
 
 pytest_plugins = [
