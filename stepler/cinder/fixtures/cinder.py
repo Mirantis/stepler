@@ -95,7 +95,7 @@ def create_volume(create_volumes):
     Returns:
         function: function to create single volume with options
     """
-    def _create_volume(name, *args, **kwgs):
+    def _create_volume(name=None, *args, **kwgs):
         return create_volumes([name], *args, **kwgs)[0]
 
     return _create_volume

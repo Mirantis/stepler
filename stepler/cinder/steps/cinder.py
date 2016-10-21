@@ -34,7 +34,7 @@ class CinderSteps(base.BaseSteps):
 
     @steps_checker.step
     def create_volume(self,
-                      name,
+                      name=None,
                       size=1,
                       image=None,
                       volume_type=None,
