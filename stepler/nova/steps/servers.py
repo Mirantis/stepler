@@ -20,8 +20,9 @@ Server steps
 import contextlib
 import socket
 
-from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
-                      less_than_or_equal_to, has_properties)  # noqa
+from hamcrest import (assert_that, empty, equal_to, has_entries, has_item,
+                      has_properties, is_not, less_than_or_equal_to)  # noqa
+
 from novaclient import exceptions as nova_exceptions
 import paramiko
 from waiting import wait
@@ -29,9 +30,11 @@ from waiting import wait
 from stepler import base
 from stepler import config
 from stepler.third_party import chunk_serializer
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import ping
 from stepler.third_party import ssh
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = [
     'ServerSteps'
@@ -714,6 +717,34 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             self.check_server_presence(server, present=True, timeout=180)
+
+    @steps_checker.step
+    def check_metadata_presence(
+            self, server, custom_meta, present=True, timeout=0):
+        """Step to check if server's metadata contains OR NOT contains
+        provided values.
+
+        Args:
+            server (object): nova instance object
+            custom_meta (dict): data, which presence should be checked in
+                                server's metadata.
+                                Like: {'key': 'stepler_test'}
+            present (bool): flag to check if provided data should OR
+                             should NOT present in server's metadata.
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        matcher = has_entries(custom_meta)
+        if not present:
+            matcher = is_not(matcher)
+
+        def predicate():
+            server.get()
+            return expect_that(server.metadata, matcher)
+
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     def _soft_delete_server(self, server, check):
         # it doesn't delete server really, just hides server and marks it as
