@@ -20,8 +20,8 @@ Server steps
 import contextlib
 import socket
 
-from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
-                      less_than_or_equal_to)  # noqa
+from hamcrest import (assert_that, is_not, has_entries, has_item, equal_to,
+                      empty, less_than_or_equal_to)  # noqa
 from novaclient import exceptions as nova_exceptions
 import paramiko
 from waiting import wait
@@ -696,6 +696,52 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             self.check_server_presence(server, present=True, timeout=180)
+
+    @steps_checker.step
+    def check_server_metadata_contains(
+            self, server, custom_meta, contains=True):
+        """Step to check if server's metadata contains OR NOT contains
+        provided values.
+
+        Args:
+            server (object): nova instance
+            custom_meta (dict): data, which presence should be checked in
+                                server's metadata.
+                                Like: {'key': 'stepler_test'}
+            contains (bool): flag to check if provided data should OR
+                             should NOT present in server's metadata.
+
+        Raises:
+            AssertionError: if check was failed
+        """
+        server.get()
+        if contains:
+            assert_that(server.metadata, has_entries(custom_meta))
+        else:
+            assert_that(server.metadata, is_not(has_entries(custom_meta)))
+
+    @steps_checker.step
+    def check_servers_metadata_contains(
+            self, servers, custom_meta, contains=True):
+        """Step to check if server's metadata contains OR NOT contains
+        provided values.
+
+        Args:
+            servers (list): nova instance objects
+            custom_meta (dict): data, which presence should be checked in
+                                server's metadata.
+                                Like: {'key': 'stepler_test'}
+            contains (bool): flag to check if provided data should OR
+                             should NOT present in server's metadata.
+
+        Raises:
+            AssertionError: if check was failed
+        """
+        for server in servers:
+            self.check_server_metadata_contains(
+                server=server,
+                custom_meta=custom_meta,
+                contains=contains)
 
     def _soft_delete_server(self, server, check):
         # it doesn't delete server really, just hides server and marks it as
