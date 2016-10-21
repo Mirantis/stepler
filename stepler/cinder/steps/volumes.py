@@ -69,6 +69,23 @@ class VolumeSteps(base.BaseSteps):
         return volume
 
     @steps_checker.step
+    def check_negative_volume_not_created(self, name):
+        """Step for negative test case of volume creation with invalid name.
+
+        Args:
+            name (str): name for volume. Expected invalid name in argument
+
+        Raises:
+            AssertionError: if check triggered an error
+        """
+        exception_message = "Name has more than 255 characters"
+
+        assert_that(
+            calling(self.create_volume).with_args(
+                name=name, check=False),
+            raises(exceptions.BadRequest, exception_message))
+
+    @steps_checker.step
     def create_volumes(self,
                        names,
                        size=1,
