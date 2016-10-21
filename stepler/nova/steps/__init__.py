@@ -21,9 +21,10 @@ from .flavors import *  # noqa
 from .floating_ips import *  # noqa
 from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
-from .security_groups import *  # noqa
 from .nova_volumes import *  # noqa
+from .security_groups import *  # noqa
 from .servers import *  # noqa
+from .zones import *  # noqa
 
 __all__ = [
     'FlavorSteps',
@@ -31,6 +32,7 @@ __all__ = [
     'HypervisorSteps',
     'KeypairSteps',
     'SecurityGroupSteps',
+    'ZoneSteps',
     'NovaVolumeSteps',
     'ServerSteps'
 ]
