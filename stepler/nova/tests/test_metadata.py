@@ -73,3 +73,88 @@ def test_metadata_reach_all_booted_vm(
         server_steps.attach_floating_ip(server, nova_floating_ip)
         server_steps.get_server_ssh(server)
         server_steps.detach_floating_ip(server, nova_floating_ip)
+
+
+# TODO(akoryagin) need to add check that we have 2 or more computes
+@pytest.mark.idempotent_id('2af40022-a2ca-4615-aff3-2c07354ce983')
+def test_put_metadata_on_instances_on_single_compute(
+        security_group, ubuntu_image, keypair, network, subnet,
+        nova_zone_hosts, create_servers, flavor_steps, server_steps,
+        os_faults_client, os_faults_steps):
+    """**Scenario:** Put metadata on all instances scheduled on a single
+    compute node.
+
+    **Setup:**
+
+    #. Create security group
+    #. Get or create ubuntu image
+    #. Create keypair
+    #. Create network and subnetwork
+
+    **Steps:**
+
+    #. Get flavor ``m1.small``
+    #. Get FQDNs of nova hosts
+    #. Create 2 nova servers on host 1
+    #. Create 2 nova servers on host 2
+    #. From controller node add new 'key=value' to metadata of servers,
+        located on host 1.
+    #. Check that servers from host 1 have 'key=value' in their metadata
+    #. Check that servers from host 2 do NOT have 'key=value' in their metadata
+    #. From controller node delete 'key=value' from metadata of servers,
+        located on host 1.
+    #. Check that servers from host 1 and host 2 do NOT have 'key=value' in
+        their metadata
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete keypair
+    #. Delete security group
+    #. Delete network and subnetwork
+    """
+    metadata_info = {'key': 'stepler_test'}
+    flavor = flavor_steps.get_flavor(name='m1.small')
+    host1 = nova_zone_hosts[0]
+    host2 = nova_zone_hosts[1]
+    controller_node = (os_faults_client.get_service('nova-api')
+                       .get_nodes().pick())
+
+    cmd = (
+        '. /root/openrc ; nova host-meta {0} set {1}={2}'.format(
+            host1, metadata_info.keys()[0], metadata_info.values()[0]))
+    rollback_cmd = (
+        '. /root/openrc ; nova host-meta {0} delete key'.format(
+            host1, metadata_info.keys()[0]))
+
+    host1_servers = create_servers(
+        server_names=list(utils.generate_ids('server_host1', count=2)),
+        image=ubuntu_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        availability_zone='nova:{}'.format(host1))
+
+    host2_servers = create_servers(
+        server_names=list(utils.generate_ids('server_host2', count=2)),
+        image=ubuntu_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        availability_zone='nova:{}'.format(host2))
+
+    with os_faults_steps.execute_cmd_with_rollback(
+            nodes=controller_node,
+            cmd=cmd,
+            rollback_cmd=rollback_cmd):
+
+        server_steps.check_servers_metadata_contains(
+            host1_servers, metadata_info)
+
+        server_steps.check_servers_metadata_contains(
+            host2_servers, metadata_info, contains=False)
+
+    server_steps.check_servers_metadata_contains(
+        host1_servers + host2_servers, metadata_info, contains=False)
