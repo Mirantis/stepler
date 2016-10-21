@@ -69,3 +69,16 @@ def test_create_volume_description_max(create_volume):
     """
     description = next(utils.generate_ids(prefix='volume', length=255))
     create_volume(description=description)
+
+
+@pytest.mark.idempotent_id('bcd12002-dfd3-44c9-b270-d844d61a009c')
+def test_negative_create_volume_description_long(create_volume_negative):
+    """**Scenario:** Verify creation of volume with name length > 255
+
+    **Steps:**
+
+    #. Create volume with name length > 255
+    """
+    long_name = next(utils.generate_ids(length=256))
+    ex_text = "Name has more than 255 characters"
+    create_volume_negative(name=long_name, ex_text=ex_text)
