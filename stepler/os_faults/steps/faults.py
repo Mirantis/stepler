@@ -17,6 +17,7 @@ os_faults steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import contextlib
 import os
 import tempfile
 
@@ -262,3 +263,52 @@ class OsFaultsSteps(base.BaseSteps):
             self.check_file_contains_line(
                 nodes, file_path, "{} = {}".format(option, value))
         return backup_path
+
+    @steps_checker.step
+    def execute_cmd(self, nodes, cmd, check=True):
+        """Execute provided bash command on nodes.
+
+        This step executes provided shell command on provided nodes.
+
+        Args:
+            nodes (obj): nodes to backup file on them
+            cmd (str): bash command to execute
+            check (bool): flag whether check step or not
+
+        Returns:
+            list: AnsibleExecutionRecord(s)
+        """
+        task = {'shell': cmd}
+        result = nodes.run_task(task)
+
+        if check:
+            assert_that(result, only_contains(has_properties(status='OK')))
+
+        return result
+
+    @steps_checker.step
+    @contextlib.contextmanager
+    def execute_cmd_with_rollback(self, nodes, cmd, rollback_cmd, check=True):
+        """Execute provided bash command on nodes. Then performs execution of
+        a provided rollback command.
+
+        Example:
+            .. code:: python
+
+            with execute_cmd_with_rollback(
+                    nodes, cmd='touch file.txt',
+                    rollback_cmd='rm -rf file.txt') as result:
+                print result
+
+        Args:
+            nodes (obj): nodes to backup file on them
+            cmd (str): bash command to execute
+            rollback_cmd (str): bash command to rollback result of `cmd`
+            check (bool): flag whether check step or not
+
+        Returns:
+            list: AnsibleExecutionRecord(s)
+        """
+        result_cmd = self.execute_cmd(nodes, cmd, check=check)
+        yield result_cmd
+        self.execute_cmd(nodes, rollback_cmd, check=check)

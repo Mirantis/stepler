@@ -25,6 +25,7 @@ from .nova import *  # noqa
 from .servers import *  # noqa
 from .nova_volumes import *  # noqa
 from .security_groups import *  # noqa
+from .zones import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_flavor',
@@ -60,4 +61,10 @@ __all__ = sorted([  # sort for documentation
     'get_ssh_proxy_cmd',
     'server',
     'server_steps',
+    'ssh_proxy_data',
+    'ssh_to_server',
+
+    'zone_steps',
+    'nova_zone',
+    'nova_zone_hosts'
 ])
