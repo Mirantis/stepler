@@ -111,6 +111,10 @@ __all__ = sorted([  # sort for documentation
     'server_steps',
     'get_ssh_proxy_cmd',
 
+    'zone_steps',
+    'nova_zone',
+    'nova_zone_hosts',
+
     'os_faults_client',
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
