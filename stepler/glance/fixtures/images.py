@@ -44,29 +44,36 @@ LOGGER = logging.getLogger(__name__)
 SKIPPED_IMAGES = []  # TODO(schipiga): describe its mechanism in docs
 
 
-def _remove_stayed_images(glance_steps):
+@pytest.yield_fixture
+def images_cleanup():
     """Clear unexpected images.
 
     We should remove images which unexpectedly stayed after tests.
-
-    Args:
-        glance_steps (GlanceSteps): instantiated glance steps
     """
-    # check=False because in best case no stayed images will be present
-    images = glance_steps.get_images(name_prefix=config.STEPLER_PREFIX,
-                                     check=False)
-    if SKIPPED_IMAGES:
-        image_names = [image.name for image in SKIPPED_IMAGES]
-        LOGGER.warn("SKIPPED_IMAGES contains images {!r}. "
-                    "They will not be removed.".format(image_names))
+    _glance_steps = [None]
 
-    images = [image for image in images if image not in SKIPPED_IMAGES]
-    glance_steps.delete_images(images)
+    def _images_cleanup(glance_steps):
+        _glance_steps[0] = glance_steps  # inject glance steps for finalizer
+        # check=False because in best case no stayed images will be present
+        images = glance_steps.get_images(name_prefix=config.STEPLER_PREFIX,
+                                         check=False)
+        if SKIPPED_IMAGES:
+            image_names = [image.name for image in SKIPPED_IMAGES]
+            LOGGER.debug(
+                "SKIPPED_IMAGES contains images {!r}. They will not be "
+                "removed in cleanup procedure.".format(image_names))
+
+        images = [image for image in images if image not in SKIPPED_IMAGES]
+        glance_steps.delete_images(images)
+
+    yield _images_cleanup
+
+    _images_cleanup(_glance_steps[0])
 
 
 # TODO(schipiga): In future will rename `glance_steps` -> `image_steps`
 @pytest.fixture(scope='session')
-def get_glance_steps(get_glance_client):
+def get_glance_steps(request, get_glance_client):
     """Callable session fixture to get glance steps.
 
     Args:
@@ -89,7 +96,7 @@ def get_glance_steps(get_glance_client):
         if version == '2' and not is_api:
             # Remove when steps are requested. Make it for glance pythonclient
             # v2 only, because now it is actual most useful client version.
-            _remove_stayed_images(glance_steps)
+            _remove_stayed_images(glance_steps, request._pyfuncitem.name)
 
         return glance_steps
 
@@ -149,7 +156,7 @@ def api_glance_steps_v2(get_glance_steps):
 
 
 @pytest.fixture
-def glance_steps(get_glance_steps):
+def glance_steps(get_glance_steps, images_cleanup):
     """Function fixture to get API glance steps.
 
     Args:
@@ -158,8 +165,10 @@ def glance_steps(get_glance_steps):
     Returns:
         GlanceStepsV1: instantiated glance steps v1
     """
-    return get_glance_steps(
+    _glance_steps = get_glance_steps(
         version=config.CURRENT_GLANCE_VERSION, is_api=False)
+    images_cleanup(_glance_steps)
+    return _glance_steps
 
 
 @pytest.fixture

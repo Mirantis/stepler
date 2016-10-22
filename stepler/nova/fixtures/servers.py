@@ -42,28 +42,36 @@ LOGGER = logging.getLogger(__name__)
 SKIPPED_SERVERS = []
 
 
-def _remove_stayed_servers(server_steps):
+@pytest.fixture
+def servers_cleanup():
     """Remove unexpected servers.
 
     We should remove servers before test which unexpectedly stayed after tests.
-
-    Args:
-        server_steps (ServerSteps): instantiated server steps
     """
-    # check=False because in best case no stayed servers will be present
-    servers = server_steps.get_servers(name_prefix=config.STEPLER_PREFIX,
-                                       check=False)
-    if SKIPPED_SERVERS:
-        server_names = [server.name for server in SKIPPED_SERVERS]
-        LOGGER.warn("SKIPPED_SERVERS contains servers {!r}. "
-                    "They will not be removed.".format(server_names))
+    _servers_cleanup = [None]
 
-    servers = [server for server in servers if server not in SKIPPED_SERVERS]
-    server_steps.delete_servers(servers)
+    def _servers_cleanup(server_steps):
+        _server_steps[0] = server_steps  # inject server steps for finalizer
+        # check=False because in best case no stayed servers will be present
+        servers = server_steps.get_servers(name_prefix=config.STEPLER_PREFIX,
+                                           check=False)
+        if SKIPPED_SERVERS:
+            server_names = [server.name for server in SKIPPED_SERVERS]
+            LOGGER.debug(
+                "SKIPPED_SERVERS contains servers {!r}. They will not be "
+                "removed in cleanup procedure.".format(server_names))
+
+        servers = [server for server in servers
+                   if server not in SKIPPED_SERVERS]
+        server_steps.delete_servers(servers)
+
+    yield _servers_cleanup
+
+    _servers_cleanup(_servers_cleanup[0])
 
 
 @pytest.fixture(scope='session')
-def get_server_steps(get_nova_client):
+def get_server_steps(request, get_nova_client):
     """Callable session fixture to get server steps.
 
     Args:
@@ -73,15 +81,13 @@ def get_server_steps(get_nova_client):
         function: function to get server steps.
     """
     def _get_server_steps():
-        server_steps = ServerSteps(get_nova_client().servers)
-        _remove_stayed_servers(server_steps)
-        return server_steps
+        return ServerSteps(get_nova_client().servers)
 
     return _get_server_steps
 
 
 @pytest.fixture
-def server_steps(get_server_steps):
+def server_steps(get_server_steps, servers_cleanup):
     """Function fixture to get nova steps.
 
     Args:
@@ -90,8 +96,9 @@ def server_steps(get_server_steps):
     Returns:
         ServerSteps: instantiated server steps.
     """
-    return get_server_steps()
-
+    _server_steps = get_server_steps()
+    servers_cleanup(_server_steps)
+    return _server_steps
 
 @pytest.yield_fixture
 def create_servers(server_steps):
