@@ -150,7 +150,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         if name_prefix:
             images = [image for image in images
-                      if image.name.startswith(name_prefix)]
+                      if (image.name or '').startswith(name_prefix)]
 
         if check:
             assert_that(images, is_not(empty()))
