@@ -42,9 +42,11 @@ __all__ = [
 LOGGER = logging.getLogger(__name__)
 # images which should be missed, when unexpected images will be removed
 SKIPPED_IMAGES = []  # TODO(schipiga): describe its mechanism in docs
+# backet for test name, where images were cleaned up already
+TEST_IMAGES_CLEANUP_ALREADY = [None]
 
 
-def _remove_stayed_images(glance_steps):
+def _remove_stayed_images(glance_steps, test_name):
     """Clear unexpected images.
 
     We should remove images which unexpectedly stayed after tests.
@@ -52,13 +54,17 @@ def _remove_stayed_images(glance_steps):
     Args:
         glance_steps (GlanceSteps): instantiated glance steps
     """
+    if test_name == TEST_IMAGES_CLEANUP_ALREADY:
+        return  # in this test images were cleanup already
+    TEST_IMAGES_CLEANUP_ALREADY[0] = test_name
+
     # check=False because in best case no stayed images will be present
     images = glance_steps.get_images(name_prefix=config.STEPLER_PREFIX,
                                      check=False)
     if SKIPPED_IMAGES:
         image_names = [image.name for image in SKIPPED_IMAGES]
-        LOGGER.warn("SKIPPED_IMAGES contains images {!r}. "
-                    "They will not be removed.".format(image_names))
+        LOGGER.debug("SKIPPED_IMAGES contains images {!r}. They will not be "
+                     "removed in test cleanup.".format(image_names))
 
     images = [image for image in images if image not in SKIPPED_IMAGES]
     glance_steps.delete_images(images)
@@ -66,7 +72,7 @@ def _remove_stayed_images(glance_steps):
 
 # TODO(schipiga): In future will rename `glance_steps` -> `image_steps`
 @pytest.fixture(scope='session')
-def get_glance_steps(get_glance_client):
+def get_glance_steps(request, get_glance_client):
     """Callable session fixture to get glance steps.
 
     Args:
@@ -89,7 +95,7 @@ def get_glance_steps(get_glance_client):
         if version == '2' and not is_api:
             # Remove when steps are requested. Make it for glance pythonclient
             # v2 only, because now it is actual most useful client version.
-            _remove_stayed_images(glance_steps)
+            _remove_stayed_images(glance_steps, request._pyfuncitem.name)
 
         return glance_steps
 

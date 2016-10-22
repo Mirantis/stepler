@@ -40,9 +40,11 @@ __all__ = [
 LOGGER = logging.getLogger(__name__)
 # servers which should be missed, when unexpected servers will be removed
 SKIPPED_SERVERS = []
+# backet for test name, where images were cleaned up already
+TEST_SERVERS_CLEANUP_ALREADY = [None]
 
 
-def _remove_stayed_servers(server_steps):
+def _remove_stayed_servers(server_steps, test_name):
     """Remove unexpected servers.
 
     We should remove servers before test which unexpectedly stayed after tests.
@@ -50,20 +52,24 @@ def _remove_stayed_servers(server_steps):
     Args:
         server_steps (ServerSteps): instantiated server steps
     """
+    if test_name == TEST_SERVERS_CLEANUP_ALREADY:
+        return  # in this test images were cleanup already
+    TEST_SERVERS_CLEANUP_ALREADY[0] = test_name
+
     # check=False because in best case no stayed servers will be present
     servers = server_steps.get_servers(name_prefix=config.STEPLER_PREFIX,
                                        check=False)
     if SKIPPED_SERVERS:
         server_names = [server.name for server in SKIPPED_SERVERS]
-        LOGGER.warn("SKIPPED_SERVERS contains servers {!r}. "
-                    "They will not be removed.".format(server_names))
+        LOGGER.debug("SKIPPED_SERVERS contains servers {!r}. They will not be "
+                     "removed in test cleanup.".format(server_names))
 
     servers = [server for server in servers if server not in SKIPPED_SERVERS]
     server_steps.delete_servers(servers)
 
 
 @pytest.fixture(scope='session')
-def get_server_steps(get_nova_client):
+def get_server_steps(request, get_nova_client):
     """Callable session fixture to get server steps.
 
     Args:
@@ -74,7 +80,7 @@ def get_server_steps(get_nova_client):
     """
     def _get_server_steps():
         server_steps = ServerSteps(get_nova_client().servers)
-        _remove_stayed_servers(server_steps)
+        _remove_stayed_servers(server_steps, request._pyfuncitem.name)
         return server_steps
 
     return _get_server_steps
