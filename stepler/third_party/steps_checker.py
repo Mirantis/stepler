@@ -55,6 +55,8 @@ PERMITTED_CALLS = [
     'generate_files',
     'time',
     'str',
+    'embed',
+    'format',
 ]
 
 # register hamcrest matchers
