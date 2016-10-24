@@ -18,12 +18,14 @@ Volume steps
 # limitations under the License.
 
 from cinderclient import exceptions
-from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
+from hamcrest import assert_that, calling, equal_to, has_entries, is_not, empty, raises  # noqa
 import waiting
 
 from stepler import base
 from stepler import config
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ['VolumeSteps']
 
@@ -219,6 +221,24 @@ class VolumeSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
+    def check_volume_size(self, volume, size, timeout=0):
+        """Step to check volume size.
+
+        Args:
+            volume (object): cinder volume
+            size (int): expected volume size
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        def predicate():
+            volume.get()
+            return expect_that(volume.size, equal_to(size))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def check_volume_attachments(self, volume, server_ids=None, timeout=0):
         """Step to check volume attachments.
 
@@ -238,6 +258,22 @@ class VolumeSteps(base.BaseSteps):
             return sorted(server_ids) == sorted(attached_ids)
 
         waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_volume_extend_failed(self, volume, size):
+        """Step to check negative volume extend.
+
+        Args:
+            volume (object): cinder volume
+            size (int): volume size
+
+        Raises:
+            AssertionError: if check was falsed after timeout
+        """
+        error_message = 'New size for extend must be greater than current size'
+        assert_that(
+            calling(self.volume_extend).with_args(volume, size, check=False),
+            raises(exceptions.BadRequest, error_message))
 
     @steps_checker.step
     def volume_upload_to_image(self, volume, image_name,
@@ -278,3 +314,21 @@ class VolumeSteps(base.BaseSteps):
             }))
 
         return image
+
+    @steps_checker.step
+    def volume_extend(self, volume, size, check=True):
+        """Step to extend volume to new size.
+
+        Args:
+            volume (object): cinder volume
+            size (int): The new volume size
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        self._client.volumes.extend(volume, size)
+
+        if check:
+            self.check_volume_size(volume, size,
+                                   timeout=config.VOLUME_AVAILABLE_TIMEOUT)
