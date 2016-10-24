@@ -1,7 +1,7 @@
 """
------------------
-Keystone fixtures
------------------
+------------------------
+Keystone tokens fixtures
+------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,33 +17,24 @@ Keystone fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .domains import *  # noqa
-from .keystone import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .tokens import *  # noqa
-from .users import *  # noqa
 
-__all__ = sorted([  # sort for documentation
-    'create_domain',
-    'domain_steps',
-    'domain',
+import pytest
 
-    'keystone_client',
+from stepler.keystone import steps
 
-    'create_project',
-    'project_steps',
-    'project',
-
-    'admin_role',
-    'create_role',
-    'role_steps',
-    'role',
-
-    'admin',
-    'create_user',
-    'user_steps',
-    'user',
-
+__all__ = [
     'token_steps',
-])
+]
+
+
+@pytest.fixture
+def token_steps(keystone_client):
+    """Callable session fixture to get keystone steps.
+
+    Args:
+        keystone_client (function): function to get keystone client
+
+    Returns:
+        function: function to instantiated keystone token steps
+    """
+    return steps.TokenSteps(keystone_client.tokens)
