@@ -181,3 +181,18 @@ def test_create_volume_from_volume(volume, create_volume):
     volume_from_volume_name = next(
         utils.generate_ids(prefix='volume-from-volume'))
     create_volume(name=volume_from_volume_name, source_volid=volume.id)
+
+
+@pytest.mark.idempotent_id('f0c407a3-7aa1-400c-9a9f-6c69870e3fb9')
+def test_migrate_volume(create_volume, volume_steps):
+    """**Scenario:** Migrate volume to another host
+
+    **Steps:**
+
+    #. Create volume
+    #. Migrate volume to another host
+    """
+    volume_name = next(utils.generate_ids(prefix='volume'))
+
+    volume = create_volume(name=volume_name)
+    volume_steps.migrate_volume(volume)
