@@ -23,7 +23,7 @@ import pytest
 
 @pytest.mark.testrail_id(851868)
 def test_keystone_permission_lose(admin, project, admin_role, project_steps,
-                                  role_steps, user_steps):
+                                  role_steps, user_steps, token_steps):
     """Check that admin have access to users and projects in this session."""
     role_steps.grant_role(admin_role, user=admin, project=project)
     role_steps.revoke_role(admin_role, user=admin, project=project)

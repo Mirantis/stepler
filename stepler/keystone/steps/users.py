@@ -19,6 +19,8 @@ User steps
 
 from waiting import wait
 
+from hamcrest import assert_that, is_not, empty, equal_to  # noqa
+
 from stepler.base import BaseSteps
 from stepler.third_party.steps_checker import step
 
@@ -72,3 +74,19 @@ class UserSteps(BaseSteps):
                 return not present
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def get_user_token(self, check=True):
+        """Step to get user token.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            token (str): user token
+        """
+        token = self._client.client.get_token()
+
+        if check:
+            assert_that(token, is_not(empty()))
+        return token
