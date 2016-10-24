@@ -77,3 +77,38 @@ def test_create_stack_with_heat_resources(read_heat_template, create_stack):
     template = read_heat_template('heat_resources')
     stack_name = next(utils.generate_ids('stack'))
     create_stack(stack_name, template=template)
+
+
+def test_create_stack_with_wait_condition(read_heat_template, cirros_image,
+                                          flavor, public_network, create_stack,
+                                          port_steps):
+    """**Scenario:** Create stack with WaitCondition resources.
+
+    **Setup:**
+
+        #. Create cirros image
+        #. Create flavor
+
+    **Steps:**
+
+        #. Read AWS template from file
+        #. Create stack with template with parameters:
+            image, flavor, public_net
+        #. Check stack reach "COMPLETE" status
+
+    **Teardown:**
+
+        #. Delete stack
+        #. Delete flavor
+        #. Delete image
+    """
+    template = read_heat_template('wait_condition')
+    stack_name = next(utils.generate_ids('stack'))
+    create_stack(
+        stack_name,
+        template=template,
+        parameters={
+            'image': cirros_image.id,
+            'flavor': flavor.id,
+            'public_net': public_network['id'],
+        })
