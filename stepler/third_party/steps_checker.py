@@ -57,11 +57,15 @@ PERMITTED_CALLS = [
     'str',
     'embed',
     'format',
+    'getattr',
 ]
 
 # register hamcrest matchers
 PERMITTED_CALLS += [method_name for method_name in dir(hamcrest)
                     if not method_name.startswith('_')]
+
+# register utils
+PERMITTED_CALLS += utils.__all__
 
 # registered steps
 STEPS = []
