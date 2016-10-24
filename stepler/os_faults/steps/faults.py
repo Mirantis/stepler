@@ -231,7 +231,7 @@ class OsFaultsSteps(base.BaseSteps):
 
     @steps_checker.step
     def patch_ini_file(self, nodes, file_path, option, value,
-                       section='DEFAULT', check=True):
+                       section=None, check=True):
         """Step to patch INI like file.
 
         Args:
@@ -251,7 +251,7 @@ class OsFaultsSteps(base.BaseSteps):
             'ini_file': {
                 'backup': False,
                 'dest': file_path,
-                'section': section,
+                'section': section or 'DEFAULT',
                 'option': option,
                 'value': value,
             }
