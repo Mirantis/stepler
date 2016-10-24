@@ -42,6 +42,7 @@ __all__ = sorted([  # sort for documentation
     'volume_steps',
 
     'heat_client',
+    'resource_steps',
     'stack_steps',
     'create_stack',
     'read_heat_template',
@@ -62,6 +63,7 @@ __all__ = sorted([  # sort for documentation
     'glance_steps_v1',
     'glance_steps_v2',
     'ubuntu_image',
+    'ubuntu_xenial_image',
 
     'create_domain',
     'domain_steps',
