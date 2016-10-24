@@ -17,12 +17,13 @@ Glance fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .volume import *  # noqa
 from .cinder import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_volume',
     'create_volumes',
     'cinder_client',
-    'cinder_steps',
+    'volume_steps',
     'upload_volume_to_image',
 ])
