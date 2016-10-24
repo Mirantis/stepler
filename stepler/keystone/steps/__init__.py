@@ -21,11 +21,13 @@ Keystone steps
 from .domains import *  # noqa
 from .projects import *  # noqa
 from .roles import *  # noqa
+from .tokens import *  # noqa
 from .users import *  # noqa
 
 __all__ = [
     'DomainSteps',
     'ProjectSteps',
     'RoleSteps',
-    'UserSteps'
+    'UserSteps',
+    'TokenSteps',
 ]
