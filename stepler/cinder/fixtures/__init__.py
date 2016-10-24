@@ -1,6 +1,6 @@
 """
 ---------------
-Glance fixtures
+Cinder fixtures
 ---------------
 """
 
