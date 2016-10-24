@@ -77,7 +77,7 @@ class CinderSteps(base.BaseSteps):
         """Step to create volumes.
 
         Args:
-            name (str): name of created volume
+            names (list): names of created volume
             size (int): size of created volume (in GB)
             image (object): glance image to create volume from
             volume_type (str): type of volume
@@ -165,7 +165,7 @@ class CinderSteps(base.BaseSteps):
 
         Args:
             volume (object): cinder volume to check presence status
-            presented (bool): flag whether volume should present or no
+            present (bool): flag whether volume should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
