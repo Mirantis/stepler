@@ -271,6 +271,26 @@ class VolumeSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
+    def get_volume_host(self, volume, check=True):
+        """Step to retrieve volume host.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            str: volume host
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        volume.get()
+        host = getattr(volume, 'os-vol-host-attr:host')
+
+        if check:
+            assert_that(host, is_not(empty()))
+        return host
+
+    @steps_checker.step
     def check_volume_size(self, volume, size, timeout=0):
         """Step to check volume size.
 
@@ -492,6 +512,43 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.BadRequest))
 
     @steps_checker.step
+    def check_migration_status(self, volume, status, timeout=0):
+        """Check step migration status.
+
+        Args:
+            volume (object): cinder volume to check migration status
+            status (str): expected migration status
+            timeout (int): seconds to wait a result of check
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            volume.get()
+            return volume.migration_status.lower() == status.lower()
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_volume_host(self, volume, host, timeout=0):
+        """Check step volume host.
+
+        Args:
+            volume (object): cinder volume to check host
+            host (str): expected volume host to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            volume_host = self.get_volume_host(volume)
+            return volume_host.lower() == host.lower()
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def set_volume_bootable(self, volume, bootable, check=True):
         """Step to set volume bootable.
 
@@ -531,3 +588,27 @@ class VolumeSteps(base.BaseSteps):
         if check:
             self.check_volume_type(volume, volume_type,
                                    timeout=config.VOLUME_RETYPE_TIMEOUT)
+
+    @steps_checker.step
+    def migrate_volume(self, volume, host, force_host_copy=False,
+                       lock_volume=False, check=True):
+        """Step to migrate volume
+
+        Args:
+            volume (object): volume to migrate
+            host (str): target host to migrate volume
+            force_host_copy (bool): skip driver optimizations
+            lock_volume (bool): lock the volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        self._client.volumes.migrate_volume(volume, host,
+                                            force_host_copy=force_host_copy,
+                                            lock_volume=lock_volume)
+        if check:
+            self.check_migration_status(
+                volume, 'success', timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+            self.check_volume_host(
+                volume, host, timeout=config.VOLUME_AVAILABLE_TIMEOUT)
