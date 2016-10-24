@@ -219,6 +219,24 @@ class CinderSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
+    def check_volume_size(self, volume, size, timeout=0):
+        """Step to check volume size.
+
+        Args:
+            volume (object): cinder volume
+            size (str): expected volume size
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        def predicate():
+            volume.get()
+            return volume.size == size
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def check_volume_attachments(self, volume, server_ids=None, timeout=0):
         """Step to check volume attachments.
 
@@ -278,3 +296,20 @@ class CinderSteps(base.BaseSteps):
             }))
 
         return image
+
+    @steps_checker.step
+    def volume_extend(self, volume, size, check=True):
+        """Step to extend volume to new size.
+
+        Args:
+            volume (str): The :class:`Volume` to upload
+            size (str): The new volume size
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was triggered to False
+        """
+        self._client.volumes.extend(volume, size)
+
+        if check:
+            self.check_volume_size(volume, size)
