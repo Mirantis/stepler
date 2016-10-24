@@ -1,0 +1,17 @@
+heat_template_version: 2013-05-23
+description: >
+  Heat template to deploy Docker containers to an existing host
+
+parameters:
+  docker_endpoint:
+    type: string
+    description: >
+      URL for docker endpoint
+    default: tcp://172.00.0.000:2376
+
+resources:
+  cirros:
+    type: DockerInc::Docker::Container
+    properties:
+      image: cirros
+      docker_endpoint: {get_param: docker_endpoint}
