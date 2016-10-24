@@ -19,8 +19,10 @@ Contains steps specific for heat.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .resources import *  # noqa
 from .stacks import *  # noqa
 
 __all__ = [
+    'ResourceSteps',
     'StackSteps',
 ]
