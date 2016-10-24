@@ -38,7 +38,9 @@ class VolumeSteps(base.BaseSteps):
                       image=None,
                       volume_type=None,
                       description=None,
-                      check=True):
+                      source_volid=None,
+                      check=True,
+                      ):
         """Step to create volume.
 
         Args:
@@ -47,6 +49,7 @@ class VolumeSteps(base.BaseSteps):
             image (object): glance image to create volume from
             volume_type (str): type of volume
             description (str): description
+            source_volid (str): ID of source volume to clone from
             check (bool): flag whether to check step or not
 
         Returns:
@@ -73,6 +76,7 @@ class VolumeSteps(base.BaseSteps):
                        image=None,
                        volume_type=None,
                        description=None,
+                       source_volid=None,
                        check=True):
         """Step to create volumes.
 
@@ -82,6 +86,7 @@ class VolumeSteps(base.BaseSteps):
             image (object): glance image to create volume from
             volume_type (str): type of volume
             description (str): description
+            source_volid (str): ID of source volume to clone from
             check (bool): flag whether to check step or not
 
         Returns:
