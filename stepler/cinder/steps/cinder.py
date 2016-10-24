@@ -17,9 +17,8 @@ Cinder steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_not, empty  # noqa
 from cinderclient import exceptions
-
+from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
 import waiting
 
 from stepler import base
@@ -239,3 +238,43 @@ class CinderSteps(base.BaseSteps):
             return sorted(server_ids) == sorted(attached_ids)
 
         waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def volume_upload_to_image(self, volume, image_name,
+                               force=False, container_format='bare',
+                               disk_format='raw', check=True):
+        """Step to upload volume to image.
+
+        Args:
+            volume (str): The :class:`Volume` to upload
+            image_name (str): The new image name
+            force (bool): Enables or disables upload of a volume that is
+            attached to an instance
+            container_format (str): Container format type
+            disk_format (str): Disk format type
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check was triggered to False
+
+        Returns:
+            object: image
+        """
+        response, image = self._client.volumes.upload_to_image(
+            volume=volume,
+            force=force,
+            image_name=image_name,
+            container_format=container_format,
+            disk_format=disk_format)
+
+        if check:
+            assert_that(response.status_code, equal_to(202))
+            assert_that(image['os-volume_upload_image'], has_entries({
+                'container_format': container_format,
+                'disk_format': disk_format,
+                'image_name': image_name,
+                'id': volume.id,
+                'size': volume.size
+            }))
+
+        return image
