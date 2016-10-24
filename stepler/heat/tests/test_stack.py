@@ -117,3 +117,54 @@ def test_create_stack_with_wait_condition(
             'flavor': flavor.id,
             'private_net': network['id'],
         })
+
+
+def test_create_stack_with_neutron_resources(
+        cirros_image,
+        flavor,
+        public_network,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        read_heat_template,
+        create_stack):
+    """**Scenario:** Create stack with Neutron resources.
+
+        **Setup:**
+
+        #. Create cirros image
+        #. Create network
+        #. Create subnet
+        #. Create router
+        #. Set router default gateway to public network
+
+    **Steps:**
+
+        #. Add router interface to created network
+        #. Read Heat resources template from file
+        #. Create stack with template with parameters:
+            image, flavor, public_net_id, private_net_id, private_subnet_id
+        #. Check stack reach "COMPLETE" status
+
+    **Teardown:**
+
+        #. Delete stack
+        #. Delete router
+        #. Delete subnet
+        #. Delete network
+        #. Delete cirros image
+    """
+    add_router_interfaces(router, [subnet])
+    template = read_heat_template('neutron_resources')
+    stack_name = next(utils.generate_ids('stack'))
+    create_stack(
+        stack_name,
+        template=template,
+        parameters={
+            'image': cirros_image.id,
+            'flavor': flavor.id,
+            'public_net_id': public_network['id'],
+            'private_net_id': network['id'],
+            'private_subnet_id': subnet['id'],
+        })
