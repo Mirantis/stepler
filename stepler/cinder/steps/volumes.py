@@ -38,7 +38,9 @@ class VolumeSteps(base.BaseSteps):
                       image=None,
                       volume_type=None,
                       description=None,
-                      check=True):
+                      source_volid=None,
+                      check=True,
+                      ):
         """Step to create volume.
 
         Args:
@@ -73,6 +75,7 @@ class VolumeSteps(base.BaseSteps):
                        image=None,
                        volume_type=None,
                        description=None,
+                       source_volid=None,
                        check=True):
         """Step to create volumes.
 

@@ -69,3 +69,18 @@ def test_create_volume_description_max(create_volume):
     """
     description = next(utils.generate_ids(prefix='volume', length=255))
     create_volume(description=description)
+
+
+@pytest.mark.idempotent_id('f2e90086-42d7-4257-96ef-10ca5ea3a4c3')
+def test_create_volume_from_volume(create_volume, volume_steps):
+    """**Scenario:** Verify creation of volume from volume.
+
+    **Steps:**
+    #. Create volume
+    #. Create volume from volume
+    """
+    volume_name = next(utils.generate_ids(prefix='volume'))
+    volume_from_volume_name = next(
+        utils.generate_ids(prefix='volume-from-volume'))
+    volume = create_volume(name=volume_name)
+    create_volume(name=volume_from_volume_name, source_volid=volume.id)
