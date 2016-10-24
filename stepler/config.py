@@ -64,6 +64,7 @@ CURRENT_GLANCE_VERSION = '2'
 CURRENT_CINDER_VERSION = '2'
 
 # SERVICES
+CINDER_VOLUME = 'cinder-volume'
 KEYSTONE = 'keystone'
 NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
