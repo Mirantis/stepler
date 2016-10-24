@@ -82,7 +82,7 @@ def generate_ids(prefix=None, postfix=None, count=1, length=None):
         if postfix:
             uid = '{}-{}'.format(uid, postfix)
         if length:
-            uid = uid[0:length]
+            uid = (uid * (length / len(uid) + 1))[:length]
         yield uid
 
 
