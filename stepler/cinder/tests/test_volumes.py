@@ -22,7 +22,7 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('965cb50a-2900-4788-974f-9def0648484a')
-def test_create_delete_10_volumes(cinder_steps):
+def test_create_delete_10_volumes(volume_steps):
     """**Scenario:** Verify that 10 cinder volumes can be created and deleted.
 
     **Steps:**
@@ -32,8 +32,8 @@ def test_create_delete_10_volumes(cinder_steps):
     """
     volumes_names = utils.generate_ids('volume', count=10)
 
-    volumes = cinder_steps.create_volumes(names=volumes_names)
-    cinder_steps.delete_volumes(volumes)
+    volumes = volume_steps.create_volumes(names=volumes_names)
+    volume_steps.delete_volumes(volumes)
 
 
 @pytest.mark.idempotent_id('45783965-096f-46d6-a863-e466cc9d2d49')

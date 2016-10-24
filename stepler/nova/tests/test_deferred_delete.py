@@ -141,7 +141,7 @@ def test_server_deleted_after_reclaim_timeout(
         attach_volume_to_server,
         detach_volume_from_server,
         server_steps,
-        cinder_steps):
+        volume_steps):
     """**Scenario:** Check that softly-deleted instance is totally deleted
     after reclaim interval timeout.
 
@@ -226,10 +226,10 @@ def test_server_deleted_after_reclaim_timeout(
         server_steps.check_server_presence(
             server_1, present=False, timeout=config.SMALL_RECLAIM_TIMEOUT)
 
-        cinder_steps.check_volume_status(
+        volume_steps.check_volume_status(
             volume, config.STATUS_AVAILABLE,
             timeout=config.VOLUME_AVAILABLE_TIMEOUT)
-        cinder_steps.check_volume_attachments(volume, server_ids=None)
+        volume_steps.check_volume_attachments(volume, server_ids=None)
 
         attach_volume_to_server(server_2, volume)
         detach_volume_from_server(server_2, volume)
@@ -251,7 +251,7 @@ def test_force_delete_server_before_deferred_cleanup(
         attach_volume_to_server,
         detach_volume_from_server,
         server_steps,
-        cinder_steps):
+        volume_steps):
     """**Scenario:** Force delete of instance before deferred cleanup
 
     **Setup:**
@@ -321,10 +321,10 @@ def test_force_delete_server_before_deferred_cleanup(
 
             server_steps.delete_server(server_1, soft=True)
 
-        cinder_steps.check_volume_status(
+        volume_steps.check_volume_status(
             volume, config.STATUS_AVAILABLE,
             timeout=config.VOLUME_AVAILABLE_TIMEOUT)
-        cinder_steps.check_volume_attachments(volume, server_ids=None)
+        volume_steps.check_volume_attachments(volume, server_ids=None)
 
         attach_volume_to_server(server_2, volume)
         detach_volume_from_server(server_2, volume)
