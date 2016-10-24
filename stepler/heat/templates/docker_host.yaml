@@ -1,0 +1,125 @@
+heat_template_version: 2013-05-23
+
+description: >
+  This template creates docker host server
+
+parameters:
+  key:
+    type: string
+    description: >
+      Name of a KeyPair to enable SSH access to the instance.
+    default: key1
+  flavor:
+    type: string
+    description: Instance type for the docker server.
+    default: m1.medium
+  image:
+    type: string
+    description: >
+      Name or ID of the image to use for the Docker server.
+    default: ubuntu
+  public_net:
+    type: string
+    description: name of public network for which floating IP addresses will be allocated.
+    default: null
+  int_network_id:
+    type: string
+    description: UUID of an existing internal network
+    default: null
+  docker_port:
+    type: number
+    description: Docker port to listen to
+    default: 2376
+  timeout:
+    type: number
+    description: Timeout for WaitCondition, depends on your image and environment
+    default: 600
+
+resources:
+  wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      handle: {get_resource: wait_handle}
+      count: 1
+      timeout: {get_param: timeout}
+
+  wait_handle:
+    type: OS::Heat::WaitConditionHandle
+
+  docker_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: { get_param: docker_port }
+          port_range_max: { get_param: docker_port }
+
+  docker_server:
+    type: OS::Nova::Server
+    properties:
+      networks:
+        - { network: {get_param: int_network_id} }
+      security_groups:
+        - { get_resource: docker_secgroup }
+      key_name: {get_param: key}
+      image: { get_param: image }
+      flavor: { get_param: flavor}
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #!/bin/bash -v
+            set -x
+            echo '- INSTALL DOCKER -'
+            # sudo dnf update -y
+            curl -fsSL https://get.docker.com/ | sudo sh
+
+            # Config docker
+            sudo mkdir /etc/systemd/system/docker.service.d
+
+            cat << EOF > /tmp/docker.conf
+            [Service]
+            ExecStart=
+            ExecStart=/usr/bin/docker daemon -D --tls=false --host=tcp://0.0.0.0:$docker_port$
+            EOF
+
+            sudo mv /tmp/docker.conf /etc/systemd/system/docker.service.d/
+
+            sudo systemctl daemon-reload
+
+            sudo systemctl restart docker
+
+            # Wait for docker wake up
+            for i in {0..10}; do
+              nc -z -v localhost $docker_port$
+              if [ $? -eq 0 ]; then
+                  break
+              fi
+              sleep 1
+            done
+
+            echo '- NOTIFY -'
+            $wc_notify$ --data-binary '{"status": "SUCCESS"}'  # wait untill OS will finish booting
+          params:
+            $wc_notify$: { get_attr: ['wait_handle', 'curl_cli'] }
+            $docker_port$: { get_param: docker_port }
+
+  server_floating_ip:
+    type: OS::Nova::FloatingIP
+    properties:
+      pool: { get_param: public_net}
+
+  associate_floating_ip:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: { get_resource: server_floating_ip}
+      server_id: { get_resource: docker_server}
+
+outputs:
+  instance_name:
+    description: Name of the instance
+    value: { get_attr: [docker_server, name] }
+  instance_ip:
+    description: The floating IP address of the deployed instance
+    value: { get_attr: [server_floating_ip, ip] }

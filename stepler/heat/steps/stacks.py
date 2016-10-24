@@ -138,3 +138,17 @@ class StackSteps(base.BaseSteps):
                 return not present
 
         waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_output(self, stack, output_key):
+        """Step to get stack output by `output_key`.
+
+        Args:
+            stack (obj): stack object
+            output_key (str): output key
+
+        Returns:
+            dict: stack output
+        """
+        stack.get()
+        return stack.output_show(output_key)['output']

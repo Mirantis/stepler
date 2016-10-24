@@ -37,6 +37,7 @@ __all__ = [
     'glance_steps_v1',
     'glance_steps_v2',
     'ubuntu_image',
+    'ubuntu_xenial_image',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -225,7 +226,8 @@ def create_image(create_images):
 
 @pytest.yield_fixture(scope='session')
 def ubuntu_image(get_glance_steps):
-    """Session fixture to create ubuntu image with default options.
+    """Session fixture to create ubuntu image from config.UBUNTU_QCOW2_URL
+        with default options.
 
     Args:
         get_glance_steps (function): function to get glance steps
@@ -235,6 +237,35 @@ def ubuntu_image(get_glance_steps):
     """
     image_name = next(utils.generate_ids('ubuntu'))
     image_path = utils.get_file_path(config.UBUNTU_QCOW2_URL)
+
+    _ubuntu_image = get_glance_steps(
+        version=config.CURRENT_GLANCE_VERSION,
+        is_api=False).create_images([image_name], image_path)[0]
+
+    SKIPPED_IMAGES.append(_ubuntu_image)
+
+    yield _ubuntu_image
+
+    get_glance_steps(
+        version=config.CURRENT_GLANCE_VERSION,
+        is_api=False).delete_images([_ubuntu_image])
+
+    SKIPPED_IMAGES.remove(_ubuntu_image)
+
+
+@pytest.yield_fixture(scope='session')
+def ubuntu_xenial_image(get_glance_steps):
+    """Session fixture to create ubuntu xenial image from
+        config.UBUNTU_XENIAL_QCOW2_URL with default options.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+
+    Returns:
+        object: ubuntu glance image
+    """
+    image_name = next(utils.generate_ids('ubuntu-xenial'))
+    image_path = utils.get_file_path(config.UBUNTU_XENIAL_QCOW2_URL)
 
     _ubuntu_image = get_glance_steps(
         version=config.CURRENT_GLANCE_VERSION,
