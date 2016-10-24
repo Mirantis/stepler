@@ -44,7 +44,6 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             list of nodes
         """
-        fqdns = set(fqdns)
         if service_names:
             service_fqdns = set()
             for service_name in service_names:
@@ -54,6 +53,7 @@ class OsFaultsSteps(base.BaseSteps):
             if not fqdns:
                 fqdns = service_fqdns
             else:
+                fqdns = set(fqdns)
                 fqdns &= service_fqdns
         nodes = self._client.get_nodes(fqdns=fqdns)
 
@@ -63,12 +63,11 @@ class OsFaultsSteps(base.BaseSteps):
         return nodes
 
     @steps_checker.step
-    def get_service(self, name, fqdns=None, check=True):
+    def get_service(self, name, check=True):
         """Step to get services.
 
         Args:
             name (str): service name
-            fqdns (list|None): nodes hostnames to filter
             check (bool): flag whether check step or not
 
         Returns:
