@@ -1,6 +1,6 @@
 """
 ------------
-Cinder steps
+Volume steps
 ------------
 """
 
@@ -25,11 +25,11 @@ from stepler import base
 from stepler import config
 from stepler.third_party import steps_checker
 
-__all__ = ['CinderSteps']
+__all__ = ['VolumeSteps']
 
 
-class CinderSteps(base.BaseSteps):
-    """Cinder steps."""
+class VolumeSteps(base.BaseSteps):
+    """Volume steps."""
 
     @steps_checker.step
     def create_volume(self,

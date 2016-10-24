@@ -43,14 +43,14 @@ def nova_volume_steps(nova_client):
 
 
 @pytest.fixture
-def attach_volume_to_server(nova_volume_steps, cinder_steps):
+def attach_volume_to_server(nova_volume_steps, volume_steps):
     """Callable function fixture to attach volume to server.
 
     Can be called several times during test.
 
     Args:
         nova_volume_steps (NovaVolumeSteps): instance of nova volume steps
-        cinder_steps (CinderSteps): instance of cinder steps
+        volume_steps (VolumeSteps): instance of volume steps
 
     Returns:
         function: function to attach volume to server
@@ -59,23 +59,23 @@ def attach_volume_to_server(nova_volume_steps, cinder_steps):
         attached_ids = [a['server_id'] for a in volume.attachments]
         nova_volume_steps.attach_volume_to_server(server, volume,
                                                   *args, **kwgs)
-        cinder_steps.check_volume_status(volume, config.STATUS_INUSE,
+        volume_steps.check_volume_status(volume, config.STATUS_INUSE,
                                          timeout=config.VOLUME_IN_USE_TIMEOUT)
         attached_ids.append(server.id)
-        cinder_steps.check_volume_attachments(volume, attached_ids)
+        volume_steps.check_volume_attachments(volume, attached_ids)
 
     return _attach_volume_to_server
 
 
 @pytest.fixture
-def detach_volume_from_server(nova_volume_steps, cinder_steps):
+def detach_volume_from_server(nova_volume_steps, volume_steps):
     """Callable function fixture to detach volume to server.
 
     Can be called several times during test.
 
     Args:
         nova_volume_steps (NovaVolumeSteps): instance of nova volume steps
-        cinder_steps (CinderSteps): instance of cinder steps
+        volume_steps (VolumeSteps): instance of volume steps
 
     Returns:
         function: function to detach volume to server
@@ -84,10 +84,10 @@ def detach_volume_from_server(nova_volume_steps, cinder_steps):
         attached_ids = [a['server_id'] for a in volume.attachments]
         nova_volume_steps.detach_volume_from_server(server, volume,
                                                     *args, **kwgs)
-        cinder_steps.check_volume_status(
+        volume_steps.check_volume_status(
             volume, config.STATUS_AVAILABLE,
             timeout=config.VOLUME_AVAILABLE_TIMEOUT)
         attached_ids.remove(server.id)
-        cinder_steps.check_volume_attachments(volume, attached_ids)
+        volume_steps.check_volume_attachments(volume, attached_ids)
 
     return _detach_volume_from_server
