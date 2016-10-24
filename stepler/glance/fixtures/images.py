@@ -19,6 +19,7 @@ Glance fixtures
 
 import logging
 
+from hamcrest import assert_that, is_not  # noqa
 import pytest
 
 from stepler import config
@@ -44,29 +45,40 @@ LOGGER = logging.getLogger(__name__)
 SKIPPED_IMAGES = []  # TODO(schipiga): describe its mechanism in docs
 
 
-def _remove_stayed_images(glance_steps):
-    """Clear unexpected images.
+@pytest.yield_fixture
+def images_cleanup():
+    """Callable function fixture to clear unexpected images.
 
-    We should remove images which unexpectedly stayed after tests.
-
-    Args:
-        glance_steps (GlanceSteps): instantiated glance steps
+    It provides cleanup before and after test. Cleanup before test is callable
+    with injecton of glance steps. Should be called before returning of
+    instantiated glance steps.
     """
-    # check=False because in best case no stayed images will be present
-    images = glance_steps.get_images(name_prefix=config.STEPLER_PREFIX,
-                                     check=False)
-    if SKIPPED_IMAGES:
-        image_names = [image.name for image in SKIPPED_IMAGES]
-        LOGGER.warn("SKIPPED_IMAGES contains images {!r}. "
-                    "They will not be removed.".format(image_names))
+    _glance_steps = [None]
 
-    images = [image for image in images if image not in SKIPPED_IMAGES]
-    glance_steps.delete_images(images)
+    def _images_cleanup(glance_steps):
+        assert_that(glance_steps, is_not(None))
+        _glance_steps[0] = glance_steps  # inject glance steps for finalizer
+        # check=False because in best case no images will be present
+        images = glance_steps.get_images(name_prefix=config.STEPLER_PREFIX,
+                                         check=False)
+        if SKIPPED_IMAGES:
+            image_names = [image.name for image in SKIPPED_IMAGES]
+            LOGGER.debug(
+                "SKIPPED_IMAGES contains images {!r}. They will not be "
+                "removed in cleanup procedure.".format(image_names))
+
+        images = [image for image in images if image not in SKIPPED_IMAGES]
+        if images:
+            glance_steps.delete_images(images)
+
+    yield _images_cleanup
+
+    _images_cleanup(_glance_steps[0])
 
 
 # TODO(schipiga): In future will rename `glance_steps` -> `image_steps`
 @pytest.fixture(scope='session')
-def get_glance_steps(get_glance_client):
+def get_glance_steps(request, get_glance_client):
     """Callable session fixture to get glance steps.
 
     Args:
@@ -83,15 +95,7 @@ def get_glance_steps(get_glance_client):
             '2': steps.GlanceStepsV2,
         }[version]
 
-        glance_steps = glance_steps_cls(glance_client)
-
-        # TODO(schipiga): provide this mechanism for all glance steps fixtures.
-        if version == '2' and not is_api:
-            # Remove when steps are requested. Make it for glance pythonclient
-            # v2 only, because now it is actual most useful client version.
-            _remove_stayed_images(glance_steps)
-
-        return glance_steps
+        return glance_steps_cls(glance_client)
 
     return _get_glance_steps
 
@@ -149,17 +153,21 @@ def api_glance_steps_v2(get_glance_steps):
 
 
 @pytest.fixture
-def glance_steps(get_glance_steps):
+def glance_steps(get_glance_steps, images_cleanup):
     """Function fixture to get API glance steps.
 
     Args:
         get_glance_steps (function): function to get glance steps
+        images_cleanup (function): function to make images cleanup right
+            after glance steps initialization
 
     Returns:
         GlanceStepsV1: instantiated glance steps v1
     """
-    return get_glance_steps(
+    _glance_steps = get_glance_steps(
         version=config.CURRENT_GLANCE_VERSION, is_api=False)
+    images_cleanup(_glance_steps)
+    return _glance_steps
 
 
 @pytest.fixture
@@ -178,7 +186,7 @@ def api_glance_steps(get_glance_steps):
 
 @pytest.yield_fixture
 def create_images(glance_steps):
-    """Function fixture to create images with options.
+    """Callable function fixture to create images with options.
 
     Can be called several times during a test.
     After the test it destroys all created images.
@@ -206,7 +214,7 @@ def create_images(glance_steps):
 
 @pytest.fixture
 def create_image(create_images):
-    """Function fixture to create single image with options.
+    """Callable function fixture to create single image with options.
 
     Can be called several times during a test.
     After the test it destroys all created images.

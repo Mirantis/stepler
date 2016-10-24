@@ -211,7 +211,7 @@ class ServerSteps(base.BaseSteps):
 
         if name_prefix:
             servers = [server for server in servers
-                       if server.name.startswith(name_prefix)]
+                       if (server.name or '').startswith(name_prefix)]
 
         if check:
             assert_that(servers, is_not(empty()))
