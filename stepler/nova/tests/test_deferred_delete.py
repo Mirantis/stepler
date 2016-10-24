@@ -39,13 +39,16 @@ def test_restore_soft_deleted_server(
     """**Scenario:** Restore previously deleted instance
 
     **Setup:**
+
         #. Create cirros image
         #. Create flavor
         #. Create net and subnet
         #. Create keypair
         #. Create security group
         #. Create router
+
     **Steps:**
+
         #. Update /etc/nova/nova.conf with 'reclaim_instance_interval=86400'
            and restart nova-api and nova-compute on all nodes
         #. Add router interface
@@ -56,7 +59,9 @@ def test_restore_soft_deleted_server(
         #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
         #. Restore vm1 instance and check that it's in 'ACTIVE' state
         #. Check that ping are successful between vms
+
     **Teardown:**
+
         #. Delete volume
         #. Delete vms
         #. Delete router and router interface
@@ -141,13 +146,16 @@ def test_server_deleted_after_reclaim_timeout(
     after reclaim interval timeout.
 
     **Setup:**
+
         #. Create cirros image
         #. Create flavor
         #. Create net and subnet
         #. Create keypair
         #. Create security group
         #. Create router
+
     **Steps:**
+
         #. Update '/etc/nova/nova.conf' with 'reclaim_instance_interval=30'
            and restart nova-api and nova-compute on all nodes
         #. Create and run two instances (vm1, vm2) inside same net
@@ -160,7 +168,9 @@ def test_server_deleted_after_reclaim_timeout(
         #. Check that volume is released now and has an Available state
         #. Attach the volume to vm2 and check that it has 'in-use' state.
         #. Detach the volume
+
     **Teardown:**
+
         #. Delete volume
         #. Delete vms
         #. Delete security group
@@ -245,13 +255,16 @@ def test_force_delete_server_before_deferred_cleanup(
     """**Scenario:** Force delete of instance before deferred cleanup
 
     **Setup:**
+
         #. Create cirros image
         #. Create flavor
         #. Create net and subnet
         #. Create keypair
         #. Create security group
         #. Create router
+
     **Steps:**
+
         #. Update /etc/nova/nova.conf with 'reclaim_instance_interval=86400'
            and restart nova-api and nova-compute on all nodes
         #. Create and run two instances (vm1, vm2) inside same net
@@ -262,7 +275,9 @@ def test_force_delete_server_before_deferred_cleanup(
         #. Check that volume is released now and has an Available state;
         #. Attach the volume to vm2 and check that it has 'in-use' state.
         #. Detach the volume
+
     **Teardown:**
+
         #. Delete volume
         #. Delete vms
         #. Delete security group
