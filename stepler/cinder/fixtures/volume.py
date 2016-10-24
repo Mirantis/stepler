@@ -27,7 +27,7 @@ __all__ = [
     'create_volume',
     'create_volumes',
     'cinder_client',
-    'cinder_steps',
+    'volume_steps',
     'upload_volume_to_image',
 ]
 
@@ -47,27 +47,27 @@ def cinder_client(session):
 
 
 @pytest.fixture
-def cinder_steps(cinder_client):
-    """Function fixture to get cinder steps.
+def volume_steps(cinder_client):
+    """Function fixture to get volume steps.
 
     Args:
         cinder_client (object): instantiated cinder client
 
     Returns:
-        stepler.cinder.steps.GlanceSteps: instantiated cinder steps
+        stepler.cinder.steps.VolumeSteps: instantiated volume steps
     """
-    return steps.CinderSteps(cinder_client)
+    return steps.VolumeSteps(cinder_client)
 
 
 @pytest.yield_fixture
-def create_volumes(cinder_steps):
+def create_volumes(volume_steps):
     """Callable function fixture to create volumes with options.
 
     Can be called several times during a test.
     After the test it destroys all created volumes.
 
     Args:
-        cinder_steps (object): instantiated cinder steps
+        volume_steps (object): instantiated volume steps
 
     Returns:
         function: function to create volumes as batch with options
@@ -75,15 +75,15 @@ def create_volumes(cinder_steps):
     volumes = []
 
     def _create_volumes(names, *args, **kwgs):
-        _volumes = cinder_steps.create_volumes(names, *args, **kwgs)
+        _volumes = volume_steps.create_volumes(names, *args, **kwgs)
         volumes.extend(_volumes)
         return _volumes
 
     yield _create_volumes
 
     if volumes:
-        cinder_steps.detach_volumes(volumes)
-        cinder_steps.delete_volumes(volumes)
+        volume_steps.detach_volumes(volumes)
+        volume_steps.delete_volumes(volumes)
 
 
 @pytest.fixture
@@ -106,7 +106,7 @@ def create_volume(create_volumes):
 
 
 @pytest.yield_fixture
-def upload_volume_to_image(create_volume, cinder_steps, glance_steps):
+def upload_volume_to_image(create_volume, volume_steps, glance_steps):
     """Callable function fixture to upload volume to image.
 
     Can be called several times during a test.
@@ -114,7 +114,7 @@ def upload_volume_to_image(create_volume, cinder_steps, glance_steps):
 
     Args:
         create_volume (function): function to create volume with options
-        cinder_steps (CinderSteps): instantiated cinder steps
+        volume_steps (VolumeSteps): instantiated volume steps
         glance_steps (GlanceSteps): instantiated glance steps
 
     Returns:
@@ -124,7 +124,7 @@ def upload_volume_to_image(create_volume, cinder_steps, glance_steps):
 
     def _upload_volume_to_image(volume_name, image_name, disk_format):
         volume = create_volume(volume_name)
-        image_info = cinder_steps.volume_upload_to_image(
+        image_info = volume_steps.volume_upload_to_image(
             volume=volume, image_name=image_name, disk_format=disk_format)
         image = glance_steps.get_image(
             image_info['os-volume_upload_image']['image_id'])
