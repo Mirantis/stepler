@@ -443,6 +443,46 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.BadRequest))
 
     @steps_checker.step
+    def check_migration_status(self, volume, status, timeout=0):
+        """Check step migration status.
+
+        Args:
+            volume (object): cinder volume to check migration status
+            status (str): expected migration status
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if migration status was not 'success' after timeout
+        """
+
+        def predicate():
+            volume.get()
+            return expect_that(
+                volume.migration_status.lower(), equal_to(status.lower()))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_volume_host(self, volume, host, timeout=0):
+        """Check step volume host.
+
+        Args:
+            volume (object): cinder volume to check host
+            host (str): expected volume host to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if volume host is not changed after timeout
+        """
+
+        def predicate():
+            volume.get()
+            volume_host = getattr(volume, 'os-vol-host-attr:host')
+            return expect_that(volume_host.lower(), equal_to(host.lower()))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def set_volume_bootable(self, volume, bootable, check=True):
         """Step to set volume bootable.
 
@@ -497,3 +537,29 @@ class VolumeSteps(base.BaseSteps):
                                                            check=False),
                     raises(exceptions.BadRequest))
         self.check_volume_presence(volume)
+
+    @steps_checker.step
+    def migrate_volume(self, volume, host, force_host_copy=False,
+                       lock_volume=False, check=True):
+        """Step to migrate volume.
+
+        Args:
+            volume (object): volume to migrate
+            host (str): target host to migrate volume
+            force_host_copy (bool): skip driver optimizations
+            lock_volume (bool): lock the volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if migration status is not 'success' or
+            volume host is not changed after timeout
+        """
+        self._client.volumes.migrate_volume(volume, host,
+                                            force_host_copy=force_host_copy,
+                                            lock_volume=lock_volume)
+        if check:
+            self.check_migration_status(
+                volume, status=config.STATUS_SUCCESS,
+                timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+            self.check_volume_host(
+                volume, host, timeout=config.VOLUME_AVAILABLE_TIMEOUT)

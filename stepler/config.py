@@ -64,6 +64,7 @@ CURRENT_GLANCE_VERSION = '2'
 CURRENT_CINDER_VERSION = '2'
 
 # SERVICES
+CINDER_VOLUME = 'cinder-volume'
 KEYSTONE = 'keystone'
 NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
@@ -80,6 +81,7 @@ STATUS_MIGRATING = 'migrating'
 STATUS_OK = 'OK'
 STATUS_RESIZE = 'resize'
 STATUS_SOFT_DELETED = 'soft_deleted'
+STATUS_SUCCESS = 'success'
 STATUS_VERIFY_RESIZE = 'verify_resize'
 STATUS_UPLOADING = 'uploading'
 

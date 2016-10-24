@@ -18,6 +18,7 @@ Volume tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
@@ -229,3 +230,28 @@ def test_negative_delete_volume_cascade(volume,
     volume_steps.check_volume_deletion_without_cascading_failed(volume)
     snapshot_steps.check_snapshots_presence([volume_snapshot],
                                             must_present=True)
+
+
+@pytest.mark.idempotent_id('f0c407a3-7aa1-400c-9a9f-6c69870e3fb9')
+def test_migrate_volume(volume, volume_steps, os_faults_steps):
+    """**Scenario:** Migrate volume to another host
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Find cinder volume host to migrate
+    #. Migrate cinder volume
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    source_host = getattr(volume, 'os-vol-host-attr:host')
+    hosts = os_faults_steps.get_nodes(service_names=[config.CINDER_VOLUME])
+    target_host = [host.fqdn + '@LVM-backend#LVM-backend'
+                   for host in hosts if host.fqdn not in source_host][0]
+
+    volume_steps.migrate_volume(volume, target_host)
