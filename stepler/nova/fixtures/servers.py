@@ -36,6 +36,7 @@ __all__ = [
     'get_ssh_proxy_cmd',
     'server',
     'server_steps',
+    'servers_cleanup'
 ]
 
 LOGGER = logging.getLogger(__name__)

@@ -60,4 +60,5 @@ __all__ = sorted([  # sort for documentation
     'get_ssh_proxy_cmd',
     'server',
     'server_steps',
+    'servers_cleanup'
 ])

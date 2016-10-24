@@ -118,6 +118,7 @@ __all__ = sorted([  # sort for documentation
     'create_servers_context',
     'server',
     'server_steps',
+    'servers_cleanup',
     'get_ssh_proxy_cmd',
 
     'os_faults_client',
