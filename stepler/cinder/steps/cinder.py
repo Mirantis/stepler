@@ -160,6 +160,13 @@ class CinderSteps(base.BaseSteps):
                     timeout=config.VOLUME_DELETE_TIMEOUT)
 
     @steps_checker.step
+    def get_cinder_hosts(self):
+        """Step to get available cinder hosts."""
+        hosts = [service.host + '#LVM-backend' for service in
+                 self._client.services.list(binary='cinder-volume')]
+        return hosts
+
+    @steps_checker.step
     def check_volume_presence(self, volume, present=True, timeout=0):
         """Check step volume presence status.
 
@@ -240,6 +247,44 @@ class CinderSteps(base.BaseSteps):
         waiting.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
+    def check_volume_host(self, volume, host, timeout=0):
+        """Check step volume host.
+
+        Args:
+            volume (object): cinder volume to check host
+            host (str): expected volume host to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            volume.get()
+            volume_host = getattr(volume, 'os-vol-host-attr:host')
+            return volume_host.lower() == host.lower()
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_migration_status(self, volume, status, timeout=0):
+        """Check step migration status.
+
+        Args:
+            volume (object): cinder volume to check migration status
+            status (str): expected migration status
+            timeout (int): seconds to wait a result of check
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+
+        def predicate():
+            volume.get()
+            return volume.migration_status.lower() == status.lower()
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def volume_upload_to_image(self, volume, image_name,
                                force=False, container_format='bare',
                                disk_format='raw', check=True):
@@ -278,3 +323,28 @@ class CinderSteps(base.BaseSteps):
             }))
 
         return image
+
+    @steps_checker.step
+    def migrate_volume(self, volume, force_host_copy=False,
+                       lock_volume=False, check=True):
+        """Step to migrate volume
+
+        Args:
+            volume (object): volume to migrate
+            force_host_copy (bool): skip driver optimizations
+            lock_volume (bool): lock the volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        host = [host for host in self.get_cinder_hosts()
+                if host != getattr(volume, 'os-vol-host-attr:host')][0]
+        self._client.volumes.migrate_volume(volume, host,
+                                            force_host_copy=force_host_copy,
+                                            lock_volume=lock_volume)
+        if check:
+            self.check_migration_status(
+                volume, 'success', timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+            self.check_volume_host(
+                volume, host, timeout=config.VOLUME_AVAILABLE_TIMEOUT)

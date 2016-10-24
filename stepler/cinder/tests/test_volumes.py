@@ -69,3 +69,18 @@ def test_create_volume_description_max(create_volume):
     """
     description = next(utils.generate_ids(prefix='volume', length=255))
     create_volume(description=description)
+
+
+@pytest.mark.idempotent_id('f0c407a3-7aa1-400c-9a9f-6c69870e3fb9')
+def test_migrate_volume(create_volume, cinder_steps):
+    """**Scenario:** Migrate volume to another host
+
+    **Steps:**
+
+    #. Create volume
+    #. Migrate volume to another host
+    """
+    volume_name = next(utils.generate_ids(prefix='volume'))
+
+    volume = create_volume(name=volume_name)
+    cinder_steps.migrate_volume(volume)
