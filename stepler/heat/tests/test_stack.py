@@ -59,3 +59,21 @@ def test_create_stack_with_aws(read_heat_template, network, subnet, router,
             'internal_subnet': subnet['id'],
             'external_network': public_network['id']
         })
+
+
+def test_create_stack_with_heat_resources(read_heat_template, create_stack):
+    """**Scenario:** Create stack with heat resources.
+
+    **Steps:**
+
+        #. Read Heat resources template from file
+        #. Create stack with template
+        #. Check stack reach "COMPLETE" status
+
+    **Teardown:**
+
+        #. Delete stack
+    """
+    template = read_heat_template('heat_resources')
+    stack_name = next(utils.generate_ids('stack'))
+    create_stack(stack_name, template=template)
