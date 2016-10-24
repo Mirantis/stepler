@@ -1,0 +1,55 @@
+heat_template_version: 2013-05-23
+
+description: >
+  Example of using ResourceGroup to attach multiple volumes to an instance
+parameters:
+
+  image:
+    type: string
+    description: ID of the image to use for the instance to be created.
+
+  flavor:
+    type: string
+    description: Flavor name or id to create instance with it
+
+  int_network:
+    type: string
+    description: UUID of an existing internal network
+
+  volume_size:
+    type: number
+    description: Size of volume to attach to instance
+    default: 1
+    constraints:
+      - range: { min: 1, max: 10 }
+
+  num_volumes:
+    type: number
+    description: Number of volumes to attach to instance
+    default: 2
+    constraints:
+      - range: { min: 1, max: 10 }
+
+resources:
+  instance:
+    type: OS::Nova::Server
+    properties:
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      networks:
+        - { network: {get_param: int_network} }
+
+  group_of_volumes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: num_volumes }
+      resource_def:
+        type: volume_with_attachment.yaml
+        properties:
+          instance_id: { get_resource: instance }
+          volume_size: { get_param: volume_size }
+
+outputs:
+  server_ip:
+    description: IP Address of server having volumes attached.
+    value: { get_attr: [instance, first_address] }
