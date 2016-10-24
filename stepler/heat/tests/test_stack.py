@@ -121,3 +121,49 @@ def test_create_stack_with_neutron_resources(
             'private_net_id': network['id'],
             'private_subnet_id': subnet['id'],
         })
+
+
+def test_create_stack_with_nova_resources(
+        cirros_image, flavor, public_network, network, subnet, router,
+        add_router_interfaces, read_heat_template, create_stack):
+    """**Scenario:** Create stack with Nova resources.
+
+        **Setup:**
+
+        #. Create cirros image
+        #. Create flavor
+        #. Create network
+        #. Create subnet
+        #. Create router
+        #. Set router default gateway to public network
+
+    **Steps:**
+
+        #. Add router interface to created network
+        #. Read Heat resources template from file
+        #. Create stack with template with parameters:
+            image, flavor, public_net_id, private_net_id, private_subnet_id
+        #. Check stack reach "COMPLETE" status
+
+    **Teardown:**
+
+        #. Delete stack
+        #. Delete router
+        #. Delete subnet
+        #. Delete network
+        #. Delete flavor
+        #. Delete cirros image
+    """
+    add_router_interfaces(router, [subnet])
+    template = read_heat_template('nova_resources')
+    additional_template = read_heat_template('volume_with_attachment')
+    stack_name = next(utils.generate_ids('stack'))
+    create_stack(
+        stack_name,
+        template=template,
+        parameters={
+            'image': cirros_image.id,
+            'flavor': flavor.id,
+            'int_network': network['id'],
+        },
+        files={'volume_with_attachment.yaml': additional_template})
