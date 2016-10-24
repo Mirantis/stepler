@@ -72,3 +72,18 @@ class UserSteps(BaseSteps):
                 return not present
 
         wait(predicate, timeout_seconds=timeout)
+
+    @step
+    def get_user_token(self, check=True):
+        """Step to get user token.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            token (str): user token
+        """
+        token = self._client.client.get_token()
+        if check:
+            assert token
+        return token
