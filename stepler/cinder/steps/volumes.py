@@ -41,6 +41,7 @@ class VolumeSteps(base.BaseSteps):
                       image=None,
                       volume_type=None,
                       description=None,
+                      snapshot_id=None,
                       check=True):
         """Step to create volume.
 
@@ -50,22 +51,36 @@ class VolumeSteps(base.BaseSteps):
             image (object): glance image to create volume from
             volume_type (str): type of volume
             description (str): description
+            snapshot_id (str): ID of the snapshot
             check (bool): flag whether to check step or not
 
         Returns:
             object: cinder volume
+
+        Raises:
+            TimeoutExpired|AssertionError: if check was falsed
         """
         image_id = None if image is None else image.id
         volume = self._client.volumes.create(size,
                                              name=name,
                                              imageRef=image_id,
                                              volume_type=volume_type,
-                                             description=description)
-
+                                             description=description,
+                                             snapshot_id=snapshot_id)
         if check:
             self.check_volume_status(volume,
-                                     'available',
+                                     config.STATUS_AVAILABLE,
                                      timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+            if snapshot_id:
+                assert_that(volume.snapshot_id, equal_to(snapshot_id))
+            if name:
+                assert_that(volume.name, equal_to(name))
+            if size:
+                assert_that(volume.size, equal_to(size))
+            if volume_type:
+                assert_that(volume.volume_type, equal_to(volume_type))
+            if description:
+                assert_that(volume.description, equal_to(description))
 
         return volume
 
@@ -93,6 +108,7 @@ class VolumeSteps(base.BaseSteps):
                        image=None,
                        volume_type=None,
                        description=None,
+                       snapshot_id=None,
                        check=True):
         """Step to create volumes.
 
@@ -102,6 +118,7 @@ class VolumeSteps(base.BaseSteps):
             image (object): glance image to create volume from
             volume_type (str): type of volume
             description (str): description
+            snapshot_id (str): ID of the snapshot
             check (bool): flag whether to check step or not
 
         Returns:
@@ -114,6 +131,7 @@ class VolumeSteps(base.BaseSteps):
                                         image=image,
                                         volume_type=volume_type,
                                         description=description,
+                                        snapshot_id=snapshot_id,
                                         check=False)
             volumes.append(volume)
 
@@ -122,7 +140,7 @@ class VolumeSteps(base.BaseSteps):
             for volume in volumes:
                 self.check_volume_status(
                     volume,
-                    'available',
+                    config.STATUS_AVAILABLE,
                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
         return volumes
