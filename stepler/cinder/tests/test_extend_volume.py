@@ -24,12 +24,42 @@ import pytest
 def test_negative_extend_volume(create_volume, volume_steps, size):
     """**Scenario:** Verify negative cases of volume extend
 
+    **Setup:**
+
+        #. Create cinder volume
+
     **Steps:**
 
-    #. Create cinder volume.
-    #. Try to extend volume to negative/smaller size
-    #. Check that volume extending was not performed
-    #. Delete cinder volume
+        #. Try to extend volume to negative/smaller size
+        #. Check that volume extending was not performed
+
+    **Teardown:**
+
+        #. Delete cinder volume
+
     """
     volume = create_volume(size=2)
     volume_steps.check_volume_extend_failed(volume, size)
+
+
+@pytest.mark.idempotent_id('50baaa82-82de-4698-96fc-aa58f91f3ee2')
+def test_positive_extend_volume(create_volume, volume_steps):
+    """**Scenario:** Verify nominal volume extend
+
+    **Setup:**
+
+        #. Create cinder volume
+
+    **Steps:**
+
+        #. Create cinder volume
+        #. Extend volume to correct size
+        #. Check that volume extending was performed
+
+    **Teardown:**
+
+        #. Delete cinder volume
+
+    """
+    volume = create_volume(size=1)
+    volume_steps.volume_extend(volume, size=2)
