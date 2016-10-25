@@ -67,3 +67,11 @@ class ProjectSteps(BaseSteps):
         if check:
             assert projects
         return projects
+
+    @step
+    def get_current_project(self, session, check=True):
+        """Step to get current project."""
+        project = self._client.get(session.get_project_id())
+        if check:
+            assert project
+        return project

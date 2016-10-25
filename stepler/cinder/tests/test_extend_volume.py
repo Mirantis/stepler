@@ -25,6 +25,7 @@ def test_negative_extend_volume(create_volume, volume_steps, size):
     """**Scenario:** Verify negative cases of volume extend
 
     **Steps:**
+
         #. Create cinder volume
         #. Try to extend volume to negative/smaller size
         #. Check that volume extending was not performed
@@ -35,7 +36,7 @@ def test_negative_extend_volume(create_volume, volume_steps, size):
 
     """
     volume = create_volume(size=2)
-    volume_steps.check_volume_extend_failed(volume, size)
+    volume_steps.check_volume_extend_failed_incorrect_size(volume, size)
 
 
 @pytest.mark.idempotent_id('50baaa82-82de-4698-96fc-aa58f91f3ee2')
@@ -43,7 +44,7 @@ def test_positive_extend_volume(create_volume, volume_steps):
     """**Scenario:** Verify nominal volume extend
 
     **Steps:**
-        #. Create cinder volume
+
         #. Create cinder volume
         #. Extend volume to correct size
         #. Check that volume extending was performed
@@ -55,3 +56,27 @@ def test_positive_extend_volume(create_volume, volume_steps):
     """
     volume = create_volume(size=1)
     volume_steps.volume_extend(volume, size=2)
+
+
+@pytest.mark.idempotent_id('0cdc2fd5-eb07-4930-b004-077d16200091')
+def test_negative_extend_volume_more_than_limit(session, create_volume,
+                                                cinder_quota_steps,
+                                                project_steps, volume_steps):
+    """**Scenario:** Verify negative cases of volume extend (size > limit)
+
+    **Steps:**
+
+        #. Create cinder volume
+        #. Try to extend volume to size which is more than quota
+        #. Check that volume extending was not performed
+
+
+    **Teardown:**
+
+        #. Delete cinder volume
+
+    """
+    volume = create_volume()
+    current_project = project_steps.get_current_project(session)
+    size = cinder_quota_steps.get_volume_size_quota(current_project) + 1
+    volume_steps.check_volume_extend_failed_size_more_than_limit(volume, size)
