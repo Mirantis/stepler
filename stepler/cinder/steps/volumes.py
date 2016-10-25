@@ -276,6 +276,25 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.BadRequest, error_message))
 
     @steps_checker.step
+    def check_negative_volume_creation_wrong_size(self, size):
+        """Step to check negative volume creation with negative/zero size
+
+        Args:
+            size (int): volume size
+
+        Raises:
+            AssertionError: if check was falsed after timeout
+        """
+        error_message = (
+            "Volume size '{0}' must be an integer and greater than 0|"
+            "Invalid volume size provided for create request: {0} "
+            "\(size argument must be an integer \(or string representation "
+            "of an integer\) and greater than zero\)".format(size))
+        assert_that(
+            calling(self.create_volume).with_args(size=size, check=False),
+            raises(exceptions.BadRequest, error_message))
+
+    @steps_checker.step
     def volume_upload_to_image(self, volume, image_name,
                                force=False, container_format='bare',
                                disk_format='raw', check=True):
