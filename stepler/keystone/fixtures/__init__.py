@@ -22,6 +22,7 @@ from .groups import *  # noqa
 from .keystone import *  # noqa
 from .projects import *  # noqa
 from .roles import *  # noqa
+from .tokens import *  # noqa
 from .users import *  # noqa
 
 __all__ = sorted([  # sort for documentation
@@ -45,5 +46,7 @@ __all__ = sorted([  # sort for documentation
     'admin',
     'create_user',
     'user_steps',
-    'user'
+    'user',
+
+    'token_steps',
 ])
