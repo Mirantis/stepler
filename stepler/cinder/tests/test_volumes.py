@@ -21,6 +21,31 @@ import pytest
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('3421a84f-5a15-4195-ba58-1e143092ef1e')
+def test_create_volume_from_snapshot(volume_snapshot, volume_steps):
+    """**Scenario:** Verify creation volume from snapshot.
+
+    **Setup:**
+
+        #. Create volume1
+        #. Create snapshot from volume1
+
+    **Steps:**
+
+        #. Create volume2 from snapshot
+        #. Delete volume2
+
+    **Teardown:**
+
+        #. Delete snapshot
+        #. Delete volume1
+    """
+    volume_name = next(utils.generate_ids('volume'))
+    volume = volume_steps.create_volume(name=volume_name,
+                                        snapshot_id=volume_snapshot.id)
+    volume_steps.delete_volume(volume)
+
+
 @pytest.mark.idempotent_id('965cb50a-2900-4788-974f-9def0648484a')
 def test_create_delete_10_volumes(volume_steps):
     """**Scenario:** Verify that 10 cinder volumes can be created and deleted.
