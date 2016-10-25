@@ -33,7 +33,7 @@ class CliGlanceSteps(base.BaseCliSteps):
     @steps_checker.step
     def image_create(self, image_file=None, image_name=None, disk_format=None,
                      container_format=None,
-                     api_version=config.GLANCE_DEFAULT_API_VERSION,
+                     api_version=config.CURRENT_GLANCE_VERSION,
                      check=True):
         """Step to create image.
 
@@ -117,7 +117,7 @@ class CliGlanceSteps(base.BaseCliSteps):
 
     @steps_checker.step
     def show_image(self, image_id,
-                   api_version=config.GLANCE_DEFAULT_API_VERSION, check=True):
+                   api_version=config.CURRENT_GLANCE_VERSION, check=True):
         """Step to show glance image.
 
         Args:
@@ -141,7 +141,7 @@ class CliGlanceSteps(base.BaseCliSteps):
         return image, exit_code, stdout, stderr
 
     @steps_checker.step
-    def list_images(self, api_version=config.GLANCE_DEFAULT_API_VERSION,
+    def list_images(self, api_version=config.CURRENT_GLANCE_VERSION,
                     check=True):
         """Step to get glance images list.
 
@@ -173,7 +173,7 @@ class CliGlanceSteps(base.BaseCliSteps):
 
     @steps_checker.step
     def delete_image(self, image_id,
-                     api_version=config.GLANCE_DEFAULT_API_VERSION,
+                     api_version=config.CURRENT_GLANCE_VERSION,
                      check=True):
         """Step to delete glance image.
 
@@ -192,7 +192,7 @@ class CliGlanceSteps(base.BaseCliSteps):
     @steps_checker.step
     def check_image_list_contains(self, image,
                                   api_version=config.
-                                  GLANCE_DEFAULT_API_VERSION):
+                                  CURRENT_GLANCE_VERSION):
         """Step to check that image is in images list.
 
         Args:
@@ -208,9 +208,8 @@ class CliGlanceSteps(base.BaseCliSteps):
         assert_that(image['id'], is_in(image_ids))
 
     @steps_checker.step
-    def check_image_list_doesnt_contain(self, image,
-                                        api_version=config.
-                                        GLANCE_DEFAULT_API_VERSION):
+    def check_image_list_doesnt_contain(
+            self, image, api_version=config.CURRENT_GLANCE_VERSION):
         """Step to check that image doesn't exist in images list.
 
         Args:
@@ -227,7 +226,7 @@ class CliGlanceSteps(base.BaseCliSteps):
 
     @steps_checker.step
     def check_negative_image_create_without_properties(
-            self, filename, api_version=config.GLANCE_DEFAULT_API_VERSION):
+            self, filename, api_version=config.CURRENT_GLANCE_VERSION):
         """Step to check image is not created from file without properties.
 
         Args:
@@ -252,7 +251,7 @@ class CliGlanceSteps(base.BaseCliSteps):
     @steps_checker.step
     def check_negative_download_zero_size_image(
             self, image_id, progress=False,
-            api_version=config.GLANCE_DEFAULT_API_VERSION):
+            api_version=config.CURRENT_GLANCE_VERSION):
         """Step to check that zero-size image cannot be downloaded.
 
         Args:
@@ -283,7 +282,7 @@ class CliGlanceSteps(base.BaseCliSteps):
     @steps_checker.step
     def check_project_in_image_member_list(self, image, project,
                                            api_version=config.
-                                           GLANCE_DEFAULT_API_VERSION):
+                                           CURRENT_GLANCE_VERSION):
         """Step to check image member list.
 
         Args:
@@ -306,7 +305,7 @@ class CliGlanceSteps(base.BaseCliSteps):
 
     @steps_checker.step
     def create_image_member(self, image, project,
-                            api_version=config.GLANCE_DEFAULT_API_VERSION,
+                            api_version=config.CURRENT_GLANCE_VERSION,
                             check=True):
         """Step to create member for glance image.
 
@@ -325,7 +324,7 @@ class CliGlanceSteps(base.BaseCliSteps):
 
     @steps_checker.step
     def delete_image_member(self, image, project,
-                            api_version=config.GLANCE_DEFAULT_API_VERSION,
+                            api_version=config.CURRENT_GLANCE_VERSION,
                             check=True):
         """Step to delete member from glance image.
 
@@ -341,3 +340,29 @@ class CliGlanceSteps(base.BaseCliSteps):
         cmd = 'glance member-delete {0} {1}'.format(image.id, project.id)
         self.execute_command(
             cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+
+    @steps_checker.step
+    def check_negative_delete_non_existing_image(
+            self, image,
+            api_version=config.CURRENT_GLANCE_VERSION):
+        """Step to check that we cannot delete removed image.
+
+        Args:
+            image(object): glance image
+            api_version (int): glance api version (1 or 2). Default is 2
+
+        Raises:
+            AssertionError: if command exit code is 0 or stderr doesn't
+                contain expected message
+        """
+        cmd = "glance image-delete {}".format(image.id)
+
+        error_message = ("No image with an ID of '{}' exists.".
+                         format(image.id))
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version},
+            timeout=config.IMAGE_CREATION_TIMEOUT, check=False)
+
+        assert_that(exit_code, is_not(0))
+        assert_that(stderr, contains_string(error_message))
