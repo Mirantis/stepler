@@ -21,12 +21,14 @@ import pytest
 
 from stepler.cinder import steps
 from stepler import config
+from stepler.third_party import utils
 
 __all__ = [
     'create_volume',
     'create_volumes',
     'volume_steps',
     'upload_volume_to_image',
+    'volume',
 ]
 
 
@@ -121,3 +123,17 @@ def upload_volume_to_image(create_volume, volume_steps, glance_steps):
 
     if images:
         glance_steps.delete_images(images)
+
+
+@pytest.fixture
+def volume(create_volume):
+    """Function fixture to create volume with default options before test.
+
+    Args:
+        create_volume (function): function to create single volume with options
+
+    Returns:
+        object: cinder volume
+    """
+    volume_name = next(utils.generate_ids('volume'))
+    return create_volume(name=volume_name)
