@@ -69,3 +69,16 @@ def test_create_volume_description_max(create_volume):
     """
     description = next(utils.generate_ids(prefix='volume', length=255))
     create_volume(description=description)
+
+
+@pytest.mark.idempotent_id('978a580d-22c3-4e98-8ff9-7ff8541cdd48')
+@pytest.mark.parametrize('size', [0, -1, '', ' ', 'abc', '*&^%$%'])
+def test_create_volume_wrong_size(volume_steps, size):
+    """**Scenario:** Verify creation of volume with zero/negative size
+
+    **Steps:**
+
+    #. Create volume with size 0/-1 Gbs
+    #. Check that BadRequest occurred
+    """
+    volume_steps.check_negative_volume_creation_incorrect_size(size=size)
