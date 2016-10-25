@@ -17,7 +17,9 @@ Keystone token steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, has_key, has_items  # noqa
+from hamcrest import assert_that, has_key, has_items, is_not  # noqa
+from keystoneclient import exceptions
+from waiting import wait
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -29,6 +31,45 @@ __all__ = [
 
 class TokenSteps(base.BaseSteps):
     """Token steps."""
+
+    @steps_checker.step
+    def revoke_token(self, token, check=True):
+        """Step to revoke a token.
+
+        Args:
+            token (str): The token to be revoked.
+
+        Returns:
+            keystoneclient.access.AccessInfo: token
+        """
+        revoked_token = self._client.revoke_token(token=token)
+
+        if check:
+            self.check_token_is_revoked(revoked_token, revoked=False)
+
+        return revoked_token
+
+    @steps_checker.step
+    def check_token_is_revoked(self, token, revoked=True, timeout=0):
+        """Step to check if token is revoked.
+
+        Args:
+            token (str): The token to be checked.
+            revoked (bool): flag whether volume should present or not
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        def predicate():
+            try:
+                self.get_token_validate(token)
+                return not revoked
+
+            except exceptions.NotFound:
+                return revoked
+
+        wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_token_data(self, token, include_catalog=True, check=True):
