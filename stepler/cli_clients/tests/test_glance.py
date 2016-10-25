@@ -211,3 +211,28 @@ def test_download_glance_image(cirros_image,
     downloaded_image_path = cli_download_image(cirros_image, file_option)
     glance_steps.check_image_hash(utils.get_file_path(config.CIRROS_QCOW2_URL),
                                   downloaded_image_path)
+
+
+@pytest.mark.idempotent_id('41594846-bf76-4132-9d80-3cb679b12516',
+                           api_version=1)
+@pytest.mark.idempotent_id('e2393652-ae09-42ae-87fd-7b16adeaa6f7',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_negative_remove_deleted_image(glance_steps,
+                                       cli_glance_steps,
+                                       api_version):
+    """**Scenario:**Try to remove deleted image.
+
+    **Steps:**
+
+        #. Create image
+        #. Delete created image
+        #. Try to remove deleted image
+    """
+    image = glance_steps.create_images(
+        image_name=next(utils.generate_ids('image')),
+        image_path=utils.get_file_path(config.UBUNTU_QCOW2_URL))[0]
+
+    glance_steps.delete_images([image])
+    cli_glance_steps.check_negative_delete_non_existing_image(image,
+                                                              api_version=api_version)

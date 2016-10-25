@@ -38,6 +38,7 @@ __all__ = [
     'glance_steps',
     'glance_steps_v1',
     'glance_steps_v2',
+    'glance_steps_all_versions',
     'ubuntu_image',
     'images_cleanup',
     'ubuntu_xenial_image',
@@ -156,6 +157,20 @@ def api_glance_steps_v2(get_glance_steps):
         GlanceSteps: instantiated glance steps
     """
     return get_glance_steps(version='2', is_api=True)
+
+
+@pytest.fixture(params=('1', '2'))
+def glance_steps_all_versions(request, get_glance_steps):
+    """Function fixture to get API glance steps for v1 and v2.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+
+    Returns:
+        GlanceStepsV1: instantiated glance steps v1 and v2
+    """
+    glance_version = request.param
+    return get_glance_steps(version=glance_version, is_api=False)
 
 
 @pytest.fixture

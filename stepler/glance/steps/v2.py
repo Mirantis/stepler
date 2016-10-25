@@ -47,7 +47,6 @@ class GlanceStepsV2(BaseGlanceSteps):
                       check=True,
                       **kwargs):
         """Step to create images.
-
         Args:
             image_path (str): path to image at local machine
             image_names (list): names of created images, if not specified
@@ -61,7 +60,6 @@ class GlanceStepsV2(BaseGlanceSteps):
             check (bool): flag whether to check step or not
             **kwargs: Optional. A dictionary containing the attributes
                         of the resource
-
         Returns:
             list: glance images
         """
@@ -100,7 +98,6 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def delete_images(self, images, check=True):
         """Step to delete images.
-
         Args:
             images (object): glance images
             check (bool): flag whether to check step or not
@@ -118,7 +115,6 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def bind_project(self, image, project, check=True):
         """Step to bind image to project.
-
         Args:
             image (object): image to bind to project
             project (object): project to bind to image
@@ -131,7 +127,6 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def unbind_project(self, image, project, check=True):
         """Step to unbind image to project.
-
         Args:
             image (object): image to unbind from project
             project (object): project to unbind from image
@@ -144,15 +139,12 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def get_images(self, name_prefix=None, check=True, **kwargs):
         """Step to retrieve images from glance.
-
         Args:
             name_prefix (str): name prefix to filter images
             check (bool): flag whether to check step or not
             **kwargs: like: {'name': 'TestVM', 'status': 'active'}
-
         Returns:
             list: images list
-
         Raises:
             AssertionError: if check triggered an error
         """
@@ -180,14 +172,11 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def get_image(self, check=True, **kwargs):
         """Find one image by provided **kwargs.
-
         Args:
             check (bool): flag whether to check step or not
             **kwargs: like: {'name': 'TestVM', 'status': 'active'}
-
         Returns:
             object: glance image
-
         Raises:
             ValueError: if '**kwargs' were not provided
         """
@@ -200,12 +189,10 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def check_image_presence(self, image, must_present=True, timeout=0):
         """Check step image presence status.
-
         Args:
             image (object): glance image to check presence status
             must_present (bool): flag whether image should present or not
             timeout (int): seconds to wait a result of check
-
         Raises:
             TimeoutExpired: if check failed after timeout
         """
@@ -223,12 +210,10 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def check_image_status(self, image, status, timeout=0):
         """Check step image status.
-
         Args:
             image (object): glance image to check status
             status (str): image status name to check
             timeout (int): seconds to wait a result of check
-
         Raises:
             TimeoutExpired: if check failed after timeout
         """
@@ -245,14 +230,12 @@ class GlanceStepsV2(BaseGlanceSteps):
                                 must_bound=True,
                                 timeout=0):
         """Check step image binding status.
-
         Args:
             image (object): image bound/unbound with project
             project (object): project bound/unbound with image
             must_bound (bool): flag whether project and image should be bound
                 or unbound
             timeout (int): seconds to wait a result of check
-
         Raises:
             TimeoutExpired: if check failed after timeout
         """
@@ -275,12 +258,10 @@ class GlanceStepsV2(BaseGlanceSteps):
                                               image_container,
                                               disk_format):
         """Check image container format and disk format.
-
         Args:
             image_name (object): image bound/unbound with project
             image_container (str): type of image container
             disk_format (str): type of disk format
-
         Raises:
             AssertionError: if check failed
         """
@@ -291,11 +272,9 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def check_that_image_id_is_changed(self, image_name, image_id):
         """Step to check that after updating heat stack image_id was changed.
-
         Args:
             image_name (str): image name that was replaced
             image_id (str): before updating
-
         Raises:
             AssertionError: if check failed
         """
@@ -305,11 +284,9 @@ class GlanceStepsV2(BaseGlanceSteps):
     @steps_checker.step
     def check_image_hash(self, image_path_1, image_path_2):
         """Step to check hash sum of uploaded image and downloaded image.
-
         Args:
             image_path_1 (str): path to first image
             image_path_2 (str): path to second image
-
         Raises:
             AssertionError: if hash sum has been mismatched
         """
