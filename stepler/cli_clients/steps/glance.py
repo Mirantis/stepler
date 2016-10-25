@@ -224,3 +224,29 @@ class CliGlanceSteps(base.BaseCliSteps):
                 '[[ -s {} ]] && exit 0 || exit 1'.format(file_path))
 
         return file_path
+
+    @steps_checker.step
+    def check_negative_delete_non_existing_image(
+            self, image,
+            api_version=config.CURRENT_GLANCE_VERSION):
+        """Step to check that we cannot delete removed image.
+
+        Args:
+            image(object): glance image
+            api_version (int): glance api version (1 or 2). Default is 2
+
+        Raises:
+            AssertionError: if command exit code is 0 or stderr doesn't
+                contain expected message
+        """
+        cmd = "glance image-delete {}".format(image.id)
+
+        error_message = ("No image with an ID of '{}' exists.".
+                         format(image.id))
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version},
+            timeout=config.IMAGE_CREATION_TIMEOUT, check=False)
+
+        assert_that(exit_code, is_not(0))
+        assert_that(stderr, contains_string(error_message))
