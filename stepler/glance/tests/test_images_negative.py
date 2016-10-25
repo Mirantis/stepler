@@ -1,0 +1,42 @@
+"""
+-----------
+negative image tests
+-----------
+"""
+
+#    Copyright 2016 Mirantis, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+import pytest
+
+from stepler import config
+from stepler.third_party import utils
+
+
+@pytest.mark.idempotent_id('b0605804-9aa1-11e6-bc0e-5b4a274fc90f')
+def test_negative_remove_deleted_image(glance_steps_all_versions):
+    """**Scenario:**Try to remove deleted image.
+
+    **Steps:**
+
+        #. Create image
+        #. Delete created image
+        #. Try to remove deleted image
+    """
+    image = glance_steps_all_versions.create_image(
+        image_name=next(utils.generate_ids('image')),
+        image_path=utils.get_file_path(config.UBUNTU_QCOW2_URL))
+
+    glance_steps_all_versions.delete_image(image)
+    glance_steps_all_versions.check_delete_non_existing_image(image)
