@@ -278,3 +278,41 @@ class VolumeSteps(base.BaseSteps):
             }))
 
         return image
+
+    @steps_checker.step
+    def update_volume_name(self, volume, new_name, check=True):
+        """Step to update volume name.
+
+        Args:
+            volume (object): cinder volume
+            new_name (string); new name for volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        update = {'name': new_name}
+        self._client.volumes.update(volume, **update)
+
+        if check:
+            volume.get()
+            assert volume.name == new_name
+
+    @steps_checker.step
+    def update_volume_description(self, volume, new_description, check=True):
+        """Step to update volume description.
+
+        Args:
+            volume (object): cinder volume
+            new_description (string): new description for volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        update = {'description': new_description}
+        self._client.volumes.update(volume, **update)
+
+        if check:
+            volume.get()
+            assert volume.description == new_description
