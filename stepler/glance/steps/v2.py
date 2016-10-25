@@ -17,7 +17,8 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, is_not, equal_to  # noqa
+from hamcrest import assert_that, calling, empty,\
+    equal_to, is_not, raises  # noqa
 from waiting import wait
 
 from stepler.third_party.steps_checker import step
@@ -84,6 +85,24 @@ class GlanceStepsV2(BaseGlanceSteps):
                 self.check_image_status(image, 'active', timeout=180)
 
         return images
+
+    @step
+    def check_delete_non_existing_image(self,
+                                        image,
+                                        check=True):
+        """Step to delete non existed image
+
+        Args:
+            image (object): glance image
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TypeError: if image is not present.
+        """
+        assert_that(
+            calling(self._client.images.delete).with_args(image.id,
+                                                          check=False),
+            raises(TypeError))
 
     @step
     def delete_image(self, image, check=True):
