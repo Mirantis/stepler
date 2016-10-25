@@ -14,3 +14,6 @@ Cinder tests
 
 .. automodule:: stepler.cinder.tests.test_volumes
    :members:
+
+.. automodule:: stepler.cinder.tests.test_edit_volume
+   :members:

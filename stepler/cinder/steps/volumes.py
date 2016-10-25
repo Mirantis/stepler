@@ -18,7 +18,8 @@ Volume steps
 # limitations under the License.
 
 from cinderclient import exceptions
-from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
+from hamcrest import (assert_that, calling, empty, equal_to,
+                      has_entries, has_properties, is_not, raises)   # noqa
 import waiting
 
 from stepler import base
@@ -278,3 +279,48 @@ class VolumeSteps(base.BaseSteps):
             }))
 
         return image
+
+    @steps_checker.step
+    def update_volume(self, volume, new_name=None,
+                      new_description=None, check=True):
+        """Step to update volume.
+
+        Args:
+            volume (object): cinder volume
+            new_name (str); new name for volume
+            new_description (str): new description for volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        update_data = {}
+        if new_name:
+            update_data['name'] = new_name
+        if new_description:
+            update_data['description'] = new_description
+        self._client.volumes.update(volume, **update_data)
+
+        if check:
+            volume.get()
+            assert_that(volume, has_properties(update_data))
+
+    @steps_checker.step
+    def check_volume_update_failed(self, volume, new_name=None,
+                                   new_description=None):
+        """Step to check negative volume update.
+
+        Args:
+            volume (object): cinder volume
+            new_name (str): new name for volume
+            new_description(str): new description for volume
+
+        Raises:
+            BadRequest: if check was falsed
+        """
+        assert_that(
+            calling(
+                self.update_volume).with_args(volume, new_name=new_name,
+                                              new_description=new_description,
+                                              check=False),
+            raises(exceptions.BadRequest))
