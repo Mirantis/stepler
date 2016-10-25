@@ -29,6 +29,10 @@ def test_create_delete_10_volumes(volume_steps):
 
     #. Create 10 cinder volumes
     #. Delete 10 cinder volumes
+
+    **Teardown:**
+
+    #. Delete volumes
     """
     volumes_names = utils.generate_ids('volume', count=10)
 
@@ -38,11 +42,15 @@ def test_create_delete_10_volumes(volume_steps):
 
 @pytest.mark.idempotent_id('45783965-096f-46d6-a863-e466cc9d2d49')
 def test_create_volume_without_name(create_volume):
-    """**Scenario:** Verify creation of volume without name
+    """**Scenario:** Verify creation of volume without name.
 
     **Steps:**
 
     #. Create volume without name
+
+    **Teardown:**
+
+    #. Delete volume
     """
     create_volume()
 
@@ -54,6 +62,10 @@ def test_create_volume_description(create_volume):
     **Steps:**
 
     #. Create volume with description
+
+    **Teardown:**
+
+    #. Delete volume
     """
     description = next(utils.generate_ids(prefix='volume'))
     create_volume(description=description)
@@ -66,6 +78,10 @@ def test_create_volume_description_max(create_volume):
     **Steps:**
 
     #. Create volume with description length == max(255)
+
+    **Teardown:**
+
+    #. Delete volume
     """
     description = next(utils.generate_ids(prefix='volume', length=255))
     create_volume(description=description)
@@ -74,7 +90,7 @@ def test_create_volume_description_max(create_volume):
 @pytest.mark.idempotent_id('978a580d-22c3-4e98-8ff9-7ff8541cdd48')
 @pytest.mark.parametrize('size', [0, -1, '', ' ', 'abc', '*&^%$%'])
 def test_create_volume_wrong_size(volume_steps, size):
-    """**Scenario:** Verify creation of volume with zero/negative size
+    """**Scenario:** Verify creation of volume with zero/negative size.
 
     **Steps:**
 
@@ -86,7 +102,7 @@ def test_create_volume_wrong_size(volume_steps, size):
 
 @pytest.mark.idempotent_id('bcd12002-dfd3-44c9-b270-d844d61a009c')
 def test_negative_create_volume_name_long(volume_steps):
-    """**Scenario:** Verify creation of volume with name length > 255
+    """**Scenario:** Verify creation of volume with name length > 255.
 
     **Steps:**
 
