@@ -1,9 +1,7 @@
 """
-------------
-Cinder steps
-------------
-
-Contains steps specific for cinder.
+----------------------
+ Cinder quota fixtures
+----------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +17,23 @@ Contains steps specific for cinder.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .volumes import *  # noqa
-from .quota import *  # noqa
+import pytest
+
+from stepler.cinder import steps
 
 __all__ = [
-    'VolumeSteps',
-    'CinderQuotaSteps',
+    'cinder_quota_steps',
 ]
+
+
+@pytest.fixture
+def cinder_quota_steps(cinder_client):
+    """Function fixture to get cinder quota steps.
+
+    Args:
+        cinder_client (object): instantiated cinder client
+
+    Returns:
+        stepler.cinder.steps.CinderQuotaSteps: instantiated quota steps
+    """
+    return steps.CinderQuotaSteps(cinder_client.quotas)
