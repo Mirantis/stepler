@@ -82,3 +82,16 @@ def test_create_volume_wrong_size(volume_steps, size):
     #. Check that BadRequest occurred
     """
     volume_steps.check_negative_volume_creation_incorrect_size(size=size)
+
+
+@pytest.mark.idempotent_id('bcd12002-dfd3-44c9-b270-d844d61a009c')
+def test_negative_create_volume_name_long(volume_steps):
+    """**Scenario:** Verify creation of volume with name length > 255
+
+    **Steps:**
+
+    #. Try to create volume with name length > 255
+    #. Check that BadRequest exception raised
+    """
+    long_name = next(utils.generate_ids(length=256))
+    volume_steps.check_negative_volume_not_created(name=long_name)
