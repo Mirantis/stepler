@@ -260,8 +260,8 @@ class VolumeSteps(base.BaseSteps):
         waiting.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def check_volume_extend_failed(self, volume, size):
-        """Step to check negative volume extend.
+    def check_volume_extend_failed_incorrect_size(self, volume, size):
+        """Step to check negative volume extend to incorrect size.
 
         Args:
             volume (object): cinder volume
@@ -289,6 +289,24 @@ class VolumeSteps(base.BaseSteps):
         assert_that(
             calling(self.create_volume).with_args(size=size, check=False),
             raises(exceptions.BadRequest, error_message))
+
+    @steps_checker.step
+    def check_volume_extend_failed_size_more_than_limit(self, volume, size):
+        """Step to check negative volume extend to size more than limit.
+
+        Args:
+            volume (object): cinder volume
+            size (int): volume size
+
+        Raises:
+            AssertionError: if check was falsed after timeout
+        """
+        error_message = (
+            "VolumeSizeExceedsAvailableQuota: "
+            "Requested volume or snapshot exceeds allowed gigabytes quota.")
+        assert_that(
+            calling(self.volume_extend).with_args(volume, size, check=False),
+            raises(exceptions.OverLimit, error_message))
 
     @steps_checker.step
     def volume_upload_to_image(self, volume, image_name,
