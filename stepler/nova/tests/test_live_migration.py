@@ -33,11 +33,19 @@ echo {}""".format(USERDATA_DONE_MARKER)
 pytestmark = pytest.mark.usefixtures('disable_nova_config_drive')
 
 
-# TODO(gdyuldin): reformat arguments (one argumet on each line)
+@pytest.mark.idempotent_id('12c72e88-ca87-400b-9fbb-a35c1d07cbda')
 def test_network_connectivity_to_vm_during_live_migration(
-        keypair, flavor, security_group, nova_floating_ip, cirros_image,
-        network, subnet, router, add_router_interfaces, create_volume,
-        create_server, server_steps):
+        keypair,
+        flavor,
+        security_group,
+        nova_floating_ip,
+        cirros_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_server,
+        server_steps):
     """**Scenario:** Verify network connectivity to the VM during live
     migration.
 
@@ -86,10 +94,20 @@ def test_network_connectivity_to_vm_during_live_migration(
         server_steps.live_migrate(server, block_migration=True)
 
 
+@pytest.mark.idempotent_id('f472898f-7b50-4388-94a4-294b4db5ad7a')
 def test_migration_with_memory_workload(
-        keypair, flavor, security_group, nova_floating_ip, ubuntu_image,
-        network, subnet, router, add_router_interfaces, create_volume,
-        create_server, server_steps):
+        keypair,
+        flavor,
+        security_group,
+        nova_floating_ip,
+        ubuntu_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_volume,
+        create_server,
+        server_steps):
     """**Scenario:** LM of instance under memory workload.
 
     **Setup:**
@@ -154,10 +172,18 @@ def test_migration_with_memory_workload(
         server, timeout=config.PING_CALL_TIMEOUT)
 
 
-# TODO(gdyuldin): reformat arguments (one argumet on each line)
+@pytest.mark.idempotent_id('1fb54c78-20f5-459b-9515-3d7caf73ed64')
 def test_migration_with_ephemeral_disk(
-        keypair, security_group, nova_floating_ip, cirros_image, network,
-        subnet, router, add_router_interfaces, create_flavor, create_server,
+        keypair,
+        security_group,
+        nova_floating_ip,
+        cirros_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_flavor,
+        create_server,
         server_steps):
     """**Scenario:** LM of VM with data on root and ephemeral disk.
 
