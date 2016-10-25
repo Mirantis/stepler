@@ -20,6 +20,7 @@ Cinder fixtures
 from .volumes import *  # noqa
 from .cinder import *  # noqa
 from .quota import *  # noqa
+from .snapshots import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_volume',
@@ -27,5 +28,12 @@ __all__ = sorted([  # sort for documentation
     'cinder_client',
     'volume_steps',
     'upload_volume_to_image',
+    'volume',
+
     'cinder_quota_steps',
+
+    'snapshot_steps',
+    'create_snapshot',
+    'create_snapshots',
+    'volume_snapshot',
 ])
