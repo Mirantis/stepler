@@ -134,14 +134,14 @@ class OsFaultsSteps(base.BaseSteps):
         return dest
 
     @steps_checker.step
-    def check_file_contains_line(self, nodes, file_path, line):
+    def check_file_contains_line(self, nodes, path, line, all=True):
         """Step to check that remote file contains line.
 
         Args:
             nodes (obj): nodes to check file on them
             file_path (str): path to file on remote hosts
             line (str): line to search in files
-
+            all (bool): presents on all node / any node
         Raises:
             AssertioError: if any of files doesn't contains `line`
         """
@@ -149,8 +149,11 @@ class OsFaultsSteps(base.BaseSteps):
             'command': 'grep "{line}" "{path}"'.format(
                 line=line, path=file_path)
         }
-        result = nodes.run_task(task)
-        assert_that(result, only_contains(has_properties(status='OK')))
+        result = nodes.run_task(task, raise_on_error=all)
+        if all:
+            assert_that(result, only_contains(has_properties(status='OK')))
+        else:
+            assert_that(result, has_item(has_properties(status='OK')))
 
     @steps_checker.step
     def make_backup(self, nodes, file_path, suffix=None, check=True):
