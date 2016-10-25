@@ -20,6 +20,10 @@ Image tests
 
 import pytest
 
+from glanceclient import exc
+from stepler.config import UBUNTU_QCOW2_URL
+from stepler.third_party import utils
+
 
 @pytest.mark.idempotent_id('1b1a0953-a772-4cfe-a7da-2f6de950eede')
 def test_share_glance_image(ubuntu_image, project, glance_steps):
@@ -42,3 +46,23 @@ def test_share_glance_image(ubuntu_image, project, glance_steps):
     """
     glance_steps.bind_project(ubuntu_image, project)
     glance_steps.unbind_project(ubuntu_image, project)
+
+
+@pytest.mark.idempotent_id('b0605804-9aa1-11e6-bc0e-5b4a274fc90f')
+def test_negative_remove_deleted_image_v2(glance_steps_v2):
+    """**Scenario:**Try to remove deleted image.
+
+    **Steps:**
+
+        #. Create image
+        #. Delete created image
+        #. Try to remove deleted image
+
+    """
+    image = glance_steps_v2.create_image(
+        image_name='test',
+        image_path=utils.get_file_path(UBUNTU_QCOW2_URL))
+
+    glance_steps_v2.delete_image(image)
+    with pytest.raises(exc.HTTPNotFound):
+        glance_steps_v2.delete_image(image)
