@@ -49,7 +49,7 @@ class OsFaultsSteps(base.BaseSteps):
             for service_name in service_names:
                 nodes = self._client.get_service(service_name).get_nodes()
                 for host in nodes.hosts:
-                    service_fqdns.add(host['fqdn'])
+                    service_fqdns.add(host.fqdn)
             if not fqdns:
                 fqdns = service_fqdns
             else:
