@@ -17,6 +17,8 @@ User steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import (assert_that, is_not, empty, only_contains,
+                      equal_to)  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -31,39 +33,110 @@ class UserSteps(BaseSteps):
     """User steps."""
 
     @step
-    def create_user(self, user_name, password, check=True):
-        """Step to create user."""
-        user = self._client.create(user_name, password)
+    def create_user(self, user_name, password, domain='default', check=True):
+        """Step to create user.
 
+        Args:
+            user_name (str): user name
+            password (str): password
+            domain (str or object): domain
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: user
+        """
+        user = self._client.create(name=user_name, password=password,
+                                   domain=domain)
         if check:
             self.check_user_presence(user)
+            assert_that(user.name, equal_to(user_name))
+            if domain == 'default':
+                domain_id = domain
+            else:
+                domain_id = domain.id
+            assert_that(user.domain_id, equal_to(domain_id))
 
         return user
 
     @step
     def delete_user(self, user, check=True):
-        """Step to delete user."""
+        """Step to delete user.
+
+        Args:
+            user (object): user
+            check (bool): flag whether to check step or not
+        """
         self._client.delete(user.id)
 
         if check:
             self.check_user_presence(user, present=False)
 
     @step
-    def get_user(self, *args, **kwgs):
-        """Step to find role."""
-        return self._client.find(*args, **kwgs)
+    def get_user(self, name, domain='default', group=None, check=True):
+        """Step to find user.
+
+        Args:
+            name (str) - user name
+            domain (str or object): domain
+            group (str or object): group
+
+        Raises:
+            NotFound: if user does not exist
+
+        Returns:
+            object: user
+        """
+        user = self._client.find(name=name, domain=domain, group=group)
+
+        if check:
+            assert_that(user.name, equal_to(name))
+            domain_id = domain if domain == 'default' else domain.id
+            assert_that(user.domain_id, equal_to(domain_id))
+            # group is not checked because no user.group_id
+
+        return user
 
     @step
-    def get_users(self, check=True):
-        """Step to get projects."""
-        users = list(self._client.list())
+    def get_users(self, domain='default', group=None, check=True):
+        """Step to get users.
+
+        Args:
+            domain (str or object): domain
+            group (str or object): group
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list of object: list of users
+        """
+        users = list(self._client.list(domain=domain, group=group))
+
         if check:
-            assert users
+            if not group:
+                assert_that(users, is_not(empty()))
+            # group can be empty (no users)
+            if len(users) > 0:
+                domain_ids = [user.domain_id for user in users]
+                if domain == 'default':
+                    domain_id = domain
+                else:
+                    domain_id = domain.id
+                assert_that(domain_ids, only_contains(domain_id))
+                # group is not checked because no user.group_id
+
         return users
 
     @step
     def check_user_presence(self, user, present=True, timeout=0):
-        """Check step that user is present."""
+        """Step to check user presence.
+
+        Args:
+            user (object): user
+            present (bool): flag whether user should present or no
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check is failed after timeout
+        """
         def predicate():
             try:
                 self._client.get(user.id)

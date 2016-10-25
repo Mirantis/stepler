@@ -1,6 +1,6 @@
 """
 --------------
-Keystone steps
+Group fixtures
 --------------
 """
 
@@ -17,17 +17,23 @@ Keystone steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 
-from .domains import *  # noqa
-from .groups import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .users import *  # noqa
+from stepler.keystone import steps
 
 __all__ = [
-    'DomainSteps',
-    'GroupSteps',
-    'ProjectSteps',
-    'RoleSteps',
-    'UserSteps'
+    'group_steps'
 ]
+
+
+@pytest.fixture
+def group_steps(keystone_client):
+    """Function fixture to get group steps.
+
+    Args:
+        keystone_client (object): instantiated keystone client
+
+    Returns:
+        stepler.keystone.steps.GroupSteps: instantiated group steps
+    """
+    return steps.GroupSteps(keystone_client.groups)
