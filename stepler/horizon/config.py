@@ -27,6 +27,10 @@ UI_TIMEOUT = 30
 ACTION_TIMEOUT = 60
 EVENT_TIMEOUT = 180
 
+LONG_FILE_SIZE = 1024 * 1024 * 1024 * 100  # 100 Gb
+LONG_ACTION_TIMEOUT = 60 * 60  # 1 hour (timeout for 'Working')
+LONG_EVENT_TIMEOUT = 60 * 60 * 3  # 3 hours (timeout for 'Saving')
+
 OS_DASHBOARD_URL = os.environ.get('OS_DASHBOARD_URL')  # should be defined!
 VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')
 
@@ -43,3 +47,7 @@ FLOATING_NETWORK_NAME = 'admin_floating_net'
 INTERNAL_NETWORK_NAME = 'admin_internal_net'
 
 XVFB_LOCK = '/tmp/xvfb.lock'
+
+# Volume creating constants
+IMAGE_SOURCE = 'Image'
+VOLUME_SOURCE = 'Volume'
