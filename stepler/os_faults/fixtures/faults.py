@@ -17,6 +17,8 @@ os_faults fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import os_faults
 import pytest
 
@@ -28,7 +30,12 @@ __all__ = [
     'os_faults_client',
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
+    'nova_api_node',
+    'run_os_cli_command',
 ]
+
+
+ANSIBLE_MODULES_PATH = os.path.join(os.path.dirname(__file__), '../ansible')
 
 
 @pytest.fixture(scope='session')
@@ -40,6 +47,8 @@ def os_faults_client():
     """
     assert config.OS_FAULTS_CONFIG, \
         "Environment variable OS_FAULTS_CONFIG is not defined"
+
+    os_faults.register_ansible_modules([ANSIBLE_MODULES_PATH])
 
     destructor = os_faults.connect(config_filename=config.OS_FAULTS_CONFIG)
     destructor.verify()
@@ -88,3 +97,35 @@ def patch_ini_file_and_restart_services(os_faults_steps):
         os_faults_steps.restart_services(service_names)
 
     return _patch_ini_file_and_restart_services
+
+
+@pytest.fixture
+def nova_api_node(os_faults_steps):
+    """Function fixture to get node with nova-api service.
+
+    This node will be helpful for executiing openstack CLI commands on it.
+
+    Args:
+        os_faults_steps (object): instantiated os_faults steps
+
+    Returns:
+        obj: os-fault node
+    """
+    return os_faults_steps.get_nodes(service_names=[config.NOVA_API]).pick()
+
+
+@pytest.fixture
+def run_os_cli_command(os_faults_steps):
+    """Callable function fixture to run openstack CLI command.
+
+    Args:
+        os_faults_steps (object): instantiated os_faults steps
+        nova_api_node (obj): node with nova-api service
+
+    Returns:
+        function: function which executing CLI command
+    """
+    def _run_os_cli_command(node, command):
+        return os_faults_steps.run_os_cli_command(node, command)
+
+    return _run_os_cli_command

@@ -1,0 +1,7 @@
+heat_template_version: 2013-05-23
+description: Sample template
+parameters:
+  param:
+    type: string
+    description: Param
+resources:
