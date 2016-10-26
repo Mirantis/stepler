@@ -15,7 +15,9 @@ Volume tests
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
@@ -69,3 +71,26 @@ def test_negative_edit_volume_name_too_long_name(create_volume, volume_steps):
     volume = create_volume()
     volume_new_name = next(utils.generate_ids(length=256))
     volume_steps.check_volume_update_failed(volume, new_name=volume_new_name)
+
+
+@pytest.mark.idempotent_id('7cb4af1e-2228-43ca-bc78-719d85fb0b2a')
+@pytest.mark.parametrize('bootable', ['true', 'false'])
+def test_volume_enable_disable_bootable(create_image, create_volume,
+                                        volume_steps, bootable):
+    """**Scenario:** Verify ability to enable/disable volume bootable status
+
+    **Steps:**
+
+        #. Create volume
+        #. Enable/disable volume bootable status
+
+    **Teardown:**
+
+        #. Delete volume
+    """
+    image = None
+    if bootable == 'false':
+        image_name = next(utils.generate_ids('image'))
+        image = create_image(image_name, config.UBUNTU_ISO_URL)
+    volume = create_volume(image=image)
+    volume_steps.set_volume_bootable(volume, bootable)

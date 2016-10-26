@@ -18,8 +18,8 @@ Volume steps
 # limitations under the License.
 
 from cinderclient import exceptions
-from hamcrest import (assert_that, calling, empty, equal_to,
-                      has_entries, has_properties, is_not, raises)   # noqa
+from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
+                      has_properties, has_property, is_not, raises)   # noqa
 import waiting
 
 from stepler import base
@@ -410,3 +410,21 @@ class VolumeSteps(base.BaseSteps):
                                               new_description=new_description,
                                               check=False),
             raises(exceptions.BadRequest))
+
+    @steps_checker.step
+    def set_volume_bootable(self, volume, bootable, check=True):
+        """Step to set volume bootable.
+
+        Args:
+            volume (object): cinder volume
+            bootable (bool): flag whether to set or unset volume bootable
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        self._client.volumes.set_bootable(volume, bootable)
+
+        if check:
+            volume.get()
+            assert_that(volume, has_property('bootable', bootable))
