@@ -28,6 +28,7 @@ __all__ = sorted([  # sort for documentation
     'stack_steps',
     'create_stack',
     'stacks_cleanup',
+    'empty_stack',
 
     'read_heat_template',
 
