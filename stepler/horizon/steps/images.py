@@ -20,7 +20,7 @@ Images steps
 from hamcrest import assert_that, equal_to  # noqa
 from waiting import wait
 
-from stepler.horizon.config import EVENT_TIMEOUT
+from stepler.horizon import config
 from stepler.horizon.utils import get_size
 from stepler.third_party import steps_checker
 
@@ -38,9 +38,10 @@ class ImagesSteps(BaseSteps):
         return self._open(self.app.page_images)
 
     @steps_checker.step
-    def create_image(self, image_name, image_url=CIRROS_URL, image_file=None,
+    def create_image(self, image_name, image_description=None,
+                     image_url=CIRROS_URL, image_file=None,
                      disk_format='QCOW2', min_disk=None, min_ram=None,
-                     protected=False, check=True):
+                     protected=False, big_image=False, check=True):
         """Step to create image."""
         page_images = self._page_images()
         page_images.button_create_image.click()
@@ -56,6 +57,9 @@ class ImagesSteps(BaseSteps):
                 form.combobox_source_type.value = 'Image Location'
                 form.field_image_url.value = image_url
 
+            if image_description:
+                form.field_description.value = image_description
+
             if min_disk:
                 form.field_min_disk.value = min_disk
 
@@ -68,12 +72,20 @@ class ImagesSteps(BaseSteps):
                 form.checkbox_protected.unselect()
 
             form.combobox_disk_format.value = disk_format
-            form.submit()
+            if big_image:
+                form.submit(time_out_modal_absent=config.LONG_ACTION_TIMEOUT)
+            else:
+                form.submit()
 
         if check:
             self.close_notification('success')
-            page_images.table_images.row(
-                name=image_name).wait_for_status('Active')
+            if big_image:
+                page_images.table_images.row(
+                    name=image_name).wait_for_status(
+                    'Active', timeout=config.LONG_EVENT_TIMEOUT)
+            else:
+                page_images.table_images.row(
+                    name=image_name).wait_for_status('Active')
 
     @steps_checker.step
     def delete_image(self, image_name, check=True):
@@ -90,7 +102,7 @@ class ImagesSteps(BaseSteps):
         if check:
             self.close_notification('success')
             page_images.table_images.row(
-                name=image_name).wait_for_absence(EVENT_TIMEOUT)
+                name=image_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def delete_images(self, image_names, check=True):
@@ -108,7 +120,7 @@ class ImagesSteps(BaseSteps):
             self.close_notification('success')
             for image_name in image_names:
                 page_images.table_images.row(
-                    name=image_name).wait_for_absence(EVENT_TIMEOUT)
+                    name=image_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def update_metadata(self, image_name, metadata, check=True):
