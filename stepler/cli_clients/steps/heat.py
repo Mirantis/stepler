@@ -83,3 +83,15 @@ class CliHeatSteps(base.BaseCliSteps):
         stack = self._show_to_dict(stack_table)
 
         return stack
+
+    @steps_checker.step
+    def delete_stack(self, stack, check=True):
+        """Step to delete stack.
+
+        Args:
+            stack (dict): stack to delete
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat stack-delete {0[id]}'.format(stack)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_DELETING_TIMEOUT, check=check)
