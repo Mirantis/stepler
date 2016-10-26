@@ -27,10 +27,14 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_openstack_steps():
+def cli_openstack_steps(run_os_cli_command):
     """Function fixture to openstack CLI steps.
+
+    Args:
+        run_os_cli_command (function): function to call CLI command inside
+        cloud
 
     Returns:
         CliOpenstackSteps: instantiated openstack CLI steps.
     """
-    return steps.CliOpenstackSteps()
+    return steps.CliOpenstackSteps(run_os_cli_command)

@@ -27,10 +27,14 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_nova_steps():
+def cli_nova_steps(run_os_cli_command):
     """Function fixture to nova CLI steps.
+
+    Args:
+        run_os_cli_command (function): function to call CLI command inside
+        cloud
 
     Returns:
         CliNovaSteps: instantiated nova CLI steps.
     """
-    return steps.CliNovaSteps()
+    return steps.CliNovaSteps(run_os_cli_command)
