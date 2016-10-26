@@ -40,6 +40,8 @@ __all__ = sorted([  # sort for documentation
     'create_volumes',
     'cinder_client',
     'volume_steps',
+    'volume_types_steps',
+    'create_volume_type',
     'cinder_quota_steps',
 
     'heat_client',

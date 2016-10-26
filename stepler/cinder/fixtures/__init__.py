@@ -18,6 +18,7 @@ Cinder fixtures
 # limitations under the License.
 
 from .volumes import *  # noqa
+from .volume_types import *  # noqa
 from .cinder import *  # noqa
 from .quota import *  # noqa
 
@@ -26,6 +27,8 @@ __all__ = sorted([  # sort for documentation
     'create_volumes',
     'cinder_client',
     'volume_steps',
+    'volume_types_steps',
+    'create_volume_type',
     'upload_volume_to_image',
     'cinder_quota_steps',
 ])
