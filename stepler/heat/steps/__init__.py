@@ -20,7 +20,9 @@ Contains steps specific for heat.
 # limitations under the License.
 
 from .stacks import *  # noqa
+from .heat_cli import *  # noqa
 
 __all__ = [
     'StackSteps',
+    'HeatCLISteps',
 ]

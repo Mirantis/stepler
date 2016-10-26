@@ -136,6 +136,37 @@ class OsFaultsSteps(base.BaseSteps):
         return dest
 
     @steps_checker.step
+    def upload_file(self, node, local_path, remote_path=None, check=True):
+        """Step to upload file from local host to remote nodes.
+
+        Args:
+            node (obj): node to upload file to
+            local_path (str): path to file on local host
+            remote_path (str, optional): path to file on remote host. Will be
+                generated if omited.
+            check (bool): flag whether check step or not
+
+        Returns:
+            str: path to remote file
+
+        Raises:
+            AssertionError: if file not exists on remote node after uploading
+        """
+        if not remote_path:
+            remote_path = '/tmp/{}'.format(next(utils.generate_ids('file')))
+        task = {
+            'copy': {
+                'src': local_path,
+                'dest': remote_path,
+            }
+        }
+        node.run_task(task)
+        if check:
+            self.check_file_exists(node, remote_path)
+
+        return remote_path
+
+    @steps_checker.step
     def check_file_contains_line(self, nodes, file_path, line, all=True):
         """Step to check that remote file contains line.
 
@@ -268,3 +299,26 @@ class OsFaultsSteps(base.BaseSteps):
             self.check_file_contains_line(
                 nodes, file_path, "{} = {}".format(option, value))
         return backup_path
+
+    @steps_checker.step
+    def run_os_cli_command(self, node, command, check=True):
+        """Step to run OpenStack CLI command inside the cloud.
+
+        Args:
+            node (object): node to execute command on it
+            command (string): command to execute
+            check (bool): flag whether check step or not
+
+        Returns:
+            dict: dict with command executing result. Contains `stdout`,
+            `stderr`, `rc` (return code) keys.
+        """
+        task = {
+            'run_os_cli_command': {
+                'command': command,
+            }
+        }
+        result = node.run_task(task)
+        if check:
+            assert_that(result, only_contains(has_properties(status='OK')))
+        return result[0].payload
