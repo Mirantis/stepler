@@ -29,6 +29,7 @@ __all__ = [
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
     'execute_command_with_rollback',
+    'nova_api_node',
 ]
 
 
@@ -113,3 +114,18 @@ def execute_command_with_rollback(os_faults_steps):
         os_faults_steps.execute_cmd(nodes, rollback_cmd, check=check)
 
     return _exec_cmd_with_rollback
+
+
+@pytest.fixture
+def nova_api_node(os_faults_steps):
+    """Function fixture to get node with nova-api service.
+
+    This node will be helpful for executing openstack CLI commands on it.
+
+    Args:
+        os_faults_steps (object): instantiated os_faults steps
+
+    Returns:
+        obj: node with nova-api service
+    """
+    return os_faults_steps.get_nodes(service_names=[config.NOVA_API]).pick()

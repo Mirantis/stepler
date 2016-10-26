@@ -24,6 +24,7 @@ from stepler.heat import steps
 __all__ = [
     'stack_steps',
     'create_stack',
+    'stacks_cleanup',
 ]
 
 
@@ -66,4 +67,24 @@ def create_stack(stack_steps):
         stacks = [stack for stack in stack_steps.get_stacks(check=False)
                   if stack.stack_name in names]
         for stack in stacks:
+            stack_steps.delete(stack)
+
+
+@pytest.yield_fixture
+def stacks_cleanup(stack_steps):
+    """Callable function fixture to clear created stacks after test.
+
+    It stores ids of all stacks before test and remove all new stacks after
+    test done.
+
+    Args:
+        stack_steps (obj): initialized heat stack steps
+    """
+    preserve_stacks_ids = set(
+        x.id for x in stack_steps.get_stacks(check=False))
+
+    yield
+
+    for stack in stack_steps.get_stacks(check=False):
+        if stack.id not in preserve_stacks_ids:
             stack_steps.delete(stack)

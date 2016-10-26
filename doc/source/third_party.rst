@@ -28,3 +28,6 @@ Third party modules
 
 .. automodule:: stepler.third_party.idempotent_id
    :members:
+
+.. automodule:: stepler.third_party.output_parser
+   :members:
