@@ -61,6 +61,7 @@ class TableImages(_ui.Table):
     field_image_url=ui.TextField(By.NAME, 'image_url'),
     field_min_disk=ui.TextField(By.NAME, 'minimum_disk'),
     field_min_ram=ui.TextField(By.NAME, 'minimum_ram'),
+    field_description=ui.TextField(By.NAME, 'description'),
     field_name=ui.TextField(By.NAME, 'name'))
 class FormCreateImage(_ui.Form):
     """Form to create image."""
