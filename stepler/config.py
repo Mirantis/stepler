@@ -82,6 +82,7 @@ STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_VERIFY_RESIZE = 'verify_resize'
 
 # TIMEOUTS (in seconds)
+# TODO(kromanenko): Investigate less intensive good polling interval value.
 POLLING_TIME = .01
 
 # Cinder
