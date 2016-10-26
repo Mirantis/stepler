@@ -18,6 +18,7 @@ Volume tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
@@ -136,3 +137,24 @@ def test_negative_create_volume_name_long(volume_steps):
     """
     long_name = next(utils.generate_ids(length=256))
     volume_steps.check_negative_volume_not_created(name=long_name)
+
+
+@pytest.mark.idempotent_id('34ca65a0-a254-49c5-8157-13e11c88a5b3')
+def test_negative_create_volume_non_exist_volume_type(cirros_image,
+                                                      create_image,
+                                                      volume_steps):
+    """**Scenario:** Verify volume creation from image with non existed
+    volume type.
+
+    **Steps:**
+
+        #. Create cirros image
+        #. Try to create volume from image using non existed volume type
+        #. Check that NotFound exception raised
+
+    **Teardown:**
+
+        #. Delete image
+    """
+    volume_steps.check_volume_not_created_with_non_exist_volume_type(
+        cirros_image)
