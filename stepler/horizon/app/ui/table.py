@@ -19,6 +19,7 @@ Custom table
 
 import re
 
+from hamcrest import assert_that, equal_to  # noqa
 import pom
 from pom import ui
 from selenium.webdriver.common.by import By
@@ -52,7 +53,7 @@ class Row(ui.Row):
         with self.cell('status') as cell:
             wait(lambda: cell.value not in self.transit_statuses,
                  timeout_seconds=timeout, sleep_seconds=0.1)
-            assert cell.value == status
+            assert_that(cell.value.lower(), equal_to(status.lower()))
 
 
 @ui.register_ui(
