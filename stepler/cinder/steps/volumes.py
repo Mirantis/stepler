@@ -26,6 +26,7 @@ from stepler import base
 from stepler import config
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = ['VolumeSteps']
@@ -85,6 +86,25 @@ class VolumeSteps(base.BaseSteps):
             calling(self.create_volume).with_args(
                 name=name, check=False),
             raises(exceptions.BadRequest, exception_message))
+
+    @steps_checker.step
+    def check_volume_not_created_with_non_exist_volume_type(self, image):
+        """Step to check volume is not created with non-existed volume type.
+
+        Args:
+            image (obj): image for volume creation
+
+        Raises:
+            AssertionError: if check triggered an error
+        """
+        type_name = next(utils.generate_ids('volume_type'))
+        exception_message = ("Volume type with name {0} could not be found"
+                             .format(type_name))
+
+        assert_that(
+            calling(self.create_volume).with_args(volume_type=type_name,
+                                                  image=image, check=False),
+            raises(exceptions.NotFound, exception_message))
 
     @steps_checker.step
     def create_volumes(self,
@@ -253,6 +273,24 @@ class VolumeSteps(base.BaseSteps):
         def predicate():
             volume.get()
             return expect_that(volume.size, equal_to(size))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_volume_type(self, volume, volume_type, timeout=0):
+        """Step to check volume size.
+
+        Args:
+            volume (object): cinder volume
+            volume_type (obj): expected volume type
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        def predicate():
+            volume.get()
+            return expect_that(volume.volume_type, equal_to(volume_type.name))
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
@@ -428,3 +466,22 @@ class VolumeSteps(base.BaseSteps):
                                               new_description=new_description,
                                               check=False),
             raises(exceptions.BadRequest))
+
+    @steps_checker.step
+    def change_volume_type(self, volume, volume_type, policy, check=True):
+        """Step to retype volume.
+
+        Args:
+            volume (object): cinder volume
+            volume_type (object): cinder volume type
+            policy (str): policy for migration during the retype
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        self._client.volumes.retype(volume, volume_type.name, policy)
+
+        if check:
+            self.check_volume_type(volume, volume_type,
+                                   timeout=config.VOLUME_RETYPE_TIMEOUT)
