@@ -41,7 +41,7 @@ class TestAnyOne(object):
         """Verify that user can create image from local file."""
         image_name = next(generate_ids('image', length=20))
         image_file = next(generate_files(postfix='.qcow2'))
-        create_image(image_name, image_file)
+        create_image(image_name, image_file=image_file)
 
     @pytest.mark.idempotent_id('c4cf3c6d-45d2-4629-b9fe-3e8eed3f1e59')
     def test_view_image(self, image, images_steps):
@@ -124,6 +124,28 @@ class TestAnyOne(object):
 @pytest.mark.usefixtures('user_only')
 class TestUserOnly(object):
     """Tests for user only."""
+
+    # the following test is executed only for one user because of its long
+    # duration (> 1 hour)
+
+    @pytest.mark.idempotent_id('b846cf53-d3fa-4cca-8b10-fbaf50749f7c')
+    def test_big_image_create_delete(self, create_image):
+        """**Scenario:** Check big image creation and deletion from file.
+
+        **Steps:**
+
+        #. Create file 100Gb
+        #. Create image from this file
+        #. Delete big file
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        image_name = next(utils.generate_ids('image', length=20))
+        with utils.generate_file_context(
+                postfix='.qcow2', size=config.BIG_FILE_SIZE) as file_path:
+            create_image(image_name, image_file=file_path, big_image=True)
 
     @pytest.mark.idempotent_id('451ea18f-e513-48ac-999a-4e719516478e')
     def test_image_privacy(self, glance_steps, images_steps,
