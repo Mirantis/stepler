@@ -25,7 +25,7 @@ PROJECT_NAME = os.environ.get('OS_PROJECT_NAME', 'admin')
 USERNAME = os.environ.get('OS_USERNAME', 'admin')
 PASSWORD = os.environ.get('OS_PASSWORD', 'password')
 OS_FAULTS_CONFIG = os.environ.get('OS_FAULTS_CONFIG')  # should be defined!
-AUTH_URL = os.environ.get('OS_AUTH_URL')  # should be defined!
+
 # If AUTH_URL is undefined, corresponding fixture raises exception.
 # AUTH_URL absence doesn't raise exception here, because for docs generation
 # and unittests launching this variable doesn't need.
@@ -117,9 +117,6 @@ SERVER_DELETE_TIMEOUT = 3 * 60
 SERVER_ACTIVE_TIMEOUT = 3 * 60
 
 NOVA_AVAILABILITY_TIMEOUT = 2 * 60
-NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
-NOVA_API = 'nova-api'
-NOVA_COMPUTE = 'nova-compute'
 SMALL_RECLAIM_INTERVAL = str(30)
 BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
 SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
