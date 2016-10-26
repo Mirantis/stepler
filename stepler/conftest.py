@@ -45,6 +45,9 @@ __all__ = sorted([  # sort for documentation
     'stack_steps',
     'create_stack',
     'read_heat_template',
+    'get_template_path',
+    'heat_cli_steps',
+    'create_stack_cli',
 
     'api_glance_client_v1',
     'api_glance_client_v2',
@@ -131,6 +134,8 @@ __all__ = sorted([  # sort for documentation
     'os_faults_client',
     'os_faults_steps',
     'patch_ini_file_and_restart_services',
+    'nova_api_node',
+    'run_os_cli_command',
 ])
 
 pytest_plugins = [
