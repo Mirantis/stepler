@@ -18,10 +18,11 @@ Heat CLI tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
-@pytest.mark.idempotent_id('1fb54c78-20f5-459b-9515-3d7caf73ed64')
+@pytest.mark.idempotent_id('ed10d63a-a155-415a-9df4-4d653af00181')
 def test_stack_create_from_file(nova_api_node, create_stack_cli,
                                 get_template_path, os_faults_steps):
     """**Scenario:** Create stack from template file with CLI.
@@ -48,3 +49,23 @@ def test_stack_create_from_file(nova_api_node, create_stack_cli,
         stack_name,
         template_file=remote_path,
         parameters=parameters)
+
+
+@pytest.mark.idempotent_id('60d6d01b-5e52-42c5-951d-ff487ba14cd4')
+def test_stack_create_from_url(nova_api_node, create_stack_cli):
+    """**Scenario:** Create stack from template url with CLI.
+
+    **Steps:**
+
+        #. Create stack from template
+        #. Check that stack is exists
+
+    **Teardown:**
+
+        #. Delete stack
+    """
+    stack_name = next(utils.generate_ids('stack'))
+    create_stack_cli(
+        nova_api_node,
+        stack_name,
+        template_url=config.HEAT_SIMPLE_TEMPLATE_URL)
