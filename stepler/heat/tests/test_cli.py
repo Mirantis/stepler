@@ -69,3 +69,19 @@ def test_stack_create_from_url(nova_api_node, create_stack_cli):
         nova_api_node,
         stack_name,
         template_url=config.HEAT_SIMPLE_TEMPLATE_URL)
+
+
+@pytest.mark.idempotent_id('6108fc79-7173-4e4a-a061-97acb8432717')
+def test_stack_delete(empty_stack, nova_api_node, heat_cli_steps):
+    """**Scenario:** Delete stack with heat CLI.
+
+    **Setup:**
+
+        #. Create stack
+
+    **Steps:**
+
+        #. Delete stack
+        #. Check that stack is not exists
+    """
+    heat_cli_steps.delete_stack(nova_api_node, empty_stack._info)
