@@ -21,11 +21,13 @@ import pytest
 
 from stepler import config
 from stepler.heat import steps
+from stepler.third_party import utils
 
 __all__ = [
     'stack_steps',
     'create_stack',
     'stacks_cleanup',
+    'empty_stack',
 ]
 
 
@@ -90,3 +92,24 @@ def stacks_cleanup(stack_steps):
         if (stack.id not in preserve_stacks_ids and
                 stack.name.startswith(config.STEPLER_PREFIX)):
             stack_steps.delete(stack)
+
+
+@pytest.fixture
+def empty_stack(create_stack, read_heat_template):
+    """Function fixture to create empty heat stack.
+
+    Args:
+        create_stack (function): fixture to create stack
+        read_heat_template (function): ficture to read template
+
+    Returns:
+        obj: created stack
+    """
+    name = next(utils.generate_ids('stack'))
+    template = read_heat_template('empty_heat_template')
+    return create_stack(
+        name,
+        template=template,
+        parameters={
+            'param': 'string',
+        })
