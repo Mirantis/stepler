@@ -23,11 +23,29 @@ import pytest
 
 __all__ = [
     'read_heat_template',
+    'get_template_path',
 ]
 
 
+@pytest.fixture(scope="session")
+def get_template_path():
+    """Callable function fixture to get template path.
+
+
+    Can be called several times during a test.
+
+    Returns:
+        function: function to get template path
+    """
+    def _get_template_path(name):
+        return "{}/{}.yaml".format(template_dir, name)
+
+    template_dir = os.path.join(os.path.dirname(__file__), '../templates')
+    return _get_template_path
+
+
 @pytest.fixture(scope='session')
-def read_heat_template():
+def read_heat_template(get_template_path):
     """Function fixture to read template from stepler/heat/templates folder.
 
     Can be called several times during a test.
@@ -36,9 +54,8 @@ def read_heat_template():
         function: function to read template
     """
     def _read_template(name):
-        filename = "{}/{}.yaml".format(template_dir, name)
+        filename = get_template_path(name)
         with open(filename) as f:
             return f.read()
 
-    template_dir = os.path.join(os.path.dirname(__file__), '../templates')
     return _read_template
