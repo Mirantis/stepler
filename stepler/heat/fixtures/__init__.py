@@ -18,14 +18,19 @@ Heat fixtures
 # limitations under the License.
 
 from .heat import *  # noqa
+from .heat_cli import *  # noqa
 from .stacks import *  # noqa
 from .templates import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'heat_client',
 
+    'heat_cli_steps',
+    'create_stack_cli',
+
     'stack_steps',
     'create_stack',
 
     'read_heat_template',
+    'get_template_path',
 ])
