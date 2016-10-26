@@ -27,10 +27,13 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_nova_steps():
+def cli_nova_steps(remote_executor):
     """Function fixture to nova CLI steps.
+
+    Args:
+        remote_executor (callable): function to execute command on remote node
 
     Returns:
         CliNovaSteps: instantiated nova CLI steps.
     """
-    return steps.CliNovaSteps()
+    return steps.CliNovaSteps(remote_executor)

@@ -152,6 +152,37 @@ class OsFaultsSteps(base.BaseSteps):
         return dest
 
     @steps_checker.step
+    def upload_file(self, node, local_path, remote_path=None, check=True):
+        """Step to upload file from local host to remote nodes.
+
+        Args:
+            node (obj): node to upload file to
+            local_path (str): path to file on local host
+            remote_path (str, optional): path to file on remote host. Will be
+                generated if omited.
+            check (bool): flag whether check step or not
+
+        Returns:
+            str: path to remote file
+
+        Raises:
+            AssertionError: if file not exists on remote node after uploading
+        """
+        if not remote_path:
+            remote_path = '/tmp/{}'.format(next(utils.generate_ids('file')))
+        task = {
+            'copy': {
+                'src': local_path,
+                'dest': remote_path,
+            }
+        }
+        node.run_task(task)
+        if check:
+            self.check_file_exists(node, remote_path)
+
+        return remote_path
+
+    @steps_checker.step
     def check_file_contains_line(self, nodes, file_path, line, all=True):
         """Step to check that remote file contains line.
 
@@ -303,3 +334,5 @@ class OsFaultsSteps(base.BaseSteps):
         if check:
             assert_that(
                 result, only_contains(has_properties(status=config.STATUS_OK)))
+
+        return result
