@@ -26,14 +26,14 @@ from stepler.third_party import utils
 TEST_METADATA_INFO = {'key': next(utils.generate_ids('test_meta'))}
 
 SET_META_CMD_TEMPLATE = (
-    '. {openrc} ; nova host-meta {host} set {key}={value}'.format(
-        openrc=config.OPENRC_FILE_PATH,
+    '{openrc_cmd}; nova host-meta {host} set {key}={value}'.format(
+        openrc_cmd=config.OPENRC_ACTIVATE_CMD,
         host='{host}',
         key=TEST_METADATA_INFO.keys()[0],
         value=TEST_METADATA_INFO.values()[0]))
 DEL_META_CMD_TEMPLATE = (
-    '. {openrc} ; nova host-meta {host} delete {key}'.format(
-        openrc=config.OPENRC_FILE_PATH,
+    '{openrc_cmd}; nova host-meta {host} delete {key}'.format(
+        openrc_cmd=config.OPENRC_ACTIVATE_CMD,
         host='{host}',
         key=TEST_METADATA_INFO.keys()[0]))
 

@@ -17,13 +17,12 @@ Openstack CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.cli_clients.steps import base
 from stepler import config
 from stepler.third_party import steps_checker
 
-from .base import BaseCliSteps
 
-
-class CliOpenstackSteps(BaseCliSteps):
+class CliOpenstackSteps(base.BaseCliSteps):
     """CLI openstack client steps."""
 
     @steps_checker.step
