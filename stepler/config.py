@@ -148,6 +148,7 @@ HEAT_COMPLETE_CLI_STATUS = 'create_complete'
 STACK_CREATION_TIMEOUT = 5 * 60
 STACK_DELETING_TIMEOUT = 3 * 60
 STACK_UPDATING_TIMEOUT = 5 * 60
+HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-templates/master/hot/resource_group/resource_group.yaml'  # noqa
 
 # CLI clients
 SERVER_LIST_TIMEOUT = 60
