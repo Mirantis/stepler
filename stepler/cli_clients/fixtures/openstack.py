@@ -27,10 +27,13 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_openstack_steps():
+def cli_openstack_steps(remote_executor):
     """Function fixture to openstack CLI steps.
+
+    Args:
+        remote_executor (callable): function to execute command on remote node
 
     Returns:
         CliOpenstackSteps: instantiated openstack CLI steps.
     """
-    return steps.CliOpenstackSteps()
+    return steps.CliOpenstackSteps(remote_executor)

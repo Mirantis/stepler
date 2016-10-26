@@ -1,7 +1,7 @@
 """
--------------------
-CLI client fixtures
--------------------
+-----------------
+Base CLI fixtures
+-----------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +17,24 @@ CLI client fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base import *  # noqa
-from .heat import *  # noqa
-from .nova import *  # noqa
-from .openstack import *  # noqa
+import functools
+
+import pytest
 
 __all__ = [
     'remote_executor',
-
-    'cli_heat_steps',
-    'empty_heat_template_path',
-
-    'cli_nova_steps',
-    'cli_openstack_steps',
 ]
+
+
+@pytest.fixture
+def remote_executor(nova_api_node, os_faults_steps):
+    """Function fixture to get remote command executor.
+
+    Args:
+        nova_api_node (obj): controller (node with nova-api service)
+        os_faults_steps (obj): initialized os-faults steps
+
+    Returns:
+        callable: function to execute command on `nova_api_node`
+    """
+    return functools.partial(os_faults_steps.execute_cmd, nodes=nova_api_node)

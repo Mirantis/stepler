@@ -17,47 +17,53 @@ Base CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import shlex
-import sys
+from hamcrest import assert_that, is_  # noqa
 
-from hamcrest import assert_that, is_not, empty  # noqa
-
+from stepler import base
 from stepler import config
 
-if os.name == 'posix' and sys.version_info[0] < 3:
-    import subprocess32 as subprocess
-else:
-    import subprocess
 
-os.environ['OS_PROJECT_DOMAIN_NAME'] = config.PROJECT_DOMAIN_NAME
-os.environ['OS_USER_DOMAIN_NAME'] = config.USER_DOMAIN_NAME
-os.environ['OS_PROJECT_NAME'] = config.PROJECT_NAME
-os.environ['OS_USERNAME'] = config.USERNAME
-os.environ['OS_PASSWORD'] = config.PASSWORD
-os.environ['OS_AUTH_URL'] = config.AUTH_URL or ''  # env var can't be None
-
-
-class BaseCliSteps(object):
+class BaseCliSteps(base.BaseSteps):
     """Base CLI client steps."""
 
-    def execute_command(self, cmd, timeout=0, check=True):
+    def execute_command(self,
+                        cmd,
+                        use_openrc=True,
+                        environ=None,
+                        timeout=0,
+                        check=True):
         """Execute client command in shell.
 
         Args:
             cmd (str): client command to execute
+            use_openrc (bool): add 'source openrc' before `cmd` executing
+            environ (dict): shell environment variables to set before `cmd`
+                executing. By default it not set any variable
             timeout (int): seconds to wait command executed
             check (bool): flag whether to check result or not
 
         Returns:
-            str: result of command execution
+            tuple: (exit_code, stdout, stderr) - result of command execution
 
         Raises:
             AssertionError: if result check was failed
-            CalledProcessError: if command was failed
-            TimeoutExpired: if command isn't finished during timeout
         """
-        result = subprocess.check_output(shlex.split(cmd), timeout=timeout)
+        if use_openrc:
+            source_cmd = config.OPENRC_ACTIVATE_CMD + ";"
+        else:
+            source_cmd = ""
+
+        environ = environ or {}
+        environ_string = ' '.join("{0}='{1}'".format(*item)
+                                  for item in environ.items())
+        cmd = ("timeout {timeout} "
+               "bash -c '{source_cmd} {env} {command}'").format(
+                   timeout=timeout,
+                   source_cmd=source_cmd,
+                   env=environ_string,
+                   command=cmd)
+        result = self._client(cmd=cmd)
+        payload = result[0].payload
         if check:
-            assert_that(result, is_not(empty()))
-        return result
+            assert_that(payload['rc'], is_(0))
+        return payload['rc'], payload['stdout'], payload['stderr']
