@@ -74,7 +74,7 @@ STATUS_AVAILABLE = 'available'
 STATUS_BUILD = 'build'
 STATUS_INUSE = 'in-use'
 STATUS_MIGRATING = 'migrating'
-STATUS_OK = 'ok'
+STATUS_OK = 'OK'
 STATUS_RESIZE = 'resize'
 STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_VERIFY_RESIZE = 'verify_resize'
@@ -95,6 +95,7 @@ IMAGE_AVAILABLE_TIMEOUT = 5 * 60
 CREDENTIALS_PREFIX = 'stepler_credentials_'
 ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
 EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
+NOVA_API_LOG_FILE = '/var/log/nova/nova-api.log'
 
 PING_CALL_TIMEOUT = 5 * 60
 PING_BETWEEN_SERVERS_TIMEOUT = 5 * 60
