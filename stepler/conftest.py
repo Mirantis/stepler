@@ -44,6 +44,7 @@ __all__ = sorted([  # sort for documentation
     'heat_client',
     'stack_steps',
     'create_stack',
+    'empty_stack',
     'read_heat_template',
     'get_template_path',
     'heat_cli_steps',

@@ -20,10 +20,12 @@ Heat stacks fixtures
 import pytest
 
 from stepler.heat import steps
+from stepler.third_party import utils
 
 __all__ = [
     'stack_steps',
     'create_stack',
+    'empty_stack',
 ]
 
 
@@ -67,3 +69,24 @@ def create_stack(stack_steps):
                   if stack.stack_name in names]
         for stack in stacks:
             stack_steps.delete(stack)
+
+
+@pytest.fixture
+def empty_stack(create_stack, read_heat_template):
+    """Function fixture to create empty heat stack.
+
+    Args:
+        create_stack (function): fixture to create stack
+        read_heat_template (function): ficture to read template
+
+    Returns:
+        obj: created stack
+    """
+    name = next(utils.generate_ids('stack'))
+    template = read_heat_template('empty_heat_template')
+    return create_stack(
+        name,
+        template=template,
+        parameters={
+            'param': 'string',
+        })
