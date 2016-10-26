@@ -71,3 +71,22 @@ def test_stack_create_from_url(cli_heat_steps, stack_steps):
         template_url=config.HEAT_SIMPLE_TEMPLATE_URL)
     stack_steps.check_presence(
         stack['id'], timeout=config.STACK_CREATION_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('6108fc79-7173-4e4a-a061-97acb8432717')
+@pytest.mark.usefixtures('stacks_cleanup')
+def test_stack_delete(empty_stack, cli_heat_steps, stack_steps):
+    """**Scenario:** Delete stack with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Delete stack
+    #. Check that stack is not exist
+    """
+    cli_heat_steps.delete_stack(empty_stack._info)
+    stack_steps.check_presence(
+        empty_stack, timeout=config.STACK_CREATION_TIMEOUT)

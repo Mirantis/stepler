@@ -19,7 +19,7 @@ Heat CLI steps
 
 import re
 
-from hamcrest import assert_that, is_  # noqa
+from hamcrest import assert_that, is_, empty  # noqa
 import six
 
 from stepler.cli_clients.steps import base
@@ -83,3 +83,18 @@ class CliHeatSteps(base.BaseCliSteps):
         stack = self._show_to_dict(stack_table)
 
         return stack
+
+    @steps_checker.step
+    def delete_stack(self, stack, check=True):
+        """Step to delete stack.
+
+        Args:
+            stack (dict): stack to delete
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat stack-delete {0[id]}'.format(stack)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_DELETING_TIMEOUT, check=check)
+
+        if check:
+            assert_that(stderr, is_(empty()))
