@@ -19,9 +19,8 @@ User steps
 
 from hamcrest import (assert_that, is_not, empty, only_contains,
                       equal_to)  # noqa
+from keystoneclient import exceptions
 from waiting import wait
-
-from hamcrest import assert_that, is_not, equal_to  # noqa
 
 from stepler.base import BaseSteps
 from stepler.third_party.steps_checker import step
@@ -35,20 +34,42 @@ class UserSteps(BaseSteps):
     """User steps."""
 
     @step
-    def create_user(self, user_name, password, domain='default', check=True):
-        """Step to create user.
+    def create_user(self,
+                    user_name,
+                    password,
+                    domain='default',
+                    enabled=True,
+                    email=None,
+                    description=None,
+                    default_project=None,
+                    check=True,
+                    **kwargs):
+        """Step to create new user.
 
         Args:
-            user_name (str): user name
-            password (str): password
-            domain (str or object): domain
-            check (bool): flag whether to check step or not
+            user_name (str): the new name of the user
+            password (str): the new password of the user
+            domain (str or keystoneclient.v3.domains.Domain): the new domain
+                of the user
+            enabled (str): whether the user is enabled
+            email (str): the new email of the user
+            description (str): the newdescription of the user
+            default_project (str or keystoneclient.v3.projects.Project):
+                the new default project of the user
+            kwargs: any other attribute provided will be passed to server
 
         Returns:
-            object: user
+            keystoneclient.v3.users.User: new user
         """
-        user = self._client.create(name=user_name, password=password,
-                                   domain=domain)
+        user = self._client.create(name=user_name,
+                                   password=password,
+                                   domain=domain,
+                                   email=email,
+                                   description=description,
+                                   enabled=enabled,
+                                   default_project=default_project,
+                                   check=True,
+                                   **kwargs)
         if check:
             self.check_user_presence(user)
             assert_that(user.name, equal_to(user_name))
@@ -128,6 +149,41 @@ class UserSteps(BaseSteps):
         return users
 
     @step
+    def update_user(self, user, check=True, *args, **kwargs):
+        """Step to update the user.
+
+        Args:
+            user (str or keystoneclient.v3.users.User): the user to be updated
+                on the server
+            name (str): the new name of the user
+            domain (str or keystoneclient.v3.domains.Domain): the new domain
+                of the user
+            password (str): the new password of the user
+            email (str): the new email of the user
+            description (str): the newdescription of the user
+            enabled (str): whether the user is enabled
+            default_project (str or keystoneclient.v3.projects.Project):
+                the new default project of the user
+
+        kwargs: any other attribute provided will be passed to server
+
+        Returns:
+            keystoneclient.v3.users.User: the updated user returned from server
+
+        :returns: the updated user returned from server.
+        :rtype: :class:`keystoneclient.v3.users.User`
+        """
+        update_user = self._client.update(user=user, *args, **kwargs)
+
+        if check:
+            get_user = self._client.get(update_user)
+
+            if not set(update_user.extra).issubset(get_user.to_dict()):
+                raise ValueError('User was not updated')
+
+        return update_user
+
+    @step
     def check_user_presence(self, user, present=True, timeout=0):
         """Step to check user presence.
 
@@ -143,7 +199,7 @@ class UserSteps(BaseSteps):
             try:
                 self._client.get(user.id)
                 return present
-            except Exception:
+            except exceptions.NotFound:
                 return not present
 
         wait(predicate, timeout_seconds=timeout)

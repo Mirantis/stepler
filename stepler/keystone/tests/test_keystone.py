@@ -16,10 +16,13 @@ Keystone tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pytest
+
 from stepler import config
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('89ef26c6-600a-4f69-afeb-d3b8d9ad1244')
 def test_keystone_permission_lose(admin,
                                   project,
                                   admin_role,
@@ -49,6 +52,7 @@ def test_keystone_permission_lose(admin,
     user_steps.get_users()
 
 
+@pytest.mark.idempotent_id('76f823ac-5c8b-4617-a4cc-9e30257a679f')
 def test_restart_all_services(cirros_image,
                               tiny_flavor,
                               keypair,
