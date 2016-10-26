@@ -21,14 +21,13 @@ from stepler import config
 from stepler.third_party import utils
 
 
-@pytest.mark.idempotent_id('eeeb7666-e3ab-4cf7-b0de-73e902457926')
-def test_keystone_permission_lose(
-        admin,
-        project,
-        admin_role,
-        project_steps,
-        role_steps,
-        user_steps):
+@pytest.mark.idempotent_id('89ef26c6-600a-4f69-afeb-d3b8d9ad1244')
+def test_keystone_permission_lose(admin,
+                                  project,
+                                  admin_role,
+                                  project_steps,
+                                  role_steps,
+                                  user_steps):
     """**Scenario:** Check that admin have access to users and projects in this
     session.
 
@@ -52,17 +51,16 @@ def test_keystone_permission_lose(
     user_steps.get_users()
 
 
-@pytest.mark.idempotent_id('6409a9e8-434e-4b5f-ae6f-b13d062fc201')
-def test_restart_all_services(
-        cirros_image,
-        tiny_flavor,
-        keypair,
-        admin_internal_network,
-        security_group,
-        create_user,
-        create_server,
-        user_steps,
-        os_faults_steps):
+@pytest.mark.idempotent_id('76f823ac-5c8b-4617-a4cc-9e30257a679f')
+def test_restart_all_services(cirros_image,
+                              tiny_flavor,
+                              keypair,
+                              admin_internal_network,
+                              security_group,
+                              create_user,
+                              create_server,
+                              user_steps,
+                              os_faults_steps):
     """**Scenario:** Check that keystone works after restarting services
 
     **Setup:**
