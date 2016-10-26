@@ -76,11 +76,8 @@ def create_image(images_steps):
     """
     images = []
 
-    def _create_image(image_name, image_file=None, min_disk=None,
-                      min_ram=None, protected=False):
-        images_steps.create_image(image_name, image_file=image_file,
-                                  min_disk=min_disk, min_ram=min_ram,
-                                  protected=protected)
+    def _create_image(image_name, *args, **kwgs):
+        images_steps.create_image(image_name, *args, **kwgs)
         image = AttrDict(name=image_name)
         images.append(image)
         return image

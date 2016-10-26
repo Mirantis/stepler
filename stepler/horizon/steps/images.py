@@ -20,7 +20,8 @@ Images steps
 from hamcrest import assert_that, equal_to  # noqa
 from waiting import wait
 
-from stepler.horizon.config import EVENT_TIMEOUT
+from stepler import config as main_config
+from stepler.horizon import config
 from stepler.horizon.utils import get_size
 from stepler.third_party import steps_checker
 
@@ -38,10 +39,31 @@ class ImagesSteps(BaseSteps):
         return self._open(self.app.page_images)
 
     @steps_checker.step
-    def create_image(self, image_name, image_url=CIRROS_URL, image_file=None,
-                     disk_format='QCOW2', min_disk=None, min_ram=None,
-                     protected=False, check=True):
-        """Step to create image."""
+    def create_image(self,
+                     image_name,
+                     image_description=None,
+                     image_url=CIRROS_URL,
+                     image_file=None,
+                     disk_format='QCOW2',
+                     min_disk=None,
+                     min_ram=None,
+                     protected=False,
+                     big_image=False,
+                     check=True):
+        """Step to create image.
+
+        Args:
+            image_name (str): image name
+            image_description (object|None): image description
+            image_url (str): URL of image location
+            image_file (str): path of image file
+            disk_format (str): disk format
+            min_disk (int): min disk size (in Gb)
+            min_ram (int): min RAM size (in Mb)
+            protected (bool): indicator whether image is protected or not
+            big_image (bool): indicator whether image has big size or not
+            check (bool): flag whether to check step or not
+        """
         page_images = self._page_images()
         page_images.button_create_image.click()
 
@@ -56,6 +78,9 @@ class ImagesSteps(BaseSteps):
                 form.combobox_source_type.value = 'Image Location'
                 form.field_image_url.value = image_url
 
+            if image_description:
+                form.field_description.value = image_description
+
             if min_disk:
                 form.field_min_disk.value = min_disk
 
@@ -68,12 +93,21 @@ class ImagesSteps(BaseSteps):
                 form.checkbox_protected.unselect()
 
             form.combobox_disk_format.value = disk_format
-            form.submit()
+            if big_image:
+                form.submit(modal_timeout=config.LONG_ACTION_TIMEOUT)
+            else:
+                form.submit()
 
         if check:
             self.close_notification('success')
-            page_images.table_images.row(
-                name=image_name).wait_for_status('Active')
+            if big_image:
+                page_images.table_images.row(
+                    name=image_name).wait_for_status(
+                    main_config.STATUS_ACTIVE,
+                    timeout=config.LONG_EVENT_TIMEOUT)
+            else:
+                page_images.table_images.row(
+                    name=image_name).wait_for_status(main_config.STATUS_ACTIVE)
 
     @steps_checker.step
     def delete_image(self, image_name, check=True):
@@ -90,7 +124,7 @@ class ImagesSteps(BaseSteps):
         if check:
             self.close_notification('success')
             page_images.table_images.row(
-                name=image_name).wait_for_absence(EVENT_TIMEOUT)
+                name=image_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def delete_images(self, image_names, check=True):
@@ -108,7 +142,7 @@ class ImagesSteps(BaseSteps):
             self.close_notification('success')
             for image_name in image_names:
                 page_images.table_images.row(
-                    name=image_name).wait_for_absence(EVENT_TIMEOUT)
+                    name=image_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def update_metadata(self, image_name, metadata, check=True):
