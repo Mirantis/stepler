@@ -17,6 +17,7 @@ Project steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, empty, equal_to  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -67,3 +68,24 @@ class ProjectSteps(BaseSteps):
         if check:
             assert projects
         return projects
+
+    @step
+    def get_current_project(self, session, check=True):
+        """Step to get current project.
+
+        Args:
+            session (obj): session object
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if id of retrieved project is not equal to
+            session project id
+
+        Returns:
+            object: project
+        """
+        project_id = session.get_project_id()
+        project = self._client.get(project_id)
+        if check:
+            assert_that(project.id, equal_to(project_id))
+        return project
