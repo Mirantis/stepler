@@ -17,6 +17,7 @@ Utils
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import context
 import email.utils
 import inspect
 import logging
@@ -38,6 +39,7 @@ LOGGER = logging.getLogger(__name__)
 __all__ = [
     'generate_ids',
     'generate_files',
+    'generate_file_context',
     'get_file_path',
     'get_unwrapped_func',
     'is_iterable',
@@ -110,6 +112,29 @@ def generate_files(prefix=None, postfix=None, folder=None, count=1, size=1024):
             f.write(os.urandom(size))
 
         yield file_path
+
+
+@context.context
+def generate_file_context(prefix=None, postfix=None, folder=None, size=1024):
+    """Context manager to generate file with unique name and delete it later.
+
+    Useful for large files.
+
+    Arguments:
+        prefix (string|None): prefix of unique id.
+        postfix (string|None): postfix of unique id.
+        folder (string|None): folder to create unique file.
+        size (int|1024): size of unique file.
+
+    Returns:
+        string: file path.
+    """
+
+    file_path = next(generate_files(prefix=prefix, postfix=postfix,
+                                    folder=folder, count=1, size=size))
+    yield file_path
+
+    os.remove(file_path)
 
 
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
