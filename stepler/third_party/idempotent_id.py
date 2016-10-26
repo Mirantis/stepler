@@ -54,7 +54,7 @@ def pytest_collection_modifyitems(session, items):
                                          for param in params.items())
                 if not params_in_callspec:
                     continue
-            suffix_string = '[({})]'.format(test_id)
+            suffix_string = '[id-{}]'.format(test_id)
             ids[test_id].append(item)
             break
         else:
