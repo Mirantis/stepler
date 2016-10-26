@@ -19,7 +19,7 @@ Heat CLI steps
 
 import re
 
-from hamcrest import assert_that, equal_to, is_not, empty  # noqa
+from hamcrest import assert_that, is_  # noqa
 import six
 
 from stepler.cli_clients.steps import base
@@ -47,19 +47,32 @@ class CliHeatSteps(base.BaseCliSteps):
         return obj
 
     @steps_checker.step
-    def create_stack(self, name, template_file, parameters=None, check=True):
+    def create_stack(self,
+                     name,
+                     template_file=None,
+                     template_url=None,
+                     parameters=None,
+                     check=True):
         """Step to create stack.
 
         Args:
             name (str): name of stack
-            template_file (str): path to yaml template
+            template_file (str, optional): path to yaml template
+            template_url (str, optional): template url
             parameters (dict|None): parameters for template
             check (bool): flag whether check step or not
 
         Returns:
             dict: heat stack
         """
-        cmd = 'heat stack-create {} -f {}'.format(name, template_file)
+        err_msg = 'One of `template_file` or `template_url` should be passed.'
+        assert_that(any([template_file, template_url]), is_(True), err_msg)
+
+        cmd = 'heat stack-create ' + name
+        if template_file:
+            cmd += ' -f ' + template_file
+        elif template_url:
+            cmd += ' -u ' + template_url
         parameters = parameters or {}
         for key, value in parameters.items():
             cmd += ' --parameters {}={}'.format(key, value)
