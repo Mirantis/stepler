@@ -21,6 +21,7 @@ import pytest
 
 from stepler.horizon import config
 from stepler.horizon.utils import generate_ids, generate_files  # noqa
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('any_one')
@@ -40,7 +41,7 @@ class TestAnyOne(object):
         """Verify that user can create image from local file."""
         image_name = next(generate_ids('image', length=20))
         image_file = next(generate_files(postfix='.qcow2'))
-        create_image(image_name, image_file)
+        create_image(image_name, image_file=image_file)
 
     @pytest.mark.idempotent_id('c4cf3c6d-45d2-4629-b9fe-3e8eed3f1e59')
     def test_view_image(self, image, images_steps):
@@ -118,3 +119,30 @@ class TestAnyOne(object):
                                      network_name=config.INTERNAL_NETWORK_NAME)
         instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)
+
+
+@pytest.mark.usefixtures('user_only')
+class TestUserOnly(object):
+    """Tests for user only."""
+
+    # the following test is executed only for one user because of its long
+    # duration (> 1 hour)
+
+    @pytest.mark.idempotent_id('b846cf53-d3fa-4cca-8b10-fbaf50749f7c')
+    def test_big_image_create_delete(self, create_image):
+        """**Scenario:**Check big image creation and deletion from file.
+
+        **Steps:**
+
+            #. Create file 100Gb
+            #. Create image from this file
+            #. Delete big file
+
+        **Teardown:**
+
+            #. Delete image
+        """
+        with utils.generate_file_context(
+                postfix='.qcow2', size=config.LONG_FILE_SIZE) as file_path:
+            image_name = next(utils.generate_ids('image', length=20))
+            create_image(image_name, image_file=file_path, big_image=True)

@@ -17,8 +17,6 @@ Horizon config
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 from stepler.third_party import utils
 
 from stepler.config import *  # noqa
@@ -26,6 +24,10 @@ from stepler.config import *  # noqa
 UI_TIMEOUT = 30
 ACTION_TIMEOUT = 60
 EVENT_TIMEOUT = 180
+
+LONG_FILE_SIZE = 1024 * 1024 * 1024 * 100  # 100 Gb
+LONG_ACTION_TIMEOUT = 60 * 60  # 1 hour (timeout for 'Working')
+LONG_EVENT_TIMEOUT = 60 * 60 * 3  # 3 hours (timeout for 'Saving')
 
 OS_DASHBOARD_URL = os.environ.get('OS_DASHBOARD_URL')  # should be defined!
 VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')

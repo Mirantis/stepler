@@ -34,14 +34,14 @@ class Form(ui.Form):
 
     @pom.timeit
     @ui.wait_for_presence
-    def submit(self, modal_absent=True):
+    def submit(self, modal_absent=True, time_out_modal_absent=None):
         """Submit form."""
         submit_button = ui.Button(*self.submit_locator)
         submit_button.container = self
         submit_button.click()
 
         if modal_absent:
-            self._modal.wait_for_absence()
+            self._modal.wait_for_absence(timeout=time_out_modal_absent)
 
     @pom.timeit
     @ui.wait_for_presence
