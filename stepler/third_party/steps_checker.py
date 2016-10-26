@@ -184,11 +184,6 @@ def _validate_check_step(func):
     ast_func_def = ast.parse(_get_source(func)).body[0]
     func_location = _get_func_location(func)
 
-    error = _verify_step_return_nothing(
-        ast_func_def, func_location, step_type=CHECK)
-    if error:
-        errors.append(error)
-
     error = _verify_step_raise_exception(
         ast_func_def, func_location, step_type=CHECK)
     if error:
