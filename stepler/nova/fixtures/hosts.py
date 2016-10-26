@@ -1,7 +1,7 @@
 """
-----------
-Nova steps
-----------
+--------------
+Hosts fixtures
+--------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,24 +17,24 @@ Nova steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .availability_zones import *  # noqa
-from .flavors import *  # noqa
-from .floating_ips import *  # noqa
-from .hosts import *  # noqa
-from .hypervisor import *  # noqa
-from .keypairs import *  # noqa
-from .security_groups import *  # noqa
-from .nova_volumes import *  # noqa
-from .servers import *  # noqa
+import pytest
+
+from stepler.nova import steps
+
 
 __all__ = [
-    'AvailabilityZoneSteps',
-    'FlavorSteps',
-    'FloatingIpSteps',
-    'HostSteps',
-    'HypervisorSteps',
-    'KeypairSteps',
-    'SecurityGroupSteps',
-    'NovaVolumeSteps',
-    'ServerSteps'
+    'host_steps'
 ]
+
+
+@pytest.fixture
+def host_steps(nova_client):
+    """Function fixture to get host steps.
+
+    Args:
+        nova_client (object): instantiated nova client
+
+    Returns:
+        stepler.nova.steps.HostSteps: instantiated host steps
+    """
+    return steps.HostSteps(nova_client.hosts)
