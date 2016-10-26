@@ -29,6 +29,7 @@ __all__ = [
     'public_network',
     'network_steps',
     'admin_internal_network',
+    'internal_network'
 ]
 
 
@@ -94,7 +95,22 @@ def public_network(network_steps):
     Returns:
         dict: public network
     """
-    return network_steps.get_public_network()
+    params = {'router:external': True, 'status': 'ACTIVE'}
+    return network_steps.get_network(**params)
+
+
+@pytest.fixture
+def internal_network(network_steps):
+    """Fixture returns internal network.
+
+    Args:
+        network_steps (object): instantiated network steps
+
+    Returns:
+        dict: internal network
+    """
+    params = {'router:external': False, 'status': 'ACTIVE'}
+    return network_steps.get_network(**params)
 
 
 @pytest.fixture
