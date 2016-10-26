@@ -123,7 +123,7 @@ class StackSteps(base.BaseSteps):
         """Check-step to check heat stack presence.
 
         Args:
-            stack (obj): heat stack
+            stack (obj|str): heat stack object or id
             present (bool): flag to check is stack present or absent
             timeout (int): seconds to wait a result of check
 
@@ -131,9 +131,14 @@ class StackSteps(base.BaseSteps):
             TimeoutExpired: if check was falsed after timeout
         """
 
+        if hasattr(stack, 'id'):
+            stack_id = stack.id
+        else:
+            stack_id = stack
+
         def predicate():
             try:
-                next(self._client.list(id=stack.id))
+                next(self._client.list(id=stack_id))
                 return present
             except StopIteration:
                 return not present
