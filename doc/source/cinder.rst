@@ -20,3 +20,6 @@ Cinder tests
 
 .. automodule:: stepler.cinder.tests.test_edit_volume
    :members:
+
+.. automodule:: stepler.cinder.tests.test_change_volume_type
+   :members:

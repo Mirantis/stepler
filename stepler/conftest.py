@@ -40,6 +40,8 @@ __all__ = sorted([  # sort for documentation
     'create_volumes',
     'cinder_client',
     'volume_steps',
+    'volume_types_steps',
+    'create_volume_type',
     'cinder_quota_steps',
 
     'heat_client',
@@ -68,7 +70,6 @@ __all__ = sorted([  # sort for documentation
     'create_domain',
     'domain_steps',
     'domain',
-    'group_steps',
     'keystone_client',
     'create_project',
     'project_steps',
@@ -99,13 +100,10 @@ __all__ = sorted([  # sort for documentation
     'router_steps',
     'subnet_steps',
     'port_steps',
-    'admin_internal_network',
 
     'create_flavor',
     'flavor',
     'flavor_steps',
-    'tiny_flavor',
-
     'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
@@ -126,8 +124,6 @@ __all__ = sorted([  # sort for documentation
     'server',
     'server_steps',
     'get_ssh_proxy_cmd',
-    'get_availability_zone_steps',
-    'disable_nova_config_drive',
 
     'os_faults_client',
     'os_faults_steps',
