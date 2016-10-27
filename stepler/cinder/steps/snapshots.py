@@ -133,3 +133,22 @@ class SnapshotSteps(base.BaseSteps):
                                    equal_to(status.lower()))
 
             waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_snapshots(self, check=True):
+        """Step to get snapshots.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: snapshots collection
+
+        Raises:
+            AsserionError: if check was falsed
+        """
+        snapshots = list(self._client.list())
+
+        if check:
+            assert_that(snapshots, is_not(empty()))
+        return snapshots

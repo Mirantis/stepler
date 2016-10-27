@@ -38,11 +38,13 @@ __all__ = sorted([  # sort for documentation
 
     'create_volume',
     'create_volumes',
+    'volume',
     'cinder_client',
     'volume_steps',
     'cinder_quota_steps',
     'create_snapshot',
     'snapshot_steps',
+    'big_snapshot_quota',
 
     'heat_client',
     'stack_steps',
