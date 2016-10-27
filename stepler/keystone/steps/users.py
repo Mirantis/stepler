@@ -20,10 +20,11 @@ User steps
 from hamcrest import (assert_that, is_not, empty, only_contains,
                       equal_to, has_entries)  # noqa
 from keystoneclient import exceptions
-from waiting import wait
 
 from stepler.base import BaseSteps
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = [
     'UserSteps'
@@ -195,25 +196,27 @@ class UserSteps(BaseSteps):
             assert_that(user.to_dict(), has_entries(kwargs))
 
     @steps_checker.step
-    def check_user_presence(self, user, present=True, timeout=0):
+    def check_user_presence(self, user, must_present=True, timeout=0):
         """Step to check user presence.
 
         Args:
             user (object): user
-            present (bool): flag whether user should present or no
+            must_present (bool): flag whether user should present or no
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check is failed after timeout
         """
-        def predicate():
+        def _check_user_presence():
             try:
                 self._client.get(user.id)
-                return present
+                is_present = True
             except exceptions.NotFound:
-                return not present
+                is_present = False
 
-        wait(predicate, timeout_seconds=timeout)
+            return expect_that(is_present, equal_to(must_present))
+
+        waiter.wait(_check_user_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_user_token(self, check=True):
@@ -230,3 +233,52 @@ class UserSteps(BaseSteps):
         if check:
             assert_that(token, is_not(None))
         return token
+
+    @steps_checker.step
+    def add_user_to_group(self, user, group, check=True):
+        """Step to add the specified user as a member of the specified group.
+
+        Args:
+            user (str or keystoneclient.v3.users.User): the user to be added
+                to the group
+            group (str or keystoneclient.v3.groups.Group): the group to put
+                the user in
+            check (bool): flag whether to check step or not
+
+        Raises:
+            NotFound: if check was triggered to an error
+        """
+        self._client.add_to_group(user=user, group=group)
+
+        if check:
+            self.check_user_in_group(user, group)
+
+    @steps_checker.step
+    def check_user_in_group(self,
+                            user,
+                            group,
+                            must_present=True,
+                            timeout=0):
+        """Step to check if the user is a member of the group.
+
+        Args:
+            user (str or keystoneclient.v3.users.User): the user to be verified
+                in the group
+            group (str or keystoneclient.v3.groups.Group): the group to check
+                the user in
+            must_present (bool): flag whether group should present or no
+            timeout (int): seconds to wait a result of check
+
+        Returns:
+            TimeoutExpired: if check is triggered to an error after timeout
+        """
+        def _check_user_in_group():
+            try:
+                user_is_in_group = self._client.check_in_group(user=user,
+                                                               group=group)
+            except exceptions.NotFound:
+                user_is_in_group = False
+
+            return expect_that(user_is_in_group, equal_to(must_present))
+
+        waiter.wait(_check_user_in_group, timeout_seconds=timeout)
