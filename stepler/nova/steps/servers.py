@@ -21,7 +21,7 @@ import contextlib
 import socket
 
 from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
-                      less_than_or_equal_to)  # noqa
+                      less_than_or_equal_to, has_properties)  # noqa
 from novaclient import exceptions as nova_exceptions
 import paramiko
 from waiting import wait
@@ -217,6 +217,24 @@ class ServerSteps(base.BaseSteps):
             assert_that(servers, is_not(empty()))
 
         return servers
+
+    @steps_checker.step
+    def get_server(self, check=True, **kwargs):
+        """Step to retrieve server from nova with filter.
+
+        Args:
+            check (bool): flag whether to check step or not
+            kwargs: Additional filters to pass
+
+        Returns:
+            obj: server object
+        """
+        server = self._client.find(**kwargs)
+
+        if check:
+            assert_that(server, has_properties(kwargs))
+
+        return server
 
     @steps_checker.step
     def check_server_presence(self, server, present=True, by_name=False,
