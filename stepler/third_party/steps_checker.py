@@ -53,6 +53,7 @@ PERMITTED_CALLS = [
     'set_trace',
     'generate_ids',
     'generate_files',
+    'generate_ips',
     'time',
     'str',
     'embed',
