@@ -208,11 +208,11 @@ def create_server_context(create_servers_context):
 
 
 @pytest.fixture
-def server(create_server, image):
+def server(create_server, cirros_image, flavor):
     # TODO(schipiga): expand documentation
     """Fixture to create server with default options before test."""
     server_name = next(generate_ids('server'))
-    return create_server(server_name, image)
+    return create_server(server_name, cirros_image, flavor)
 
 
 # TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.
