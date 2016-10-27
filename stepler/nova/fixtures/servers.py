@@ -208,11 +208,22 @@ def create_server_context(create_servers_context):
 
 
 @pytest.fixture
-def server(create_server, image):
-    # TODO(schipiga): expand documentation
-    """Fixture to create server with default options before test."""
-    server_name = next(generate_ids('server'))
-    return create_server(server_name, image)
+def server(create_server, cirros_image, flavor, internal_network):
+    """Function fixture to create server with default options before test.
+
+    Args:
+        create_server (function): function to create a nova server
+        cirros_image (object): cirros image from glance
+        flavor (object): nova flavor
+        internal_network (object): neutron internal network
+
+    Returns:
+        object: nova server
+    """
+    return create_server(next(generate_ids('server')),
+                         image=cirros_image,
+                         flavor=flavor,
+                         networks=[internal_network])
 
 
 # TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.
