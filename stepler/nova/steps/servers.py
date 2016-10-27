@@ -21,8 +21,9 @@ import contextlib
 import socket
 import time
 
-from hamcrest import (assert_that, empty, equal_to, has_entries, has_item,
-                      has_properties, is_not, less_than_or_equal_to)  # noqa
+from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
+                      has_item, has_properties, is_not, is_in,
+                      less_than_or_equal_to, raises)  # noqa
 
 from novaclient import exceptions as nova_exceptions
 import paramiko
@@ -393,6 +394,89 @@ class ServerSteps(base.BaseSteps):
             assert_that(floating_ips,
                         is_not(has_item(floating_ip.ip)),
                         "Floating IP still in a list of server's IPs.")
+
+    @steps_checker.step
+    def attach_fixed_ip(self, server, network_id, check=True):
+        """Step to attach fixed IP from provided network to provided server.
+
+        Args:
+            server (object): nova instance to ping its floating ip
+            network_id (str): the ID of the network the IP should be on
+            check (bool): flag whether to check step or not
+
+        Returns:
+            str:  IF check=True, returns new fixed IP address
+            None: IF check=False
+
+        Raises:
+            TimeoutExpired: if check was failed after timeout
+        """
+        ips_before_attach = self.get_ips(server, 'fixed').keys()
+        server.add_fixed_ip(network_id)
+
+        if check:
+            def _check_fixed_ip_attached():
+                server.get()
+                ips_after_attach = self.get_ips(server, 'fixed').keys()
+                return expect_that(len(ips_after_attach),
+                                   equal_to(len(ips_before_attach) + 1))
+
+            waiter.wait(_check_fixed_ip_attached,
+                        timeout_seconds=config.SERVER_UPDATE_TIMEOUT)
+
+            ips_after_attach = self.get_ips(server, 'fixed').keys()
+            return (set(ips_after_attach) - set(ips_before_attach)).pop()
+
+    @steps_checker.step
+    def detach_fixed_ip(self, server, fixed_ip=None, check=True):
+        """Step to detach provided fixed IP from provided server.
+
+        Args:
+            server (object): nova instance to delete fixed ip
+            fixed_ip (str): Fixed IP address
+            check (bool): flag whether to check step or not
+            timeout (int): seconds to wait for ip to be attached
+
+        Raises:
+            TimeoutExpired: if check was failed after timeout
+        """
+        if not fixed_ip:
+            fixed_ip = self.get_ips(server, 'fixed').keys()[0]
+
+        self._client.remove_fixed_ip(server.id, fixed_ip)
+
+        if check:
+
+            def _check_detach_fixed_ip():
+                server.get()
+                fixed_ips = self.get_ips(server, 'fixed').keys()
+                return expect_that(fixed_ip, is_not(is_in(fixed_ips)))
+
+            waiter.wait(_check_detach_fixed_ip,
+                        timeout_seconds=config.SERVER_UPDATE_TIMEOUT)
+
+    @steps_checker.step
+    def check_server_doesnot_detach_unattached_fixed_ip(
+            self, server, unattached_fixed_ip):
+        """Step to check that server will raise exception if we try to detach
+            not attached to it fixed IP.
+
+        Args:
+            server (object): nova instance to delete fixed ip
+            unattached_fixed_ip (str): Unattached Fixed IP address
+
+        Raises:
+            AssertionError: if error didn't raise
+        """
+        # TODO(akoryaging): Fill when error will be implemented in Bug
+        # https://bugs.launchpad.net/nova/+bug/1534186
+        exception_message = ''
+
+        # TODO(akoryaging): Specify Nova exception when it will be implemented
+        assert_that(
+            calling(self.detach_fixed_ip).with_args(
+                server=server, fixed_ip=unattached_fixed_ip, check=False),
+            raises(Exception, exception_message))
 
     @steps_checker.step
     def get_ips(self, server, ip_type=None):
