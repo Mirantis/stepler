@@ -113,7 +113,7 @@ def upload_volume_to_image(create_volume, volume_steps, glance_steps):
         image_info = volume_steps.volume_upload_to_image(
             volume=volume, image_name=image_name, disk_format=disk_format)
         image = glance_steps.get_image(
-            image_info['os-volume_upload_image']['image_id'])
+            id=image_info['os-volume_upload_image']['image_id'])
         images.append(image)
         glance_steps.check_image_status(image, status='active',
                                         timeout=config.IMAGE_AVAILABLE_TIMEOUT)
