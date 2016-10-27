@@ -28,7 +28,6 @@ from .volume_types import *  # noqa
 
 __all__ = [
     'VolumeSteps',
-    'VolumeSteps',
     'VolumeTypeSteps',
     'CinderQuotaSteps',
     'SnapshotSteps',
