@@ -29,6 +29,7 @@ from stepler.third_party import utils
 __all__ = [
     'create_volume',
     'create_volumes',
+    'volume',
     'volume_steps',
     'upload_volume_to_image',
     'volume',

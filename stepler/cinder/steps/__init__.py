@@ -19,9 +19,9 @@ Contains steps specific for cinder.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .volumes import *  # noqa
 from .quota import *  # noqa
 from .snapshots import *  # noqa
+from .volumes import *  # noqa
 
 __all__ = [
     'VolumeSteps',
