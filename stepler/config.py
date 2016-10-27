@@ -78,6 +78,7 @@ STATUS_OK = 'OK'
 STATUS_RESIZE = 'resize'
 STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_VERIFY_RESIZE = 'verify_resize'
+STATUS_CREATING = 'creating'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
@@ -91,6 +92,7 @@ VOLUME_ATTACH_TIMEOUT = 60
 SNAPSHOT_AVAILABLE_TIMEOUT = 5 * 60
 SNAPSHOT_DELETE_TIMEOUT = 3 * 60
 VOLUME_RETYPE_TIMEOUT = 60
+CINDER_SNAPSHOTS_QUOTA_BIG_VALUE = 200
 POLICY_NEVER = 'never'
 
 # Glance

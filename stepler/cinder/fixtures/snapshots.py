@@ -5,17 +5,17 @@ Snapshot fixtures
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
-# # you may not use this file except in compliance with the License.
-# # You may obtain a copy of the License at
-# #
-# #    http://www.apache.org/licenses/LICENSE-2.0
-# #
-# # Unless required by applicable law or agreed to in writing, software
-# # distributed under the License is distributed on an "AS IS" BASIS,
-# # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# # implied.
-# # See the License for the specific language governing permissions and
-# # limitations under the License.
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import pytest
 
@@ -56,16 +56,20 @@ def create_snapshots(snapshot_steps):
     Returns:
         function: function to create snapshots as batch with options
     """
-    snapshots = []
+    snapshots_names = set()
 
     def _create_snapshots(volume, names, *args, **kwgs):
+        names = list(names)
+        snapshots_names.update(names)
         _snapshots = snapshot_steps.create_snapshots(
             volume, names, *args, **kwgs)
-        snapshots.extend(_snapshots)
         return _snapshots
 
     yield _create_snapshots
 
+    all_snapshost = snapshot_steps.get_snapshots(check=False)
+    snapshots = [snapshot for snapshot in all_snapshost
+                 if snapshot.name in snapshots_names]
     snapshot_steps.delete_snapshots(snapshots)
 
 
