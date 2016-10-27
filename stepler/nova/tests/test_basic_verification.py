@@ -17,7 +17,9 @@ Nova basic verification tests
 #    under the License.
 
 import pytest
+import random
 
+from stepler import config
 from stepler.third_party.utils import generate_ids
 
 
@@ -128,3 +130,52 @@ def test_delete_server_with_precreated_port(
                                         ports=[port])
     server_steps.delete_server(server)
     port_steps.check_presence(port)
+
+
+@pytest.mark.idempotent_id('d8a8d247-3150-491a-b9e5-2f20cb0f384d')
+def test_remove_incorrect_fixed_ip_from_server(
+        flavor,
+        security_group,
+        keypair,
+        ubuntu_image,
+        # network,
+        # subnet,
+        # router,
+        # add_router_interfaces,
+        nova_floating_ip,
+        create_server,
+        server_steps,
+        network_steps):
+
+    # BUG: https://bugs.launchpad.net/nova/+bug/1534186
+    # add_router_interfaces(router, [subnet])
+
+    network = network_steps.get_network_by_name(
+        config.ADMIN_INTERNAL_NETWORK_NAME)
+
+    server_name = next(generate_ids('server'))
+    server = create_server(
+        server_name=server_name,
+        image=ubuntu_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        username='ubuntu')
+
+    ip_old = server_steps.get_ips(server, 'fixed', verbose=False)[0]
+    ip_new = server_steps.attach_fixed_ip(server, network['id'])
+    # ips_after_attach = server_steps.get_ips(server, 'fixed', verbose=False)
+    print('old_ip=', ip_old, 'new_ip=', ip_new)
+
+    fake_ip = ".".join([str(random.randint(190, 255)) for _ in range(4)])
+
+    # import ipdb; ipdb.set_trace()
+    # from IPython import embed; embed()
+
+    server_steps.check_negative_detach_fixed_ip(server, fake_ip)
+    server_steps.detach_fixed_ip(server, fake_ip)
+
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.get_server_credentials(server)
+    server_steps.get_server_ssh(server)
