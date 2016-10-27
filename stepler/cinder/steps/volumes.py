@@ -220,7 +220,7 @@ class VolumeSteps(base.BaseSteps):
         waiting.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_volumes(self, check=True):
+    def get_volumes(self, name_prefix=None, check=True):
         """Step to retrieve volumes.
 
         Args:
@@ -233,6 +233,11 @@ class VolumeSteps(base.BaseSteps):
             AssertionError: if check was falsed
         """
         volumes = self._client.volumes.list()
+
+        if name_prefix:
+            volumes = [volume for volume in volumes
+                       if (volume.name or '').startswith(name_prefix)]
+
         if check:
             assert_that(volumes, is_not(empty()))
         return volumes

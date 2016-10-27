@@ -62,12 +62,13 @@ def servers_cleanup():
                                            check=False)
         if SKIPPED_SERVERS:
             server_names = [server.name for server in SKIPPED_SERVERS]
+
             LOGGER.debug(
                 "SKIPPED_SERVERS contains servers {!r}. They will not be "
                 "removed in cleanup procedure.".format(server_names))
 
-        servers = [server for server in servers
-                   if server not in SKIPPED_SERVERS]
+            servers = [server for server in servers
+                       if server not in SKIPPED_SERVERS]
         if servers:
             server_steps.delete_servers(servers)
 

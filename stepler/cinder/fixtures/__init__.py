@@ -29,6 +29,7 @@ __all__ = sorted([  # sort for documentation
     'volume_steps',
     'upload_volume_to_image',
     'volume',
+    'volumes_cleanup',
 
     'cinder_quota_steps',
 

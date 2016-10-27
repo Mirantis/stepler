@@ -17,6 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 from hamcrest import assert_that, is_not  # noqa
 import pytest
 
@@ -32,6 +34,10 @@ __all__ = [
     'volume',
     'volumes_cleanup',
 ]
+
+LOGGER = logging.getLogger(__name__)
+# volumes which should be missed, when unexpected volumes will be removed
+SKIPPED_VOLUMES = []
 
 
 @pytest.yield_fixture
@@ -50,6 +56,15 @@ def volumes_cleanup():
         # check=False because in best case no volumes will be present
         volumes = volume_steps.get_volumes(name_prefix=config.STEPLER_PREFIX,
                                            check=False)
+        if SKIPPED_VOLUMES:
+            volume_names = [volume.name for volume in SKIPPED_VOLUMES]
+
+            LOGGER.debug(
+                "SKIPPED_VOLUMES contains volumes {!r}. They will not be "
+                "removed in cleanup procedure.".format(volume_names))
+
+            volumes = [volume for volume in volumes
+                       if volume not in SKIPPED_VOLUMES]
         if volumes:
             volume_steps.delete_volumes(volumes)
 

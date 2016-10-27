@@ -65,11 +65,13 @@ def images_cleanup():
                                          check=False)
         if SKIPPED_IMAGES:
             image_names = [image.name for image in SKIPPED_IMAGES]
+
             LOGGER.debug(
                 "SKIPPED_IMAGES contains images {!r}. They will not be "
                 "removed in cleanup procedure.".format(image_names))
 
-        images = [image for image in images if image not in SKIPPED_IMAGES]
+            images = [image for image in images if image not in SKIPPED_IMAGES]
+
         if images:
             glance_steps.delete_images(images)
 
