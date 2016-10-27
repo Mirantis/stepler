@@ -62,9 +62,6 @@ CIRROS_USERNAME = 'cirros'
 CURRENT_GLANCE_VERSION = '2'
 CURRENT_CINDER_VERSION = '2'
 
-# CONFIG PATHS
-NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
-
 # SERVICES
 KEYSTONE = 'keystone'
 NOVA_API = 'nova-api'
@@ -76,7 +73,7 @@ STATUS_AVAILABLE = 'available'
 STATUS_BUILD = 'build'
 STATUS_INUSE = 'in-use'
 STATUS_MIGRATING = 'migrating'
-STATUS_OK = 'ok'
+STATUS_OK = 'OK'
 STATUS_RESIZE = 'resize'
 STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_VERIFY_RESIZE = 'verify_resize'
@@ -103,6 +100,8 @@ ADMIN_INTERNAL_NETWORK_NAME = 'admin_internal_net'
 CREDENTIALS_PREFIX = 'stepler_credentials_'
 ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
 EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
+NOVA_API_LOG_FILE = '/var/log/nova/nova-api.log'
+NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
 
 TINY_FLAVOR = 'm1.tiny'
 
