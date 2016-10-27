@@ -113,6 +113,23 @@ def generate_files(prefix=None, postfix=None, folder=None, count=1, size=1024):
         yield file_path
 
 
+def generate_ips(ip_start=1, ip_end=254, count=1):
+    """Generates random IP v4 addresses.
+        Like: 173.217.169.131, 207.105.178.224, 193.121.141.217
+
+    Arguments:
+        ip_start (int): Start range of the generated sequence
+        ip_end (int): End range of the generated sequence
+        count (int): count of unique ids.
+
+    Returns:
+        generator: Random IP addresses
+    """
+    for _ in range(count):
+        yield ".".join(
+            [str(random.randint(ip_start, ip_end)) for _ in range(4)])
+
+
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
 def get_file_path(url, name=None):
     """Download file by URL to local cached storage.
