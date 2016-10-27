@@ -21,6 +21,7 @@ from stepler import config
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('2df43a46-72b0-4d25-bf68-13d07776af7c')
 def test_edit_volume_name(create_volume, volume_steps):
     """**Scenario:** Verify ability to change volume name
 
@@ -38,6 +39,7 @@ def test_edit_volume_name(create_volume, volume_steps):
     volume_steps.update_volume(volume, new_name=volume_new_name)
 
 
+@pytest.mark.idempotent_id('1c5ef0e5-64ac-43d5-b9f2-97cb4ad62e95')
 def test_edit_volume_description(create_volume, volume_steps):
     """**Scenario:** Verify ability to change volume description
 
@@ -55,6 +57,7 @@ def test_edit_volume_description(create_volume, volume_steps):
     volume_steps.update_volume(volume, new_description=volume_new_description)
 
 
+@pytest.mark.idempotent_id('f9561bef-2455-4274-8926-c2d6670752e1')
 def test_negative_edit_volume_name_too_long_name(create_volume, volume_steps):
     """**Scenario:** Verify inability to change volume name to name longer
     than 255 symbols

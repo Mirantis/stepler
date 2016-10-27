@@ -24,8 +24,10 @@ import pytest
 class TestAdminOnly(object):
     """Volume type tests are available for admin only."""
 
+    @pytest.mark.idempotent_id('71441c2f-5b79-43de-88bf-c026cc1f5777')
     def test_volume_type_create(self, volume_type):
         """Verify that volume type can be created and deleted."""
 
+    @pytest.mark.idempotent_id('3fb20c4a-7ab6-45e1-9f08-30ec942c4a89')
     def test_qos_spec_create(self, qos_spec):
         """Verify that QoS Spec can be created and deleted."""

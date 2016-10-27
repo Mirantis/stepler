@@ -39,10 +39,12 @@ def new_user_account(user, auth_steps):
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.idempotent_id('dabd9a5c-87de-462f-9f8c-e387d8ba39b7')
     def test_dashboard_help_url(self, new_user_account):
         """Verify that user can open dashboard help url."""
         self.check_dashboard_help_url("docs.openstack.org")
 
+    @pytest.mark.idempotent_id('94194097-802b-485c-9c5a-143d30e95dd6')
     def test_change_own_password(self, user, new_user_account, auth_steps,
                                  settings_steps):
         """Verify that user can change it's password."""
@@ -55,6 +57,7 @@ class TestAdminOnly(object):
 
         auth_steps.login(user.name, user.password)
 
+    @pytest.mark.idempotent_id('870a69ed-b413-4b44-9a2b-1c1e774ad841')
     def test_change_own_settings(self, new_user_account, update_settings,
                                  settings_steps):
         """Verify that user can change his settings."""

@@ -26,11 +26,13 @@ from stepler.horizon.utils import generate_ids, generate_files  # noqa
 class TestAnyOne(object):
     """Tests for any one."""
 
+    @pytest.mark.idempotent_id('e2804b4e-743e-4632-9c63-34066491a418')
     def test_create_public_container(self, create_container):
         """Verify that one can create public container."""
         container_name = next(generate_ids('container'))
         create_container(container_name, public=True)
 
+    @pytest.mark.idempotent_id('fde52ec8-1e68-4c9d-86d3-6dbc5d915c85')
     def test_available_public_container_url(self, create_container,
                                             containers_steps, horizon):
         """Verify that public container url is available."""
@@ -49,6 +51,7 @@ class TestAnyOne(object):
 
             containers_steps.delete_folder(folder_name)
 
+    @pytest.mark.idempotent_id('27f9647e-a7be-454b-95c5-fe1aa84d665d')
     def test_upload_file_to_container(self, container, containers_steps):
         """Verify that one can upload file to container."""
         with containers_steps.get_container(container.name):
@@ -57,6 +60,7 @@ class TestAnyOne(object):
             file_name = containers_steps.upload_file(file_path)
             containers_steps.delete_file(file_name)
 
+    @pytest.mark.idempotent_id('762249c5-ae19-4480-9295-b51501c0c817')
     def test_upload_file_to_folder(self, container, containers_steps):
         """Verify that one can upload file to folder."""
         with containers_steps.get_container(container.name):

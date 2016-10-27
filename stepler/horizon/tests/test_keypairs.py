@@ -29,9 +29,11 @@ with open(path.join(path.dirname(__file__), 'test_data', 'key.pub')) as f:
 class TestAnyOne(object):
     """Tests for any user."""
 
+    @pytest.mark.idempotent_id('b5701a3c-1ee2-4a0e-9d19-c03f160424ca')
     def test_create_keypair(self, keypair):
         """Verify that user can create keypair."""
 
+    @pytest.mark.idempotent_id('b5701a3c-1ee2-4a0e-9d19-c03f160424ca')
     def test_import_keypair(self, import_keypair):
         """Verify that user cat import keypair."""
         import_keypair(PUBLIC_KEY)
