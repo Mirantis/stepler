@@ -163,3 +163,44 @@ class UserSteps(BaseSteps):
         if check:
             assert_that(token, is_not(None))
         return token
+
+    @step
+    def add_user_to_group(self, user, group, check=True):
+        """Step to add the specified user as a member of the specified group.
+
+        Args:
+            user (str or keystoneclient.v3.users.User): the user to be added
+                to the group
+            group (str or keystoneclient.v3.users.User): the group to put
+                the user in
+
+        Returns:
+            requests.models.Response: Response object with 204 status
+        """
+        import ipdb; ipdb.set_trace()
+        response = self._client.add_to_group(user=user, group=group)
+
+        if check:
+            self.check_user_in_group(user, group)
+
+        return response
+
+    @step
+    def check_user_in_group(self, user, group, present=True, timeout=0):
+        """Step to check if the user is a member of the group.
+
+        Args:
+            user (str or keystoneclient.v3.users.User): the user to be verified
+                in the group
+            group (str or keystoneclient.v3.users.User): the group to check
+                the user in
+
+        Returns:
+            requests.models.Response: Response object with 204 status
+        """
+        def predicate():
+            response = self._client.check_in_group(user=user, group=group)
+            if response == 202:
+                return present
+            else:
+                return not present
