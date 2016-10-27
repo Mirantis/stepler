@@ -21,10 +21,12 @@ import pytest
 
 from stepler.cinder import steps
 from stepler import config
+from stepler.third_party import utils
 
 __all__ = [
     'create_volume',
     'create_volumes',
+    'volume',
     'volume_steps',
     'upload_volume_to_image',
 ]
@@ -92,6 +94,20 @@ def create_volume(create_volumes):
         return create_volumes([name], *args, **kwgs)[0]
 
     return _create_volume
+
+
+@pytest.fixture
+def volume(create_volume):
+    """Function fixture to create volume with default options.
+
+    Args:
+        create_volume (function): function to create volume with options
+
+    Returns:
+        obj: created volume object
+    """
+    volume_name = next(utils.generate_ids('volume'))
+    return create_volume(volume_name)
 
 
 @pytest.yield_fixture

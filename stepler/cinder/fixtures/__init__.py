@@ -17,15 +17,20 @@ Cinder fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .volumes import *  # noqa
 from .cinder import *  # noqa
 from .quota import *  # noqa
+from .volume_snapshots import *  # noqa
+from .volumes import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_volume',
     'create_volumes',
     'cinder_client',
     'volume_steps',
+    'volume',
     'upload_volume_to_image',
     'cinder_quota_steps',
+    'big_snapshot_quota',
+    'volume_snapshots_steps',
+    'create_volume_snapshot',
 ])
