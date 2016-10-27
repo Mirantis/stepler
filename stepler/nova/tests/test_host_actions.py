@@ -17,14 +17,26 @@ Nova host actions tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pytest
+
 from stepler import config
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('00f1721e-7aa7-45eb-851a-2b5d086caead')
 def test_migrate_instances(
-        cirros_image, network, subnet, router, security_group, flavor,
-        add_router_interfaces, keypair, hypervisor_steps, create_servers,
-        server_steps, nova_create_floating_ip):
+        cirros_image,
+        network,
+        subnet,
+        router,
+        security_group,
+        flavor,
+        add_router_interfaces,
+        keypair,
+        hypervisor_steps,
+        create_servers,
+        server_steps,
+        nova_create_floating_ip):
     """**Scenario:** Migrate instances from the specified host to other hosts
 
     **Setup:**

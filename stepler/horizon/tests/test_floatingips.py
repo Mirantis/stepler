@@ -24,6 +24,7 @@ import pytest
 class TestAnyOne(object):
     """Tests for anyone."""
 
+    @pytest.mark.idempotent_id('95546c8c-775a-4527-b92b-83cf56db999d')
     def test_floating_ip_associate(self, instance, floating_ip,
                                    floating_ips_steps):
         """Verify that user can associate floating IP."""

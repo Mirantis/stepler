@@ -24,5 +24,6 @@ import pytest
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.idempotent_id('8b4d92cc-5b31-4fd7-80dc-935925f664f4')
     def test_create_namespace(self, namespace):
         """Verify that user can create namespace."""

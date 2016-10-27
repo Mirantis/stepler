@@ -17,13 +17,21 @@ Heat stack tests
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import pytest
 
 from stepler.third_party import utils
 
 
-def test_create_stack_with_aws(read_heat_template, network, subnet, router,
-                               add_router_interfaces, public_network,
-                               create_stack, port_steps):
+@pytest.mark.idempotent_id('d23ef04a-6db0-4729-97ac-3a8302951f69')
+def test_create_stack_with_aws(
+        read_heat_template,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        public_network,
+        create_stack,
+        port_steps):
     """**Scenario:** Create stack with AWS resources.
 
     **Setup:**
@@ -61,6 +69,7 @@ def test_create_stack_with_aws(read_heat_template, network, subnet, router,
         })
 
 
+@pytest.mark.idempotent_id('d9df00f4-97fe-469e-ad3c-5a3cb74a4587')
 def test_create_stack_with_heat_resources(read_heat_template, create_stack):
     """**Scenario:** Create stack with heat resources.
 
@@ -79,9 +88,17 @@ def test_create_stack_with_heat_resources(read_heat_template, create_stack):
     create_stack(stack_name, template=template)
 
 
+@pytest.mark.idempotent_id('2a001c1b-becc-4db3-a711-9f49642b7ae9')
 def test_create_stack_with_wait_condition(
-        cirros_image, flavor, network, subnet, router, add_router_interfaces,
-        read_heat_template, create_stack, port_steps):
+        cirros_image,
+        flavor,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        read_heat_template,
+        create_stack,
+        port_steps):
     """**Scenario:** Create stack with WaitCondition resources.
 
     **Setup:**
@@ -119,6 +136,7 @@ def test_create_stack_with_wait_condition(
         })
 
 
+@pytest.mark.idempotent_id('c8afb285-1f48-4a0f-9a52-a5b090a48240')
 def test_create_stack_with_neutron_resources(
         cirros_image,
         flavor,
@@ -170,6 +188,7 @@ def test_create_stack_with_neutron_resources(
         })
 
 
+@pytest.mark.idempotent_id('933d8d45-59c7-4e0e-a9dd-36cd38bc1e98')
 def test_create_stack_with_nova_resources(
         cirros_image,
         flavor,
@@ -223,6 +242,7 @@ def test_create_stack_with_nova_resources(
         files={'volume_with_attachment.yaml': additional_template})
 
 
+@pytest.mark.idempotent_id('83c10ab7-3902-4d20-9ed8-81f3a47ba415')
 def test_create_stack_with_docker(
         keypair,
         flavor,

@@ -27,6 +27,7 @@ from stepler.horizon.utils import generate_ids
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.idempotent_id('ccfeddd8-a21e-4224-9608-88aa700333d5')
     def test_flavor_update_metadata(self, flavor, flavors_steps):
         """Verify that admin can update flavor metadata."""
         metadata = {
@@ -36,6 +37,7 @@ class TestAdminOnly(object):
         flavor_metadata = flavors_steps.get_metadata(flavor.name)
         assert metadata == flavor_metadata
 
+    @pytest.mark.idempotent_id('e654d077-c645-4eb7-9a7b-763a1cee3a81')
     def test_update_flavor(self, flavor, flavors_steps):
         """Verify that admin cat update flavor."""
         new_flavor_name = flavor.name + '-updated'
@@ -43,6 +45,7 @@ class TestAdminOnly(object):
             flavors_steps.update_flavor(flavor_name=flavor.name,
                                         new_flavor_name=new_flavor_name)
 
+    @pytest.mark.idempotent_id('9833c67c-9aff-416f-90f7-7eeadc29993c')
     def test_modify_flavor_access(self, horizon, flavor, auth_steps,
                                   flavors_steps, instances_steps):
         """Verify that admin can modify flavor access."""
@@ -57,6 +60,7 @@ class TestAdminOnly(object):
         auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)
 
     @pytest.mark.parametrize('flavors_count', [2, 1])
+    @pytest.mark.idempotent_id('2cdca1ac-c343-47f5-bb4c-ecbb319d98e7')
     def test_delete_flavors(self, flavors_count, create_flavors):
         """Verify that admin can delete flavors as batch."""
         flavor_names = list(generate_ids('flavor', count=flavors_count))

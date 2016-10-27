@@ -15,17 +15,20 @@ Keystone tests
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import pytest
 
 from stepler import config
 from stepler.third_party import utils
 
 
-def test_keystone_permission_lose(admin,
-                                  project,
-                                  admin_role,
-                                  project_steps,
-                                  role_steps,
-                                  user_steps):
+@pytest.mark.idempotent_id('eeeb7666-e3ab-4cf7-b0de-73e902457926')
+def test_keystone_permission_lose(
+        admin,
+        project,
+        admin_role,
+        project_steps,
+        role_steps,
+        user_steps):
     """**Scenario:** Check that admin have access to users and projects in this
     session.
 
@@ -49,15 +52,17 @@ def test_keystone_permission_lose(admin,
     user_steps.get_users()
 
 
-def test_restart_all_services(cirros_image,
-                              tiny_flavor,
-                              keypair,
-                              admin_internal_network,
-                              security_group,
-                              create_user,
-                              create_server,
-                              user_steps,
-                              os_faults_steps):
+@pytest.mark.idempotent_id('6409a9e8-434e-4b5f-ae6f-b13d062fc201')
+def test_restart_all_services(
+        cirros_image,
+        tiny_flavor,
+        keypair,
+        admin_internal_network,
+        security_group,
+        create_user,
+        create_server,
+        user_steps,
+        os_faults_steps):
     """**Scenario:** Check that keystone works after restarting services
 
     **Setup:**
@@ -85,7 +90,6 @@ def test_restart_all_services(cirros_image,
         #. Delete tiny flavor
         #. Delete cirros image
     """
-
     user_name = next(utils.generate_ids('user'))
     user1 = create_user(user_name=user_name, password=user_name)
 

@@ -26,12 +26,14 @@ from stepler.horizon.utils import generate_ids
 class TestAnyOne(object):
     """Tests for any user."""
 
+    @pytest.mark.idempotent_id('b16ba9bf-7d09-462c-ae99-e1ec4653c40d')
     def test_edit_volume_snapshot(self, snapshot, volumes_steps):
         """Verify that user can edit volume snapshot."""
         new_snapshot_name = snapshot.name + '(updated)'
         with snapshot.put(name=new_snapshot_name):
             volumes_steps.update_snapshot(snapshot.name, new_snapshot_name)
 
+    @pytest.mark.idempotent_id('be29711c-2ce8-4f95-b77b-5380dcb968c6')
     def test_volume_snapshots_pagination(self, volumes_steps, create_snapshots,
                                          update_settings):
         """Verify that snapshots pagination works right and back."""
@@ -40,6 +42,7 @@ class TestAnyOne(object):
         update_settings(items_per_page=1)
         volumes_steps.check_snapshots_pagination(snapshot_names)
 
+    @pytest.mark.idempotent_id('0dd311c9-c9cf-4860-a5a3-be01d3d209d2')
     def test_create_volume_from_snapshot(self, snapshot, volumes_steps):
         """Verify that user cat create volume from snapshot."""
         volumes_steps.create_volume_from_snapshot(snapshot.name)

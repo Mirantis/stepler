@@ -26,6 +26,7 @@ from stepler.horizon.utils import generate_ids
 class TestAnyOne(object):
     """Tests for any user."""
 
+    @pytest.mark.idempotent_id('7f43197f-ba2c-4962-a07a-43cbf77a779b')
     def test_volume_backups_pagination(self, create_backups, update_settings,
                                        volumes_steps):
         """Verify that volume backups pagination works right and back."""

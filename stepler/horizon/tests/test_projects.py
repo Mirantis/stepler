@@ -24,5 +24,6 @@ import pytest
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.idempotent_id('fc80ee7d-ce5a-45eb-b476-427990b3b61d')
     def test_create_project(self, project):
         """Verify that admin can create project."""

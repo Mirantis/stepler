@@ -3,6 +3,7 @@
 Nova basic verification tests
 -----------------------------
 """
+
 #    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,12 +18,23 @@ Nova basic verification tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pytest
+
 from stepler.third_party.utils import generate_ids
 
 
+@pytest.mark.idempotent_id('')
 def test_boot_instance_from_volume_bigger_than_flavor(
-        flavor, security_group, nova_floating_ip, cirros_image, network,
-        subnet, router, add_router_interfaces, create_volume, create_server,
+        flavor,
+        security_group,
+        nova_floating_ip,
+        cirros_image,
+        network,
+        subnet,
+        router,
+        add_router_interfaces,
+        create_volume,
+        create_server,
         server_steps):
     """**Scenario:** Boot instance from volume bigger than flavor size.
 
@@ -76,9 +88,15 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
 
 
-def test_delete_server_with_precreated_port(flavor, network, port,
-                                            cirros_image, create_port,
-                                            port_steps, server_steps):
+@pytest.mark.idempotent_id('9a75e111-c9dc-44e3-88fb-d315ae2deacb')
+def test_delete_server_with_precreated_port(
+        flavor,
+        network,
+        port,
+        cirros_image,
+        create_port,
+        port_steps,
+        server_steps):
     """**Scenario:** Delete instance with pre-created port.
 
     This test verify bug #1486727
