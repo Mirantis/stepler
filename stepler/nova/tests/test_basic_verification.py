@@ -18,7 +18,8 @@ Nova basic verification tests
 
 import pytest
 
-from stepler.third_party.utils import generate_ids
+from stepler import config
+from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('')
@@ -69,12 +70,12 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     add_router_interfaces(router, [subnet])
     volume_size = flavor.disk + 1
     volume = create_volume(
-        next(generate_ids('volume')),
+        next(utils.generate_ids('volume')),
         size=volume_size,
         image=cirros_image)
     block_device_mapping = {'vda': volume.id}
 
-    server_name = next(generate_ids('server'))
+    server_name = next(utils.generate_ids('server'))
     server = create_server(server_name,
                            image=None,
                            flavor=flavor,
@@ -121,10 +122,73 @@ def test_delete_server_with_precreated_port(
         #. Delete subnet
         #. Delete flavor
     """
-    server_name = next(generate_ids('server'))
+    server_name = next(utils.generate_ids('server'))
     server = server_steps.create_server(server_name,
                                         image=cirros_image,
                                         flavor=flavor,
                                         ports=[port])
     server_steps.delete_server(server)
     port_steps.check_presence(port)
+
+
+@pytest.mark.idempotent_id('d8a8d247-3150-491a-b9e5-2f20cb0f384d')
+def test_remove_incorrect_fixed_ip_from_server(
+        flavor,
+        security_group,
+        keypair,
+        cirros_image,
+        nova_floating_ip,
+        admin_internal_network,
+        create_server,
+        server_steps,
+        network_steps):
+    """**Scenario:** [negative] Remove incorrect fixed IP from an instance.
+
+    This test verify bug #1534186
+    https://bugs.launchpad.net/nova/+bug/1534186
+
+    **Setup:**
+
+    #. Create flavor
+    #. Create security_group
+    #. Create keypair
+    #. Upload cirros image
+    #. Create nova floating ip
+
+    **Steps:**
+
+    #. Boot server from cirros image
+    #. Attach floating IP to server
+    #. Generate fake IP
+    #. Try to detach non-present fixed IP from server
+    #. Check that error has been raised
+    #. Detach present fixed IP from server
+    #. Check that it will be detached with no error
+    #. Check that server is accessible
+
+    **Teardown:**
+
+    #. Delete flavor
+    #. Delete security group
+    #. Delete keypair
+    #. Delete cirros image
+    #. Delete nova floating ip
+    """
+    server_name = next(utils.generate_ids('server'))
+    server = create_server(
+        server_name=server_name,
+        image=cirros_image,
+        flavor=flavor,
+        networks=[admin_internal_network],
+        keypair=keypair,
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME)
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    ip_fake = next(utils.generate_ip())
+
+    server_steps.check_server_doesnot_detach_unattached_fixed_ip(
+        server, ip_fake)
+    server_steps.detach_fixed_ip(server)
+
+    server_steps.get_server_ssh(server, ip=nova_floating_ip.ip)

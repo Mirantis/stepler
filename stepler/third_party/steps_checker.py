@@ -53,10 +53,12 @@ PERMITTED_CALLS = [
     'set_trace',
     'generate_ids',
     'generate_files',
+    'generate_ip',
     'time',
     'str',
     'embed',
     'format',
+    'keys',
 ]
 
 # register hamcrest matchers
