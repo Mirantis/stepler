@@ -46,7 +46,7 @@ def volume_steps(cinder_client):
 
 
 @pytest.yield_fixture
-def create_volumes(volume_steps):
+def create_volumes(volume_steps, server_steps, detach_volume_from_server):
     """Callable function fixture to create volumes with options.
 
     Can be called several times during a test.
@@ -68,7 +68,12 @@ def create_volumes(volume_steps):
     yield _create_volumes
 
     if volumes:
-        volume_steps.detach_volumes(volumes)
+        for volume in volumes:
+            attached_server_ids = volume_steps.get_servers_attached_to_volume(
+                volume)
+            for server_id in attached_server_ids:
+                server = server_steps.get_server(id=server_id)
+                detach_volume_from_server(volume, server)
         volume_steps.delete_volumes(volumes)
 
 

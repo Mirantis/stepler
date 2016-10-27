@@ -81,7 +81,7 @@ def detach_volume_from_server(nova_volume_steps, volume_steps):
         function: function to detach volume to server
     """
     def _detach_volume_from_server(server, volume, *args, **kwgs):
-        attached_ids = [a['server_id'] for a in volume.attachments]
+        attached_ids = volume_steps.get_servers_attached_to_volume(volume)
         nova_volume_steps.detach_volume_from_server(server, volume,
                                                     *args, **kwgs)
         volume_steps.check_volume_status(

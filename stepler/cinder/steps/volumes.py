@@ -146,25 +146,6 @@ class VolumeSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
-    def detach_volumes(self, volumes, check=True):
-        """Step to detach volumes.
-
-        Args:
-            volumes (list): cinder volumes
-            check (bool): flag whether to check step or not
-
-        Raises:
-            AssertionError: if some attachments are present
-        """
-        for volume in volumes:
-            self._client.volumes.detach(volume.id)
-
-        if check:
-            for volume in volumes:
-                volume.get()
-                assert_that(volume.attachments, empty())
-
-    @steps_checker.step
     def delete_volume(self, volume, check=True):
         """Step to delete volume.
 
@@ -275,6 +256,19 @@ class VolumeSteps(base.BaseSteps):
         waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
+    def get_servers_attached_to_volume(self, volume):
+        """Step to retrieve server_ids attached to volume.
+
+        Args:
+            volume (object): cinder volume
+
+        Returns:
+            list: attached servers' ids
+        """
+        volume.get()
+        return [a['server_id'] for a in volume.attachments]
+
+    @steps_checker.step
     def check_volume_attachments(self, volume, server_ids=None, timeout=0):
         """Step to check volume attachments.
 
@@ -289,9 +283,8 @@ class VolumeSteps(base.BaseSteps):
         server_ids = server_ids or []
 
         def predicate():
-            volume.get()
-            attached_ids = [a['server_id'] for a in volume.attachments]
-            return sorted(server_ids) == sorted(attached_ids)
+            attached_ids = self.get_servers_attached_to_volume(volume)
+            return set(server_ids) == set(attached_ids)
 
         waiting.wait(predicate, timeout_seconds=timeout)
 
