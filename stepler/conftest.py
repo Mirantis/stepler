@@ -38,6 +38,7 @@ __all__ = sorted([  # sort for documentation
 
     'create_volume',
     'create_volumes',
+    'volume',
     'cinder_client',
     'volume_steps',
     'volume_type_steps',
@@ -47,6 +48,7 @@ __all__ = sorted([  # sort for documentation
     'create_snapshot',
     'snapshot_steps',
     'transfer_steps',
+    'big_snapshot_quota',
     'create_volume_transfer',
 
     'heat_client',

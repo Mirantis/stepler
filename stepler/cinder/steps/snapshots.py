@@ -17,7 +17,6 @@ Snapshot steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cinderclient import exceptions
 from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
 
 from stepler import base
@@ -84,7 +83,7 @@ class SnapshotSteps(base.BaseSteps):
             self.check_snapshots_presence(
                 snapshots,
                 must_present=False,
-                timeout=config.SNAPSHOT_DELETE_TIMEOUT)
+                timeout=len(snapshots) * config.SNAPSHOT_DELETE_TIMEOUT)
 
     @steps_checker.step
     def check_snapshots_presence(self,
@@ -101,17 +100,16 @@ class SnapshotSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check was falsed after timeout
         """
-        for snapshot in snapshots:
+        def predicate():
+            snapshot_ids = [snapshot.id for snapshot in snapshots]
+            actial_presence = dict.fromkeys(snapshot_ids, False)
+            for snapshot in self._client.list():
+                if snapshot.id in actial_presence:
+                    actial_presence[snapshot.id] = True
+            expected_presence = dict.fromkeys(snapshot_ids, must_present)
+            return expect_that(actial_presence, equal_to(expected_presence))
 
-            def predicate():
-                try:
-                    self._client.get(snapshot.id)
-                    is_present = True
-                except exceptions.NotFound:
-                    is_present = False
-                return expect_that(is_present, equal_to(must_present))
-
-            waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_snapshots_status(self, snapshots, status, timeout=0):
@@ -133,3 +131,22 @@ class SnapshotSteps(base.BaseSteps):
                                    equal_to(status.lower()))
 
             waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_snapshots(self, check=True):
+        """Step to get snapshots.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: snapshots collection
+
+        Raises:
+            AsserionError: if check was falsed
+        """
+        snapshots = list(self._client.list())
+
+        if check:
+            assert_that(snapshots, is_not(empty()))
+        return snapshots
