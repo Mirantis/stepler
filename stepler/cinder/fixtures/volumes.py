@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, is_not  # noqa
 import pytest
 
 from stepler.cinder import steps
@@ -29,20 +30,49 @@ __all__ = [
     'volume_steps',
     'upload_volume_to_image',
     'volume',
+    'volumes_cleanup',
 ]
 
 
+@pytest.yield_fixture
+def volumes_cleanup():
+    """Callable function fixture to clear unexpected volumes.
+
+    It provides cleanup before and after test.
+    Cleanup before test is callable with injection of glance steps.
+    Should be called before returning of instantiated volume steps.
+    """
+    _volume_steps = [None]
+
+    def _volumes_cleanup(volume_steps):
+        assert_that(volume_steps, is_not(None))
+        _volume_steps[0] = volume_steps  # inject volume steps for finalizer
+        # check=False because in best case no volumes will be present
+        volumes = volume_steps.get_volumes(name_prefix=config.STEPLER_PREFIX,
+                                           check=False)
+        if volumes:
+            volume_steps.delete_volumes(volumes)
+
+    yield _volumes_cleanup
+
+    _volumes_cleanup(_volume_steps[0])
+
+
 @pytest.fixture
-def volume_steps(cinder_client):
+def volume_steps(cinder_client, volumes_cleanup):
     """Function fixture to get volume steps.
 
     Args:
         cinder_client (object): instantiated cinder client
+        volumes_cleanup (function): function to make volumes cleanup right
+            after volume steps initialization
 
     Returns:
         stepler.cinder.steps.VolumeSteps: instantiated volume steps
     """
-    return steps.VolumeSteps(cinder_client)
+    _volume_steps = steps.VolumeSteps(cinder_client)
+    volumes_cleanup(_volume_steps)
+    return _volume_steps
 
 
 @pytest.yield_fixture
