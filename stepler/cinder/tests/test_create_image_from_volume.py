@@ -21,10 +21,11 @@ import pytest
 from stepler.third_party import utils
 
 
-@pytest.mark.parametrize('disk_format', ['raw', 'qcow2'])
+@pytest.mark.parametrize('disk_format', ['raw', 'qcow2', 'vdi', 'vmdk'])
 @pytest.mark.idempotent_id('7a8f8745-0348-458c-8cf6-143b4627276a')
 def test_create_image_from_volume(upload_volume_to_image, disk_format):
-    """**Scenario:** Verify that raw|qcow2 image is created from volume.
+    """**Scenario:** Verify that raw/qcow2/vdi/vmdk image is created from
+    volume.
 
     **Steps:**
 
