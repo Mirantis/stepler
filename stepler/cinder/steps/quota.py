@@ -17,7 +17,7 @@ Cinder quota steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, greater_than  # noqa
+from hamcrest import assert_that, greater_than, equal_to  # noqa
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -46,3 +46,39 @@ class CinderQuotaSteps(base.BaseSteps):
         if check:
             assert_that(quota, greater_than(0))
         return quota
+
+    @steps_checker.step
+    def get_snapshots_quota(self, project, check=True):
+        """Step to retrieve quota for snapshots count.
+
+        Args:
+            project (obj): project object
+            check (bool|True): flag whether to check step or not
+
+        Returns:
+            int: current quota value
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        quota = self._client.get(project.id).snapshots
+        if check:
+            assert_that(quota, greater_than(0))
+        return quota
+
+    @steps_checker.step
+    def set_snapshots_quota(self, project, value, check=True):
+        """Step to retrieve quota for volume size.
+
+        Args:
+            project (obj): project object
+            value (int): new snapshots count quota value
+            check (bool|True): flag whether to check step or not
+
+        No Longer Raises:
+            AssertionError: if check was falsed
+        """
+        self._client.update(project.id, snapshots=value)
+        if check:
+            new_quota = self.get_snapshots_quota(project)
+            assert_that(value, equal_to(new_quota))
