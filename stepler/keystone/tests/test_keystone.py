@@ -27,7 +27,8 @@ def test_keystone_permission_lose(admin,
                                   admin_role,
                                   project_steps,
                                   role_steps,
-                                  user_steps):
+                                  user_steps,
+                                  group_steps):
     """**Scenario:** Check that admin have access to users and projects in this
     session.
 
@@ -48,7 +49,11 @@ def test_keystone_permission_lose(admin,
     role_steps.grant_role(admin_role, user=admin, project=project)
     role_steps.revoke_role(admin_role, user=admin, project=project)
     project_steps.get_projects()
-    user_steps.get_users()
+    user = user_steps.get_users()
+
+    groups = group_steps.get_groups()
+
+    user_steps.add_user_to_group(user=user[0], group='admin')
 
 
 @pytest.mark.idempotent_id('76f823ac-5c8b-4617-a4cc-9e30257a679f')
