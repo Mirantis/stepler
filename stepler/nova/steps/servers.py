@@ -20,8 +20,8 @@ Server steps
 import contextlib
 import socket
 
-from hamcrest import (assert_that, is_not, has_item, equal_to, empty,
-                      less_than_or_equal_to)  # noqa
+from hamcrest import (assert_that, calling, is_not, has_item, equal_to, empty,
+                      less_than_or_equal_to, raises)  # noqa
 from novaclient import exceptions as nova_exceptions
 import paramiko
 from waiting import wait
@@ -373,7 +373,87 @@ class ServerSteps(base.BaseSteps):
                         "Floating IP still in a list of server's IPs.")
 
     @steps_checker.step
-    def get_ips(self, server, ip_type=None):
+    def attach_fixed_ip(self, server, net_id, check=True):
+        """Step to attach fixed IP from provided network to provided server.
+
+        Args:
+            server (object): nova instance to ping its floating ip
+            net_id (str): the ID of the network the IP should be on.
+            check (bool): flag whether to check step or not
+
+        Returns:
+            str: IF check=True --> returns new fixed IP address
+            None: IF check=False
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        ips_before_attach = self.get_ips(server, 'fixed').keys()
+        server.add_fixed_ip(net_id)
+
+        def predicate():
+            server.get()
+            ips_after_attach = self.get_ips(server, 'fixed').keys()
+            if len(ips_after_attach) == len(ips_before_attach) + 1:
+                return ips_after_attach
+            else:
+                return None
+
+        if check:
+            ips_after_attach = wait(
+                predicate, timeout_seconds=config.SERVER_UPDATE_TIMEOUT)
+
+            new_ip_list = [ip for ip in ips_after_attach
+                           if ip not in ips_before_attach]
+            return new_ip_list[0]
+        else:
+            return None
+
+    @steps_checker.step
+    def detach_fixed_ip(self, server, fixed_ip, check=True):
+        """Step to detach provided fixed IP from provided server.
+
+        Args:
+            server (object): nova instance to delete fixed ip
+            fixed_ip (str): Fixed IP address
+            check (bool): flag whether to check step or not
+
+        Returns:
+
+        """
+        self._client.remove_fixed_ip(server.id, fixed_ip)
+
+        if check:
+            server.get()
+            fixed_ips = self.get_ips(server, 'fixed').keys()
+            assert_that(fixed_ips,
+                        is_not(has_item(fixed_ip)),
+                        "Fixed IP still in a list of server's IPs.")
+
+    @steps_checker.step
+    def check_negative_detach_fixed_ip(self, server, fixed_ip):
+        """Step for negative test case of volume creation with invalid name.
+
+        Args:
+            server (object): nova instance to delete fixed ip
+            fixed_ip (str): Fixed IP address
+
+        Raises:
+            AssertionError: if error didn't raise
+
+        BUG: https://bugs.launchpad.net/nova/+bug/1534186
+        """
+        # TODO(akoryaging): Fill when error will be implemented
+        exception_message = ''
+
+        # TODO(akoryaging): Specify Nova exception when it will be implemented
+        assert_that(
+            calling(self.detach_fixed_ip).with_args(
+                server=server, fixed_ip=fixed_ip, check=False),
+            raises(Exception, exception_message))
+
+    @steps_checker.step
+    def get_ips(self, server, ip_type=None, verbose=True):
         # TODO(schipiga): expand documentation
         """Step to get server IPs."""
         ips = {}
@@ -390,7 +470,11 @@ class ServerSteps(base.BaseSteps):
                 key: val
                 for key, val in ips.items() if val['type'] == ip_type
             }
-        return ips
+
+        if verbose:
+            return ips
+        else:
+            return ips.keys()
 
     @steps_checker.step
     def check_ping_for_ip(self,
