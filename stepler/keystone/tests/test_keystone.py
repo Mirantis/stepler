@@ -27,7 +27,8 @@ def test_keystone_permission_lose(admin,
                                   admin_role,
                                   project_steps,
                                   role_steps,
-                                  user_steps):
+                                  user_steps,
+                                  group_steps):
     """**Scenario:** Check that admin have access to users and projects in this
     session.
 
