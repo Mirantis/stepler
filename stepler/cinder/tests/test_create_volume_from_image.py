@@ -22,8 +22,8 @@ from stepler import config
 from stepler.third_party import utils
 
 
-@pytest.mark.idempotent_id('daf829d8-9b81-47f3-9a34-2fe5e9bdfa3a')
 @pytest.mark.parametrize("disk_format", ["raw", "qcow2"])
+@pytest.mark.idempotent_id('daf829d8-9b81-47f3-9a34-2fe5e9bdfa3a')
 def test_create_volume_from_image(create_image, create_volume, disk_format):
     """**Scenario:** Verify that volume from raw|qcow2 image is created.
 

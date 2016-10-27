@@ -21,5 +21,6 @@ import pytest
 
 
 @pytest.mark.usefixtures('any_one')
+@pytest.mark.idempotent_id('7f35902f-81ca-4a69-a7dc-5b538195c14c')
 def test_login(login):
     """Verify that one can login and logout."""

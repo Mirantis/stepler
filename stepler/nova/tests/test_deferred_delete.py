@@ -3,6 +3,7 @@
 Nova deferred delete tests
 --------------------------
 """
+
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -15,12 +16,15 @@ Nova deferred delete tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pytest
+
 from stepler import config
 from stepler.third_party import utils
 
 NOVA_SERVICES = [config.NOVA_API, config.NOVA_COMPUTE]
 
 
+@pytest.mark.idempotent_id('c80af877-bf63-4b1c-bcc4-14571da1d971')
 def test_restore_soft_deleted_server(
         cirros_image,
         flavor,
@@ -126,6 +130,7 @@ def test_restore_soft_deleted_server(
             [server_1, server_2], timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
+@pytest.mark.idempotent_id('2498c8dd-a48e-4044-8c14-6d5d603e6f0b')
 def test_server_deleted_after_reclaim_timeout(
         cirros_image,
         flavor,
@@ -235,6 +240,7 @@ def test_server_deleted_after_reclaim_timeout(
         detach_volume_from_server(server_2, volume)
 
 
+@pytest.mark.idempotent_id('25c0b19e-e58d-4c74-9c8c-dd5f4e9a2b99')
 def test_force_delete_server_before_deferred_cleanup(
         cirros_image,
         flavor,

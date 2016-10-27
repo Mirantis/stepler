@@ -24,5 +24,6 @@ import pytest
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.idempotent_id('8afb843e-1c38-4d21-b977-b45704cb74ad')
     def test_host_aggregate_create(self, host_aggregate):
         """Verify that admin can create host aggregation."""

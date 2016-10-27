@@ -26,6 +26,7 @@ from stepler.horizon.utils import generate_ids
 class TestAnyOne(object):
     """Tests for any user."""
 
+    @pytest.mark.idempotent_id('6e212b0c-503e-4339-a504-4548344291ee')
     def test_subnet_add(self, network, networks_steps):
         """Verify that user can add subnet."""
         subnet_name = next(generate_ids('subnet'))
@@ -36,6 +37,7 @@ class TestAnyOne(object):
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.idempotent_id('ce3c02b9-ecb3-48c9-9ef4-b48172c6c111')
     def test_create_shared_network(self, networks_steps):
         """Verify that admin can create shared network."""
         network_name = next(generate_ids('network'))
@@ -51,6 +53,7 @@ class TestAdminOnly(object):
 class TestUserOnly(object):
     """Tests for demo only."""
 
+    @pytest.mark.idempotent_id('81869139-da99-4595-9bee-55862112ae1b')
     def test_not_create_shared_network(self, create_network, networks_steps):
         """Verify that demo can not create shared network."""
         network_name = next(generate_ids('network'))
