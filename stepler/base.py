@@ -17,9 +17,15 @@ Base
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import types
+
+import requests
+
 __all__ = [
     'BaseApiClient',
     'BaseSteps',
+    'Resource',
 ]
 
 
@@ -207,6 +213,28 @@ class BaseApiClient(object):
         """
         self._session = session
 
+    def __getattr__(self, name):
+        """Return new instance of API client."""
+        matcher = name + '_'
+        methods = {}
+
+        for attr, func in self.__class__.__dict__.items():
+            if attr.startswith(matcher):
+
+                new_attr = attr.split(matcher, 1)[-1]
+                methods[new_attr] = func
+
+        if methods:
+            client = self.__class__(self._session)
+
+            for attr_name, func in methods.items():
+                method = types.MethodType(func, client, client.__class__)
+                setattr(client, attr_name, method)
+
+            return client
+        else:
+            return super(BaseApiClient, self).__getattribute__(name)
+
     @property
     def _auth_headers(self):
         """Get auth headers.
@@ -214,4 +242,83 @@ class BaseApiClient(object):
         Returns:
             dict: authentication headers.
         """
+        # TODO(schipiga): may be need to use native API
         return self._session.get_auth_headers()
+
+    @property
+    def _endpoint(self):
+        """Get endpoint URL.
+
+        Returns:
+          str: endpoint URL.
+        """
+        # TODO(schipiga): may be need to use native API
+        endpoint = self._session.get_endpoint()
+        return endpoint.rsplit('/')
+
+    def _get(self, url, headers=None, params=None, **kwgs):
+        headers = headers or {}
+        headers.update(self._auth_headers)
+
+        url = os.path.join(self._endpoint, url)
+
+        return requests.get(url, headers=headers, params=params, **kwgs)
+
+    def _put(self, url, headers=None, data=None, **kwgs):
+        headers = headers or {}
+        headers.update(self._auth_headers)
+
+        url = os.path.join(self._endpoint, url)
+
+        return requests.put(url, headers=headers, data=data, **kwgs)
+
+    def _post(self, url, headers=None, data=None, json=None, **kwgs):
+        headers = headers or {}
+        headers.update(self._auth_headers)
+
+        url = os.path.join(self._endpoint, url)
+
+        return requests.post(
+            url, headers=headers, data=data, json=json, **kwgs)
+
+    def _patch(self, url, headers=None, data=None, **kwgs):
+        headers = headers or {}
+        headers.update(self._auth_headers)
+
+        url = os.path.join(self._endpoint, url)
+
+        return requests.patch(url, headers=headers, data=data, **kwgs)
+
+    def _delete(self, url, headers=None, **kwgs):
+        headers = headers or {}
+        headers.update(self._auth_headers)
+
+        url = os.path.join(self._endpoint, url)
+
+        return requests.delete(url, headers=headers, **kwgs)
+
+
+class Resource(object):
+    """Unified resource with client API response.
+
+    It's compatible with community python clients as far as it's used in tests.
+    """
+
+    def __init__(self, client, info):
+        """Constructor."""
+        self._client = client
+        self._info = info
+
+    def get(self):
+        """Refresh data from remote."""
+        self._client.get(self.id)
+
+    def to_dict(self):
+        """Returns data as dict."""
+        return self._info
+
+    def __getattr__(self, name):
+        """Get data value as resource property."""
+        if name in self._info:
+            return self._info[name]
+        return super(Resource, self).__getattribute__(name)

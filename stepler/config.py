@@ -42,6 +42,8 @@ if AUTH_URL:  # figure out keystone API version
 
     KEYSTONE_API_VERSION = 3 if version == 'v3' else 2
 
+FORCE_API = bool(os.environ.get('FORCE_API_USAGE'))
+
 UBUNTU_QCOW2_URL = 'https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img'  # noqa
 UBUNTU_XENIAL_QCOW2_URL = 'https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img'  # noqa
 FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases/23/Cloud/x86_64/Images/Fedora-Cloud-Base-23-20151030.x86_64.qcow2'  # noqa
