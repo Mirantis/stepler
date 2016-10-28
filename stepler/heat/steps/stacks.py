@@ -22,7 +22,9 @@ import waiting
 
 from stepler import base
 from stepler import config
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ['StackSteps']
 
@@ -151,3 +153,41 @@ class StackSteps(base.BaseSteps):
         """
         stack.get()
         return stack.output_show(output_key)['output']
+
+    @steps_checker.step
+    def update_stack(self, stack, template=None, check=True):
+        """Step to update stack.
+
+        Args:
+            stack (obj): stack object
+            template (str): stack template on which to perform the operation
+            check (bool): flag whether check step or not
+
+        Raises:
+            TimeoutExpired: if check was falsed
+        """
+        self._client.update(stack_id=stack.id, template=template)
+
+        if check:
+            self.check_stack_status(stack,
+                                    config.STACK_STATUS_UPDATE_COMPLETE,
+                                    timeout=config.STACK_UPDATING_TIMEOUT)
+
+    @steps_checker.step
+    def check_stack_status(self, stack, status, timeout=0):
+        """Step to check stack status.
+
+        Args:
+            stack (obj): stack object
+            status (str): stack status name to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        def predicate():
+            stack.get()
+            return expect_that(stack.stack_status.lower(),
+                               equal_to(status.lower()))
+
+        waiter.wait(predicate, timeout_seconds=timeout)

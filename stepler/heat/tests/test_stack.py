@@ -19,6 +19,8 @@ Heat stack tests
 #    under the License.
 import pytest
 
+from hamcrest import assert_that, is_not, empty  # noqa
+
 from stepler.third_party import utils
 
 
@@ -305,3 +307,38 @@ def test_create_stack_with_docker(
         next(utils.generate_ids('docker_containers_stack')),
         template,
         parameters={'docker_endpoint': docker_endpoint})
+
+
+@pytest.mark.idempotent_id('cff710ec-1df2-4fe3-990f-4c4684b89550')
+def test_stack_update_replace(create_stack,
+                              stack_steps,
+                              read_heat_template,
+                              heat_resource_steps):
+    """**Scenario:** Update stack.
+
+    **Steps:**
+
+        #. Read template from file
+        #. Create stack with template
+        #. Get physical_resource_id
+        #. Update stack
+        #. Check that physical_resource_id was changed
+
+    **Teardown:**
+
+        #. Delete stack
+    """
+    template = read_heat_template('cirros_image_tmpl')
+    template_updated = read_heat_template('cirros_image_tmpl_updated')
+
+    stack_name = next(utils.generate_ids('stack'))
+    stack = create_stack(stack_name, template)
+
+    resource_name = 'cirros_image'
+    physical_resource_id = heat_resource_steps.get_resource(
+        stack, resource_name).physical_resource_id
+    stack_steps.update_stack(stack, template_updated)
+    physical_resource_id_changed = heat_resource_steps.get_resource(
+        stack, resource_name).physical_resource_id
+    assert_that(physical_resource_id_changed,
+                is_not(physical_resource_id))
