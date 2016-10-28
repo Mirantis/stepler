@@ -21,7 +21,7 @@ from hamcrest import assert_that, has_item, has_entries  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'SecurityGroupSteps'
@@ -31,7 +31,7 @@ __all__ = [
 class SecurityGroupSteps(BaseSteps):
     """Security group steps."""
 
-    @step
+    @steps_checker.step
     def create_group(self, group_name, description='', check=True):
         """Step to create security group."""
         group = self._client.security_groups.create(group_name, description)
@@ -41,7 +41,7 @@ class SecurityGroupSteps(BaseSteps):
 
         return group
 
-    @step
+    @steps_checker.step
     def add_group_rules(self, group, rules, check=True):
         """Step to add rules to security group."""
         for rule in rules:
@@ -51,7 +51,7 @@ class SecurityGroupSteps(BaseSteps):
             for rule in rules:
                 self.check_rule_presence(group, rule)
 
-    @step
+    @steps_checker.step
     def delete_group(self, group, check=True):
         """Step to delete security group."""
         self._client.security_groups.delete(group)
@@ -59,7 +59,7 @@ class SecurityGroupSteps(BaseSteps):
         if check:
             self.check_group_presence(group, present=False)
 
-    @step
+    @steps_checker.step
     def check_group_presence(self, group, present=True, timeout=0):
         """Verify step to check security group is present."""
         def predicate():
@@ -71,7 +71,7 @@ class SecurityGroupSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def check_rule_presence(self, group, rule, present=True, timeout=0):
         """Verify step to check security group is present."""
 
