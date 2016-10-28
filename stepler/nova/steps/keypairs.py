@@ -31,9 +31,20 @@ class KeypairSteps(BaseSteps):
     """Keypair steps."""
 
     @steps_checker.step
-    def create_keypair(self, keypair_name, check=True):
-        """Step to create keypair."""
-        keypair = self._client.create(keypair_name)
+    def create_keypair(self, keypair_name, public_key=None, check=True):
+        """Step to create keypair.
+
+        Args:
+            name (str): name for the keypair to create
+            public_key (str): existing public key to import
+
+        Returns:
+            keypair (object): keypair
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
+        keypair = self._client.create(keypair_name, public_key=public_key)
 
         if check:
             self.check_keypair_presence(keypair)
@@ -42,7 +53,14 @@ class KeypairSteps(BaseSteps):
 
     @steps_checker.step
     def delete_keypair(self, keypair, check=True):
-        """Step to delete keypair."""
+        """Step to delete keypair.
+
+        Args:
+            key (class or its ID): key to delete.
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
         self._client.delete(keypair.id)
 
         if check:
@@ -50,7 +68,16 @@ class KeypairSteps(BaseSteps):
 
     @steps_checker.step
     def check_keypair_presence(self, keypair, present=True, timeout=0):
-        """Verify step to check keypair is present."""
+        """Verify step to check keypair is present.
+
+        Args:
+            key (class or its ID): key to check.
+            present (bool): flag whether image should present or no
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was falsed after timeout
+        """
         def predicate():
             try:
                 self._client.get(keypair.id)
