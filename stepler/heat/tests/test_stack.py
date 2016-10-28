@@ -286,7 +286,7 @@ def test_create_stack_with_docker(
         template,
         parameters={'docker_endpoint': docker_endpoint})
 
-
+@pytest.mark.idempotent_id('cff710ec-1df2-4fe3-990f-4c4684b89550')
 def test_stack_update_replace(create_stack, stack_steps, read_heat_template,
                               heat_resource_steps):
 
