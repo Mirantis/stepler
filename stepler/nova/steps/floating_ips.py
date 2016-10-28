@@ -20,7 +20,7 @@ Floating IP steps
 from waiting import wait
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'FloatingIpSteps'
@@ -30,7 +30,7 @@ __all__ = [
 class FloatingIpSteps(BaseSteps):
     """Floating IP steps."""
 
-    @step
+    @steps_checker.step
     def create_floating_ip(self, check=True):
         """Step to create floating IP."""
         floating_ip_pools = self._client.floating_ip_pools.list()
@@ -44,7 +44,7 @@ class FloatingIpSteps(BaseSteps):
 
         return floating_ip
 
-    @step
+    @steps_checker.step
     def delete_floating_ip(self, floating_ip, check=True):
         """Step to delete floating IP."""
         self._client.floating_ips.delete(floating_ip)
@@ -52,7 +52,7 @@ class FloatingIpSteps(BaseSteps):
         if check:
             self.check_floating_ip_presence(floating_ip, present=False)
 
-    @step
+    @steps_checker.step
     def check_floating_ip_presence(self, floating_ip, present=True, timeout=0):
         """Verify step to check floating IP is present."""
         def predicate():
