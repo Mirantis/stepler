@@ -17,15 +17,12 @@ Auto use fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import contextlib
 import logging
 import os
 
 import pytest
 import xvfbwrapper
 
-from stepler.horizon.app import Horizon
-from stepler.horizon import steps
 from stepler.horizon.third_party import VideoRecorder, Lock  # noqa
 
 from stepler.horizon import config
@@ -137,87 +134,54 @@ def video_capture(report_dir, logger):
 
 
 @pytest.yield_fixture(scope='session')
-def test_env(request, virtual_display):
-    """Fixture to prepare test environment."""
-    test_name = slugify(request._pyfuncitem.name)
-    _build_test_env(test_name)
+def test_env(virtual_display, get_project_steps, get_user_steps,
+             get_role_steps):
+    """Fixture to prepare test environment.
+
+    This fixture creates 2 projects, 2 users and grant admin and member roles
+    on projects to users.
+
+    Args:
+        virtual_display (None): virtual display fixture
+        get_project_steps (function): function to get project steps
+        get_user_steps (function): function to get user steps
+        get_role_steps (function): function to get role steps
+    """
+    _build_test_env(get_project_steps, get_user_steps,
+                    get_role_steps)
     yield
-    _destroy_test_env(test_name)
+    _destroy_test_env(get_project_steps, get_user_steps)
 
 
-def _build_test_env(test_name):
-    file_path = os.path.join(config.TEST_REPORTS_DIR,
-                             'build_env_{}.mp4'.format(test_name))
-    recorder = VideoRecorder(file_path)
-    recorder.start()
+def _build_test_env(get_project_steps, get_user_steps, get_role_steps):
+    project_steps = get_project_steps()
+    admin_project = project_steps.create_project(config.ADMIN_PROJECT)
+    user_project = project_steps.create_project(config.USER_PROJECT)
 
-    app = Horizon(config.DASHBOARD_URL)
-    try:
-        auth_steps = steps.AuthSteps(app)
-        auth_steps.login(config.DEFAULT_ADMIN_NAME,
-                         config.DEFAULT_ADMIN_PASSWD)
-        auth_steps.switch_project(config.DEFAULT_ADMIN_PROJECT)
+    role_steps = get_role_steps()
+    admin_role = role_steps.get_role(name="admin")
+    member_role = role_steps.get_role(name="_member_")
 
-        projects_steps = steps.ProjectsSteps(app)
-        projects_steps.create_project(config.ADMIN_PROJECT)
-        projects_steps.create_project(config.USER_PROJECT)
-
-        users_steps = steps.UsersSteps(app)
-        users_steps.create_user(config.ADMIN_NAME, config.ADMIN_PASSWD,
-                                config.ADMIN_PROJECT, role='admin')
-        users_steps.create_user(config.USER_NAME, config.USER_PASSWD,
-                                config.USER_PROJECT)
-
-        # networks_steps = NetworksSteps(app)
-        # networks_steps.admin_update_network(INTERNAL_NETWORK_NAME,
-        #                                     shared=True, check=False)
-        # networks_steps.admin_update_network(FLOATING_NETWORK_NAME,
-        #                                     shared=True, check=False)
-
-        auth_steps.logout()
-    finally:
-        app.quit()
-        recorder.stop()
+    user_steps = get_user_steps()
+    admin = user_steps.create_user(
+        user_name=config.ADMIN_NAME,
+        password=config.ADMIN_PASSWD)
+    user = user_steps.create_user(
+        user_name=config.USER_NAME,
+        password=config.USER_PASSWD)
+    role_steps.grant_role(admin_role, admin, project=admin_project)
+    role_steps.grant_role(member_role, user, project=user_project)
 
 
-@contextlib.contextmanager
-def _try_delete(resource_name):
-    try:
-        yield
-    except Exception:
-        LOGGER.error("Can't delete resource {!r}".format(resource_name))
+def _destroy_test_env(get_project_steps, get_user_steps):
+    user_steps = get_user_steps()
+    users = user_steps.get_users()
+    for user in users:
+        if user.name in [config.ADMIN_NAME, config.USER_NAME]:
+            user_steps.delete_user(user)
 
-
-def _destroy_test_env(test_name):
-    file_path = os.path.join(config.TEST_REPORTS_DIR,
-                             'destroy_env_{}.mp4'.format(test_name))
-    recorder = VideoRecorder(file_path)
-    recorder.start()
-
-    app = Horizon(config.DASHBOARD_URL)
-    try:
-        auth_steps = steps.AuthSteps(app)
-        auth_steps.login(config.DEFAULT_ADMIN_NAME,
-                         config.DEFAULT_ADMIN_PASSWD)
-        auth_steps.switch_project(config.DEFAULT_ADMIN_PROJECT)
-
-        users_steps = steps.UsersSteps(app)
-        with _try_delete(config.USER_NAME):
-            users_steps.filter_users(config.USER_NAME)
-            users_steps.delete_user(config.USER_NAME)
-        with _try_delete(config.ADMIN_NAME):
-            users_steps.filter_users(config.ADMIN_NAME)
-            users_steps.delete_user(config.ADMIN_NAME)
-
-        projects_steps = steps.ProjectsSteps(app)
-        with _try_delete(config.USER_PROJECT):
-            projects_steps.filter_projects(config.USER_PROJECT)
-            projects_steps.delete_project(config.USER_PROJECT)
-        with _try_delete(config.ADMIN_PROJECT):
-            projects_steps.filter_projects(config.ADMIN_PROJECT)
-            projects_steps.delete_project(config.ADMIN_PROJECT)
-
-        auth_steps.logout()
-    finally:
-        app.quit()
-        recorder.stop()
+    project_steps = get_project_steps()
+    projects = project_steps.get_projects()
+    for project in projects:
+        if project.name in [config.ADMIN_PROJECT, config.USER_PROJECT]:
+            project_steps.delete_project(project)

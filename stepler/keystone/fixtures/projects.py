@@ -19,20 +19,44 @@ Project fixtures
 
 import pytest
 
-from stepler.keystone.steps import ProjectSteps
+from stepler.keystone import steps
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'create_project',
+    'get_project_steps',
     'project_steps',
     'project'
 ]
 
 
+@pytest.fixture(scope="session")
+def get_project_steps(get_keystone_client):
+    """Callable session fixture to get project steps.
+
+    Args:
+        get_keystone_client (function): function to get keystone client.
+
+    Returns:
+        function: function to get project steps.
+    """
+    def _get_steps():
+        return steps.ProjectSteps(get_keystone_client().projects)
+
+    return _get_steps
+
+
 @pytest.fixture
-def project_steps(keystone_client):
-    """Fixture to get project steps."""
-    return ProjectSteps(keystone_client.projects)
+def project_steps(get_project_steps):
+    """Function fixture to get project steps.
+
+    Args:
+        get_project_steps (function): function to get project steps
+
+    Returns:
+        ProjectSteps: instantiated project steps.
+    """
+    return get_project_steps()
 
 
 @pytest.yield_fixture

@@ -19,23 +19,27 @@ Horizon config
 
 import os
 
-from .utils import generate_ids
+from stepler.third_party import utils
+
+from stepler.config import *  # noqa
 
 UI_TIMEOUT = 30
 ACTION_TIMEOUT = 60
 EVENT_TIMEOUT = 180
 
-DASHBOARD_URL = os.environ.get('DASHBOARD_URL')  # should be defined!
+OS_DASHBOARD_URL = os.environ.get('OS_DASHBOARD_URL')  # should be defined!
 VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')
 
 DEFAULT_ADMIN_NAME = 'admin'
-DEFAULT_ADMIN_PASSWD = 'password'
+DEFAULT_ADMIN_PASSWD = 'admin'
 DEFAULT_ADMIN_PROJECT = 'admin'
-ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT = list(generate_ids('admin', count=3))
-USER_NAME, USER_PASSWD, USER_PROJECT = list(generate_ids('user', count=3))
+ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT = list(
+    utils.generate_ids(
+        'admin', count=3))
+USER_NAME, USER_PASSWD, USER_PROJECT = list(
+    utils.generate_ids(
+        'user', count=3))
 FLOATING_NETWORK_NAME = 'admin_floating_net'
 INTERNAL_NETWORK_NAME = 'admin_internal_net'
 
-TEST_REPORTS_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), 'test_reports'))
 XVFB_LOCK = '/tmp/xvfb.lock'

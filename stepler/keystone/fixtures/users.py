@@ -25,22 +25,39 @@ from stepler.third_party import utils
 __all__ = [
     'admin',
     'create_user',
+    'get_user_steps',
     'user_steps',
     'user'
 ]
 
 
+@pytest.fixture(scope="session")
+def get_user_steps(get_keystone_client):
+    """Callable session fixture to get users steps.
+
+    Args:
+        get_keystone_client (function): function to get keystone client.
+
+    Returns:
+        function: function to get users steps.
+    """
+    def _get_steps():
+        return steps.UserSteps(get_keystone_client().users)
+
+    return _get_steps
+
+
 @pytest.fixture
-def user_steps(keystone_client):
+def user_steps(get_user_steps):
     """Function fixture to get user steps.
 
     Args:
-        keystone_client (object): instantiated keystone client
+        get_user_steps (function): function to get user steps
 
     Returns:
         stepler.keystone.steps.UserSteps: instantiated user steps
     """
-    return steps.UserSteps(keystone_client.users)
+    return get_user_steps()
 
 
 @pytest.fixture
