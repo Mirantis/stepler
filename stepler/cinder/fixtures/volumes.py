@@ -76,7 +76,7 @@ def volumes_cleanup():
 
 @pytest.fixture(scope='session')
 def get_volume_steps(get_cinder_client):
-    """Callable session fixture to get volume steps
+    """Callable session fixture to get volume steps.
 
     Args:
         get_cinder_client (function): function to get cinder client
@@ -84,8 +84,9 @@ def get_volume_steps(get_cinder_client):
     Returns:
         function: function to get volume steps
     """
-    def _get_volume_steps(*args, **kwgs):
-        return steps.VolumeSteps(get_cinder_client(*args, **kwgs))
+    def _get_volume_steps(version, is_api, **credentials):
+        return steps.VolumeSteps(
+            get_cinder_client(version, is_api, **credentials))
 
     return _get_volume_steps
 
@@ -102,7 +103,8 @@ def volume_steps(get_volume_steps, volumes_cleanup):
     Returns:
         stepler.cinder.steps.VolumeSteps: instantiated volume steps
     """
-    _volume_steps = get_volume_steps()
+    _volume_steps = get_volume_steps(
+        config.CURRENT_CINDER_VERSION, is_api=False)
     volumes_cleanup(_volume_steps)
     return _volume_steps
 
