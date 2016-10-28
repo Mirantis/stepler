@@ -78,6 +78,7 @@ STATUS_OK = 'OK'
 STATUS_RESIZE = 'resize'
 STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_VERIFY_RESIZE = 'verify_resize'
+STATUS_AWAITING_TRANSFER = 'awaiting-transfer'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.

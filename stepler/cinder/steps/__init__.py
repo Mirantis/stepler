@@ -23,6 +23,7 @@ from .volumes import *  # noqa
 from .volume_types import *  # noqa
 from .quota import *  # noqa
 from .snapshots import *  # noqa
+from .volume_transfer import *  # noqa
 
 __all__ = [
     'VolumeSteps',
@@ -30,4 +31,5 @@ __all__ = [
     'VolumeTypeSteps',
     'CinderQuotaSteps',
     'SnapshotSteps',
+    'VolumeTransferSteps',
 ]
