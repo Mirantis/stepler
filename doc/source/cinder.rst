@@ -23,3 +23,6 @@ Cinder tests
 
 .. automodule:: stepler.cinder.tests.test_change_volume_type
    :members:
+
+.. automodule:: stepler.cinder.tests.test_backups
+   :members:
