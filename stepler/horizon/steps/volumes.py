@@ -526,17 +526,20 @@ class VolumesSteps(BaseSteps):
             form.field_name.value = backup_name
 
             if description is not None:
-                self.field_description.value = description
+                form.field_description.value = description
 
             if container is not None:
-                self.field_container.value = container
+                form.field_container.value = container
 
             form.submit()
 
         if check:
             self.close_notification('success')
-            self._tab_backups().table_backups.row(
-                name=backup_name).wait_for_status(status='Available')
+            row = self._tab_backups().table_backups.row(name=backup_name)
+            row.wait_for_status(status='Available')
+            if description is not None:
+                assert_that(row.cell('description').value,
+                            equal_to(description))
 
     @step
     @pom.timeit('Step')

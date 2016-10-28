@@ -170,11 +170,12 @@ def create_backups(volume, volumes_steps_ui):
     """
     backups = []
 
-    def _create_backups(backup_names):
+    def _create_backups(backup_names, *args, **kwargs):
         _backups = []
 
         for backup_name in backup_names:
-            volumes_steps_ui.create_backup(volume.name, backup_name)
+            volumes_steps_ui.create_backup(volume.name, backup_name, *args,
+                                           **kwargs)
             backup = AttrDict(name=backup_name)
 
             backups.append(backup)
