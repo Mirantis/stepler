@@ -20,7 +20,7 @@ Keypair steps
 from waiting import wait
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'KeypairSteps'
@@ -30,7 +30,7 @@ __all__ = [
 class KeypairSteps(BaseSteps):
     """Keypair steps."""
 
-    @step
+    @steps_checker.step
     def create_keypair(self, keypair_name, check=True):
         """Step to create keypair."""
         keypair = self._client.create(keypair_name)
@@ -40,7 +40,7 @@ class KeypairSteps(BaseSteps):
 
         return keypair
 
-    @step
+    @steps_checker.step
     def delete_keypair(self, keypair, check=True):
         """Step to delete keypair."""
         self._client.delete(keypair.id)
@@ -48,7 +48,7 @@ class KeypairSteps(BaseSteps):
         if check:
             self.check_keypair_presence(keypair, present=False)
 
-    @step
+    @steps_checker.step
     def check_keypair_presence(self, keypair, present=True, timeout=0):
         """Verify step to check keypair is present."""
         def predicate():
