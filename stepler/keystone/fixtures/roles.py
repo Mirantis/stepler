@@ -19,12 +19,13 @@ Role fixtures
 
 import pytest
 
-from stepler.keystone.steps import RoleSteps
+from stepler.keystone import steps
 from stepler.third_party.utils import generate_ids
 
 __all__ = [
     'admin_role',
     'create_role',
+    'get_role_steps',
     'role_steps',
     'role'
 ]
@@ -36,10 +37,33 @@ def admin_role(role_steps):
     return role_steps.get_role(name='admin')
 
 
+@pytest.fixture(scope="session")
+def get_role_steps(get_keystone_client):
+    """Callable session fixture to get role steps.
+
+    Args:
+        get_keystone_client (function): function to get keystone client.
+
+    Returns:
+        function: function to get role steps.
+    """
+    def _get_steps():
+        return steps.RoleSteps(get_keystone_client().roles)
+
+    return _get_steps
+
+
 @pytest.fixture
-def role_steps(keystone_client):
-    """Fixture to get role steps."""
-    return RoleSteps(keystone_client.roles)
+def role_steps(get_role_steps):
+    """Function fixture to get role steps.
+
+    Args:
+        get_role_steps (function): function to get role steps
+
+    Returns:
+        RoleSteps: instantiated role steps.
+    """
+    return get_role_steps()
 
 
 @pytest.yield_fixture

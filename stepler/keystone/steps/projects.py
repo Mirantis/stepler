@@ -32,8 +32,17 @@ class ProjectSteps(BaseSteps):
     """Project steps."""
 
     @step
-    def create_project(self, project_name, domain, check=True):
-        """Step to create project."""
+    def create_project(self, project_name, domain='default', check=True):
+        """Step to create project.
+
+        Args:
+            project_name (str): project name
+            domain (str or object): domain
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: project
+        """
         project = self._client.create(project_name, domain)
 
         if check:
