@@ -23,6 +23,7 @@ from .cinder import *  # noqa
 from .quota import *  # noqa
 from .snapshots import *  # noqa
 from .transfers import *  # noqa
+from .backups import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_volume',
@@ -45,4 +46,7 @@ __all__ = sorted([  # sort for documentation
     'create_snapshot',
     'create_snapshots',
     'volume_snapshot',
+
+    'create_backup',
+    'backup_steps',
 ])

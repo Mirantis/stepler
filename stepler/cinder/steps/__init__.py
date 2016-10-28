@@ -24,6 +24,7 @@ from .volume_types import *  # noqa
 from .quota import *  # noqa
 from .snapshots import *  # noqa
 from .volume_transfer import *  # noqa
+from .backups import *  # noqa
 
 __all__ = [
     'VolumeSteps',
@@ -32,4 +33,5 @@ __all__ = [
     'CinderQuotaSteps',
     'SnapshotSteps',
     'VolumeTransferSteps',
+    'BackupSteps',
 ]
