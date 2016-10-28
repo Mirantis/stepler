@@ -24,7 +24,7 @@ import pytest
 from stepler.horizon.app import Horizon
 from stepler.horizon.steps import AuthSteps
 
-from stepler.horizon.config import DASHBOARD_URL
+from stepler.horizon.config import OS_DASHBOARD_URL
 
 __all__ = [
     'auth_steps',
@@ -36,7 +36,7 @@ __all__ = [
 @pytest.yield_fixture
 def horizon():
     """Initial fixture to start."""
-    app = Horizon(DASHBOARD_URL)
+    app = Horizon(OS_DASHBOARD_URL)
     yield app
     app.quit()
 

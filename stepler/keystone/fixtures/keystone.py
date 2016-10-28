@@ -19,14 +19,38 @@ Keystone fixtures
 
 import pytest
 
-from keystoneclient.client import Client
+from keystoneclient import client
 
 __all__ = [
-    'keystone_client'
+    'get_keystone_client',
+    'keystone_client',
 ]
 
 
+@pytest.fixture(scope="session")
+def get_keystone_client(get_session):
+    """Callable session fixture to get keystone client.
+
+    Args:
+        get_session (keystoneauth1.session.Session): authenticated keystone
+            session
+
+    Returns:
+        function: function to get keystone client
+    """
+    def _get_client():
+        return client.Client(session=get_session())
+    return _get_client
+
+
 @pytest.fixture
-def keystone_client(session):
-    """Fixture to get keystone client."""
-    return Client(session=session)
+def keystone_client(get_keystone_client):
+    """Function fixture to get keystone client.
+
+    Args:
+        get_keystone_client (function): function to get keystone client
+
+    Returns:
+        keystoneclient.client.Client: authenticated keystone client
+    """
+    return get_keystone_client()
