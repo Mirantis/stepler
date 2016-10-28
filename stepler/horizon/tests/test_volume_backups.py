@@ -34,3 +34,24 @@ class TestAnyOne(object):
         create_backups(backup_names)
         update_settings(items_per_page=1)
         volumes_steps.check_backups_pagination(backup_names)
+
+    @pytest.mark.idempotent_id('dd3abd5c-0900-40a0-be3d-b284eeb6b5da')
+    def test_create_volume_backup(self, create_backups):
+        """**Scenario:** Create volume backup
+
+        **Setup:**
+
+            #. Create volume
+
+        **Steps:**
+
+            #. Create backup
+            #. Check that backup is created
+
+        **Teardown:**
+
+            #. Delete backup
+            #. Delete volume
+        """
+        backup_name = next(generate_ids('backup'))
+        create_backups([backup_name])

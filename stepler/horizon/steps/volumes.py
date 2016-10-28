@@ -530,8 +530,7 @@ class VolumesSteps(BaseSteps):
         if check:
             self.close_notification('success')
             self._tab_backups().table_backups.row(
-                name=backup_name,
-                status='Available').wait_for_presence(EVENT_TIMEOUT)
+                name=backup_name).wait_for_status(status='Available')
 
     @step
     @pom.timeit('Step')
