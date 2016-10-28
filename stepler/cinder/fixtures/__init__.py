@@ -17,12 +17,13 @@ Cinder fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .volumes import *  # noqa
-from .volume_types import *  # noqa
+from .backups import *  # noqa
 from .cinder import *  # noqa
 from .quota import *  # noqa
 from .snapshots import *  # noqa
 from .transfers import *  # noqa
+from .volumes import *  # noqa
+from .volume_types import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_volume',
@@ -45,4 +46,7 @@ __all__ = sorted([  # sort for documentation
     'create_snapshot',
     'create_snapshots',
     'volume_snapshot',
+
+    'create_backup',
+    'backup_steps',
 ])
