@@ -67,8 +67,9 @@ class TestAnyOne(object):
 
         **Steps:**
 
-            #. Check that backup name on backup creation form can contains max
-                255 symbols
+            #. Create backup
+            #. Check that backup is created
+            #. Check that backup description is correct
 
         **Teardown:**
 
@@ -76,3 +77,25 @@ class TestAnyOne(object):
         """
         volumes_steps_ui.check_backup_creation_form_name_field_max_lenght(
             volume.name, 255)
+
+    @pytest.mark.idempotent_id('42020f62-06d5-49f5-8b78-08d40b518b17')
+    def test_create_volume_backup_with_description(self, create_backups):
+        """**Scenario:** Create volume backup with description
+
+        **Setup:**
+
+            #. Create volume
+
+        **Steps:**
+
+            #. Check that backup name on backup creation form can contains max
+                255 symbols
+
+        **Teardown:**
+
+            #. Delete backup
+            #. Delete volume
+        """
+        backup_name = next(generate_ids('backup'))
+        backup_description = next(generate_ids('backup', length=30))
+        create_backups([backup_name], description=backup_description)
