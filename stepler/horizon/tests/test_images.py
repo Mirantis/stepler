@@ -85,12 +85,12 @@ class TestAnyOne(object):
 
     @pytest.mark.idempotent_id('619298ae-f9f5-4afa-a50b-c3f5faa38c81')
     def test_create_volume_from_image(self, image, images_steps,
-                                      volumes_steps):
+                                      volumes_steps_ui):
         """Verify that user can create volume from image."""
         volume_name = next(generate_ids('volume'))
         images_steps.create_volume(image.name, volume_name)
-        volumes_steps.check_volume_present(volume_name, timeout=90)
-        volumes_steps.delete_volume(volume_name)
+        volumes_steps_ui.check_volume_present(volume_name, timeout=90)
+        volumes_steps_ui.delete_volume(volume_name)
 
     @pytest.mark.idempotent_id('3167e844-1d13-44d5-aa1e-85c58c086240')
     def test_set_image_disk_and_ram_size(self, create_image, images_steps):
