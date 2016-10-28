@@ -22,9 +22,11 @@ Contains steps specific for cinder.
 from .volumes import *  # noqa
 from .quota import *  # noqa
 from .snapshots import *  # noqa
+from .volume_transfer import *  # noqa
 
 __all__ = [
     'VolumeSteps',
     'CinderQuotaSteps',
     'SnapshotSteps',
+    'VolumeTransferSteps',
 ]
