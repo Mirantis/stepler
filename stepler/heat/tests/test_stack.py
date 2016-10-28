@@ -285,3 +285,33 @@ def test_create_stack_with_docker(
         next(utils.generate_ids('docker_containers_stack')),
         template,
         parameters={'docker_endpoint': docker_endpoint})
+
+
+def test_stack_update_replace(create_stack, stack_steps, read_heat_template,
+                              heat_resource_steps):
+
+    """**Scenario:** Update stack.
+
+    **Steps:**
+
+        #. Read template from file
+        #. Create stack with template
+        #. Get physical_resource_id
+        #. Update stack
+        #. Check that physical_resource_id was changed
+
+    **Teardown:**
+
+        #. Delete stack
+    """
+    template = read_heat_template('cirros_image_tmpl')
+    template_updated = read_heat_template('cirros_image_tmpl_updated')
+
+    stack_name = next(utils.generate_ids('stack'))
+    stack = create_stack(stack_name, template)
+
+    physical_resource_id = heat_resource_steps.get_resource_list(
+        stack)[0].physical_resource_id
+    stack_steps.update_stack(stack, template_updated)
+    heat_resource_steps.check_physical_resource_id_changed(
+        physical_resource_id, stack)

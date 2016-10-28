@@ -1,9 +1,7 @@
 """
-----------
-Heat steps
-----------
-
-Contains steps specific for heat.
+-----------------------
+Heat resources fixtures
+-----------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +17,21 @@ Contains steps specific for heat.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .stacks import *  # noqa
-from .resource import *  # noqa
+import pytest
+
+from stepler.heat import steps
 
 __all__ = [
-    'StackSteps',
-    'ResourceSteps',
+    'heat_resource_steps',
 ]
+
+
+@pytest.fixture
+def heat_resource_steps(heat_client):
+    """Function fixture to get heat resource steps.
+    Args:
+        heat_client (object): initialized heat client
+    Returns:
+        stepler.heat.steps.ResourceSteps: initialized heat resource steps
+    """
+    return steps.ResourceSteps(heat_client.resources)
