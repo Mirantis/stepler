@@ -27,7 +27,6 @@ from .transfers import *  # noqa
 __all__ = sorted([  # sort for documentation
     'create_volume',
     'create_volumes',
-    'cinder_client',
     'volume_steps',
     'volume_type_steps',
     'volume_type',
@@ -35,6 +34,9 @@ __all__ = sorted([  # sort for documentation
     'upload_volume_to_image',
     'volume',
     'volumes_cleanup',
+
+    'cinder_client',
+    'get_cinder_client',
 
     'cinder_quota_steps',
 
