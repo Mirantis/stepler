@@ -80,7 +80,7 @@ STATUS_VERIFY_RESIZE = 'verify_resize'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
-POLLING_TIME = .01
+POLLING_TIME = 1
 
 # Cinder
 VOLUME_AVAILABLE_TIMEOUT = 5 * 60
