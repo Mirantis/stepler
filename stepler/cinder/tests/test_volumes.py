@@ -40,14 +40,15 @@ def test_create_volume_from_snapshot(volume_snapshot, volume_steps):
         #. Delete snapshot
         #. Delete volume1
     """
-    volume_name = next(utils.generate_ids('volume'))
-    volume = volume_steps.create_volume(name=volume_name,
-                                        snapshot_id=volume_snapshot.id)
-    volume_steps.delete_volume(volume)
+    volumes = volume_steps.create_volumes(
+        names=utils.generate_ids('volume', count=1),
+        snapshot_id=volume_snapshot.id)
+    volume_steps.delete_volumes(volumes)
 
 
 @pytest.mark.idempotent_id('965cb50a-2900-4788-974f-9def0648484a')
-def test_create_delete_10_volumes(volume_steps):
+@pytest.mark.parametrize('volumes_count', [10])
+def test_create_delete_many_volumes(volume_steps, volumes_count):
     """**Scenario:** Verify that 10 cinder volumes can be created and deleted.
 
     **Steps:**
@@ -59,9 +60,8 @@ def test_create_delete_10_volumes(volume_steps):
 
     #. Delete volumes
     """
-    volumes_names = utils.generate_ids('volume', count=10)
-
-    volumes = volume_steps.create_volumes(names=volumes_names)
+    volumes = volume_steps.create_volumes(
+        names=utils.generate_ids('volume', count=volumes_count))
     volume_steps.delete_volumes(volumes)
 
 
@@ -122,7 +122,7 @@ def test_create_volume_wrong_size(volume_steps, size):
     #. Create volume with size 0/-1 Gbs
     #. Check that BadRequest occurred
     """
-    volume_steps.check_negative_volume_creation_incorrect_size(size=size)
+    volume_steps.check_volume_not_created_with_incorrect_size(size=size)
 
 
 @pytest.mark.idempotent_id('bcd12002-dfd3-44c9-b270-d844d61a009c')
@@ -135,7 +135,7 @@ def test_negative_create_volume_name_long(volume_steps):
     #. Check that BadRequest exception raised
     """
     long_name = next(utils.generate_ids(length=256))
-    volume_steps.check_negative_volume_not_created(name=long_name)
+    volume_steps.check_volume_not_created_with_long_name(name=long_name)
 
 
 @pytest.mark.idempotent_id('34ca65a0-a254-49c5-8157-13e11c88a5b3')
