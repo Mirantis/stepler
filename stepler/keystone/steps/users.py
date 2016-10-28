@@ -35,7 +35,7 @@ class UserSteps(BaseSteps):
     """User steps."""
 
     @step
-    def create_user(self, user_name, password, domain='default', check=True):
+    def create_user(self, user_name, password, domain='default', default_project=None, check=True):
         """Step to create user.
 
         Args:
@@ -48,7 +48,7 @@ class UserSteps(BaseSteps):
             object: user
         """
         user = self._client.create(name=user_name, password=password,
-                                   domain=domain)
+                                   domain=domain, default_project=default_project)
         if check:
             self.check_user_presence(user)
             assert_that(user.name, equal_to(user_name))
