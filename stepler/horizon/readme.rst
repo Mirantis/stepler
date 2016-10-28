@@ -14,6 +14,12 @@ Architectural levels
 - ``POM`` - unified methods to manipulate with pages and UI elements.
 - ``selenium`` - low level to manipulate with DOM
 
+===========
+Preparation
+===========
+
+``sudo apt-get install libav-tools firefox``
+
 ==========
 How to run
 ==========

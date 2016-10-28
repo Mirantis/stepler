@@ -32,19 +32,23 @@ __all__ = sorted([  # sort for documentation
 
     'group_steps',
 
+    'get_keystone_client',
     'keystone_client',
 
     'create_project',
+    'get_project_steps',
     'project_steps',
     'project',
 
     'admin_role',
     'create_role',
+    'get_role_steps',
     'role_steps',
     'role',
 
     'admin',
     'create_user',
+    'get_user_steps',
     'user_steps',
     'user',
 
