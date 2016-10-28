@@ -131,5 +131,5 @@ __all__ = sorted([  # sort for documentation
     'create_volumes',
     'snapshot',
     'volume',
-    'volumes_steps',
+    'volumes_steps_ui',
 ])

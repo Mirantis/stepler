@@ -18,7 +18,7 @@ Volumes steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, equal_to, ends_with  # noqa
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
@@ -700,3 +700,38 @@ class VolumesSteps(BaseSteps):
                     equal_to(True))
         assert_that(tab_backups.table_backups.link_prev.is_present,
                     equal_to(False))
+
+    @step
+    @pom.timeit('Step')
+    def check_backup_creation_form_name_field_max_lenght(self, volume_name,
+                                                         expected_length):
+        """Step to cheeck max length of backup creation form name input.
+
+        Args:
+            volume_name (str): name of volume to open backup creating form on
+                it
+            expected_length (int): expected max form field length
+
+        Raises:
+            AssertionError: if actual max length is not equal to
+            `expected_length`
+        """
+        tab_volumes = self._tab_volumes()
+
+        with tab_volumes.table_volumes.row(
+                name=volume_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_create_backup.click()
+
+        with tab_volumes.form_create_backup as form:
+            field = form.field_name
+            max_length = len(field.value)
+            try:
+                while True:
+                    field.webelement.send_keys('a')
+                    if len(field.value) == max_length:
+                        break
+                    max_length += 1
+                assert_that(max_length, equal_to(expected_length))
+            finally:
+                form.cancel()
