@@ -31,18 +31,18 @@ __all__ = [
     'create_volumes',
     'snapshot',
     'volume',
-    'volumes_steps'
+    'volumes_steps_ui'
 ]
 
 
 @pytest.fixture
-def volumes_steps(login, horizon):
+def volumes_steps_ui(login, horizon):
     """Fixture to get volumes steps."""
     return VolumesSteps(horizon)
 
 
 @pytest.yield_fixture
-def create_volumes(volumes_steps):
+def create_volumes(volumes_steps_ui):
     """Fixture to create volumes with options.
 
     Can be called several times during test.
@@ -53,14 +53,14 @@ def create_volumes(volumes_steps):
         _volumes = []
 
         for volume_name in volume_names:
-            volumes_steps.create_volume(volume_name, check=False)
-            volumes_steps.close_notification('info')
+            volumes_steps_ui.create_volume(volume_name, check=False)
+            volumes_steps_ui.close_notification('info')
             volume = AttrDict(name=volume_name)
 
             volumes.append(volume)
             _volumes.append(volume)
 
-        tab_volumes = volumes_steps.tab_volumes()
+        tab_volumes = volumes_steps_ui.tab_volumes()
         for volume_name in volume_names:
             tab_volumes.table_volumes.row(
                 name=volume_name).wait_for_status('Available')
@@ -70,11 +70,11 @@ def create_volumes(volumes_steps):
     yield _create_volumes
 
     if volumes:
-        volumes_steps.delete_volumes([volume.name for volume in volumes])
+        volumes_steps_ui.delete_volumes([volume.name for volume in volumes])
 
 
 @pytest.yield_fixture
-def create_volume(volumes_steps):
+def create_volume(volumes_steps_ui):
     """Fixture to create volume with options.
 
     Can be called several times during test.
@@ -82,8 +82,8 @@ def create_volume(volumes_steps):
     volumes = []
 
     def _create_volume(volume_name, volume_type='', *args, **kwargs):
-        volumes_steps.create_volume(volume_name, volume_type=volume_type,
-                                    *args, **kwargs)
+        volumes_steps_ui.create_volume(volume_name, volume_type=volume_type,
+                                       *args, **kwargs)
         volume = AttrDict(name=volume_name)
         volumes.append(volume)
         return volume
@@ -91,7 +91,7 @@ def create_volume(volumes_steps):
     yield _create_volume
 
     for volume in volumes:
-        volumes_steps.delete_volume(volume.name)
+        volumes_steps_ui.delete_volume(volume.name)
 
 
 @pytest.fixture
@@ -109,7 +109,7 @@ def snapshot(create_snapshot):
 
 
 @pytest.yield_fixture
-def create_snapshots(volume, volumes_steps):
+def create_snapshots(volume, volumes_steps_ui):
     """Callable fixture to create volume snapshots with options.
 
     Can be called several times during test.
@@ -120,15 +120,15 @@ def create_snapshots(volume, volumes_steps):
         _snapshots = []
 
         for snapshot_name in snapshot_names:
-            volumes_steps.create_snapshot(volume.name, snapshot_name,
-                                          check=False)
-            volumes_steps.close_notification('info')
+            volumes_steps_ui.create_snapshot(volume.name, snapshot_name,
+                                             check=False)
+            volumes_steps_ui.close_notification('info')
             snapshot = AttrDict(name=snapshot_name)
 
             snapshots.append(snapshot)
             _snapshots.append(snapshot)
 
-        tab_snapshots = volumes_steps.tab_snapshots()
+        tab_snapshots = volumes_steps_ui.tab_snapshots()
         for snapshot_name in snapshot_names:
             tab_snapshots.table_snapshots.row(
                 name=snapshot_name, status='Available').wait_for_presence(30)
@@ -138,12 +138,12 @@ def create_snapshots(volume, volumes_steps):
     yield _create_snapshots
 
     if snapshots:
-        volumes_steps.delete_snapshots(
+        volumes_steps_ui.delete_snapshots(
             [snapshot.name for snapshot in snapshots])
 
 
 @pytest.yield_fixture
-def create_snapshot(volume, volumes_steps):
+def create_snapshot(volume, volumes_steps_ui):
     """Callable fixture to create snapshot with options.
 
     Can be called several times during test.
@@ -151,7 +151,7 @@ def create_snapshot(volume, volumes_steps):
     snapshots = []
 
     def _create_snapshot(snapshot_name):
-        volumes_steps.create_snapshot(volume.name, snapshot_name)
+        volumes_steps_ui.create_snapshot(volume.name, snapshot_name)
         snapshot = AttrDict(name=snapshot_name)
         snapshots.append(snapshot)
         return snapshot
@@ -159,11 +159,11 @@ def create_snapshot(volume, volumes_steps):
     yield _create_snapshot
 
     for snapshot in snapshots:
-        volumes_steps.delete_snapshot(snapshot.name)
+        volumes_steps_ui.delete_snapshot(snapshot.name)
 
 
 @pytest.yield_fixture
-def create_backups(volume, volumes_steps):
+def create_backups(volume, volumes_steps_ui):
     """Callable fixture to create backups with options.
 
     Can be called several times during test.
@@ -174,7 +174,7 @@ def create_backups(volume, volumes_steps):
         _backups = []
 
         for backup_name in backup_names:
-            volumes_steps.create_backup(volume.name, backup_name)
+            volumes_steps_ui.create_backup(volume.name, backup_name)
             backup = AttrDict(name=backup_name)
 
             backups.append(backup)
@@ -185,4 +185,4 @@ def create_backups(volume, volumes_steps):
     yield _create_backups
 
     if backups:
-        volumes_steps.delete_backups([b.name for b in backups])
+        volumes_steps_ui.delete_backups([b.name for b in backups])
