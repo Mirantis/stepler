@@ -20,6 +20,7 @@ Volume transfer fixtures
 import pytest
 
 from stepler.cinder import steps
+from stepler import config
 
 __all__ = [
     'transfer_steps',
@@ -38,9 +39,9 @@ def get_transfer_steps(get_cinder_client):
     Returns:
         function: function to get transfer steps.
     """
-    def _get_transfer_steps(*args, **kwargs):
+    def _get_transfer_steps(version, is_api, **credentials):
         return steps.VolumeTransferSteps(
-            get_cinder_client(*args, **kwargs).transfers)
+            get_cinder_client(version, is_api, **credentials).transfers)
 
     return _get_transfer_steps
 
@@ -55,7 +56,7 @@ def transfer_steps(get_transfer_steps):
     Returns:
         VolumeTransferSteps: instantiated transfer steps.
     """
-    return get_transfer_steps()
+    return get_transfer_steps(config.CURRENT_CINDER_VERSION, is_api=False)
 
 
 @pytest.yield_fixture

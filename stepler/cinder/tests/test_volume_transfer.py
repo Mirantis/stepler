@@ -94,10 +94,12 @@ def test_accept_volume_transfer(volume,
     transfer_name = next(utils.generate_ids('transfer'))
 
     transfer = transfer_steps.create_volume_transfer(volume, transfer_name)
-    user_transfer_steps = get_transfer_steps(**new_user_with_project)
+    user_transfer_steps = get_transfer_steps(
+        config.CURRENT_CINDER_VERSION, is_api=False, **new_user_with_project)
     user_transfer_steps.accept_volume_transfer(transfer)
 
-    user_volume_steps = get_volume_steps(**new_user_with_project)
+    user_volume_steps = get_volume_steps(
+        config.CURRENT_CINDER_VERSION, is_api=False, **new_user_with_project)
     user_volume_steps.check_volume_presence(
         volume, present=True, timeout=config.VOLUME_DELETE_TIMEOUT)
     transfer_steps.check_volume_transfer_presence(transfer, must_present=False)
