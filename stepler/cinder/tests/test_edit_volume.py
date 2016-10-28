@@ -22,7 +22,8 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('2df43a46-72b0-4d25-bf68-13d07776af7c')
-def test_edit_volume_name(create_volume, volume_steps):
+@pytest.mark.parametrize('empty_name', [False, True])
+def test_edit_volume_name(create_volume, volume_steps, empty_name):
     """**Scenario:** Verify ability to change volume name
 
     **Steps:**
@@ -35,12 +36,17 @@ def test_edit_volume_name(create_volume, volume_steps):
         #. Delete volume
     """
     volume = create_volume()
-    volume_new_name = next(utils.generate_ids(prefix='volume'))
+    if empty_name:
+        volume_new_name = ''
+    else:
+        volume_new_name = next(utils.generate_ids('volume'))
     volume_steps.update_volume(volume, new_name=volume_new_name)
 
 
 @pytest.mark.idempotent_id('1c5ef0e5-64ac-43d5-b9f2-97cb4ad62e95')
-def test_edit_volume_description(create_volume, volume_steps):
+@pytest.mark.parametrize('empty_description', [False, True])
+def test_edit_volume_description(create_volume, volume_steps,
+                                 empty_description):
     """**Scenario:** Verify ability to change volume description
 
     **Steps:**
@@ -53,7 +59,10 @@ def test_edit_volume_description(create_volume, volume_steps):
         #. Delete volume
     """
     volume = create_volume()
-    volume_new_description = next(utils.generate_ids('description'))
+    if empty_description:
+        volume_new_description = ''
+    else:
+        volume_new_description = next(utils.generate_ids('description'))
     volume_steps.update_volume(volume, new_description=volume_new_description)
 
 
