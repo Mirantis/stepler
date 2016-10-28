@@ -19,8 +19,7 @@ Volume steps
 
 from cinderclient import exceptions
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
-                      has_properties, has_property, is_not, raises)   # noqa
-import waiting
+                      has_properties, has_property, is_in, is_not, raises)  # noqa
 
 from stepler import base
 from stepler import config
@@ -36,61 +35,11 @@ class VolumeSteps(base.BaseSteps):
     """Volume steps."""
 
     @steps_checker.step
-    def create_volume(self,
-                      name=None,
-                      size=1,
-                      image=None,
-                      volume_type=None,
-                      description=None,
-                      snapshot_id=None,
-                      check=True):
-        """Step to create volume.
+    def check_volume_not_created_with_long_name(self, name):
+        """Step to check volume is not created with long name.
 
         Args:
-            name (str): name of created volume
-            size (int): size of created volume (in GB)
-            image (object): glance image to create volume from
-            volume_type (str): type of volume
-            description (str): description
-            snapshot_id (str): ID of the snapshot
-            check (bool): flag whether to check step or not
-
-        Returns:
-            object: cinder volume
-
-        Raises:
-            TimeoutExpired|AssertionError: if check was falsed
-        """
-        image_id = None if image is None else image.id
-        volume = self._client.volumes.create(size,
-                                             name=name,
-                                             imageRef=image_id,
-                                             volume_type=volume_type,
-                                             description=description,
-                                             snapshot_id=snapshot_id)
-        if check:
-            self.check_volume_status(volume,
-                                     config.STATUS_AVAILABLE,
-                                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
-            if snapshot_id:
-                assert_that(volume.snapshot_id, equal_to(snapshot_id))
-            if name:
-                assert_that(volume.name, equal_to(name))
-            if size:
-                assert_that(volume.size, equal_to(size))
-            if volume_type:
-                assert_that(volume.volume_type, equal_to(volume_type))
-            if description:
-                assert_that(volume.description, equal_to(description))
-
-        return volume
-
-    @steps_checker.step
-    def check_negative_volume_not_created(self, name):
-        """Step for negative test case of volume creation with invalid name.
-
-        Args:
-            name (str): name for volume. Expected invalid name in argument
+            name (str): name for volume. Expected long name in argument
 
         Raises:
             AssertionError: if check triggered an error
@@ -98,8 +47,8 @@ class VolumeSteps(base.BaseSteps):
         exception_message = "Name has more than 255 characters"
 
         assert_that(
-            calling(self.create_volume).with_args(
-                name=name, check=False),
+            calling(self.create_volumes).with_args(
+                names=[name], check=False),
             raises(exceptions.BadRequest, exception_message))
 
     @steps_checker.step
@@ -117,8 +66,8 @@ class VolumeSteps(base.BaseSteps):
                              .format(type_name))
 
         assert_that(
-            calling(self.create_volume).with_args(volume_type=type_name,
-                                                  image=image, check=False),
+            calling(self.create_volumes).with_args(
+                names=[None], volume_type=type_name, image=image, check=False),
             raises(exceptions.NotFound, exception_message))
 
     @steps_checker.step
@@ -143,42 +92,42 @@ class VolumeSteps(base.BaseSteps):
 
         Returns:
             list: cinder volumes
+
+        Raises:
+            TimeoutExpired|AssertionError: if check was falsed
         """
+        image_id = None if image is None else image.id
         volumes = []
         for name in names:
-            volume = self.create_volume(name=name,
-                                        size=size,
-                                        image=image,
-                                        volume_type=volume_type,
-                                        description=description,
-                                        snapshot_id=snapshot_id,
-                                        check=False)
+            volume = self._client.volumes.create(size,
+                                                 name=name,
+                                                 imageRef=image_id,
+                                                 volume_type=volume_type,
+                                                 description=description,
+                                                 snapshot_id=snapshot_id)
             volumes.append(volume)
 
         if check:
-
             for volume in volumes:
                 self.check_volume_status(
                     volume,
                     config.STATUS_AVAILABLE,
+                    transit_statuses=(config.STATUS_CREATING,
+                                      config.STATUS_UPLOADING),
                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
+                if snapshot_id:
+                    assert_that(volume.snapshot_id, equal_to(snapshot_id))
+                if name:
+                    assert_that(volume.name, equal_to(name))
+                if size:
+                    assert_that(volume.size, equal_to(size))
+                if volume_type:
+                    assert_that(volume.volume_type, equal_to(volume_type))
+                if description:
+                    assert_that(volume.description, equal_to(description))
+
         return volumes
-
-    @steps_checker.step
-    def delete_volume(self, volume, check=True):
-        """Step to delete volume.
-
-        Args:
-            volume (object): cinder volume
-            check (bool): flag whether to check step or not
-        """
-        self._client.volumes.delete(volume.id)
-
-        if check:
-            self.check_volume_presence(volume,
-                                       present=False,
-                                       timeout=config.VOLUME_DELETE_TIMEOUT)
 
     @steps_checker.step
     def delete_volumes(self, volumes, check=True):
@@ -189,17 +138,17 @@ class VolumeSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
         """
         for volume in volumes:
-            self.delete_volume(volume, check=False)
+            self._client.volumes.delete(volume.id)
 
         if check:
             for volume in volumes:
                 self.check_volume_presence(
                     volume,
-                    present=False,
+                    must_present=False,
                     timeout=config.VOLUME_DELETE_TIMEOUT)
 
     @steps_checker.step
-    def check_volume_presence(self, volume, present=True, timeout=0):
+    def check_volume_presence(self, volume, must_present=True, timeout=0):
         """Check step volume presence status.
 
         Args:
@@ -210,18 +159,19 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check was falsed after timeout
         """
-
-        def predicate():
+        def _check_volume_presence():
             try:
                 self._client.volumes.get(volume.id)
-                return present
+                is_present = True
             except exceptions.NotFound:
-                return not present
+                is_present = False
+            return expect_that(is_present, equal_to(must_present))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_volume_presence, timeout_seconds=timeout)
 
     @steps_checker.step
-    def check_volume_status(self, volume, status, timeout=0):
+    def check_volume_status(self, volume, status, transit_statuses=(),
+                            timeout=0):
         """Check step volume status.
 
         Args:
@@ -232,12 +182,13 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check was falsed after timeout
         """
-
         def predicate():
             volume.get()
-            return volume.status.lower() == status.lower()
+            return expect_that(volume.status.lower(),
+                               is_not(is_in(transit_statuses)))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
+        assert_that(volume.status.lower(), equal_to(status.lower()))
 
     @steps_checker.step
     def get_volumes(self, name_prefix=None, check=True):
@@ -327,9 +278,9 @@ class VolumeSteps(base.BaseSteps):
 
         def predicate():
             attached_ids = self.get_servers_attached_to_volume(volume)
-            return set(server_ids) == set(attached_ids)
+            return expect_that(set(attached_ids), equal_to(set(server_ids)))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_volume_extend_failed_incorrect_size(self, volume, size):
@@ -348,8 +299,8 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.BadRequest, error_message))
 
     @steps_checker.step
-    def check_negative_volume_creation_incorrect_size(self, size):
-        """Step to check negative volume creation with negative/zero size
+    def check_volume_not_created_with_incorrect_size(self, size):
+        """Step to check negative volume creation with negative/zero size.
 
         Args:
             size (int): volume size
@@ -359,7 +310,8 @@ class VolumeSteps(base.BaseSteps):
         """
         error_message = 'must be an integer.+greater than (?:0|zero)'
         assert_that(
-            calling(self.create_volume).with_args(size=size, check=False),
+            calling(self.create_volumes).with_args(
+                names=[None], size=size, check=False),
             raises(exceptions.BadRequest, error_message))
 
     @steps_checker.step

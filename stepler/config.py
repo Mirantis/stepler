@@ -72,6 +72,7 @@ NOVA_COMPUTE = 'nova-compute'
 STATUS_ACTIVE = 'active'
 STATUS_AVAILABLE = 'available'
 STATUS_BUILD = 'build'
+STATUS_CREATING = 'creating'
 STATUS_INUSE = 'in-use'
 STATUS_MIGRATING = 'migrating'
 STATUS_OK = 'OK'
@@ -79,6 +80,7 @@ STATUS_RESIZE = 'resize'
 STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_VERIFY_RESIZE = 'verify_resize'
 STATUS_AWAITING_TRANSFER = 'awaiting-transfer'
+STATUS_UPLOADING = 'uploading'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
