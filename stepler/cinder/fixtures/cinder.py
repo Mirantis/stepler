@@ -3,6 +3,7 @@
 Cinder fixtures
 ---------------
 """
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,6 +20,7 @@ Cinder fixtures
 from cinderclient import client as cinderclient
 import pytest
 
+from stepler.cinder import api_clients
 from stepler import config
 
 __all__ = [
@@ -32,15 +34,22 @@ def get_cinder_client(get_session):
     """Callable session fixture to get cinder client.
 
     Args:
-        get_session (function): function to get session
+        session (object): authenticated keystone session
 
     Returns:
-        function: function to get cinder client
+        cinderclient.client.Client: instantiated cinder client
     """
-    def _get_cinder_client(**credentials):
-        return cinderclient.Client(
-            version=config.CURRENT_CINDER_VERSION,
-            session=get_session(**credentials))
+    def _get_cinder_client(version, is_api, **credentials):
+        api_client = {
+            '2': api_clients.ApiClientV2
+        }[version]
+
+        session = get_session(**credentials)
+
+        if config.FORCE_API or is_api:
+            return api_client(session)
+        else:
+            return cinderclient.Client(version=version, session=session)
 
     return _get_cinder_client
 
@@ -55,4 +64,4 @@ def cinder_client(get_cinder_client):
     Returns:
         cinderclient.client.Client: instantiated cinder client
     """
-    return get_cinder_client()
+    return get_cinder_client(config.CURRENT_CINDER_VERSION, is_api=False)
