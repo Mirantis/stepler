@@ -43,6 +43,8 @@ __all__ = sorted([  # sort for documentation
     'cinder_quota_steps',
     'create_snapshot',
     'snapshot_steps',
+    'transfer_steps',
+    'create_volume_transfer',
 
     'heat_client',
     'stack_steps',
