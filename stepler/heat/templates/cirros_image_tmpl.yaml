@@ -1,0 +1,9 @@
+heat_template_version: 2013-05-23
+resources:
+  cirros_image:
+    properties:
+      container_format: bare
+      disk_format: qcow2
+      location: http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img
+      name: cirros-0.3.3-x86_64
+    type: OS::Glance::Image
