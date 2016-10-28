@@ -29,6 +29,8 @@ from stepler.horizon.app import ui as _ui
 class RowBackup(_ui.Row):
     """Volume backup row of volume backups table."""
 
+    transit_statuses = ('Creating',)
+
 
 @ui.register_ui(
     link_next=ui.UI(By.CSS_SELECTOR, 'a[href^="?backup_marker="]'),
