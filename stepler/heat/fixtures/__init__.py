@@ -20,6 +20,7 @@ Heat fixtures
 from .heat import *  # noqa
 from .stacks import *  # noqa
 from .templates import *  # noqa
+from .resource import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'heat_client',
@@ -28,4 +29,6 @@ __all__ = sorted([  # sort for documentation
     'create_stack',
 
     'read_heat_template',
+
+    'heat_resource_steps',
 ])
