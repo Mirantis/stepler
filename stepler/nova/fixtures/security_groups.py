@@ -37,9 +37,16 @@ def security_group_steps(nova_client):
 
 @pytest.yield_fixture
 def create_security_group(security_group_steps):
-    """Fixture to create security group with options.
+    """Callable function fixture to create security group with options.
 
     Can be called several times during test.
+    After the test it destroys all created security groups
+
+    Args:
+        security_group_steps (object): instantiated security groups steps
+
+    Returns:
+        function: function to create security groups as batch with options
     """
     security_groups = []
 
@@ -56,7 +63,18 @@ def create_security_group(security_group_steps):
 
 @pytest.fixture
 def security_group(create_security_group, security_group_steps):
-    """Fixture to create security group with default options before test."""
+    """Callable function fixture to create security group before test.
+
+    Can be called several times during test.
+    After the test it destroys all created security groups
+
+    Args:
+        create_security_group (object): instantiated security group
+        security_group_steps (object): instantiated security groups steps
+
+    Returns:
+        function: function to create security groups as batch with options
+    """
     group_name = next(generate_ids('security-group'))
     group = create_security_group(group_name)
 
