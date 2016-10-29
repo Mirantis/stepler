@@ -20,7 +20,7 @@ Glance steps v2
 from hamcrest import assert_that, empty, is_not, equal_to  # noqa
 from waiting import wait
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseGlanceSteps
 
@@ -32,7 +32,7 @@ __all__ = [
 class GlanceStepsV2(BaseGlanceSteps):
     """Glance steps for v2."""
 
-    @step
+    @steps_checker.step
     def create_image(self, image_name, image_path, disk_format='qcow2',
                      container_format='bare', check=True):
         """Step to create image.
@@ -54,7 +54,7 @@ class GlanceStepsV2(BaseGlanceSteps):
                                     check)
         return images[0]
 
-    @step
+    @steps_checker.step
     def create_images(self, image_names, image_path, disk_format='qcow2',
                       container_format='bare', check=True):
         """Step to create images.
@@ -85,7 +85,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         return images
 
-    @step
+    @steps_checker.step
     def delete_image(self, image, check=True):
         """Step to delete image.
 
@@ -95,7 +95,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         self.delete_images([image], check)
 
-    @step
+    @steps_checker.step
     def delete_images(self, images, check=True):
         """Step to delete images.
 
@@ -110,7 +110,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             for image in images:
                 self.check_image_presence(image, present=False, timeout=180)
 
-    @step
+    @steps_checker.step
     def bind_project(self, image, project, check=True):
         """Step to bind image to project.
 
@@ -123,7 +123,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         if check:
             self.check_image_bind_status(image, project)
 
-    @step
+    @steps_checker.step
     def unbind_project(self, image, project, check=True):
         """Step to unbind image to project.
 
@@ -136,7 +136,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         if check:
             self.check_image_bind_status(image, project, binded=False)
 
-    @step
+    @steps_checker.step
     def get_images(self, name_prefix=None, check=True, **kwargs):
         """Step to retrieve images from glance.
 
@@ -172,7 +172,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         return images
 
-    @step
+    @steps_checker.step
     def get_image(self, check=True, **kwargs):
         """Find one image by provided **kwargs.
 
@@ -192,7 +192,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         images = self.get_images(check=check, **kwargs)
         return images[0]
 
-    @step
+    @steps_checker.step
     def check_image_presence(self, image, present=True, timeout=0):
         """Check step image presence status.
 
@@ -213,7 +213,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def check_image_status(self, image, status, timeout=0):
         """Check step image status.
 
@@ -231,7 +231,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def check_image_bind_status(self, image, project, binded=True, timeout=0):
         """Check step image binding status.
 
