@@ -31,15 +31,33 @@ __all__ = [
 
 @pytest.fixture
 def keypair_steps(nova_client):
-    """Fixture to get keypair steps."""
+    """Function fixture to get keypair steps.
+
+    Can be called several times during test.
+    After the test it destroys all created security groups
+
+    Args:
+        nova_client (object): instantiated nova client
+
+    Returns:
+        stepler.nova.steps.KeypairSteps: instantiated keypair steps
+
+    """
     return KeypairSteps(nova_client.keypairs)
 
 
 @pytest.yield_fixture
 def create_keypair(keypair_steps):
-    """Fixture to create keypair with options.
+    """Callable function fixture to create keypair with options.
 
     Can be called several times during test.
+    After the test it destroys all created security groups
+
+    Args:
+        keypair_steps (object): instantiated keypair steps
+
+    Returns:
+        function: function to create keypair
     """
     keypairs = []
 
@@ -56,6 +74,16 @@ def create_keypair(keypair_steps):
 
 @pytest.fixture
 def keypair(create_keypair):
-    """Fixture to create keypair with default options before test."""
+    """Function fixture to create keypair with options.
+
+    Can be called several times during test.
+    After the test it destroys all created security groups
+
+    Args:
+        create_keypair (object): instantiated keypair steps
+
+    Returns:
+        object: keypair
+    """
     keypair_name = next(generate_ids('keypair'))
     return create_keypair(keypair_name)
