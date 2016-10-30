@@ -22,12 +22,31 @@ import pytest
 from stepler import config
 
 __all__ = [
-    'cinder_client'
+    'cinder_client',
+    'get_cinder_client',
 ]
 
 
+@pytest.fixture(scope='session')
+def get_cinder_client(get_session):
+    """Callable session fixture to get cinder client.
+
+    Args:
+        get_session (function): function to get session
+
+    Returns:
+        function: function to get cinder client
+    """
+    def _get_cinder_client(*args, **kwgs):
+        return cinderclient.Client(
+            version=config.CURRENT_CINDER_VERSION,
+            session=get_session(*args, **kwgs))
+
+    return _get_cinder_client
+
+
 @pytest.fixture
-def cinder_client(session):
+def cinder_client(get_cinder_client):
     """Function fixture to get cinder client.
 
     Args:
@@ -36,5 +55,4 @@ def cinder_client(session):
     Returns:
         cinderclient.client.Client: instantiated cinder client
     """
-    return cinderclient.Client(
-        version=config.CURRENT_CINDER_VERSION, session=session)
+    return get_cinder_client()

@@ -40,24 +40,36 @@ def get_session():
     """
     assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
 
-    def _get_session():
+    def _get_session(auth_url=None,
+                     username=None,
+                     password=None,
+                     project_name=None,
+                     user_domain_name=None,
+                     project_domain_name=None):
+        auth_url = auth_url or config.AUTH_URL
+        username = username or config.USERNAME
+        password = password or config.PASSWORD
+        project_name = project_name or config.PROJECT_NAME
+        user_domain_name = user_domain_name or config.USER_DOMAIN_NAME
+        project_domain_name = project_domain_name or config.PROJECT_DOMAIN_NAME
+
         if config.KEYSTONE_API_VERSION == 3:
 
             auth = identity.v3.Password(
-                auth_url=config.AUTH_URL,
-                username=config.USERNAME,
-                user_domain_name=config.USER_DOMAIN_NAME,
-                password=config.PASSWORD,
-                project_name=config.PROJECT_NAME,
-                project_domain_name=config.PROJECT_DOMAIN_NAME)
+                auth_url=auth_url,
+                username=username,
+                user_domain_name=user_domain_name,
+                password=password,
+                project_name=project_name,
+                project_domain_name=project_domain_name)
 
         elif config.KEYSTONE_API_VERSION == 2:
 
             auth = identity.v2.Password(
-                auth_url=config.AUTH_URL,
-                username=config.USERNAME,
-                password=config.PASSWORD,
-                tenant_name=config.PROJECT_NAME)
+                auth_url=auth_url,
+                username=username,
+                password=password,
+                tenant_name=project_name)
 
         else:
             raise ValueError("Unexpected keystone API version: {}".format(

@@ -29,6 +29,7 @@ from stepler.third_party import utils
 __all__ = [
     'create_volume',
     'create_volumes',
+    'get_volume_steps',
     'volume_steps',
     'upload_volume_to_image',
     'volume',
@@ -73,19 +74,35 @@ def volumes_cleanup():
     _volumes_cleanup(_volume_steps[0])
 
 
+@pytest.fixture(scope='session')
+def get_volume_steps(get_cinder_client):
+    """Callable session fixture to get volume steps
+
+    Args:
+        get_cinder_client (function): function to get cinder client
+
+    Returns:
+        function: function to get volume steps
+    """
+    def _get_volume_steps(*args, **kwgs):
+        return steps.VolumeSteps(get_cinder_client(*args, **kwgs))
+
+    return _get_volume_steps
+
+
 @pytest.fixture
-def volume_steps(cinder_client, volumes_cleanup):
+def volume_steps(get_volume_steps, volumes_cleanup):
     """Function fixture to get volume steps.
 
     Args:
-        cinder_client (object): instantiated cinder client
+        get_volume_steps (function): function to get volume steps
         volumes_cleanup (function): function to make volumes cleanup right
             after volume steps initialization
 
     Returns:
         stepler.cinder.steps.VolumeSteps: instantiated volume steps
     """
-    _volume_steps = steps.VolumeSteps(cinder_client)
+    _volume_steps = get_volume_steps()
     volumes_cleanup(_volume_steps)
     return _volume_steps
 
