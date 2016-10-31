@@ -423,13 +423,16 @@ class VolumesSteps(BaseSteps):
         with tab_volumes.form_create_snapshot as form:
             form.field_name.value = snapshot_name
             if description is not None:
-                self.field_description.value = description
+                form.field_description.value = description
             form.submit()
 
         if check:
             self.close_notification('info')
-            self._tab_snapshots().table_snapshots.row(
-                name=snapshot_name, status='Available').wait_for_presence()
+            row = self._tab_snapshots().table_snapshots.row(name=snapshot_name)
+            row.wait_for_status('Available')
+            if description is not None:
+                assert_that(row.cell('description').value,
+                            starts_with(description[:30]))
 
     @step
     @pom.timeit('Step')
