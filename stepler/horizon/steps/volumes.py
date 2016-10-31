@@ -18,7 +18,7 @@ Volumes steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to, has_length  # noqa
+from hamcrest import assert_that, equal_to, has_length, starts_with  # noqa
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
@@ -533,7 +533,7 @@ class VolumesSteps(BaseSteps):
             row.wait_for_status(status='Available')
             if description is not None:
                 assert_that(row.cell('description').value,
-                            equal_to(description))
+                            starts_with(description[:30]))
 
     @step
     @pom.timeit('Step')
