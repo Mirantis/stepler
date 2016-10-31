@@ -76,7 +76,7 @@ class IronicNodeSteps(BaseSteps):
 
         Args:
             node (object): ironic node to check presence status
-            present (bool): flag whether image should present or no
+            present (bool): flag whether node should present or no
             timeout (int): seconds to wait a result of check
 
         Raises:
