@@ -150,8 +150,9 @@ def create_snapshot(volume, volumes_steps):
     """
     snapshots = []
 
-    def _create_snapshot(snapshot_name):
-        volumes_steps.create_snapshot(volume.name, snapshot_name)
+    def _create_snapshot(snapshot_name, *args, **kwargs):
+        volumes_steps.create_snapshot(volume.name, snapshot_name, *args,
+                                      **kwargs)
         snapshot = AttrDict(name=snapshot_name)
         snapshots.append(snapshot)
         return snapshot
