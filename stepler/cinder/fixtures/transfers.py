@@ -20,24 +20,58 @@ Volume transfer fixtures
 import pytest
 
 from stepler.cinder import steps
+from stepler.cinder.steps import VolumeTransferSteps
 
 __all__ = [
     'transfer_steps',
     'create_volume_transfer',
+    'get_transfer_steps',
 ]
 
 
-@pytest.fixture
-def transfer_steps(cinder_client):
-    """Function fixture to get volume transfer steps.
+@pytest.fixture()
+def get_transfer_steps(get_cinder_client):
+    """Callable session fixture to get server steps.
 
     Args:
-        cinder_client (object): instantiated cinder client
+        get_nova_client (function): function to get nova client.
 
     Returns:
-        stepler.cinder.steps.VolumeTransferSteps: instantiated transfer steps
+        function: function to get server steps.
     """
-    return steps.VolumeTransferSteps(cinder_client.transfers)
+    def _get_transfer_steps(*args, **kwargs):
+        return VolumeTransferSteps(get_cinder_client(*args, **kwargs).transfers)
+
+    return _get_transfer_steps
+
+
+# @pytest.fixture
+# def transfer_steps(cinder_client):
+#     """Function fixture to get volume transfer steps.
+#
+#     Args:
+#         cinder_client (object): instantiated cinder client
+#
+#     Returns:
+#         stepler.cinder.steps.VolumeTransferSteps: instantiated transfer steps
+#     """
+#     return steps.VolumeTransferSteps(cinder_client.transfers)
+
+
+@pytest.fixture
+def transfer_steps(get_transfer_steps):
+    """Function fixture to get nova steps.
+
+    Args:
+        get_server_steps (function): function to get server steps
+        servers_cleanup (function): function to make servers cleanup right
+            after server steps initialization
+
+    Returns:
+        ServerSteps: instantiated server steps.
+    """
+    _server_steps = get_transfer_steps()
+    return _server_steps
 
 
 @pytest.yield_fixture

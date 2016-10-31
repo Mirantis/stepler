@@ -40,15 +40,15 @@ def get_session():
     """
     assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
 
-    def _get_session():
+    def _get_session(user_name=None, password=None, project_name=None):
         if config.KEYSTONE_API_VERSION == 3:
 
             auth = identity.v3.Password(
                 auth_url=config.AUTH_URL,
-                username=config.USERNAME,
+                username=user_name or config.USERNAME,
                 user_domain_name=config.USER_DOMAIN_NAME,
-                password=config.PASSWORD,
-                project_name=config.PROJECT_NAME,
+                password=password or config.PASSWORD,
+                project_name=project_name or config.PROJECT_NAME,
                 project_domain_name=config.PROJECT_DOMAIN_NAME)
 
         elif config.KEYSTONE_API_VERSION == 2:

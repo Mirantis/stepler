@@ -19,6 +19,7 @@ Volume tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
@@ -63,3 +64,13 @@ def test_create_volume_transfer(volume, create_volume_transfer, transfer_name):
         #. Delete cinder volume
     """
     create_volume_transfer(volume, transfer_name)
+
+
+def test_accept_volume_transfer(volume, new_user, volume_steps,
+                                get_transfer_steps, transfer_steps):
+    transfer_name = next(utils.generate_ids('transfer'))
+    transfer = transfer_steps.create_volume_transfer(volume, transfer_name)
+    user_transfer_steps = get_transfer_steps(**new_user)
+    user_transfer_steps.accept_volume_transfer(transfer)
+    volume_steps.check_volume_presence(volume, present=True,
+                                       timeout=config.VOLUME_DELETE_TIMEOUT)

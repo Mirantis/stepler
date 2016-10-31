@@ -39,6 +39,8 @@ __all__ = sorted([  # sort for documentation
     'create_volume',
     'create_volumes',
     'cinder_client',
+    'get_cinder_client',
+    'get_transfer_steps',
     'volume_steps',
     'cinder_quota_steps',
     'create_snapshot',
@@ -85,6 +87,7 @@ __all__ = sorted([  # sort for documentation
     'create_user',
     'user_steps',
     'user',
+    'new_user',
 
     'create_network',
     'network',
