@@ -68,6 +68,30 @@ class TestAnyOne(object):
         volumes_steps.check_snapshot_creation_form_name_field_max_length(
             volume.name, 255)
 
+    @pytest.mark.idempotent_id('0daeefa1-b562-4dae-97fb-fc7534794189')
+    def test_create_volume_snapshot_with_description(self, volume,
+                                                     create_snapshot):
+        """**Scenario:** Create volume snapshot with description.
+
+        **Setup:**
+
+            #. Create volume
+
+        **Steps:**
+
+            #. Create volume snapshot with description
+            #. Check that snapshot created
+            #. Check that description is corect
+
+        **Teardown:**
+
+            #. Delete snapshot
+            #. Delete volume
+        """
+        snapshot_name = next(generate_ids('snapshot'))
+        snapshot_description = next(generate_ids('snapshot_description'))
+        create_snapshot(snapshot_name, description=snapshot_description)
+
     @pytest.mark.idempotent_id('b16ba9bf-7d09-462c-ae99-e1ec4653c40d')
     def test_edit_volume_snapshot(self, snapshot, volumes_steps):
         """Verify that user can edit volume snapshot."""
