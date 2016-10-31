@@ -99,3 +99,27 @@ class TestAnyOne(object):
         backup_name = next(generate_ids('backup'))
         backup_description = next(generate_ids('backup', length=30))
         create_backups([backup_name], description=backup_description)
+
+    @pytest.mark.idempotent_id('36a02ea4-ce4d-4f45-b461-954ded1ea171')
+    def test_create_volume_backup_with_max_length_description(self,
+                                                              create_backups):
+        """**Scenario:** Create volume backup with description lenght == max
+
+        **Setup:**
+
+            #. Create volume
+
+        **Steps:**
+
+            #. Create backup with long (255 symbols) description
+            #. Check that backup is created
+            #. Check that backup description is correct
+
+        **Teardown:**
+
+            #. Delete backup
+            #. Delete volume
+        """
+        backup_name = next(generate_ids('backup'))
+        backup_description = next(generate_ids('backup', length=255))
+        create_backups([backup_name], description=backup_description)
