@@ -255,3 +255,36 @@ class GlanceStepsV2(BaseGlanceSteps):
                 return project.id not in member_ids
 
         wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_image_container_and_disk_format(self,
+                                              image_name,
+                                              image_container,
+                                              disk_format):
+        """Check image container format and disk format.
+
+        Args:
+            image (object): image binded/unbinded with project
+            image_container (str): type of image container
+            disk_format (str): type of disk format
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        image = self.get_image(name=image_name)
+        assert_that(image['container_format'], equal_to(image_container))
+        assert_that(image['disk_format'], equal_to(disk_format))
+
+    @steps_checker.step
+    def check_that_image_id_is_changed(self, image_name, image_id):
+        """Step to check that after updating heat stack image_id was changed
+
+        Args:
+            image_id (str): befor updating
+            image_name (str): image name that was replaced
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        image_id_changed = self.get_image(name=image_name)['id']
+        assert_that(image_id_changed, is_not(image_id))
