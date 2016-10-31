@@ -43,6 +43,7 @@ class VolumeSteps(base.BaseSteps):
                       volume_type=None,
                       description=None,
                       snapshot_id=None,
+                      source_volid=None,
                       check=True):
         """Step to create volume.
 
@@ -53,6 +54,7 @@ class VolumeSteps(base.BaseSteps):
             volume_type (str): type of volume
             description (str): description
             snapshot_id (str): ID of the snapshot
+            source_volid (str): ID of source volume to clone from
             check (bool): flag whether to check step or not
 
         Returns:
@@ -67,6 +69,7 @@ class VolumeSteps(base.BaseSteps):
                                              imageRef=image_id,
                                              volume_type=volume_type,
                                              description=description,
+                                             source_volid=source_volid,
                                              snapshot_id=snapshot_id)
         if check:
             self.check_volume_status(volume,
@@ -82,6 +85,8 @@ class VolumeSteps(base.BaseSteps):
                 assert_that(volume.volume_type, equal_to(volume_type))
             if description:
                 assert_that(volume.description, equal_to(description))
+            if source_volid:
+                assert_that(volume.source_volid, equal_to(source_volid))
 
         return volume
 
@@ -129,6 +134,7 @@ class VolumeSteps(base.BaseSteps):
                        volume_type=None,
                        description=None,
                        snapshot_id=None,
+                       source_volid=None,
                        check=True):
         """Step to create volumes.
 
@@ -139,6 +145,7 @@ class VolumeSteps(base.BaseSteps):
             volume_type (str): type of volume
             description (str): description
             snapshot_id (str): ID of the snapshot
+            source_volid (str): ID of source volume to clone from
             check (bool): flag whether to check step or not
 
         Returns:
@@ -152,6 +159,7 @@ class VolumeSteps(base.BaseSteps):
                                         volume_type=volume_type,
                                         description=description,
                                         snapshot_id=snapshot_id,
+                                        source_volid=source_volid,
                                         check=False)
             volumes.append(volume)
 
