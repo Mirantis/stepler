@@ -539,7 +539,7 @@ class VolumesSteps(BaseSteps):
             row.wait_for_status(status='Available')
             if description is not None:
                 assert_that(row.cell('description').value,
-                            equal_to(description))
+                            starts_with(description[:30]))
 
     @step
     @pom.timeit('Step')
