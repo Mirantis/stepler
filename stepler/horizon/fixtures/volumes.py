@@ -81,8 +81,9 @@ def create_volume(volumes_steps):
     """
     volumes = []
 
-    def _create_volume(volume_name, volume_type=''):
-        volumes_steps.create_volume(volume_name, volume_type=volume_type)
+    def _create_volume(volume_name, volume_type='', *args, **kwargs):
+        volumes_steps.create_volume(volume_name, volume_type=volume_type,
+                                    *args, **kwargs)
         volume = AttrDict(name=volume_name)
         volumes.append(volume)
         return volume

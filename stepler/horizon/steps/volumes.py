@@ -18,7 +18,7 @@ Volumes steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, equal_to, starts_with  # noqa
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
@@ -42,8 +42,8 @@ class VolumesSteps(BaseSteps):
 
     @step
     @pom.timeit('Step')
-    def create_volume(self, volume_name, source_type='Image', volume_type='',
-                      check=True):
+    def create_volume(self, volume_name, source_type='Image', volume_type=None,
+                      description=None, check=True):
         """Step to create volume."""
         tab_volumes = self._tab_volumes()
         tab_volumes.button_create_volume.click()
@@ -60,12 +60,18 @@ class VolumesSteps(BaseSteps):
                     volume_type = form.combobox_volume_type.values[-1]
                 form.combobox_volume_type.value = volume_type
 
+            if description is not None:
+                form.field_description.value = description
+
             form.submit()
 
         if check:
             self.close_notification('info')
-            tab_volumes.table_volumes.row(
-                name=volume_name).wait_for_status('Available')
+            row = tab_volumes.table_volumes.row(name=volume_name)
+            row.wait_for_status('Available')
+            if description is not None:
+                assert_that(row.cell('description').value,
+                            starts_with(description[:30]))
 
     @step
     @pom.timeit('Step')
