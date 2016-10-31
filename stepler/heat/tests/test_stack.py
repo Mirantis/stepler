@@ -19,7 +19,7 @@ Heat stack tests
 #    under the License.
 import pytest
 
-from hamcrest import assert_that, is_not, empty  # noqa
+from hamcrest import assert_that, is_not, empty, equal_to  # noqa
 
 from stepler.third_party import utils
 
@@ -310,10 +310,11 @@ def test_create_stack_with_docker(
 
 
 @pytest.mark.idempotent_id('cff710ec-1df2-4fe3-990f-4c4684b89550')
-def test_stack_update(create_stack,
-                      read_heat_template,
-                      stack_steps,
-                      heat_resource_steps):
+def test_stack_update_parameter_replace(create_stack,
+                                        read_heat_template,
+                                        stack_steps,
+                                        heat_resource_steps,
+                                        glance_steps_v2):
     """**Scenario:** Update stack with changed template.
 
     **Steps:**
@@ -321,8 +322,14 @@ def test_stack_update(create_stack,
     #. Read template from file
     #. Create stack with template
     #. Get physical_resource_id
+    #. Get image_id
+    #. Check that image container_format is bare
+    #. Check that image disk_format is qcow2
     #. Update stack
+    #. Check that image container_format is ami
+    #. Check that image disk_format is ami
     #. Check that physical_resource_id was changed
+    #. Check that image_id was changed
 
     **Teardown:**
 
@@ -330,15 +337,32 @@ def test_stack_update(create_stack,
     """
     template = read_heat_template('cirros_image_tmpl')
     template_updated = read_heat_template('cirros_image_updated_tmpl')
-
     stack_name = next(utils.generate_ids('stack'))
     stack = create_stack(stack_name, template)
 
     resource_name = 'cirros_image'
+    image_name = 'stepler-cirros-0.3.3-x86_64'
+
+    image = glance_steps_v2.get_image(name=image_name)
+
     physical_resource_id = heat_resource_steps.get_resource(
         stack, resource_name).physical_resource_id
+    image_id = image['id']
+
+    assert_that(image['container_format'], equal_to('bare'))
+    assert_that(image['disk_format'], equal_to('qcow2'))
+
     stack_steps.update_stack(stack, template_updated)
+
+    image_changed = glance_steps_v2.get_image(name=image_name)
+
     physical_resource_id_changed = heat_resource_steps.get_resource(
         stack, resource_name).physical_resource_id
+    image_id_changed = image_changed['id']
+
+    assert_that(image_changed['container_format'], equal_to('ami'))
+    assert_that(image_changed['disk_format'], equal_to('ami'))
+
     assert_that(physical_resource_id_changed,
                 is_not(physical_resource_id))
+    assert_that(image_id_changed, is_not(image_id))
