@@ -32,20 +32,41 @@ class TestAnyOne(object):
 
         **Setup:**
 
-            #. Create volume
+        #. Create volume
 
         **Steps:**
 
-            #. Create snapshot
-            #. Check that snapshot created
+        #. Create snapshot
+        #. Check that snapshot created
 
         **Teardown:**
 
-            #. Delete snapshot
-            #. Delete volume
+        #. Delete snapshot
+        #. Delete volume
         """
         snapshot_name = next(generate_ids('snapshot'))
         create_snapshot(snapshot_name)
+
+    @pytest.mark.idempotent_id('51654e7a-bda4-4a3b-a75a-8788cbff3eae')
+    def test_create_volume_snapshot_with_long_name(self, volume,
+                                                   volumes_steps):
+        """**Scenario:** Create volume snapshot with name lenght > 255.S
+
+        **Setup:**
+
+        #. Create volume
+
+        **Steps:**
+
+        #. Check that snapshot's name on snapshot's creation form can
+            contain max 255 symbols
+
+        **Teardown:**
+
+        #. Delete volume
+        """
+        volumes_steps.check_snapshot_creation_form_name_field_max_length(
+            volume.name, 255)
 
     @pytest.mark.idempotent_id('b16ba9bf-7d09-462c-ae99-e1ec4653c40d')
     def test_edit_volume_snapshot(self, snapshot, volumes_steps):
