@@ -136,15 +136,16 @@ class VolumeSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
-    def delete_volumes(self, volumes, check=True):
+    def delete_volumes(self, volumes, cascade=False, check=True):
         """Step to delete volumes.
 
         Args:
             volumes (list): cinder volumes
+            cascade (bool); flag whether to delete dependent snapshot or not
             check (bool): flag whether to check step or not
         """
         for volume in volumes:
-            self._client.volumes.delete(volume.id)
+            self._client.volumes.delete(volume.id, cascade=cascade)
 
         if check:
             for volume in volumes:
@@ -481,3 +482,16 @@ class VolumeSteps(base.BaseSteps):
         if check:
             self.check_volume_type(volume, volume_type,
                                    timeout=config.VOLUME_RETYPE_TIMEOUT)
+
+    @steps_checker.step
+    def check_volume_deletion_without_cascading_failed(self, volume):
+        """Step to check negative volume deletion without cascade option.
+
+        Args:
+            volume (object): cinder volume
+
+        Raises:
+            BadRequest: if check was falsed
+        """
+        assert_that(calling(self.delete_volumes).with_args([volume]),
+                    raises(exceptions.BadRequest))
