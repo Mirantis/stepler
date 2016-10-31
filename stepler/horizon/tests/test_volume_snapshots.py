@@ -92,6 +92,30 @@ class TestAnyOne(object):
         snapshot_description = next(generate_ids('snapshot_description'))
         create_snapshot(snapshot_name, description=snapshot_description)
 
+    @pytest.mark.idempotent_id('a1750859-a173-4e1a-9acb-3ad40c6c486a')
+    def test_create_volume_snapshot_with_max_length_description(
+            self, create_snapshot):
+        """**Scenario:** Create volume snapshot with description lenght == max.
+
+        **Setup:**
+
+        #. Create volume
+
+        **Steps:**
+
+        #. Create snapshot with long (255 symbols) description
+        #. Check that snapshot is created
+        #. Check that snapshot description is correct
+
+        **Teardown:**
+
+        #. Delete snapshot
+        #. Delete volume
+        """
+        snapshot_name = next(generate_ids('snapshot'))
+        snapshot_description = next(generate_ids('description', length=255))
+        create_snapshot(snapshot_name, description=snapshot_description)
+
     @pytest.mark.idempotent_id('b16ba9bf-7d09-462c-ae99-e1ec4653c40d')
     def test_edit_volume_snapshot(self, snapshot, volumes_steps_ui):
         """Verify that user can edit volume snapshot."""
