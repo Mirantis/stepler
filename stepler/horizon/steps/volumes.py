@@ -706,3 +706,38 @@ class VolumesSteps(BaseSteps):
                     equal_to(True))
         assert_that(tab_backups.table_backups.link_prev.is_present,
                     equal_to(False))
+
+    @step
+    @pom.timeit('Step')
+    def check_snapshot_creation_form_name_field_max_length(self, volume_name,
+                                                           expected_length):
+        """Step to check max length of snapshot creation form name input.
+
+        Args:
+            volume_name (str): name of volume to open snapshot create form on
+                it
+            expected_length (int): expected max form field length
+
+        Raises:
+            AssertionError: if actual max length is not equal to
+            `expected_length`
+        """
+        tab_volumes = self._tab_volumes()
+
+        with tab_volumes.table_volumes.row(
+                name=volume_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_create_snapshot.click()
+
+        with tab_volumes.form_create_snapshot as form:
+            field = form.field_name
+            max_length = len(field.value)
+            try:
+                while True:
+                    field.webelement.send_keys('a')
+                    if len(field.value) == max_length:
+                        break
+                    max_length += 1
+                assert_that(max_length, equal_to(expected_length))
+            finally:
+                form.cancel()
