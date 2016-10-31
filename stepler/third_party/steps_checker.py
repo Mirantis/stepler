@@ -58,6 +58,7 @@ PERMITTED_CALLS = [
     'embed',
     'format',
     'getattr',
+    'ljust',
 ]
 
 # register hamcrest matchers
