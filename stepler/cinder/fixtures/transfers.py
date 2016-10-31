@@ -19,25 +19,44 @@ Volume transfer fixtures
 
 import pytest
 
-from stepler.cinder import steps
+from stepler.cinder.steps import VolumeTransferSteps
 
 __all__ = [
     'transfer_steps',
     'create_volume_transfer',
+    'get_transfer_steps',
 ]
 
 
+@pytest.fixture(scope='session')
+def get_transfer_steps(get_cinder_client):
+    """Callable session fixture to get volume transfer steps.
+
+    Args:
+        get_cinder_client (function): function to get cinder client.
+
+    Returns:
+        function: function to get transfer steps.
+    """
+    def _get_transfer_steps(*args, **kwargs):
+        return VolumeTransferSteps(
+            get_cinder_client(*args, **kwargs).transfers)
+
+    return _get_transfer_steps
+
+
 @pytest.fixture
-def transfer_steps(cinder_client):
+def transfer_steps(get_transfer_steps):
     """Function fixture to get volume transfer steps.
 
     Args:
-        cinder_client (object): instantiated cinder client
+        get_transfer_steps (function): function to get transfer steps
 
     Returns:
-        stepler.cinder.steps.VolumeTransferSteps: instantiated transfer steps
+        VolumeTransferSteps: instantiated transfer steps.
     """
-    return steps.VolumeTransferSteps(cinder_client.transfers)
+    _transfer_steps = get_transfer_steps()
+    return _transfer_steps
 
 
 @pytest.yield_fixture

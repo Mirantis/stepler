@@ -37,6 +37,7 @@ def get_cinder_client(get_session):
     Returns:
         function: function to get cinder client
     """
+
     def _get_cinder_client(*args, **kwgs):
         return cinderclient.Client(
             version=config.CURRENT_CINDER_VERSION,
@@ -50,7 +51,7 @@ def cinder_client(get_cinder_client):
     """Function fixture to get cinder client.
 
     Args:
-        session (object): authenticated keystone session
+        get_cinder_client (function): function to get cinder client
 
     Returns:
         cinderclient.client.Client: instantiated cinder client
