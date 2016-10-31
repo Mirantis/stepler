@@ -51,6 +51,7 @@ __all__ = sorted([  # sort for documentation
     'get_user_steps',
     'user_steps',
     'user',
+    'new_user',
 
     'token_steps',
 ])

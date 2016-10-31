@@ -27,7 +27,8 @@ __all__ = [
     'create_user',
     'get_user_steps',
     'user_steps',
-    'user'
+    'user',
+    'new_user',
 ]
 
 
@@ -117,3 +118,32 @@ def user(create_user):
     user_name = next(utils.generate_ids('user'))
     password = next(utils.generate_ids('password'))
     return create_user(user_name, password)
+
+
+@pytest.yield_fixture
+def new_user(project_steps, user_steps, role_steps):
+    """Fixture to create new project with new '_member_' user.
+
+    Args:
+        project_steps (object): instantiated project steps
+        user_steps (object): instantiated user steps
+        role_steps (object): instantiated role steps
+
+    Yields:
+        dict: dict with username, password and project_name
+    """
+    project_name = next(utils.generate_ids('project'))
+    user_name = next(utils.generate_ids('user'))
+    password = next(utils.generate_ids('password'))
+
+    user_project = project_steps.create_project(project_name)
+    user = user_steps.create_user(user_name=user_name, password=password)
+    member_role = role_steps.get_role(name="_member_")
+    role_steps.grant_role(member_role, user, project=user_project)
+
+    yield {'username': user_name,
+           'password': password,
+           'project_name': project_name}
+
+    user_steps.delete_user(user)
+    project_steps.delete_project(user_project)

@@ -19,6 +19,7 @@ Volume tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
@@ -63,3 +64,37 @@ def test_create_volume_transfer(volume, create_volume_transfer, transfer_name):
         #. Delete cinder volume
     """
     create_volume_transfer(volume, transfer_name)
+
+
+@pytest.mark.idempotent_id('aafc52a5-4525-4158-a07f-eb944100fdc8')
+def test_accept_volume_transfer(volume, new_user,
+                                get_volume_steps, volume_steps,
+                                get_transfer_steps, transfer_steps):
+    """**Scenario:** Verify accept of volume transfer.
+
+    **Setup:**
+
+        #. Create cinder volume
+        #. Create new project and new user
+
+    **Steps:**
+
+        #. Create volume transfer
+        #. Accept volume transfer from another user/project
+        #. Check that volume is available under newly created project
+        #. Check that transfer is not available after accept
+
+    **Teardown:**
+
+        #. Delete cinder volume
+    """
+    transfer_name = next(utils.generate_ids('transfer'))
+
+    transfer = transfer_steps.create_volume_transfer(volume, transfer_name)
+    user_transfer_steps = get_transfer_steps(**new_user)
+    user_transfer_steps.accept_volume_transfer(transfer)
+
+    user_volume_steps = get_volume_steps(**new_user)
+    user_volume_steps.check_volume_presence(
+        volume, present=True, timeout=config.VOLUME_DELETE_TIMEOUT)
+    transfer_steps.check_volume_transfer_presence(transfer, must_present=False)
