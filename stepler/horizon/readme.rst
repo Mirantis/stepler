@@ -23,13 +23,13 @@ Preparation
 ==========
 How to run
 ==========
-``export DASHBOARD_URL=http://horizon/dashboard/`` - should explain to framework where horizon dashboard is located.
+``export OS_DASHBOARD_URL=http://horizon/dashboard/`` - should explain to framework where horizon dashboard is located.
 
-``py.test horizon_autotests -v`` - single-threaded mode to launch tests at display
+``py.test stepler/horizon -v`` - single-threaded mode to launch tests at display
 
-``VIRTUAL_DISPLAY=1 py.test horizon_autotests -v`` - single-threaded mode to launch tests in virtual frame buffer (headless mode)
+``VIRTUAL_DISPLAY=1 py.test stepler/horizon -v`` - single-threaded mode to launch tests in virtual frame buffer (headless mode)
 
-``VIRTUAL_DISPLAY=1 py.tests horizon_autotests -v -n 4`` - multi-processed mode to launch tests in virtual frame buffers (create 4 parallel processes to launch tests)
+``VIRTUAL_DISPLAY=1 py.tests stepler/horizon -v -n 4`` - multi-processed mode to launch tests in virtual frame buffers (create 4 parallel processes to launch tests)
 
 ============
 Test results
