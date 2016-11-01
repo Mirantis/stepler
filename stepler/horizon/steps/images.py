@@ -20,7 +20,6 @@ Images steps
 from hamcrest import assert_that, equal_to  # noqa
 from waiting import wait
 
-from stepler import config as main_config
 from stepler.horizon import config
 from stepler.horizon.utils import get_size
 from stepler.third_party import steps_checker
@@ -103,11 +102,11 @@ class ImagesSteps(BaseSteps):
             if big_image:
                 page_images.table_images.row(
                     name=image_name).wait_for_status(
-                    main_config.STATUS_ACTIVE,
+                    config.STATUS_ACTIVE,
                     timeout=config.LONG_EVENT_TIMEOUT)
             else:
                 page_images.table_images.row(
-                    name=image_name).wait_for_status(main_config.STATUS_ACTIVE)
+                    name=image_name).wait_for_status(config.STATUS_ACTIVE)
 
     @steps_checker.step
     def delete_image(self, image_name, check=True):
@@ -145,8 +144,17 @@ class ImagesSteps(BaseSteps):
                     name=image_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
-    def update_metadata(self, image_name, metadata, check=True):
-        """Step to update image metadata."""
+    def add_metadata(self, image_name, metadata, check=True):
+        """Step to add image metadata.
+
+        Args:
+            image_name (str): image name
+            metadata (dict): image metadata {name: value}
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if image status is not 'Active'
+        """
         page_images = self._page_images()
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -164,7 +172,36 @@ class ImagesSteps(BaseSteps):
 
         if check:
             page_images.table_images.row(
-                name=image_name, status='Active').wait_for_presence()
+                name=image_name).wait_for_status(config.STATUS_ACTIVE)
+
+    @steps_checker.step
+    def delete_metadata(self, image_name, metadata, check=True):
+        """Step to delete metadata.
+
+        Args:
+            image_name (str): image name
+            metadata (dict): image metadata {name: value}
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if image status is not 'Active'
+        """
+        page_images = self._page_images()
+        with page_images.table_images.row(
+                name=image_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_update_metadata.click()
+
+        with page_images.form_update_metadata as form:
+            for metadata_name in metadata:
+                form.existing_metadata_filter.value = metadata_name
+                form.button_delete_metadata.click()
+
+            form.submit()
+
+        if check:
+            page_images.table_images.row(
+                name=image_name).wait_for_status(config.STATUS_ACTIVE)
 
     @steps_checker.step
     def get_metadata(self, image_name):
@@ -187,9 +224,26 @@ class ImagesSteps(BaseSteps):
         return metadata
 
     @steps_checker.step
-    def update_image(self, image_name, new_image_name=None, protected=False,
+    def update_image(self, image_name, new_image_name=None,
+                     description=None, min_disk=None,
+                     min_ram=None, protected=False,
                      check=True):
-        """Step to update image."""
+        """Step to update image.
+
+        Args:
+            image_name (str): image name
+            new_image_name (str): new image name
+            description (str|None): image description
+            metadata (dict|None): image metadata {name: value} (max = 2 keys)
+            min_disk (int|None): minimal disk size
+            min_ram (int|None): minimal ram
+            protected (bool): flag whether to set protected or not
+            check (bool): flag whether to check step or not
+
+         Raises:
+            TimeoutExpired: if no 'Success' message or image status is not
+                'Active'
+        """
         page_images = self._page_images()
 
         with page_images.table_images.row(
@@ -202,6 +256,15 @@ class ImagesSteps(BaseSteps):
             if new_image_name:
                 form.field_name.value = new_image_name
 
+            if description:
+                form.field_description.value = description
+
+            if min_disk is not None:
+                form.field_min_disk.value = min_disk
+
+            if min_ram is not None:
+                form.field_min_ram.value = min_ram
+
             if protected:
                 form.checkbox_protected.select()
             else:
@@ -213,8 +276,7 @@ class ImagesSteps(BaseSteps):
             self.close_notification('success')
 
             page_images.table_images.row(
-                name=new_image_name or image_name,
-                status='Active').wait_for_presence()
+                name=image_name).wait_for_status(config.STATUS_ACTIVE)
 
     @steps_checker.step
     def view_image(self, image_name, check=True):
@@ -266,10 +328,8 @@ class ImagesSteps(BaseSteps):
 
             form.item_network.click()
             with form.tab_network as tab:
-                if not tab.table_allocated_networks.row(
-                        name=network_name).is_present:
-                    tab.table_available_networks.row(
-                        name=network_name).button_add.click()
+                tab.table_available_networks.row(
+                    name=network_name).button_add.click()
 
             form.submit()
 
@@ -379,3 +439,56 @@ class ImagesSteps(BaseSteps):
             page.button_public_images.click()
             assert_that(page.table_images.row(name=image_name).is_present,
                         equal_to(False))
+
+    @steps_checker.step
+    def check_image_info(self,
+                         image_name,
+                         expected_description=None,
+                         expected_metadata=None):
+        """Step to check image detailed info.
+
+        This step checks that values of description/metadata in detailed info
+        are correct. For 'None' values, these data must be missing.
+
+        Args:
+            image_name (str): image name
+            expected_description (str|None): expected image description
+            expected_metadata (dict|None): expected image metadata
+                {name: value} (max = 2 keys)
+
+        Raises:
+            AssertionError: if real and expected data are different
+        """
+        self._page_images().table_images.row(
+            name=image_name).link_image.click()
+
+        description = None
+        description_field = self.app.page_image.image_info_main.description
+        if description_field.is_present:
+            description = description_field.value
+        assert_that(description, equal_to(expected_description))
+
+        if expected_metadata:
+            # NOTE: max number of metadata is limited by max N in
+            # metadata_nameN (see app.pages.images.page_image.py)
+            ind = 1
+            for metadata_name, metadata_value in sorted(
+                    expected_metadata.items()):
+                # in Custom properties, metadata are ordered by name
+                m_name = getattr(self.app.page_image.image_info_custom,
+                                 "metadata_name{}".format(ind)).value
+                assert_that(m_name, equal_to(metadata_name))
+                m_value = getattr(self.app.page_image.image_info_custom,
+                                  "metadata_value{}".format(ind)).value
+                assert_that(m_value, equal_to(metadata_value))
+                ind += 1
+            if hasattr(self.app.page_image.image_info_custom,
+                       "metadata_name{}".format(ind)):
+                # check redundant metadata
+                is_next_element_present = getattr(
+                    self.app.page_image.image_info_custom,
+                    "metadata_name{}".format(ind)).is_present
+                assert_that(is_next_element_present, equal_to(False))
+        else:
+            m_elem = self.app.page_image.image_info_custom.metadata_name1
+            assert_that(m_elem.is_present, equal_to(False))
