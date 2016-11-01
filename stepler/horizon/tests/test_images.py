@@ -62,7 +62,7 @@ class TestAnyOne(object):
         metadata = {
             next(generate_ids('metadata')): next(generate_ids("value"))
             for _ in range(2)}
-        images_steps.update_metadata(image.name, metadata)
+        images_steps.add_metadata(image.name, metadata)
         image_metadata = images_steps.get_metadata(image.name)
         assert metadata == image_metadata
 
@@ -118,3 +118,62 @@ class TestAnyOne(object):
                                      network_name=config.INTERNAL_NETWORK_NAME)
         instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)
+
+
+    @pytest.mark.idempotent_id('db36570f-c87e-4629-a83b-80eed6cbcab3')
+    def test_edit_image_description(self, image, images_steps):
+        """**Scenario:** Check addition of image description.
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Click on image and check that description is missing
+        #. Edit image by adding description
+        #. Click on image and check description in detailed info
+
+        **Teardown:**
+
+        #. Delete image
+        """
+
+        images_steps.view_image(image.name, description=None)
+        image_description = next(generate_ids('description'))
+        images_steps.update_image(image.name,
+                                  new_image_description=image_description)
+        images_steps.view_image(image.name,
+                                description=image_description)
+
+    @pytest.mark.idempotent_id('e0aec971-00ea-41a4-9369-fc6ef3ea774d')
+    def test_add_delete_image_metadata(self, image, images_steps):
+        """**Scenario:** Check addition and deletion of image metadata
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Check that no metadata in Custom properties
+        #. Add metadata
+        #. Check that metadata appeared in Custom properties and values are
+           correct
+        #. Delete metadata
+        #. Check that metadata disappeared in Custom properties
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        images_steps.view_image(image.name, metadata=None)
+
+        metadata = {
+            next(generate_ids('metadata')): next(generate_ids("value"))
+            for _ in range(2)}
+        images_steps.add_metadata(image.name, metadata)
+        images_steps.view_image(image.name, metadata=metadata)
+
+        images_steps.delete_metadata(image.name, metadata)
+        images_steps.view_image(image.name, metadata=None)
