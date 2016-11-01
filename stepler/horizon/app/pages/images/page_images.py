@@ -61,6 +61,7 @@ class TableImages(_ui.Table):
     field_image_url=ui.TextField(By.NAME, 'image_url'),
     field_min_disk=ui.TextField(By.NAME, 'minimum_disk'),
     field_min_ram=ui.TextField(By.NAME, 'minimum_ram'),
+    field_description=ui.TextField(By.NAME, 'description'),
     field_name=ui.TextField(By.NAME, 'name'))
 class FormCreateImage(_ui.Form):
     """Form to create image."""
@@ -84,6 +85,9 @@ class ListMetadata(ui.List):
 @ui.register_ui(
     button_add_metadata=ui.Button(By.CSS_SELECTOR, '[ng-click*="addCustom"]'),
     field_metadata_name=ui.TextField(By.NAME, 'customItem'),
+    existing_metadata_filter=ui.TextField(
+        By.CSS_SELECTOR, '[ng-model="ctrl.filterText.existing"]'),
+    button_delete_metadata=ui.Button(By.CSS_SELECTOR, 'a.btn > span.fa-minus'),
     list_metadata=ListMetadata(By.CSS_SELECTOR, 'ul[ng-form$="metadataForm"]'))
 class FormUpdateMetadata(_ui.Form):
     """Form to update image metadata."""
@@ -93,8 +97,11 @@ class FormUpdateMetadata(_ui.Form):
 
 
 @ui.register_ui(
-    checkbox_protected=_ui.CheckBox(By.NAME, 'protected'),
-    field_name=ui.TextField(By.NAME, 'name'))
+    field_name=ui.TextField(By.NAME, 'name'),
+    field_description=ui.TextField(By.NAME, 'description'),
+    field_min_disk=ui.TextField(By.NAME, 'minimum_disk'),
+    field_min_ram=ui.TextField(By.NAME, 'minimum_ram'),
+    checkbox_protected=_ui.CheckBox(By.NAME, 'protected'))
 class FormUpdateImage(_ui.Form):
     """Form to update image."""
 
