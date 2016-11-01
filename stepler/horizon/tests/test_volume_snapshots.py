@@ -26,6 +26,27 @@ from stepler.horizon.utils import generate_ids
 class TestAnyOne(object):
     """Tests for any user."""
 
+    @pytest.mark.idempotent_id('cdb362e0-4447-4f89-9af2-5e6f0e80e859')
+    def test_create_volume_snapshot(self, volume, create_snapshot):
+        """**Scenario:** Create volume snapshot.
+
+        **Setup:**
+
+            #. Create volume
+
+        **Steps:**
+
+            #. Create snapshot
+            #. Check that snapshot created
+
+        **Teardown:**
+
+            #. Delete snapshot
+            #. Delete volume
+        """
+        snapshot_name = next(generate_ids('snapshot'))
+        create_snapshot(snapshot_name)
+
     @pytest.mark.idempotent_id('b16ba9bf-7d09-462c-ae99-e1ec4653c40d')
     def test_edit_volume_snapshot(self, snapshot, volumes_steps):
         """Verify that user can edit volume snapshot."""
