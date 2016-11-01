@@ -181,3 +181,51 @@ def test_create_volume_from_volume(volume, create_volume):
     volume_from_volume_name = next(
         utils.generate_ids(prefix='volume-from-volume'))
     create_volume(name=volume_from_volume_name, source_volid=volume.id)
+
+
+@pytest.mark.idempotent_id('fbcb9a58-9a4d-4864-88db-c08a14475994')
+def test_delete_volume_cascade(volume_steps, snapshot_steps):
+    """**Scenario:** Verify volume deletion with cascade option.
+
+    **Steps:**
+
+    #. Create volume
+    #. Create volume snapshot
+    #. Delete volume with cascade option
+    #. Check that snapshot is deleted too
+    """
+    volume_name = next(utils.generate_ids('volume'))
+    volumes = volume_steps.create_volumes([volume_name])
+    snapshot_name = next(utils.generate_ids('snapshot'))
+    snapshots = snapshot_steps.create_snapshots(volumes[0], [snapshot_name])
+    volume_steps.delete_volumes(volumes, cascade=True)
+    snapshot_steps.check_snapshots_presence(snapshots, must_present=False)
+
+
+@pytest.mark.idempotent_id('fbcb9a58-9a4d-4864-88db-c08a14475994')
+def test_negative_delete_volume_cascade(volume,
+                                        volume_snapshot,
+                                        volume_steps,
+                                        snapshot_steps):
+    """**Scenario:** Verify volume deletion without cascade option.
+
+    **Setup:**
+
+    #. Create volume
+    #. Create volume snapshot
+
+    **Steps:**
+
+    #. Try to delete volume without cascade option
+    #. Check that BadRequest exception raised
+    #. Check that volume is present
+    #. Check that snapshot is present
+
+    **Teardown:**
+
+    #. Delete snapshot
+    #. Delete volume
+    """
+    volume_steps.check_volume_deletion_without_cascading_failed(volume)
+    snapshot_steps.check_snapshots_presence([volume_snapshot],
+                                            must_present=True)
