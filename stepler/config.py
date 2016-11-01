@@ -93,6 +93,7 @@ STATUS_PAUSED = 'paused'
 STATUS_PAUSING = 'pausing'
 STATUS_RESCUE = 'rescue'
 STATUS_RESCUING = 'rescuing'
+STATUS_FAILED = 'FAILED'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
@@ -170,6 +171,7 @@ echo {}""".format(USERDATA_DONE_MARKER)
 SMALL_RECLAIM_INTERVAL = str(30)
 BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
 SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
+NOVA_INSTANCES_PATH = "/var/lib/nova/instances/"
 
 # Heat
 HEAT_VERSION = 1

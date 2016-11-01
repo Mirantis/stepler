@@ -925,10 +925,26 @@ class ServerSteps(base.BaseSteps):
 
     def _hard_delete_servers(self, servers, check):
         for server in servers:
-            server.force_delete()  # delete server really
+            server.delete()  # delete server really
 
         if check:
             for server in servers:
                 self.check_server_presence(
                     server, present=False,
                     timeout=config.SERVER_DELETE_TIMEOUT)
+
+    @steps_checker.step
+    def resize(self, server, flavor, check=True):
+        """Step to resize server.
+
+        Args:
+            server (object): nova instance
+            flavor (object): flavor instance
+            check (bool): flag whether check step or not
+        """
+        self._client.resize(server, flavor)
+
+        if check:
+            self.check_server_status(server, config.STATUS_VERIFY_RESIZE,
+                                     transit_statuses=(config.STATUS_RESIZE,),
+                                     timeout=config.VERIFY_RESIZE_TIMEOUT)
