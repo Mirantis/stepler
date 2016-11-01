@@ -55,15 +55,13 @@ class TableImages(_ui.Table):
 
 @ui.register_ui(
     checkbox_protected=_ui.CheckBox(By.NAME, 'protected'),
-    combobox_disk_format=_ui.ComboBox(
-        By.XPATH,
-        './/div[contains(@class, "themable-select") and '
-        'select[@name="disk_format"]]'),
+    combobox_disk_format=ui.ComboBox(By.NAME, 'disk_format'),
     combobox_source_type=ui.ComboBox(By.NAME, 'source_type'),
     field_image_file=ui.TextField(By.NAME, 'image_file'),
     field_image_url=ui.TextField(By.NAME, 'image_url'),
     field_min_disk=ui.TextField(By.NAME, 'minimum_disk'),
     field_min_ram=ui.TextField(By.NAME, 'minimum_ram'),
+    field_description=ui.TextField(By.NAME, 'description'),
     field_name=ui.TextField(By.NAME, 'name'))
 class FormCreateImage(_ui.Form):
     """Form to create image."""
@@ -97,7 +95,8 @@ class FormUpdateMetadata(_ui.Form):
 
 @ui.register_ui(
     checkbox_protected=_ui.CheckBox(By.NAME, 'protected'),
-    field_name=ui.TextField(By.NAME, 'name'))
+    field_name=ui.TextField(By.NAME, 'name'),
+    field_description = ui.TextField(By.NAME, 'description'))
 class FormUpdateImage(_ui.Form):
     """Form to update image."""
 

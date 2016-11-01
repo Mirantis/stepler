@@ -23,7 +23,9 @@ from selenium.webdriver.common.by import By
 from ..base import PageBase
 
 
-@ui.register_ui(label_name=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(1)'))
+@ui.register_ui(label_name=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(1)'),
+                description=ui.UI(
+                    By.XPATH, ".//dt[text()='Description']/following::dd"))
 class Info(ui.Block):
     """Image info table."""
 
