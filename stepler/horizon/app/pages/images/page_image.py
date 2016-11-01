@@ -23,14 +23,22 @@ from selenium.webdriver.common.by import By
 from ..base import PageBase
 
 
-@ui.register_ui(label_name=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(1)'))
+@ui.register_ui(label_name=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(1)'),
+                description=ui.UI(
+                    By.XPATH, './/dt[text()="Description"]/following::dd'),
+                metadata_name1=ui.UI(By.CSS_SELECTOR, 'dt:nth-of-type(1)'),
+                metadata_name2=ui.UI(By.CSS_SELECTOR, 'dt:nth-of-type(2)'),
+                metadata_value1=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(1)'),
+                metadata_value2=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(2)'))
 class Info(ui.Block):
     """Image info table."""
 
 
 @ui.register_ui(
-    info_image=Info(By.CSS_SELECTOR,
-                    'div.detail dl.dl-horizontal:nth-of-type(1)'))
+    image_info_main=Info(By.CSS_SELECTOR,
+                         'div.detail dl.dl-horizontal:nth-of-type(1)'),
+    image_info_custom=Info(By.CSS_SELECTOR,
+                           'div.detail dl.dl-horizontal:nth-of-type(3)'))
 class PageImage(PageBase):
     """Image page."""
 
