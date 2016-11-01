@@ -18,7 +18,7 @@ Backup steps
 # limitations under the License.
 
 from cinderclient import exceptions
-from hamcrest import equal_to
+from hamcrest import assert_that, calling, equal_to, raises  # noqa
 
 from stepler import base
 from stepler import config
@@ -36,6 +36,7 @@ class BackupSteps(base.BaseSteps):
     def create_backup(self,
                       volume,
                       name=None,
+                      container=None,
                       description=None,
                       snapshot_id=None,
                       check=True):
@@ -44,15 +45,22 @@ class BackupSteps(base.BaseSteps):
         Args:
             volume (object): cinder volume
             name (str): name of created backup
+            container (str): name of the backup service container
             description (str): description
             snapshot_id (str): id of snapshot created from volume
             check (bool): flag whether to check step or not
 
         Returns:
             object: volume backup
+
+        Raises:
+            TimeoutExpired: if backup is not available after timeout
+            AssertionError: if backup attributes are not the same as ones
+                entered during creation
         """
         backup = self._client.create(volume.id,
                                      name=name,
+                                     container=container,
                                      description=description,
                                      snapshot_id=snapshot_id)
 
@@ -60,6 +68,9 @@ class BackupSteps(base.BaseSteps):
             self.check_backup_status(backup,
                                      config.STATUS_AVAILABLE,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
+            assert_that(backup.name, equal_to(name))
+            assert_that(backup.description, equal_to(description))
+            assert_that(backup.container, equal_to(container))
 
         return backup
 
@@ -81,6 +92,27 @@ class BackupSteps(base.BaseSteps):
             return expect_that(backup.status.lower(), equal_to(status.lower()))
 
         waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_backup_not_created_with_long_container_name(self, volume,
+                                                          container):
+        """Step for negative test case of backup creation with too long
+         container name.
+
+        Args:
+            volume (obj): cinder volume
+            container (str): container name
+
+        Raises:
+            AssertionError: if no BadRequest occurs or exception message is
+            unexpected
+        """
+        exception_message = "Backup container has more than 255 characters"
+
+        assert_that(
+            calling(self.create_backup).with_args(
+                volume, container=container, check=False),
+            raises(exceptions.BadRequest, exception_message))
 
     @steps_checker.step
     def delete_backup(self, backup, check=True):
