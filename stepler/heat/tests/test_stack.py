@@ -24,6 +24,28 @@ from hamcrest import assert_that, is_not, empty  # noqa
 from stepler.third_party import utils
 
 
+def test_stack_output_list(create_stack,
+                           read_heat_template,
+                           stack_steps):
+    """**Scenario:** Check stack output list has correct output.
+
+    **Steps:**
+    #. Read template from file
+    #. Create stack with template
+    #. Get output list
+    #. Check that output list has correct output
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    template = read_heat_template('random_str')
+    stack_name = next(utils.generate_ids('stack'))
+    stack = create_stack(stack_name, template)
+    output_list = stack_steps.get_stack_output_list(stack)
+    stack_steps.check_output_list(output_list)
+
+
 @pytest.mark.idempotent_id('d23ef04a-6db0-4729-97ac-3a8302951f69')
 def test_create_stack_with_aws(
         network,

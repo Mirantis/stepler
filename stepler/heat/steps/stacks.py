@@ -191,3 +191,36 @@ class StackSteps(base.BaseSteps):
                                equal_to(status.lower()))
 
         waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_stack_output_list(self, stack, check=True):
+        """Step to get output list.
+
+        Args:
+            stack (obj): stack object
+            check (bool): flag whether check step or not
+
+        Returns:
+            list: stack output list
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        output_list = self._client.output_list(stack.id)
+
+        if check:
+            assert_that(output_list, is_not(empty()))
+
+        return output_list
+
+    @steps_checker.step
+    def check_output_list(self, output_list):
+        """Step to check stack attributes in format: output_key - description.
+        Args:
+            output_list (dict): stack output list
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        assert_that(output_list['outputs'][0].keys(),
+                    equal_to([u'output_key', u'description']))
