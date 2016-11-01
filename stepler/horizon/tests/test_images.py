@@ -63,7 +63,7 @@ class TestAnyOne(object):
         metadata = {
             next(generate_ids('metadata')): next(generate_ids("value"))
             for _ in range(2)}
-        images_steps.update_metadata(image.name, metadata)
+        images_steps.add_metadata(image.name, metadata)
         image_metadata = images_steps.get_metadata(image.name)
         assert metadata == image_metadata
 
@@ -119,6 +119,90 @@ class TestAnyOne(object):
                                      network_name=config.INTERNAL_NETWORK_NAME)
         instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)
+
+    @pytest.mark.idempotent_id('db36570f-c87e-4629-a83b-80eed6cbcab3')
+    def test_edit_image_description(self, image, images_steps):
+        """**Scenario:** Check addition of image description.
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Click on image and check that description is missing
+        #. Edit image by adding description
+        #. Click on image and check description in detailed info
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        images_steps.check_image_info(image.name, description=None)
+        image_description = next(generate_ids('description'))
+        images_steps.update_image(image.name, description=image_description)
+        images_steps.check_image_info(image.name,
+                                      description=image_description)
+
+    @pytest.mark.idempotent_id('c42d793b-efa9-46c4-b031-9f7bf7a49cd1')
+    def test_edit_image_disk_and_ram(self, image, images_steps,
+                                     instances_steps):
+        """**Scenario:** Check edition of minimum disk and RAM.
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Edit image and set Minimum Disk = 60Gb and Minimum RAM = 0
+        #. Try to launch instance
+        #. Check that all flavors with disk < 60Gb are unavailable
+        #. Edit image and set Minimum Disk = 0Gb and Minimum RAM = 4096Mb
+        #. Try to launch instance
+        #. Check that all flavors with ram < 4096Mb are unavailable
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        for min_disk, min_ram in [(60, 0), (0, 4096)]:
+            images_steps.update_image(image.name, min_disk=min_disk,
+                                      min_ram=min_ram)
+            images_steps.check_flavors_limited_in_launch_instance_form(
+                image.name, min_disk, min_ram)
+
+    @pytest.mark.idempotent_id('e0aec971-00ea-41a4-9369-fc6ef3ea774d')
+    def test_add_delete_image_metadata(self, image, images_steps):
+        """**Scenario:** Check addition and deletion of image metadata.
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Check that no metadata in Custom properties
+        #. Add metadata
+        #. Check that metadata appeared in Custom properties and values are
+           correct
+        #. Delete metadata
+        #. Check that metadata disappeared in Custom properties
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        images_steps.check_image_info(image.name, metadata=None)
+
+        metadata = {
+            next(generate_ids('metadata')): next(generate_ids("value"))
+            for _ in range(2)}
+        images_steps.add_metadata(image.name, metadata)
+        images_steps.check_image_info(image.name, metadata=metadata)
+
+        images_steps.delete_metadata(image.name, metadata)
+        images_steps.check_image_info(image.name, metadata=None)
 
 
 @pytest.mark.usefixtures('user_only')
