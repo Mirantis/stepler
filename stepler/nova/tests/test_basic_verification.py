@@ -17,6 +17,7 @@ Nova basic verification tests
 #    under the License.
 
 import pytest
+import waiting
 
 from stepler import config
 from stepler.third_party import utils
@@ -191,3 +192,61 @@ def test_remove_incorrect_fixed_ip_from_server(
     server_steps.detach_fixed_ip(server)
 
     server_steps.get_server_ssh(server, ip=nova_floating_ip.ip)
+
+
+@pytest.mark.idempotent_id('fc37666a-1438-4bcb-82e7-6cd782e9f8ac')
+def test_delete_instance_during_resizing(cirros_image,
+                                         network,
+                                         subnet,
+                                         create_flavor,
+                                         server_steps):
+    """**Scenario:** Verify that nova can delete instances in resize state.
+
+    **Note:**
+        This test verifies bug #1489775
+
+    **Setup:**
+
+    #. Upload cirros image
+    #. Create network
+    #. Create subnet
+
+    **Steps:**
+
+    #. Create 2 flavors
+    #. Boot server with smaller flavor
+    #. Resize server to bigger flavor
+    #. Delete server immediately after its state will be 'RESIZE'
+    #. Repeat last 3 steps some times
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete flavors
+    #. Delete subnet
+    #. Delete network
+    #. Delete cirros image
+    """
+    small_flavor = create_flavor(
+        next(utils.generate_ids('flavor-small')), ram=64, vcpus=1, disk=1)
+    big_flavor = create_flavor(
+        next(utils.generate_ids('flavor-big')), ram=128, vcpus=1, disk=2)
+
+    for server_name in utils.generate_ids('server', count=5):
+        server = server_steps.create_server(
+            server_name,
+            image=cirros_image,
+            networks=[network],
+            flavor=small_flavor)
+
+        server_steps.resize(server, big_flavor, check=False)
+        # Sometimes server reaches next to 'resize' state too fast.
+        # Such cases just pass
+        try:
+            server_steps.check_server_status(
+                server,
+                config.STATUS_RESIZE,
+                timeout=config.VERIFY_RESIZE_TIMEOUT)
+        except waiting.TimeoutExpired:
+            pass
+        server_steps.delete_server(server)
