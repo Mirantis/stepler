@@ -131,10 +131,19 @@ class ServerSteps(base.BaseSteps):
         return servers
 
     @steps_checker.step
-    def delete_servers(self, servers, soft=False, check=True):
-        """Step to delete servers."""
+    def delete_servers(self, servers, soft=False, check=True,
+                       check_status=False):
+        """Step to delete servers.
+
+        Args:
+            servers (obj): nova servers' list
+            soft (bool, optional): flag whetever to run soft or hard deleting
+            check (bool, optional): flag whether to check step or not
+            check_status (bool, optional): flag whether to check server status
+                after deleting in case of soft deleting
+        """
         if soft:
-            self._soft_delete_servers(servers, check)
+            self._soft_delete_servers(servers, check, check_status)
         else:
             self._hard_delete_servers(servers, check)
 
@@ -925,7 +934,7 @@ class ServerSteps(base.BaseSteps):
                 rescue_server, image, check=False),
             raises(nova_exceptions.Conflict, exception_message))
 
-    def _soft_delete_servers(self, servers, check):
+    def _soft_delete_servers(self, servers, check, check_status=False):
         # it doesn't delete server really, just hides server and marks it as
         # trash for nova garbage collection after reclaim timeout.
         for server in servers:
@@ -936,8 +945,9 @@ class ServerSteps(base.BaseSteps):
                 self.check_server_presence(
                     server, present=False, by_name=True,
                     timeout=config.SOFT_DELETED_TIMEOUT)
-                self.check_server_status(
-                    server, expected_statuses=[config.STATUS_SOFT_DELETED])
+                if check_status:
+                    self.check_server_status(
+                        server, expected_statuses=[config.STATUS_SOFT_DELETED])
 
     def _hard_delete_servers(self, servers, check):
         for server in servers:
@@ -948,3 +958,19 @@ class ServerSteps(base.BaseSteps):
                 self.check_server_presence(
                     server, present=False,
                     timeout=config.SERVER_DELETE_TIMEOUT)
+
+    @steps_checker.step
+    def resize(self, server, flavor, check=True):
+        """Step to resize server.
+
+        Args:
+            server (object): nova instance
+            flavor (object): flavor instance
+            check (bool): flag whether check step or not
+        """
+        self._client.resize(server, flavor)
+
+        if check:
+            self.check_server_status(server, config.STATUS_VERIFY_RESIZE,
+                                     transit_statuses=(config.STATUS_RESIZE,),
+                                     timeout=config.VERIFY_RESIZE_TIMEOUT)
