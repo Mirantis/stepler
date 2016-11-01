@@ -38,7 +38,8 @@ class ImagesSteps(BaseSteps):
         return self._open(self.app.page_images)
 
     @step
-    def create_image(self, image_name, image_url=CIRROS_URL, image_file=None,
+    def create_image(self, image_name, image_description=None,
+                     image_url=CIRROS_URL, image_file=None,
                      disk_format='QCOW2', min_disk=None, min_ram=None,
                      protected=False, check=True):
         """Step to create image."""
@@ -56,6 +57,9 @@ class ImagesSteps(BaseSteps):
                 form.combobox_source_type.value = 'Image Location'
                 form.field_image_url.value = image_url
 
+            if image_description:
+                form.field_description.value = image_description
+
             if min_disk:
                 form.field_min_disk.value = min_disk
 
@@ -71,7 +75,7 @@ class ImagesSteps(BaseSteps):
             form.submit()
 
         if check:
-            self.close_notification('info')
+            self.close_notification('success')
             page_images.table_images.row(
                 name=image_name).wait_for_status('Active')
 
@@ -111,8 +115,8 @@ class ImagesSteps(BaseSteps):
                     name=image_name).wait_for_absence(EVENT_TIMEOUT)
 
     @step
-    def update_metadata(self, image_name, metadata, check=True):
-        """Step to update image metadata."""
+    def add_metadata(self, image_name, metadata, check=True):
+        """Step to add image metadata."""
         page_images = self._page_images()
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -125,6 +129,26 @@ class ImagesSteps(BaseSteps):
                 form.button_add_metadata.click()
                 form.list_metadata.row(
                     metadata_name).field_metadata_value.value = metadata_value
+
+            form.submit()
+
+        if check:
+            page_images.table_images.row(
+                name=image_name, status='Active').wait_for_presence()
+
+    @step
+    def delete_metadata(self, image_name, metadata, check=True):
+        """Step to delete image metadata."""
+        page_images = self._page_images()
+        with page_images.table_images.row(
+                name=image_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_update_metadata.click()
+
+        with page_images.form_update_metadata as form:
+            for metadata_name, metadata_value in metadata.items():
+                form.existing_metadata_filter.value = metadata_name
+                form.button_delete_metadata.click()
 
             form.submit()
 
@@ -153,7 +177,8 @@ class ImagesSteps(BaseSteps):
         return metadata
 
     @step
-    def update_image(self, image_name, new_image_name=None, protected=False,
+    def update_image(self, image_name, new_image_name=None,
+                     new_image_description=None, protected=False,
                      check=True):
         """Step to update image."""
         page_images = self._page_images()
@@ -167,6 +192,9 @@ class ImagesSteps(BaseSteps):
 
             if new_image_name:
                 form.field_name.value = new_image_name
+
+            if new_image_description:
+                form.field_description.value = new_image_description
 
             if protected:
                 form.checkbox_protected.select()
@@ -183,14 +211,57 @@ class ImagesSteps(BaseSteps):
                 status='Active').wait_for_presence()
 
     @step
-    def view_image(self, image_name, check=True):
-        """Step to view image."""
+    def view_image(self, image_name, description=None, metadata=None,
+                   check=True):
+        """Step to view image and check image data.
+
+        Args:
+            image_name (str): image name
+            description (str): image description
+            metadata (dict): image metadata {name: value} (max = 2 values)
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if real and expected data are different
+        """
         self._page_images().table_images.row(
             name=image_name).link_image.click()
 
         if check:
-            assert_that(self.app.page_image.info_image.label_name.value,
+            assert_that(self.app.page_image.image_info_main.label_name.value,
                         equal_to(image_name))
+
+            if description:
+                assert_that(
+                    self.app.page_image.image_info_main.description.value,
+                    equal_to(description))
+            else:
+                d_elem = self.app.page_image.image_info_main.description
+                assert_that(not(d_elem.is_present))
+
+            if metadata:
+                # NOTE: max number of metadata is limited by max N in
+                # metadata_nameN (see app.pages.images.page_image.py)
+                ind = 1
+                for metadata_name, metadata_value in sorted(metadata.items()):
+                    # in Custom properties, metadata are ordered by name
+                    m_name = getattr(self.app.page_image.image_info_custom,
+                                     "metadata_name{}".format(ind)).value
+                    assert_that(m_name, equal_to(metadata_name))
+                    m_value = getattr(self.app.page_image.image_info_custom,
+                                      "metadata_value{}".format(ind)).value
+                    assert_that(m_value, equal_to(metadata_value))
+                    ind += 1
+                if hasattr(self.app.page_image.image_info_custom,
+                           "metadata_name{}".format(ind)):
+                    # check redundant metadata
+                    is_next_element_present = getattr(
+                        self.app.page_image.image_info_custom,
+                        "metadata_name{}".format(ind)).is_present
+                    assert_that(not(is_next_element_present))
+            else:
+                m_elem = self.app.page_image.image_info_custom.metadata_name1
+                assert_that(not(m_elem.is_present))
 
     @step
     def create_volume(self, image_name, volume_name, check=True):
