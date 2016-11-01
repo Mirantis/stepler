@@ -20,9 +20,11 @@ Cinder quota fixtures
 import pytest
 
 from stepler.cinder import steps
+from stepler import config
 
 __all__ = [
     'cinder_quota_steps',
+    'big_snapshot_quota',
 ]
 
 
@@ -37,3 +39,22 @@ def cinder_quota_steps(cinder_client):
         stepler.cinder.steps.CinderQuotaSteps: instantiated quota steps
     """
     return steps.CinderQuotaSteps(cinder_client.quotas)
+
+
+@pytest.yield_fixture
+def big_snapshot_quota(session, cinder_quota_steps, project_steps):
+    """Function fixture to increase cinder snapshots coutn quota up.
+
+    This fixture restore original quota value after test.
+
+    Args:
+        session (object): keystone session
+        cinder_quota_steps (obj): initialized cinder quota steps
+        project_steps (obj): initialized project quota steps
+    """
+    current_project = project_steps.get_current_project(session)
+    original_quota = cinder_quota_steps.get_snapshots_quota(current_project)
+    cinder_quota_steps.set_snapshots_quota(
+        current_project, config.CINDER_SNAPSHOTS_QUOTA_BIG_VALUE)
+    yield
+    cinder_quota_steps.set_snapshots_quota(current_project, original_quota)
