@@ -27,6 +27,7 @@ from ..instances.page_instances import FormLaunchInstance
 
 @ui.register_ui(
     field_name=ui.TextField(By.NAME, 'name'),
+    field_description=ui.TextField(By.NAME, 'description'),
     combobox_image_source=ui.ComboBox(By.NAME, 'image_source'),
     combobox_source_type=ui.ComboBox(By.NAME, 'volume_source_type'),
     combobox_volume_type=ui.ComboBox(By.NAME, 'type'))
@@ -75,6 +76,7 @@ class TableVolume(_ui.Table):
     """Volumes table."""
 
     columns = {'name': 2,
+               'description': 3,
                'size': 4,
                'status': 5,
                'type': 6,

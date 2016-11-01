@@ -88,6 +88,24 @@ class TestAnyOne(object):
         instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)
 
+    @pytest.mark.idempotent_id('cdb362e0-4447-4f89-9af2-5e6f0e80e859')
+    def test_create_volume_with_description(self, create_volume):
+        """**Scenario:** Create volume with description.
+
+        **Steps:**
+
+            #. Create volume with description
+            #. Check that volume created
+            #. Check that description is corect
+
+        **Teardown:**
+
+            #. Delete volume
+        """
+        volume_name = next(generate_ids('volume'))
+        volume_description = next(generate_ids('volume_description'))
+        create_volume(volume_name, description=volume_description)
+
 
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):
