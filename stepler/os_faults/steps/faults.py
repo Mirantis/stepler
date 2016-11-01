@@ -340,3 +340,20 @@ class OsFaultsSteps(base.BaseSteps):
                 result, only_contains(has_properties(status=config.STATUS_OK)))
 
         return result
+
+    @steps_checker.step
+    def check_no_nova_server_artifacts(self, server):
+        """Step to check that compute doesn't contain server's artifacts.
+
+        Args:
+            server (obj): nova server
+
+        Raises:
+            AssertionError: if compute contains server's artifacts
+        """
+        compute = self.get_nodes(
+            fqdns=[getattr(server, 'OS-EXT-SRV-ATTR:hypervisor_hostname')])
+        cmd = "ls {} | grep {}".format(config.NOVA_INSTANCES_PATH, server.id)
+        result = self.execute_cmd(compute, cmd, check=False)
+        assert_that(
+            result, only_contains(has_properties(status=config.STATUS_FAILED)))
