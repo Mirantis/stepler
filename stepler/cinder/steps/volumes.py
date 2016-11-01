@@ -322,6 +322,24 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.BadRequest, error_message))
 
     @steps_checker.step
+    def check_volume_not_created_with_size_more_than_limit(self, size):
+        """Step to check negative volume creation with size more than limit.
+
+        Args:
+            size (int): volume size
+
+        Raises:
+            AssertionError: if check was False after timeout
+        """
+        error_message = (
+            "VolumeSizeExceedsAvailableQuota: "
+            "Requested volume or snapshot exceeds allowed gigabytes quota.")
+        assert_that(
+            calling(self.create_volumes).with_args(
+                names=[None], size=size, check=False),
+            raises(exceptions.OverLimit, error_message))
+
+    @steps_checker.step
     def check_volume_extend_failed_size_more_than_limit(self, volume, size):
         """Step to check negative volume extend to size more than limit.
 

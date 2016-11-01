@@ -126,6 +126,47 @@ def test_create_volume_wrong_size(volume_steps, size):
     volume_steps.check_volume_not_created_with_incorrect_size(size=size)
 
 
+@pytest.mark.idempotent_id('331ef3fb-f048-4684-bf78-433923ab4a48')
+def test_create_volume_max_size(max_volume_size_quota, create_volume):
+    """**Scenario:** Verify creation of volume with max volume size.
+
+    **Setup:**
+    #. Set required max volume size quota
+
+    **Steps:**
+
+    #. Try to create volume with max volume size
+    #. Check that volume is available
+
+    **Teardown:**
+
+    #. Delete volume
+    #. Set max volume size quota to its initial value
+    """
+    create_volume(size=max_volume_size_quota)
+
+
+@pytest.mark.idempotent_id('ed2a92fc-356c-4ae5-835b-99a9ce4d8fe0')
+def test_create_volume_more_max_size(max_volume_size_quota, volume_steps):
+    """**Scenario:** Verify creation of volume with size more than max.
+
+    **Setup:**
+    #. Set required max volume size quota
+
+    **Steps:**
+
+    #. Create volume with bigger size than max volume size
+    #. Check that creation is failed
+    #. Check error message
+
+    **Teardown:**
+
+    #. Set max volume size quota to its initial value
+    """
+    volume_steps.check_volume_not_created_with_size_more_than_limit(
+        size=max_volume_size_quota + 1)
+
+
 @pytest.mark.idempotent_id('bcd12002-dfd3-44c9-b270-d844d61a009c')
 def test_negative_create_volume_name_long(volume_steps):
     """**Scenario:** Verify creation of volume with name length > 255.
