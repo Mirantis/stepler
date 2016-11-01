@@ -21,7 +21,7 @@ from hamcrest import (assert_that, is_not, empty, only_contains,
                       equal_to)  # noqa
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'GroupSteps'
@@ -31,7 +31,40 @@ __all__ = [
 class GroupSteps(BaseSteps):
     """Group steps."""
 
-    @step
+    @steps_checker.step
+    def create_group(self,
+                     name,
+                     domain=None,
+                     description=None,
+                     check=True,
+                     **kwargs):
+        """Step to create a group.
+
+        Args:
+
+            name (str): the name of the group
+            domain (str or class `keystoneclient.v3.domains.Domain`):
+                the domain of the group
+            description (str): a description of the group
+            kwargs: any other attribute provided will be passed to the server
+
+        Returns:
+            keystoneclient.v3.groups.Group: the created group returned
+            from server
+
+        Raises:
+            TimeoutExpired|AssertionError: if check was triggered to an error
+        """
+        group = self._client.create(name=name,
+                                    domain=domain,
+                                    description=description,
+                                    **kwargs)
+        if check:
+            self.get_group(name=group.name)
+
+        return group
+
+    @steps_checker.step
     def get_groups(self, domain='default', check=True):
         """Step to get groups.
 
@@ -55,7 +88,7 @@ class GroupSteps(BaseSteps):
 
         return groups
 
-    @step
+    @steps_checker.step
     def get_group(self, name, domain='default', check=True):
         """Step to find group.
 
