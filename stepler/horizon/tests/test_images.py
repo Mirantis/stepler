@@ -33,13 +33,13 @@ class TestAnyOne(object):
     def test_delete_images(self, images_count, create_images):
         """Verify that user can delete images as batch."""
         image_names = list(
-            generate_ids('image', count=images_count, length=20))
+            generate_ids(count=images_count, length=20))
         create_images(*image_names)
 
     @pytest.mark.idempotent_id('6c0cc571-857f-4846-a2b9-2a08c8ab3a14')
     def test_create_image_from_local_file(self, create_image):
         """Verify that user can create image from local file."""
-        image_name = next(generate_ids('image', length=20))
+        image_name = next(generate_ids(length=20))
         image_file = next(generate_files(postfix='.qcow2'))
         create_image(image_name, image_file=image_file)
 
@@ -52,7 +52,7 @@ class TestAnyOne(object):
     def test_images_pagination(self, images_steps, create_images,
                                update_settings):
         """Verify images pagination works right and back."""
-        image_names = sorted(list(generate_ids('image', count=2, length=20)))
+        image_names = sorted(list(generate_ids(count=2, length=20)))
         create_images(*image_names)
         update_settings(items_per_page=1)
         images_steps.check_images_pagination(image_names)
@@ -63,14 +63,14 @@ class TestAnyOne(object):
         metadata = {
             next(generate_ids('metadata')): next(generate_ids("value"))
             for _ in range(2)}
-        images_steps.update_metadata(image.name, metadata)
+        images_steps.add_metadata(image.name, metadata)
         image_metadata = images_steps.get_metadata(image.name)
         assert metadata == image_metadata
 
     @pytest.mark.idempotent_id('4016e9af-257b-4df2-8c63-5716f134e5bb')
     def test_remove_protected_image(self, create_image, images_steps):
         """Verify that user can't delete protected image."""
-        image_name = next(generate_ids('image', length=20))
+        image_name = next(generate_ids(length=20))
         create_image(image_name, protected=True)
         images_steps.delete_images([image_name], check=False)
         images_steps.close_notification('error')
@@ -88,7 +88,7 @@ class TestAnyOne(object):
     def test_create_volume_from_image(self, image, images_steps,
                                       volumes_steps_ui):
         """Verify that user can create volume from image."""
-        volume_name = next(generate_ids('volume'))
+        volume_name = next(generate_ids())
         images_steps.create_volume(image.name, volume_name)
         volumes_steps_ui.check_volume_present(volume_name, timeout=90)
         volumes_steps_ui.delete_volume(volume_name)
@@ -99,7 +99,7 @@ class TestAnyOne(object):
         ram_size = 1024
         disk_size = 4
 
-        image_name = next(generate_ids('image', length=20))
+        image_name = next(generate_ids(length=20))
         create_image(image_name, min_disk=disk_size, min_ram=ram_size)
         images_steps.check_flavors_limited_in_launch_instance_form(image_name,
                                                                    disk_size,
@@ -114,11 +114,95 @@ class TestAnyOne(object):
     def test_launch_instance_from_image(self, image, images_steps,
                                         instances_steps):
         """Verify that user can launch instance from image."""
-        instance_name = next(generate_ids('instance'))
+        instance_name = next(generate_ids())
         images_steps.launch_instance(image.name, instance_name,
                                      network_name=config.INTERNAL_NETWORK_NAME)
         instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)
+
+    @pytest.mark.idempotent_id('db36570f-c87e-4629-a83b-80eed6cbcab3')
+    def test_edit_image_description(self, image, images_steps):
+        """**Scenario:** Check addition of image description.
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Click on image and check that description is missing
+        #. Edit image by adding description
+        #. Click on image and check description in detailed info
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        images_steps.check_image_info(image.name, expected_description=None)
+        image_description = next(generate_ids())
+        images_steps.update_image(image.name, description=image_description)
+        images_steps.check_image_info(image.name,
+                                      expected_description=image_description)
+
+    @pytest.mark.idempotent_id('c42d793b-efa9-46c4-b031-9f7bf7a49cd1')
+    def test_edit_image_disk_and_ram(self, image, images_steps,
+                                     instances_steps):
+        """**Scenario:** Check edition of minimum disk and RAM.
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Edit image and set Minimum Disk = 60Gb and Minimum RAM = 0
+        #. Try to launch instance
+        #. Check that all flavors with disk < 60Gb are unavailable
+        #. Edit image and set Minimum Disk = 0Gb and Minimum RAM = 4096Mb
+        #. Try to launch instance
+        #. Check that all flavors with ram < 4096Mb are unavailable
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        for min_disk, min_ram in [(60, 0), (0, 4096)]:
+            images_steps.update_image(image.name, min_disk=min_disk,
+                                      min_ram=min_ram)
+            images_steps.check_flavors_limited_in_launch_instance_form(
+                image.name, min_disk, min_ram)
+
+    @pytest.mark.idempotent_id('e0aec971-00ea-41a4-9369-fc6ef3ea774d')
+    def test_add_delete_image_metadata(self, image, images_steps):
+        """**Scenario:** Check addition and deletion of image metadata.
+
+        **Setup:**
+
+        #. Create image
+
+        **Steps:**
+
+        #. Check that no metadata in Custom properties
+        #. Add metadata
+        #. Check that metadata appeared in Custom properties and values are
+           correct
+        #. Delete metadata
+        #. Check that metadata disappeared in Custom properties
+
+        **Teardown:**
+
+        #. Delete image
+        """
+        images_steps.check_image_info(image.name, expected_metadata=None)
+
+        metadata = {
+            next(generate_ids('metadata')): next(generate_ids("value"))
+            for _ in range(2)}
+        images_steps.add_metadata(image.name, metadata)
+        images_steps.check_image_info(image.name, expected_metadata=metadata)
+
+        images_steps.delete_metadata(image.name, metadata)
+        images_steps.check_image_info(image.name, expected_metadata=None)
 
 
 @pytest.mark.usefixtures('user_only')
@@ -165,7 +249,7 @@ class TestUserOnly(object):
 
         #. Delete image
         """
-        image_name = next(utils.generate_ids('image', length=20))
+        image_name = next(utils.generate_ids(length=20))
         with utils.generate_file_context(
                 postfix='.qcow2', size=config.BIG_FILE_SIZE) as file_path:
             create_image(image_name, image_file=file_path, big_image=True)
