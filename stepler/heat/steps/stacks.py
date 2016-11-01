@@ -109,7 +109,7 @@ class StackSteps(base.BaseSteps):
         Args:
             stack (obj): stack to delete
             check (bool): flag whether to check step or not
-        Rasies:
+        Raises:
             Time
         """
         stack.delete()
