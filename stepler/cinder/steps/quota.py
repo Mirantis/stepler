@@ -42,10 +42,27 @@ class CinderQuotaSteps(base.BaseSteps):
         Raises:
             AssertionError: if check was falsed
         """
-        quota = self._client.defaults(project.id).gigabytes
+        quota = self._client.get(project.id).gigabytes
         if check:
             assert_that(quota, greater_than(0))
         return quota
+
+    @steps_checker.step
+    def set_volume_size_quota(self, project, value, check=True):
+        """Step to set quota for volume size.
+
+        Args:
+            project (obj): project object
+            value (int): volume size quota value
+            check (bool|True): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check was False
+        """
+        self._client.update(project.id, gigabytes=value)
+        if check:
+            new_quota = self.get_volume_size_quota(project)
+            assert_that(value, equal_to(new_quota))
 
     @steps_checker.step
     def get_snapshots_quota(self, project, check=True):
