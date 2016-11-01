@@ -80,6 +80,7 @@ __all__ = sorted([  # sort for documentation
     'ubuntu_image',
     'ubuntu_xenial_image',
 
+    'create_group',
     'create_domain',
     'domain_steps',
     'domain',
