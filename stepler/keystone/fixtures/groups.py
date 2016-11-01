@@ -20,9 +20,12 @@ Group fixtures
 import pytest
 
 from stepler.keystone import steps
+from stepler.third_party.utils import generate_ids
 
 __all__ = [
-    'group_steps'
+    'group_steps',
+    'create_group',
+    'group',
 ]
 
 
@@ -37,3 +40,44 @@ def group_steps(keystone_client):
         stepler.keystone.steps.GroupSteps: instantiated group steps
     """
     return steps.GroupSteps(keystone_client.groups)
+
+
+@pytest.yield_fixture
+def create_group(group_steps):
+    """Callable function fixture to create single keystone group with options.
+
+    Can be called several times during a test.
+    After the test it destroys all created groups.
+
+    Args:
+        group_steps (object): instantiated keystone steps
+
+    Returns:
+        function: function to create single keystone group with options
+    """
+    groups = []
+
+    def _create_group(name, **kwargs):
+        return group_steps.create_group(name, **kwargs)
+
+    yield _create_group
+
+    for group in groups:
+        group_steps.delete_group(group)
+
+
+@pytest.fixture
+def group(create_group):
+    """Callable function fixture to create single keystone group.
+
+    Can be called several times during a test.
+    After the test it destroys all created nodes.
+
+    Args:
+        create_group (function): function to create group with options
+
+    Returns:
+        function: function to create single group with options
+    """
+    group_name = next(generate_ids('group'))
+    return create_group(group_name)
