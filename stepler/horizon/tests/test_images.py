@@ -83,6 +83,34 @@ class TestAnyOne(object):
         with image.put(name=new_image_name):
             images_steps.update_image(image.name, new_image_name)
 
+    @pytest.mark.idempotent_id('db36570f-c87e-4629-a83b-80eed6cbcab3')
+    def test_edit_image_description(self, create_image, images_steps):
+        """**Scenario:** Check addition of image description.
+
+        **Steps:**
+
+            #. Create file
+            #. Create image from this file
+            #. Check that new image appears in the list
+            #. Click on image and check its detailed info
+            #. Edit image by adding description
+            #. Click on image and check description in detailed info
+
+        **Teardown:**
+
+            #. Delete image
+        """
+
+        image_name = next(generate_ids('image', length=20))
+        image_file = next(generate_files(postfix='.qcow2'))
+        create_image(image_name, image_file)
+        images_steps.view_image(image_name)
+        image_description = next(generate_ids('description'))
+        images_steps.update_image(image_name,
+                                  new_image_description=image_description)
+        images_steps.view_image(image_name,
+                                description=image_description)
+
     @pytest.mark.idempotent_id('619298ae-f9f5-4afa-a50b-c3f5faa38c81')
     def test_create_volume_from_image(self, image, images_steps,
                                       volumes_steps):

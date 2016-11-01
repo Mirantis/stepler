@@ -75,9 +75,10 @@ class BaseSteps(object):
         """
         self.app.page_base.modal.wait_for_absence()
         with self.app.page_base.notification(level) as popup:
-            popup.button_close.click()
-            if check:
-                popup.wait_for_absence()
+            if popup.is_present:
+                popup.button_close.click()
+                if check:
+                    popup.wait_for_absence()
 
     @step
     def refresh_page(self, check=True):

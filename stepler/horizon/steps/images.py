@@ -38,7 +38,8 @@ class ImagesSteps(BaseSteps):
         return self._open(self.app.page_images)
 
     @step
-    def create_image(self, image_name, image_url=CIRROS_URL, image_file=None,
+    def create_image(self, image_name, image_description=None,
+                     image_url=CIRROS_URL, image_file=None,
                      disk_format='QCOW2', min_disk=None, min_ram=None,
                      protected=False, check=True):
         """Step to create image."""
@@ -47,6 +48,8 @@ class ImagesSteps(BaseSteps):
 
         with page_images.form_create_image as form:
             form.field_name.value = image_name
+
+            form.field_description.value = image_description or ''
 
             if image_file:
                 form.combobox_source_type.value = 'Image File'
@@ -153,7 +156,8 @@ class ImagesSteps(BaseSteps):
         return metadata
 
     @step
-    def update_image(self, image_name, new_image_name=None, protected=False,
+    def update_image(self, image_name, new_image_name=None,
+                     new_image_description=None, protected=False,
                      check=True):
         """Step to update image."""
         page_images = self._page_images()
@@ -167,6 +171,9 @@ class ImagesSteps(BaseSteps):
 
             if new_image_name:
                 form.field_name.value = new_image_name
+
+            if new_image_description:
+                form.field_description.value = new_image_description
 
             if protected:
                 form.checkbox_protected.select()
@@ -183,7 +190,7 @@ class ImagesSteps(BaseSteps):
                 status='Active').wait_for_presence()
 
     @step
-    def view_image(self, image_name, check=True):
+    def view_image(self, image_name, description=None, check=True):
         """Step to view image."""
         self._page_images().table_images.row(
             name=image_name).link_image.click()
@@ -191,6 +198,9 @@ class ImagesSteps(BaseSteps):
         if check:
             assert_that(self.app.page_image.info_image.label_name.value,
                         equal_to(image_name))
+            if description:
+                assert_that(self.app.page_image.info_image.description.value,
+                            equal_to(description))
 
     @step
     def create_volume(self, image_name, volume_name, check=True):
