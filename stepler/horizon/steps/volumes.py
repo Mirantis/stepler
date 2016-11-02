@@ -18,7 +18,7 @@ Volumes steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to, starts_with, has_length  # noqa H301
+from hamcrest import assert_that, equal_to, starts_with, has_length  # noqa
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
@@ -736,3 +736,30 @@ class VolumesSteps(BaseSteps):
             backup_name = form.field_name.value
             form.cancel()
         assert_that(backup_name, has_length(expected_length))
+
+    @step
+    def check_snapshot_creation_form_name_field_max_length(self, volume_name,
+                                                           expected_length):
+        """Step to check max length of snapshot creation form name input.
+
+        Args:
+            volume_name (str): name of volume to open snapshot create form on
+                it
+            expected_length (int): expected max form field length
+
+        Raises:
+            AssertionError: if actual max length is not equal to
+                `expected_length`
+        """
+        tab_volumes = self._tab_volumes()
+
+        with tab_volumes.table_volumes.row(
+                name=volume_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_create_snapshot.click()
+
+        with tab_volumes.form_create_snapshot as form:
+            form.field_name.value = 'a' * (expected_length + 1)
+            snapshot_name = form.field_name.value
+            form.cancel()
+        assert_that(snapshot_name, has_length(expected_length))
