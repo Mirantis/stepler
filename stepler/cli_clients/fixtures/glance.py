@@ -1,7 +1,7 @@
 """
-----------------
-CLI client steps
-----------------
+------------------------
+Glance CLI client fixtures
+------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,23 @@ CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .cinder import *  # noqa
-from .glance import *  # noqa
-from .heat import *  # noqa
-from .nova import *  # noqa
-from .openstack import *  # noqa
+import pytest
+
+from stepler.cli_clients import steps
 
 __all__ = [
-    'CliCinderSteps',
-    'CliGlanceSteps',
-    'CliHeatSteps',
-    'CliNovaSteps',
-    'CliOpenstackSteps',
+    'cli_glance_steps',
 ]
+
+
+@pytest.fixture
+def cli_glance_steps(remote_executor):
+    """Function fixture to glance CLI steps.
+
+    Args:
+        remote_executor (callable): function to execute command on remote node
+
+    Returns:
+        CliGlanceSteps: instantiated glance CLI steps.
+    """
+    return steps.CLiGlanceSteps(remote_executor)
