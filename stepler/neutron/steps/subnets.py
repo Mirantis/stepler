@@ -72,7 +72,7 @@ class SubnetSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():

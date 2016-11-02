@@ -42,7 +42,7 @@ class VolumeTypeSteps(base.BaseSteps):
             list: volume types list
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         volume_types = self._client.list()
 
@@ -65,7 +65,7 @@ class VolumeTypeSteps(base.BaseSteps):
             object: cinder volume type
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         volume_type = self._client.create(name=name,
                                           description=description,
@@ -85,7 +85,7 @@ class VolumeTypeSteps(base.BaseSteps):
             check (bool|true): flag whether to check step or not
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         self._client.delete(volume_type.id)
 
@@ -104,7 +104,7 @@ class VolumeTypeSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():

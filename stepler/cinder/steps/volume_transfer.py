@@ -43,7 +43,7 @@ class VolumeTransferSteps(base.BaseSteps):
             list: volume transfers list
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         transfers = self._client.list()
 
@@ -64,7 +64,7 @@ class VolumeTransferSteps(base.BaseSteps):
             object: cinder volume transfer
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         transfer = self._client.create(volume.id, name=transfer_name)
 
@@ -85,7 +85,7 @@ class VolumeTransferSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():
@@ -107,7 +107,7 @@ class VolumeTransferSteps(base.BaseSteps):
             check (bool|true): flag whether to check step or not
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         self._client.delete(transfer.id)
 
@@ -125,7 +125,7 @@ class VolumeTransferSteps(base.BaseSteps):
             check (bool|true): flag whether to check step or not
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         self._client.accept(transfer.id, transfer.auth_key)
 

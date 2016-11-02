@@ -76,7 +76,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():
@@ -128,7 +128,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():
@@ -164,7 +164,7 @@ class StackSteps(base.BaseSteps):
             check (bool): flag whether check step or not
 
         Raises:
-            TimeoutExpired: if check was falsed
+            TimeoutExpired: if check was failed
         """
         self._client.update(stack_id=stack.id, template=template)
 
@@ -183,7 +183,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         def predicate():
             stack.get()

@@ -202,7 +202,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         def predicate():
             try:
@@ -223,7 +223,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         def predicate():
             image.update(self._client.images.get(image.id))
@@ -243,7 +243,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         def predicate():
             members = self._client.image_members.list(image.id)
@@ -269,7 +269,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             disk_format (str): type of disk format
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         image = self.get_image(name=image_name)
         assert_that(image['container_format'], equal_to(image_container))
@@ -284,7 +284,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             image_name (str): image name that was replaced
 
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check was failed
         """
         image_id_changed = self.get_image(name=image_name)['id']
         assert_that(image_id_changed, is_not(image_id))
