@@ -95,17 +95,37 @@ class TestAnyOne(object):
 
         **Steps:**
 
-            #. Create volume with description
-            #. Check that volume created
-            #. Check that description is corect
+        #. Create volume with description
+        #. Check that volume created
+        #. Check that description is correct
 
         **Teardown:**
 
-            #. Delete volume
+        #. Delete volume
         """
         volume_name = next(generate_ids('volume'))
         volume_description = next(generate_ids('volume_description'))
         create_volume(volume_name, description=volume_description)
+
+    @pytest.mark.idempotent_id('4e019917-e519-4fbd-956d-5b5df83a5de1')
+    def test_create_bigger_volume_from_volume(self, volume, create_volume):
+        """**Scenario:** Create bigger volume from another volume.
+
+        **Steps:**
+
+        #. Create volume with 1GB size
+        #. Create volume from created volume with 2GB size
+        #. Check that volume is created
+
+        **Teardown:**
+
+        #. Delete volumes
+        """
+        volume_name = next(generate_ids('volume'))
+        create_volume(volume_name, source_type='Volume',
+                      source_name=volume.name,
+                      volume_type=None,
+                      volume_size=2)
 
 
 @pytest.mark.usefixtures('admin_only')
