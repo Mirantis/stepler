@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 -----------------------
 Glance CLI client steps
@@ -18,7 +20,9 @@ Glance CLI client steps
 # limitations under the License.
 
 from hamcrest import assert_that, contains_string, equal_to  # noqa
+from os import urandom
 from six import moves
+import tempfile
 
 from stepler.cli_clients.steps import base
 from stepler.third_party import output_parser
@@ -29,7 +33,20 @@ class CliGlanceSteps(base.BaseCliSteps):
     """CLI glance client steps."""
 
     @steps_checker.step
-    def create_image(self, image_file, disk_format, container_format,
+    def image_file_create(self, size=0, check=True):
+        """Step to create file.
+
+        Args:
+            size (int): file size in MB
+            check (bool): flag whether to check result or not
+        """
+        temp = tempfile.NamedTemporaryFile()
+        temp.write(urandom(size * 1024))
+        temp.close()
+        return temp.name
+
+    @steps_checker.step
+    def image_create(self, image_file, disk_format, container_format,
                      image_name=None, api_version=2, check=True):
         """Step to create image.
 
@@ -67,6 +84,123 @@ class CliGlanceSteps(base.BaseCliSteps):
             image = {key: value for key, value in image_table['values']}
 
         return image, exit_code, stdout, stderr
+
+    @steps_checker.step
+    def image_download(self, image_name, image_file, check=True, version=1):
+        """Step to download image.
+
+        Args:
+            image_name (str): name of image to download
+            image_file (str): image file to be downloaded
+            check (bool): flag whether to check result or not
+            version (int): set the API version of Glance
+
+        Returns:
+            str: result of command shell execution
+        """
+        flags = ('--os-image-api-version %s --file %s %s'.format(version,
+                                                                 image_file,
+                                                                 image_name))
+        cmd = 'glance image-download %s'.format(flags)
+        result = self.execute_command(cmd, check=check)
+        return result
+
+    @steps_checker.step
+    def image_show(self, image_name, check=True, version=1):
+        """Step to show glance image.
+
+        Args:
+            image_name (str): name of image to show
+            check (bool): flag whether to check result or not
+            version (int): set the API version of Glance
+
+        Returns:
+            str: result of command shell execution
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        flags = ('--os-image-api-version %s %s'.format(version, image_name))
+        cmd = 'glance image-show %s'.format(flags)
+        result = self.execute_command(cmd, check=check)
+        return result
+
+    @steps_checker.step
+    def image_list(self, check=True, version=1):
+        """Step to get glance list.
+
+        Args:
+            check (bool): flag whether to check result or not
+            version (int): set the API version of Glance
+
+        Returns:
+            str: result of command shell execution
+        """
+        cmd = 'glance --os-image-api-version %s image-list'.format(version)
+        result = self.execute_command(cmd, check=check)
+        return result
+
+    @steps_checker.step
+    def image_delete(self, image_name, check=True, version=1):
+        """Step to delete glance image.
+
+        Args:
+            image_name (str): name of image to delete
+            check (bool): flag whether to check result or not
+            version (int): set the API version of Glance
+
+        Returns:
+            str: result of command shell execution
+        """
+        flags = ('--os-image-api-version %s %s'.format(version, image_name))
+        cmd = 'glance image-delete %s'.format(flags)
+        result = self.execute_command(cmd, check=check)
+        return result
+
+    @steps_checker.step
+    def check_image_status(self, image_name, check=True):
+        image_data = self.image_show(image_name, check=check)
+        return image_data.status.lower() == 'queued'
+
+    @steps_checker.step
+    def check_image_in_list(self, image_name, check=True):
+        """Step to check if image exists in images list.
+
+        Args:
+            image_name (str): name of image to check
+            check (bool): flag whether to check result or not
+        """
+        images_list = self.image_list()
+        assert image_name['id'] in [image['id'] for image in images_list]
+
+    @steps_checker.step
+    def check_image_not_in_list(self, image_name, check=True):
+        """Step to check if image doesn't exist in images list.
+
+        Args:
+            image_name (str): name of image to check
+            check (bool): flag whether to check result or not
+        """
+        images_list = self.image_list()
+        assert image_name['id'] not in [image['id'] for image in images_list]
+
+    @steps_checker.step
+    def check_unicode_support(self):
+        image_name = u"試験画像"
+        image_file = self.create_image_file(size=1024)
+        self.image_create(image_name=image_name,
+                          image_file=image_file,
+                          disk_format='qcow2',
+                          container_format='bare',
+                          api_version=1,
+                          check=False
+                          )
+        self.check_image_status(image_name, check=False)
+
+        self.check_image_in_list(image_name, check=False)
+
+        self.image_delete(image_name, check=False)
+        self.check_image_not_in_list(image_name, check=False)
 
     @steps_checker.step
     def check_negative_image_create_without_properties(self, filename,
