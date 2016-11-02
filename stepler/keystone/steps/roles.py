@@ -20,7 +20,7 @@ Role steps
 from waiting import wait
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'RoleSteps'
@@ -30,7 +30,7 @@ __all__ = [
 class RoleSteps(BaseSteps):
     """Role steps."""
 
-    @step
+    @steps_checker.step
     def create_role(self, role_name, check=True):
         """Step to create role."""
         role = self._client.create(role_name)
@@ -39,19 +39,19 @@ class RoleSteps(BaseSteps):
             self.check_role_presence(role)
         return role
 
-    @step
+    @steps_checker.step
     def delete_role(self, role, check=True):
         """Step to delete role."""
         self._client.delete(role.id)
         if check:
             self.check_role_presence(role, present=False)
 
-    @step
+    @steps_checker.step
     def get_role(self, *args, **kwgs):
         """Step to find role."""
         return self._client.find(*args, **kwgs)
 
-    @step
+    @steps_checker.step
     def grant_role(self, role, user=None, group=None, domain=None,
                    project=None, check=True):
         """Step to grant role to user or group on domain or project."""
@@ -61,7 +61,7 @@ class RoleSteps(BaseSteps):
             self.check_role_grant_status(role, user=user, group=group,
                                          domain=domain, project=project)
 
-    @step
+    @steps_checker.step
     def revoke_role(self, role, user=None, group=None, domain=None,
                     project=None, check=True):
         """Step to revoke role from user or group on domain or project."""
@@ -72,7 +72,7 @@ class RoleSteps(BaseSteps):
                                          group=group, domain=domain,
                                          granted=False)
 
-    @step
+    @steps_checker.step
     def check_role_presence(self, role, present=True, timeout=0):
         """Check step that role is present."""
         def predicate():
@@ -84,7 +84,7 @@ class RoleSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def check_role_grant_status(self, role, user=None, group=None, domain=None,
                                 project=None, granted=True, timeout=0):
         """Check step if a user or group has a role on a domain or project."""
