@@ -104,3 +104,41 @@ def test_restart_all_services(cirros_image,
                   networks=[admin_internal_network],
                   keypair=keypair,
                   security_groups=[security_group])
+
+@pytest.mark.idempotent_id('14ed4331-c05e-4b9a-9723-eac8c6f3f26a')
+def test_bug_verification(token_steps,
+                          role_steps,
+                          user_steps,
+                          project_steps,
+                          users):
+    """When you delete a role assignment using a user+role+project pairing,
+    unscoped tokens between the user+project are unnecessarily revoked as
+    well. In fact, two events are created for each role assignment deletion
+    (one that is scoped correctly and one that is scoped too broadly).
+
+    1. Create new project and new user there
+    2. Add new project like member in admin tenant
+    3. Login under this user
+    4. Execute 'keystone token-get' in controller
+    5. Get TOKEN_ID
+    6. Execute curl request: curl -H "X-Auth-Token: TOKEN_ID" http://192.168.0.2:5000/v2.0/tenants
+    7. Delete new user from admin tenant
+    8. Repeat curl request
+    """
+    user_name = next(utils.generate_ids('user'))
+    project_name = next(utils.generate_ids('project'))
+
+    project = create_project(project_name)
+    user = create_user(user_name, default_project=project)
+    role_steps.grant_role(role='admin', user=user)
+
+    # Apply user
+    project_steps.get_projects()
+    role_steps.revoke_role(role='admin', user=user)
+    project_steps.get_projects()
+
+
+
+    # user_with_project = new_user_with_project()
+    # user = user_steps.get_users(user_with_project['user_name'])
+    token = token_steps.get_token(user)
