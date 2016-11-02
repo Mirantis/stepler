@@ -43,3 +43,7 @@ FLOATING_NETWORK_NAME = 'admin_floating_net'
 INTERNAL_NETWORK_NAME = 'admin_internal_net'
 
 XVFB_LOCK = '/tmp/xvfb.lock'
+
+# Volume creating constants
+IMAGE_SOURCE = 'Image'
+VOLUME_SOURCE = 'Volume'

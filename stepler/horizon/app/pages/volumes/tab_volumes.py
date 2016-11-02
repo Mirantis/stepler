@@ -28,7 +28,9 @@ from ..instances.page_instances import FormLaunchInstance
 @ui.register_ui(
     field_name=ui.TextField(By.NAME, 'name'),
     field_description=ui.TextField(By.NAME, 'description'),
+    field_size=ui.TextField(By.NAME, 'size'),
     combobox_image_source=ui.ComboBox(By.NAME, 'image_source'),
+    combobox_volume_source=ui.ComboBox(By.NAME, 'volume_source'),
     combobox_source_type=ui.ComboBox(By.NAME, 'volume_source_type'),
     combobox_volume_type=ui.ComboBox(By.NAME, 'type'))
 class FormCreateVolume(_ui.Form):
