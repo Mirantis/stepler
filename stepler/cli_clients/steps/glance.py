@@ -17,7 +17,7 @@ Glance CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, contains_string, is_not, is_in  # noqa
+from hamcrest import (assert_that, contains_string, is_not, is_in)  # noqa H301
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -30,7 +30,7 @@ class CliGlanceSteps(base.BaseCliSteps):
     """CLI glance client steps."""
 
     @steps_checker.step
-    def create_image(self, image_file=None, image_name=None, disk_format=None,
+    def image_create(self, image_file=None, image_name=None, disk_format=None,
                      container_format=None, api_version=2, check=True):
         """Step to create image.
 
@@ -76,6 +76,113 @@ class CliGlanceSteps(base.BaseCliSteps):
         return image, exit_code, stdout, stderr
 
     @steps_checker.step
+    def image_download(self, image_name, image_file, check=True,
+                       api_version=2):
+        """Step to download image.
+
+        Args:
+            image_name (str): name of image to download
+            image_file (str): image file to be downloaded
+            check (bool): flag whether to check result or not
+            api_version (int): set the API version of Glance
+
+        Returns:
+            tuple: execution result (exit_code, stdout, stderr)
+        """
+        cmd = 'glance image-download --file {0} {1}'.format(image_name,
+                                                            image_file)
+        self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+
+    @steps_checker.step
+    def image_show(self, image_id, check=True, api_version=2):
+        """Step to show glance image.
+
+        Args:
+            image_id (str): id of image to show
+            check (bool): flag whether to check result or not
+            api_version (int): set the API version of Glance
+
+        Returns:
+            tuple: execution result (image_dict, exit_code, stdout, stderr)
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        cmd = 'glance image-show {0}'.format(image_id)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+        return exit_code, stdout, stderr
+
+    @steps_checker.step
+    def image_list(self, check=True, api_version=2):
+        """Step to get glance list.
+
+        Args:
+            check (bool): flag whether to check result or not
+            api_version (int): set the API version of Glance
+
+        Returns:
+            tuple: execution result (image_dict, exit_code, stdout, stderr)
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance image-list'
+        self.execute_command(cmd,
+                             environ={'OS_IMAGE_API_VERSION': api_version},
+                             check=check)
+
+    @steps_checker.step
+    def image_delete(self, image_id, check=True, api_version=2):
+        """Step to delete glance image.
+
+        Args:
+            image_id (str): image ID
+            check (bool): flag whether to check result or not
+            api_version (int): set the API version of Glance
+
+        Returns:
+            tuple: execution result (exit_code, stdout, stderr)
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance image-delete {0}'.format(image_id)
+        self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+
+    @steps_checker.step
+    def check_image_list_contains(self, image, api_version=2):
+        """Step to check if image exists in images list.
+
+        Args:
+            image (obj): glance image
+            api_version (int): set the API version of Glance
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        images_list = self.image_list(api_version=api_version)
+        assert_that(image['id'],
+                    is_in([images['id'] for images in images_list]))
+
+    @steps_checker.step
+    def check_image_list_doesnt_contain(self, image, api_version=2):
+        """Step to check if image doesn't exist in images list.
+
+        Args:
+            image (obj): glance image
+            api_version (int): set the API version of Glance
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        images_list = self.image_list(api_version=api_version)
+        assert_that(image['id'],
+                    is_not(is_in([images['id'] for images in images_list])))
+
+    @steps_checker.step
     def check_negative_image_create_without_properties(self, filename,
                                                        api_version=2):
         """Step to check image is not created from file without properties.
@@ -90,7 +197,7 @@ class CliGlanceSteps(base.BaseCliSteps):
         """
         error_message = ("Must provide --container-format, "
                          "--disk-format when using --file.")
-        image, exit_code, stdout, stderr = self.create_image(
+        image, exit_code, stdout, stderr = self.image_create(
             image_file=filename,
             disk_format=None,
             container_format=None,
