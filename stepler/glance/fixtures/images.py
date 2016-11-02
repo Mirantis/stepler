@@ -153,7 +153,7 @@ def api_glance_steps_v2(get_glance_steps):
     Returns:
         GlanceSteps: instantiated glance steps
     """
-    return get_glance_steps(version='1', is_api=True)
+    return get_glance_steps(version='2', is_api=True)
 
 
 @pytest.fixture
