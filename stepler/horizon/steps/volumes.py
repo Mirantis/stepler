@@ -18,7 +18,7 @@ Volumes steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to, starts_with, has_length  # noqa
+from hamcrest import assert_that, equal_to, starts_with, has_length, any_of  # noqa H301
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
@@ -42,9 +42,29 @@ class VolumesSteps(BaseSteps):
 
     @step
     @pom.timeit('Step')
-    def create_volume(self, volume_name, source_type='Image', volume_type=None,
-                      description=None, check=True):
-        """Step to create volume."""
+    def create_volume(self, volume_name,
+                      source_type='Image',
+                      source_name=None,
+                      volume_type=None,
+                      description=None,
+                      check=True):
+        """Step to create volume.
+
+        Args:
+            volume_name (str): name of volume
+            source_type (str): type of source. Should be one of
+                "Image" or "Volume"
+            source_name (str): name of source (image or volume) to
+                create volume from it
+            volume_type (str): type of volume
+            description (str): description of volume
+            check (bool): lag whether to check step or not
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        assert_that(source_type, any_of('Image', 'Volume'),
+                    'source_type should be "Image" or "Volume"')
         tab_volumes = self._tab_volumes()
         tab_volumes.button_create_volume.click()
 
@@ -52,8 +72,18 @@ class VolumesSteps(BaseSteps):
             form.field_name.value = volume_name
             form.combobox_source_type.value = source_type
 
-            image_sources = form.combobox_image_source.values
-            form.combobox_image_source.value = image_sources[-1]
+            if source_type == 'Image':
+
+                image_sources = form.combobox_image_source.values
+                image_source = source_name or image_sources[-1]
+
+                form.combobox_image_source.value = image_source
+
+            else:
+                volume_sources = form.combobox_volume_source.values
+                volume_source = source_name or volume_sources[-1]
+
+                form.combobox_volume_source.value = volume_source
 
             if volume_type is not None:
                 if not volume_type:
