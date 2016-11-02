@@ -1,24 +1,72 @@
+# -*- coding: utf-8 -*-
+
 """
-----------------
-Glance CLI tests
-----------------
+---------------------------
+Tests for glance CLI client
+---------------------------
 """
 
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
+
+
+@pytest.mark.idempotent_id('85461edd-7c82-4c27-ad19-d3af178818fe')
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_image_list_contains_created_image(glance_steps,
+                                           cli_glance_steps,
+                                           api_version):
+    """**Scenario:** Check support of unicode symbols in image name.
+
+    **Steps:**
+
+    #. Create image with name 試験画像
+    #. Check that created image is in list
+
+    **Teardown:**
+
+    #. Delete image
+    """
+    image = glance_steps.create_images(
+        image_names=utils.generate_ids(u'試験画像', use_unicode=True),
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))[0]
+    cli_glance_steps.check_image_list_contain(image=image,
+                                              api_version=api_version)
+
+
+@pytest.mark.idempotent_id('6931aa9c-10df-4c5f-8837-a3090b6e1d57')
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_image_list_doesnt_contain_deleted_image(glance_steps,
+                                                 cli_glance_steps,
+                                                 api_version):
+    """**Scenario:** Check support of unicode symbols in image name.
+
+    **Steps:**
+
+    #. Create image with name 試験画像
+    #. Delete image
+    #. Check that image deleted
+    """
+    image = glance_steps.create_images(
+        image_names=utils.generate_ids(u'試験画像', use_unicode=True),
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))[0]
+    glance_steps.delete_images([image])
+    cli_glance_steps.check_image_list_doesnt_contain(image=image,
+                                                     api_version=api_version)
 
 
 @pytest.mark.idempotent_id('b5948a9d-a0a2-40ca-9638-554020dcde80',
