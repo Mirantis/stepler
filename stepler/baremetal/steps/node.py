@@ -37,10 +37,10 @@ class IronicNodeSteps(BaseSteps):
     def create_ironic_node(self, driver='fake', check=True, **kwargs):
         """Step to create a ironic node.
 
-        Parameters:
-            :param driver: The name or UUID of the driver.
-            :param check: For checking node presence
-            :param kwargs: Optional. A dictionary containing the attributes
+        Args:
+            driver (str): The name or UUID of the driver.
+            check (str): For checking node presence
+            kwargs: Optional. A dictionary containing the attributes
             of the resource that will be created:
                 chassis_uuid - The uuid of the chassis
                 driver_info - The driver info
@@ -112,7 +112,7 @@ class IronicNodeSteps(BaseSteps):
         """Set the maintenance mode for the node.
 
         Args:
-            node_id (str): The UUID of the node.
+            node (str): The ironic node.
             state (Bool): the maintenance mode; either a Boolean or a string
                 representation of a Boolean (eg, 'true', 'on', 'false',
                 'off'). True to put the node in maintenance mode; False
@@ -137,7 +137,7 @@ class IronicNodeSteps(BaseSteps):
         """Check ironic node maintenance was changed.
 
         Args:
-            node_id (str): The UUID of the node.
+            node (str): The ironic node.
             state (Bool): the maintenance mode; either a Boolean or a string
                 representation of a Boolean (eg, 'true', 'on', 'false',
                 'off'). True to put the node in maintenance mode; False
