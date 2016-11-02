@@ -17,7 +17,7 @@ Glance CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, contains_string, is_in, is_not, equal_to  # noqa
+from hamcrest import assert_that, contains_string, is_in, is_not, empty  # noqa
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -31,8 +31,10 @@ class CliGlanceSteps(base.BaseCliSteps):
     """CLI glance client steps."""
 
     @steps_checker.step
-    def create_image(self, image_file=None, image_name=None, disk_format=None,
-                     container_format=None, api_version=2, check=True):
+    def image_create(self, image_file=None, image_name=None, disk_format=None,
+                     container_format=None,
+                     api_version=config.GLANCE_DEFAULT_API_VERSION,
+                     check=True):
         """Step to create image.
 
         Args:
@@ -77,118 +79,6 @@ class CliGlanceSteps(base.BaseCliSteps):
         return image, exit_code, stdout, stderr
 
     @steps_checker.step
-    def check_negative_image_create_without_properties(self, filename,
-                                                       api_version=2):
-        """Step to check image is not created from file without properties.
-
-        Args:
-            filename (str): filename (doesn't matter if it exists or not)
-            api_version (int): glance api version (1 or 2). Default is 2
-
-        Raises:
-            AssertionError: if command exit code is 0 or stderr doesn't
-                contain expected message
-        """
-        error_message = ("Must provide --container-format, "
-                         "--disk-format when using --file.")
-        image, exit_code, stdout, stderr = self.create_image(
-            image_file=filename,
-            disk_format=None,
-            container_format=None,
-            api_version=api_version,
-            check=False)
-        assert_that(exit_code, is_not(0))
-        assert_that(stderr, contains_string(error_message))
-
-    @steps_checker.step
-    def check_negative_download_zero_size_image(self, image_id,
-                                                progress=False,
-                                                api_version=2):
-        """Step to check that zero-size image cannot be downloaded.
-
-        Args:
-            image_id (str): image ID
-            progress (bool): option of download command
-            api_version (int): glance api version (1 or 2). Default is 2
-
-        Raises:
-            AssertionError: if command exit code is 0 or stderr doesn't
-                contain expected message.
-        """
-        cmd = "glance image-download {}".format(image_id)
-        if progress:
-            cmd += " --progress"
-        if api_version == 1:
-            error_message = ("Image {} is not active (HTTP 404)".
-                             format(image_id))
-        else:
-            error_message = "Image {} has no data".format(image_id)
-
-        exit_code, stdout, stderr = self.execute_command(
-            cmd, environ={'OS_IMAGE_API_VERSION': int(api_version)},
-            timeout=config.IMAGE_CREATION_TIMEOUT, check=False)
-
-        assert_that(exit_code, is_not(0))
-        assert_that(stderr, contains_string(error_message))
-
-    @steps_checker.step
-    def check_project_in_image_member_list(self, image, project,
-                                           api_version=2):
-        """Step to check image member list.
-
-        Args:
-            image (obj): glance image
-            project (obj): keystone project
-            api_version (int): glance api version (1 or 2). Default is 2
-
-        Raises:
-            AnsibleExecutionException: if command execution failed
-            AssertionError: if project is not in image member list
-        """
-        cmd = 'glance member-list --image-id {0}'.format(image.id)
-
-        exit_code, stdout, stderr = self.execute_command(
-            cmd, environ={'OS_IMAGE_API_VERSION': api_version})
-        member_table = output_parser.listing(stdout)
-        project_ids = [member['Member ID'] for member in member_table]
-
-        assert_that(project.id, is_in(project_ids))
-
-    @steps_checker.step
-    def create_image_member(self, image, project, api_version=2, check=True):
-        """Step to create member for glance image.
-
-        Args:
-            image (obj): glance image
-            project (obj): keystone project
-            api_version (int): glance api version (1 or 2). Default is 2
-            check (bool): flag whether to check result or not
-
-        Raises:
-            AnsibleExecutionException: if command execution failed
-        """
-        cmd = 'glance member-create {0} {1}'.format(image.id, project.id)
-        self.execute_command(
-            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
-
-    @steps_checker.step
-    def delete_image_member(self, image, project, api_version=2, check=True):
-        """Step to delete member from glance image.
-
-        Args:
-            image (obj): glance image
-            project (obj): keystone project
-            api_version (int): glance api version (1 or 2). Default is 2
-            check (bool): flag whether to check result or not
-
-        Raises:
-            AnsibleExecutionException: if command execution failed
-        """
-        cmd = 'glance member-delete {0} {1}'.format(image.id, project.id)
-        self.execute_command(
-            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
-
-    @steps_checker.step
     def download_image(self,
                        image,
                        file_option=True,
@@ -224,3 +114,225 @@ class CliGlanceSteps(base.BaseCliSteps):
                 '[[ -s {} ]] && exit 0 || exit 1'.format(file_path))
 
         return file_path
+
+    @steps_checker.step
+    def show_image(self, image_id,
+                   api_version=config.GLANCE_DEFAULT_API_VERSION, check=True):
+        """Step to show glance image.
+
+        Args:
+            image_id (str): id of image to show
+            api_version (int): set the API version of Glance
+            check (bool): flag whether to check result or not
+
+        Returns:
+            tuple: execution result (image_show, exit_code, stdout, stderr)
+
+        Raises:
+            AssertionError: if check failed after timeout
+        """
+        image = None
+        cmd = 'glance image-show {0}'.format(image_id)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+        if check:
+            image = {key: value for key, value in image['values']}
+        return image, exit_code, stdout, stderr
+
+    @steps_checker.step
+    def list_images(self, api_version=config.GLANCE_DEFAULT_API_VERSION,
+                    check=True):
+        """Step to get glance images list.
+
+        Args:
+            api_version (int): set the API version of Glance
+            check (bool): flag whether to check result or not
+
+        Returns:
+            list: execution result: images_list
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        image = []
+        cmd = 'glance image-list'
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+        if check:
+            image_table = output_parser.table(stdout)['values']
+            if api_version == 1:
+                image_list = [img[0:2] for img in image_table]
+                image = {key: value for key, value in image_list}
+            else:
+                image = {key: value for key, value in image_table}
+        return image
+
+    @steps_checker.step
+    def delete_image(self, image_id,
+                     api_version=config.GLANCE_DEFAULT_API_VERSION,
+                     check=True):
+        """Step to delete glance image.
+
+        Args:
+            image_id (str): image ID
+            api_version (int): set the API version of Glance
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance image-delete {0}'.format(image_id)
+        self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+
+    @steps_checker.step
+    def check_image_list_contains(self, image,
+                                  api_version=config.
+                                  GLANCE_DEFAULT_API_VERSION):
+        """Step to check if image is in images list.
+
+        Args:
+            image (dict): glance image
+            api_version (int): set the API version of Glance
+
+        Raises:
+            AssertionError: if check failed after timeout
+        """
+        images = self.list_images(api_version=api_version)
+        assert_that(images, is_not(empty()))
+        image_ids = [img['id'] for img in images]
+        assert_that(image['id'], is_in(image_ids))
+
+    @steps_checker.step
+    def check_image_list_doesnt_contain(self, image,
+                                        api_version=config.
+                                        GLANCE_DEFAULT_API_VERSION):
+        """Step to check if image doesn't exist in images list.
+
+        Args:
+            image (dict): glance image
+            api_version (int): set the API version of Glance
+
+        Raises:
+            AssertionError: if check failed after timeout
+        """
+        images = self.list_images(api_version=api_version)
+        image_ids = [img for img in images]
+        assert_that(image['id'], is_not(is_in(image_ids)))
+
+    @steps_checker.step
+    def check_negative_image_create_without_properties(
+            self, filename, api_version=config.GLANCE_DEFAULT_API_VERSION):
+        """Step to check image is not created from file without properties.
+
+        Args:
+            filename (str): filename (doesn't matter if it exists or not)
+            api_version (int): glance api version (1 or 2). Default is 2
+
+        Raises:
+            AssertionError: if command exit code is 0 or stderr doesn't
+                contain expected message
+        """
+        error_message = ("Must provide --container-format, "
+                         "--disk-format when using --file.")
+        image, exit_code, stdout, stderr = self.image_create(
+            image_file=filename,
+            disk_format=None,
+            container_format=None,
+            api_version=api_version,
+            check=False)
+        assert_that(exit_code, is_not(0))
+        assert_that(stderr, contains_string(error_message))
+
+    @steps_checker.step
+    def check_negative_download_zero_size_image(
+            self, image_id, progress=False,
+            api_version=config.GLANCE_DEFAULT_API_VERSION):
+        """Step to check that zero-size image cannot be downloaded.
+
+        Args:
+            image_id (str): image ID
+            progress (bool): option of download command
+            api_version (int): glance api version (1 or 2). Default is 2
+
+        Raises:
+            AssertionError: if command exit code is 0 or stderr doesn't
+                contain expected message.
+        """
+        cmd = "glance image-download {}".format(image_id)
+        if progress:
+            cmd += " --progress"
+        if api_version == 1:
+            error_message = ("Image {} is not active (HTTP 404)".
+                             format(image_id))
+        else:
+            error_message = "Image {} has no data".format(image_id)
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': int(api_version)},
+            timeout=config.IMAGE_CREATION_TIMEOUT, check=False)
+
+        assert_that(exit_code, is_not(0))
+        assert_that(stderr, contains_string(error_message))
+
+    @steps_checker.step
+    def check_project_in_image_member_list(self, image, project,
+                                           api_version=config.
+                                           GLANCE_DEFAULT_API_VERSION):
+        """Step to check image member list.
+
+        Args:
+            image (obj): glance image
+            project (obj): keystone project
+            api_version (int): glance api version (1 or 2). Default is 2
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            AssertionError: if project is not in image member list
+        """
+        cmd = 'glance member-list --image-id {0}'.format(image.id)
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version})
+        member_table = output_parser.listing(stdout)
+        project_ids = [member['Member ID'] for member in member_table]
+
+        assert_that(project.id, is_in(project_ids))
+
+    @steps_checker.step
+    def create_image_member(self, image, project,
+                            api_version=config.GLANCE_DEFAULT_API_VERSION,
+                            check=True):
+        """Step to create member for glance image.
+
+        Args:
+            image (obj): glance image
+            project (obj): keystone project
+            api_version (int): glance api version (1 or 2). Default is 2
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance member-create {0} {1}'.format(image.id, project.id)
+        self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+
+    @steps_checker.step
+    def delete_image_member(self, image, project,
+                            api_version=config.GLANCE_DEFAULT_API_VERSION,
+                            check=True):
+        """Step to delete member from glance image.
+
+        Args:
+            image (obj): glance image
+            project (obj): keystone project
+            api_version (int): glance api version (1 or 2). Default is 2
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance member-delete {0} {1}'.format(image.id, project.id)
+        self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
