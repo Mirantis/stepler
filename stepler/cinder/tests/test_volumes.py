@@ -162,6 +162,19 @@ def test_negative_create_volume_non_exist_volume_type(cirros_image,
         cirros_image)
 
 
+@pytest.mark.idempotent_id('ee218b6e-7f61-43cd-a87e-00bf5edfe258')
+def test_negative_create_volume_wrong_image_id(admin, volume_steps):
+    """**Scenario:** Verify creation of volume with wrong image id.
+
+    **Steps:**
+
+    #. Try to create volume with wrong image id
+    #. Check that BadRequest exception raised
+    """
+    volume_steps.check_volume_not_created_with_wrong_image_id(
+        wrong_image=admin)
+
+
 @pytest.mark.idempotent_id('f2e90086-42d7-4257-96ef-10ca5ea3a4c3')
 def test_create_volume_from_volume(volume, create_volume):
     """**Scenario:** Verify creation of volume from volume.
@@ -230,6 +243,18 @@ def test_negative_delete_volume_cascade(volume,
     volume_steps.check_volume_deletion_without_cascading_failed(volume)
     snapshot_steps.check_snapshots_presence([volume_snapshot],
                                             must_present=True)
+
+
+@pytest.mark.idempotent_id('541b506a-fc7b-4902-b60e-1b6cbaf27636')
+def test_negative_delete_volume_wrong_id(admin, volume_steps):
+    """**Scenario:** Verify volume deletion with wrong volume id.
+
+    **Steps:**
+
+    #. Try to delete volume with wrong volume id
+    #. Check that NotFound exception raised
+    """
+    volume_steps.check_volume_deletion_with_wrong_id(wrong_volume=admin)
 
 
 # TODO(aallakhverdieva): add check for count of cinder hosts (need more than 1)

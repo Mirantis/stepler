@@ -71,6 +71,23 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.NotFound, exception_message))
 
     @steps_checker.step
+    def check_volume_not_created_with_wrong_image_id(self, wrong_image):
+        """Step to check volume is not created with wrong image id.
+
+        Args:
+            wrong_image (obj): any object with attribute 'id' (except image)
+
+        Raises:
+            AssertionError: if check triggered an error
+        """
+        exception_message = "Invalid image identifier"
+
+        assert_that(
+            calling(self.create_volumes).with_args(
+                names=[None], image=wrong_image, check=False),
+            raises(exceptions.BadRequest, exception_message))
+
+    @steps_checker.step
     def create_volumes(self,
                        names,
                        size=1,
@@ -538,6 +555,20 @@ class VolumeSteps(base.BaseSteps):
                                                            check=False),
                     raises(exceptions.BadRequest))
         self.check_volume_presence(volume)
+
+    @steps_checker.step
+    def check_volume_deletion_with_wrong_id(self, wrong_volume):
+        """Step to check negative volume deletion with wrong volume id.
+
+        Args:
+            wrong_volume (object): any object with attribute 'id'
+                                   (except cinder volume)
+
+        Raises:
+            AssertionError: if NotFound exception is not appeared
+        """
+        assert_that(calling(self.delete_volumes).with_args([wrong_volume]),
+                    raises(exceptions.NotFound))
 
     @steps_checker.step
     def migrate_volume(self, volume, host, force_host_copy=False,
