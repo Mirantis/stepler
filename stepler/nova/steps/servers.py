@@ -254,7 +254,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         if by_name:
             def predicate():
@@ -285,7 +285,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():
@@ -324,7 +324,7 @@ class ServerSteps(base.BaseSteps):
             ssh.SshClient: instantiated ssh client to server ip
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         if not ip:
             if not proxy_cmd:  # server is available via floating IP directly
@@ -355,7 +355,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         def predicate():
             try:
@@ -587,7 +587,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():
@@ -698,7 +698,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
 
         def predicate():
@@ -788,7 +788,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was falsed after timeout
+            TimeoutExpired: if check was failed after timeout
         """
         matcher = has_entries(custom_meta)
         if not present:
