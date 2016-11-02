@@ -1,6 +1,6 @@
 """
 ---------------------------
-Templates for heat fixtures
+Fixtures for heat templates
 ---------------------------
 """
 
