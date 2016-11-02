@@ -1,7 +1,7 @@
 """
----------------
-Glance steps v1
----------------
+--------------------------
+Glance CLI client fixtures
+--------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,23 @@ Glance steps v1
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base import BaseGlanceSteps
+import pytest
+
+from stepler.cli_clients import steps
 
 __all__ = [
-    'GlanceStepsV1',
+    'cli_glance_steps',
 ]
 
 
-class GlanceStepsV1(BaseGlanceSteps):
-    """Glance steps for v1."""
+@pytest.fixture
+def cli_glance_steps(remote_executor):
+    """Function fixture to glance CLI steps.
+
+    Args:
+        remote_executor (callable): function to execute command on remote node
+
+    Returns:
+        CliGlanceSteps: instantiated glance CLI steps.
+    """
+    return steps.CLiGlanceSteps(remote_executor)

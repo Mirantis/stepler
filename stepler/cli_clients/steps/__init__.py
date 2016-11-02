@@ -18,12 +18,14 @@ CLI client steps
 # limitations under the License.
 
 from .cinder import *  # noqa
+from .glance import *  # noqa
 from .heat import *  # noqa
 from .nova import *  # noqa
 from .openstack import *  # noqa
 
 __all__ = [
     'CliCinderSteps',
+    'CliGlanceSteps',
     'CliHeatSteps',
     'CliNovaSteps',
     'CliOpenstackSteps',

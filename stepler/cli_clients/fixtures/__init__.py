@@ -19,6 +19,7 @@ CLI client fixtures
 
 from .base import *  # noqa
 from .cinder import *  # noqa
+from .glance import *  # noqa
 from .heat import *  # noqa
 from .nova import *  # noqa
 from .openstack import *  # noqa
@@ -27,6 +28,8 @@ __all__ = [
     'remote_executor',
 
     'cli_cinder_steps',
+
+    'cli_glance_steps',
 
     'cli_heat_steps',
     'empty_heat_template_path',
