@@ -1,9 +1,9 @@
 heat_template_version: 2013-05-23
 resources:
-  cirros_image:
+  stepler_cirros_image:
     properties:
       container_format: ami
       disk_format: ami
       location: http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img
-      name: cirros-0.3.3-x86_64
+      name: stepler_cirros_image
     type: OS::Glance::Image

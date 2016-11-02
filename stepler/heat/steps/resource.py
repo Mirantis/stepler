@@ -66,3 +66,22 @@ class ResourceSteps(base.BaseSteps):
             object: stack resource
         """
         return self.get_resources(stack, name, check)[0]
+
+    @steps_checker.step
+    def check_that_resource_id_changed(self,
+                                       physical_resource_id,
+                                       stack,
+                                       resource_name):
+        """Step to check that after stack updating
+        physical_resource_id was chanched.
+
+        Args:
+            physical_resource_id (str): befor updating
+            stack (object): heat stack
+
+        Raises:
+            AssertionError: if physical_resource_id wasn't chanched
+        """
+        physical_resource_id_changed = self.get_resource(stack, resource_name)
+
+        assert_that(physical_resource_id_changed, is_not(physical_resource_id))
