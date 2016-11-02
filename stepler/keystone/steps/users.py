@@ -84,7 +84,8 @@ class UserSteps(BaseSteps):
             if description:
                 assert_that(user.description, equal_to(description))
             if default_project:
-                assert_that(user.default_project, equal_to(default_project))
+                assert_that(user.default_project_id,
+                            equal_to(default_project.id))
             if domain:
                 if domain == 'default':
                     domain_id = domain
