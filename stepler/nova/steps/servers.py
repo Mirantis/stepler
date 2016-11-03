@@ -501,6 +501,28 @@ class ServerSteps(base.BaseSteps):
                                                timeout=timeout)
 
     @steps_checker.step
+    def check_ping_between_servers(
+            self, servers_ssh, ips, timeout=0):
+        """Step to ping every provided IP from every provided server
+
+        Args:
+            servers_ssh (list): ssh.SshClient client to server
+            ips (list): IP addresses to ping
+            timeout (int): seconds to wait for result of check
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        for server_ssh in servers_ssh:
+            self.check_server_ssh_connect(server_ssh)
+            for ip in ips:
+                with server_ssh:
+                    self.check_ping_for_ip(
+                        ip_to_ping=ip,
+                        remote_from=server_ssh,
+                        timeout=timeout)
+
+    @steps_checker.step
     def live_migrate(self, server, host=None, block_migration=True,
                      check=True):
         """Step to live migrate nova server.
