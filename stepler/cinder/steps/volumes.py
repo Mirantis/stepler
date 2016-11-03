@@ -108,6 +108,8 @@ class VolumeSteps(base.BaseSteps):
         # Metadata should contain only string values.
         metadata[config.STEPLER_PREFIX] = config.STEPLER_PREFIX
 
+        _volume_names = {}
+
         for name in names:
             volume = self._client.volumes.create(size,
                                                  name=name,
@@ -117,6 +119,7 @@ class VolumeSteps(base.BaseSteps):
                                                  source_volid=source_volid,
                                                  snapshot_id=snapshot_id,
                                                  metadata=metadata)
+            _volume_names[volume.id] = name
             volumes.append(volume)
 
         if check:
@@ -131,8 +134,9 @@ class VolumeSteps(base.BaseSteps):
 
                 if snapshot_id:
                     assert_that(volume.snapshot_id, equal_to(snapshot_id))
-                if names:
-                    assert_that(volume.name, is_in(names))
+                if _volume_names[volume.id]:
+                    assert_that(volume.name,
+                                equal_to(_volume_names[volume.id]))
                 if size:
                     assert_that(volume.size, equal_to(size))
                 if volume_type:
