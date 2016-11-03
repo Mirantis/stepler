@@ -522,6 +522,28 @@ class ServerSteps(base.BaseSteps):
                                                timeout=timeout)
 
     @steps_checker.step
+    def check_ping_between_servers(
+            self, servers_ssh, ips, timeout=0):
+        """Step to ping every provided IP from every provided server
+
+        Args:
+            servers_ssh (list): ssh.SshClient client to server
+            ips (list): IP addresses to ping
+            timeout (int): seconds to wait for result of check
+
+        Raises:
+            TimeoutExpired: if check was False after timeout
+        """
+        for server_ssh in servers_ssh:
+            self.check_server_ssh_connect(server_ssh)
+            for ip in ips:
+                with server_ssh:
+                    self.check_ping_for_ip(
+                        ip_to_ping=ip,
+                        remote_from=server_ssh,
+                        timeout=timeout)
+
+    @steps_checker.step
     def live_migrate(self, server, host=None, block_migration=True,
                      check=True):
         """Step to live migrate nova server.
@@ -974,3 +996,23 @@ class ServerSteps(base.BaseSteps):
             self.check_server_status(server, config.STATUS_VERIFY_RESIZE,
                                      transit_statuses=(config.STATUS_RESIZE,),
                                      timeout=config.VERIFY_RESIZE_TIMEOUT)
+
+    @steps_checker.step
+    def reboot_server(self, server, check=True):
+        """Step to reboot nova server.
+
+        Args:
+            server (obj): nova server
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        server.reboot()
+
+        if check:
+            self.check_server_status(
+                server,
+                expected_statuses=[config.STATUS_ACTIVE],
+                transit_statuses=[config.STATUS_REBOOT],
+                timeout=config.SERVER_ACTIVE_TIMEOUT)
