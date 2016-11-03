@@ -17,6 +17,8 @@ Heat CLI steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, is_  # noqa H301
+
 from stepler.cli_clients.steps import base
 from stepler import config
 from stepler.third_party import output_parser
@@ -29,12 +31,18 @@ class CliHeatSteps(base.BaseCliSteps):
     """Heat CLI steps."""
 
     @steps_checker.step
-    def create_stack(self, name, template_file, parameters=None, check=True):
+    def create_stack(self,
+                     name,
+                     template_file=None,
+                     template_url=None,
+                     parameters=None,
+                     check=True):
         """Step to create stack.
 
         Args:
             name (str): name of stack
-            template_file (str): path to yaml template
+            template_file (str, optional): path to yaml template
+            template_url (str, optional): template url
             parameters (dict|None): parameters for template
             check (bool): flag whether check step or not
 
@@ -42,10 +50,19 @@ class CliHeatSteps(base.BaseCliSteps):
             dict: heat stack
         """
         parameters = parameters or {}
-        cmd = 'heat stack-create {} -f {}'.format(name, template_file)
+
+        err_msg = 'One of `template_file` or `template_url` should be passed.'
+        assert_that(any([template_file, template_url]), is_(True), err_msg)
+
+        cmd = 'heat stack-create ' + name
+        if template_file:
+            cmd += ' -f ' + template_file
+        elif template_url:
+            cmd += ' -u ' + template_url
         for key, value in parameters.items():
             cmd += ' --parameters {}={}'.format(key, value)
         cmd += ' --poll'
+
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_CREATION_TIMEOUT, check=check)
         stack_table = output_parser.tables(stdout)[-1]
