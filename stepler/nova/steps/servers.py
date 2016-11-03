@@ -486,26 +486,27 @@ class ServerSteps(base.BaseSteps):
         return ping_plan
 
     @steps_checker.step
-    def check_ping_between_servers_via_floating(self,
-                                                servers,
-                                                timeout=0):
+    def check_ping_between_servers(self,
+                                   servers,
+                                   ip_type='floating',
+                                   timeout=0):
         """Step to check ping from each server to all other servers.
 
         Args:
             servers (list): nova instances to check ping between
             timeout (int): seconds to wait for result of check
+            ip_type (string): possible values are `floating` or `fixed`
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
         ping_plan = self._get_ping_plan(servers)
         for server, ips in ping_plan.items():
-            floating_ip = self.get_ips(server, 'floating').keys()[0]
-
-            with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
-                    for ip in ips:
-                        self.check_ping_for_ip(ip, remote_from=server_ssh,
-                                               timeout=timeout)
+            ips_list = self.get_ips(server, ip_type).keys()[0]
+            with self.get_server_ssh(server, ip=ips_list) as server_ssh:
+                for ip in ips:
+                    self.check_ping_for_ip(ip, remote_from=server_ssh,
+                                           timeout=timeout)
 
     @steps_checker.step
     def live_migrate(self, server, host=None, block_migration=True,
