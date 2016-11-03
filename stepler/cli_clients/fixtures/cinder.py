@@ -1,7 +1,7 @@
 """
--------------------
-CLI client fixtures
--------------------
+------------------------
+Cinder CLI client fixtures
+------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +17,20 @@ CLI client fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base import *  # noqa
-from .cinder import *  # noqa
-from .heat import *  # noqa
-from .nova import *  # noqa
-from .openstack import *  # noqa
+import pytest
+
+from stepler.cli_clients import steps
 
 __all__ = [
-    'remote_executor',
-
     'cli_cinder_steps',
-
-    'cli_heat_steps',
-    'empty_heat_template_path',
-
-    'cli_nova_steps',
-    'cli_openstack_steps',
 ]
+
+
+@pytest.fixture
+def cli_cinder_steps(remote_executor):
+    """Function fixture to cinder CLI steps.
+
+    Returns:
+        CliCinderSteps: instantiated cinder CLI steps.
+    """
+    return steps.CliCinderSteps(remote_executor)

@@ -18,7 +18,8 @@ Backup steps
 # limitations under the License.
 
 from cinderclient import exceptions
-from hamcrest import assert_that, calling, equal_to, raises  # noqa
+from hamcrest import (assert_that, calling, empty, equal_to, is_not,
+                      raises)  # noqa
 
 from stepler import base
 from stepler import config
@@ -77,6 +78,48 @@ class BackupSteps(base.BaseSteps):
                 assert_that(backup.container, equal_to(container))
             if snapshot_id:
                 assert_that(backup.snapshot_id, equal_to(snapshot_id))
+
+        return backup
+
+    @steps_checker.step
+    def get_backups(self, check=True):
+        """Step to retrieve all backups from cinder.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: backups list
+
+        Raises:
+            AssertionError: if check was failed
+        """
+        backups = list(self._client.list())
+
+        if check:
+            assert_that(backups, is_not(empty()))
+
+        return backups
+
+    @steps_checker.step
+    def get_backup_by_id(self, backup_id, check=True):
+        """Step to get backup object from cinder using backup id.
+
+        Args:
+            backup_id (str): volume backup id
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: volume backup
+
+        Raises:
+            exceptions.NotFound: if backup with backup_id doesn't exist
+            AssertionError: if check was failed
+        """
+        backup = self._client.get(backup_id)
+
+        if check:
+            assert_that(backup, is_not(empty()))
 
         return backup
 
