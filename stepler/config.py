@@ -101,6 +101,7 @@ STATUS_PAUSING = 'pausing'
 STATUS_RESCUE = 'rescue'
 STATUS_RESCUING = 'rescuing'
 STATUS_QUEUED = 'queued'
+STATUS_REBOOT = 'reboot'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
@@ -180,6 +181,8 @@ SMALL_RECLAIM_INTERVAL = str(30)
 BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
 SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
 NOVA_INSTANCES_PATH = "/var/lib/nova/instances/"
+
+FIXED_IP = 'fixed'
 
 # Heat
 HEAT_VERSION = 1

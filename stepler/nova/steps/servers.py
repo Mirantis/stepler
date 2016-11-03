@@ -974,3 +974,23 @@ class ServerSteps(base.BaseSteps):
             self.check_server_status(server, config.STATUS_VERIFY_RESIZE,
                                      transit_statuses=(config.STATUS_RESIZE,),
                                      timeout=config.VERIFY_RESIZE_TIMEOUT)
+
+    @steps_checker.step
+    def reboot_server(self, server, check=True):
+        """Step to reboot nova server.
+
+        Args:
+            server (obj): nova server
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        server.reboot()
+
+        if check:
+            self.check_server_status(
+                server,
+                expected_statuses=[config.STATUS_ACTIVE],
+                transit_statuses=[config.STATUS_REBOOT],
+                timeout=config.SERVER_ACTIVE_TIMEOUT)
