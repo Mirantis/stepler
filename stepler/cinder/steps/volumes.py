@@ -108,6 +108,9 @@ class VolumeSteps(base.BaseSteps):
         # Metadata should contain only string values.
         metadata[config.STEPLER_PREFIX] = config.STEPLER_PREFIX
 
+        # TODO(agromov): delete it when generate_ids returns list
+        names = list(names)
+
         for name in names:
             volume = self._client.volumes.create(size,
                                                  name=name,
