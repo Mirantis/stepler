@@ -49,7 +49,7 @@ class TestAnyOne(object):
 
     @pytest.mark.idempotent_id('51654e7a-bda4-4a3b-a75a-8788cbff3eae')
     def test_create_volume_snapshot_with_long_name(self, volume,
-                                                   volumes_steps):
+                                                   volumes_steps_ui):
         """**Scenario:** Create volume snapshot with name lenght > 255.
 
         **Setup:**
@@ -65,7 +65,7 @@ class TestAnyOne(object):
 
         #. Delete volume
         """
-        volumes_steps.check_snapshot_creation_form_name_field_max_length(
+        volumes_steps_ui.check_snapshot_creation_form_name_field_max_length(
             volume.name, 255)
 
     @pytest.mark.idempotent_id('b16ba9bf-7d09-462c-ae99-e1ec4653c40d')
