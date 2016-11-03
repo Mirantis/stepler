@@ -20,7 +20,7 @@ Containers steps
 from hamcrest import assert_that, contains_string  # noqa
 import requests
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -32,7 +32,7 @@ class ContainersSteps(BaseSteps):
         """Open containers page if it isn't opened."""
         return self._open(self.app.page_containers)
 
-    @step
+    @steps_checker.step
     def create_container(self, container_name, public=False, check=True):
         """Step to create container."""
         page_containers = self._page_containers()
@@ -53,7 +53,7 @@ class ContainersSteps(BaseSteps):
             page_containers.list_containers.row(
                 container_name).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def delete_container(self, container_name, check=True):
         """Step to delete container."""
         page_containers = self._page_containers()
@@ -77,7 +77,7 @@ class ContainersSteps(BaseSteps):
         """Exit from context manager."""
         self._callback()
 
-    @step
+    @steps_checker.step
     def get_container(self, container_name):
         """Step to enter to container."""
         self.app.page_containers.list_containers.row(container_name).click()
@@ -89,7 +89,7 @@ class ContainersSteps(BaseSteps):
         self._callback = exit
         return self
 
-    @step
+    @steps_checker.step
     def get_folder(self, folder_name):
         """Step to enter to folder."""
         self.app.page_containers.table_objects.row(
@@ -101,7 +101,7 @@ class ContainersSteps(BaseSteps):
         self._callback = exit
         return self
 
-    @step
+    @steps_checker.step
     def create_folder(self, folder_name, check=True):
         """Step to create folder."""
         with self.app.page_containers as page:
@@ -116,7 +116,7 @@ class ContainersSteps(BaseSteps):
             self.app.page_containers.table_objects.row(
                 name=folder_name).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def delete_folder(self, folder_name, check=True):
         """Step to delete folder."""
         with self.app.page_containers as page:
@@ -129,7 +129,7 @@ class ContainersSteps(BaseSteps):
             self.app.page_containers.table_objects.row(
                 name=folder_name).wait_for_absence()
 
-    @step
+    @steps_checker.step
     def get_container_info(self, container_name):
         """Step to get container info."""
         with self.app.page_containers.list_containers.row(
@@ -141,7 +141,7 @@ class ContainersSteps(BaseSteps):
                 'public_url': row.link_public_url.href}
             return container_info
 
-    @step
+    @steps_checker.step
     def upload_file(self, file_path, file_name=None, check=True):
         """Step to upload file."""
         self.app.page_containers.button_upload_file.click()
@@ -162,7 +162,7 @@ class ContainersSteps(BaseSteps):
 
         return file_name
 
-    @step
+    @steps_checker.step
     def delete_file(self, file_name, check=True):
         """Step to delete file."""
         with self.app.page_containers.table_objects.row(
@@ -177,7 +177,7 @@ class ContainersSteps(BaseSteps):
             self.app.page_containers.table_objects.row(
                 name=file_name).wait_for_absence()
 
-    @step
+    @steps_checker.step
     def check_folder_avaiable_by_public_url(self, folder_name, public_url):
         """Step to check that folder is available by public URL."""
         assert_that(requests.get(public_url).text,

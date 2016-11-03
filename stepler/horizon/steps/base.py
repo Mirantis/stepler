@@ -19,7 +19,7 @@ Horizon base steps
 
 from hamcrest import assert_that, equal_to  # noqa
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 
 class BaseSteps(object):
@@ -45,7 +45,7 @@ class BaseSteps(object):
 
         return page
 
-    @step
+    @steps_checker.step
     def switch_project(self, project_name, check=True):
         """Switch project in user account.
 
@@ -66,7 +66,7 @@ class BaseSteps(object):
             self.close_notification('success')
             assert_that(menu.label_project.value, equal_to(project_name))
 
-    @step
+    @steps_checker.step
     def close_notification(self, level, check=True):
         """Close notification popup window.
 
@@ -79,7 +79,7 @@ class BaseSteps(object):
             if check:
                 popup.wait_for_absence()
 
-    @step
+    @steps_checker.step
     def refresh_page(self, check=True):
         """Step to refresh page."""
         url = self.app.page_base.url

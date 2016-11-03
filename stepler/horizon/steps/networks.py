@@ -21,7 +21,7 @@ from hamcrest import assert_that, equal_to  # noqa
 import pom
 from waiting import wait
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -37,7 +37,7 @@ class NetworksSteps(BaseSteps):
         """Open admin networks page if it isn't opened."""
         return self._open(self.app.page_admin_networks)
 
-    @step
+    @steps_checker.step
     def create_network(self, network_name, shared=False, create_subnet=False,
                        subnet_name='subnet', network_adress='192.168.0.0/24',
                        gateway_ip='192.168.0.1', check=True):
@@ -72,7 +72,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=network_name).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def delete_network(self, network_name, check=True):
         """Step to delete network."""
         page_networks = self._page_networks()
@@ -89,7 +89,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=network_name).wait_for_absence()
 
-    @step
+    @steps_checker.step
     def delete_networks(self, network_names, check=True):
         """Step to delete networks as batch."""
         page_networks = self._page_networks()
@@ -107,7 +107,7 @@ class NetworksSteps(BaseSteps):
                 page_networks.table_networks.row(
                     name=network_name).wait_for_absence()
 
-    @step
+    @steps_checker.step
     def add_subnet(self, network_name, subnet_name,
                    network_address='10.109.3.0/24', check=True):
         """Step to add subnet for network."""
@@ -131,7 +131,7 @@ class NetworksSteps(BaseSteps):
                 name=subnet_name,
                 network_address=network_address).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def admin_update_network(self, network_name, new_network_name=False,
                              shared=False, check=True):
         """Step to update network as admin."""
@@ -155,7 +155,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=new_network_name or network_name).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def admin_delete_network(self, network_name, check=True):
         """Step to delete network as admin."""
         page_networks = self._page_admin_networks()
@@ -172,7 +172,7 @@ class NetworksSteps(BaseSteps):
             page_networks.table_networks.row(
                 name=network_name).wait_for_absence()
 
-    @step
+    @steps_checker.step
     def admin_filter_networks(self, query, check=True):
         """Step to filter networks."""
         page_networks = self._page_admin_networks()
@@ -192,13 +192,13 @@ class NetworksSteps(BaseSteps):
 
             wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
 
-    @step
+    @steps_checker.step
     def check_network_present(self, network_name):
         """Step to check network is present."""
         self._page_networks().table_networks.row(
             name=network_name).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def check_network_share_status(self, network_name, is_shared=True):
         """Step to check network share status."""
         share_status = 'Yes' if is_shared else 'No'

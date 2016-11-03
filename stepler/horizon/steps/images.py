@@ -22,7 +22,7 @@ from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
 from stepler.horizon.utils import get_size
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -37,7 +37,7 @@ class ImagesSteps(BaseSteps):
         """Open images page if it isn't opened."""
         return self._open(self.app.page_images)
 
-    @step
+    @steps_checker.step
     def create_image(self, image_name, image_url=CIRROS_URL, image_file=None,
                      disk_format='QCOW2', min_disk=None, min_ram=None,
                      protected=False, check=True):
@@ -75,7 +75,7 @@ class ImagesSteps(BaseSteps):
             page_images.table_images.row(
                 name=image_name).wait_for_status('Active')
 
-    @step
+    @steps_checker.step
     def delete_image(self, image_name, check=True):
         """Step to delete image."""
         page_images = self._page_images()
@@ -92,7 +92,7 @@ class ImagesSteps(BaseSteps):
             page_images.table_images.row(
                 name=image_name).wait_for_absence(EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def delete_images(self, image_names, check=True):
         """Step to delete images."""
         page_images = self._page_images()
@@ -110,7 +110,7 @@ class ImagesSteps(BaseSteps):
                 page_images.table_images.row(
                     name=image_name).wait_for_absence(EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def update_metadata(self, image_name, metadata, check=True):
         """Step to update image metadata."""
         page_images = self._page_images()
@@ -132,7 +132,7 @@ class ImagesSteps(BaseSteps):
             page_images.table_images.row(
                 name=image_name, status='Active').wait_for_presence()
 
-    @step
+    @steps_checker.step
     def get_metadata(self, image_name):
         """Step to get image metadata."""
         metadata = {}
@@ -152,7 +152,7 @@ class ImagesSteps(BaseSteps):
 
         return metadata
 
-    @step
+    @steps_checker.step
     def update_image(self, image_name, new_image_name=None, protected=False,
                      check=True):
         """Step to update image."""
@@ -182,7 +182,7 @@ class ImagesSteps(BaseSteps):
                 name=new_image_name or image_name,
                 status='Active').wait_for_presence()
 
-    @step
+    @steps_checker.step
     def view_image(self, image_name, check=True):
         """Step to view image."""
         self._page_images().table_images.row(
@@ -192,7 +192,7 @@ class ImagesSteps(BaseSteps):
             assert_that(self.app.page_image.info_image.label_name.value,
                         equal_to(image_name))
 
-    @step
+    @steps_checker.step
     def create_volume(self, image_name, volume_name, check=True):
         """Step to create volume from image."""
         page_images = self._page_images()
@@ -210,7 +210,7 @@ class ImagesSteps(BaseSteps):
                 self.close_notification('info')
                 form.wait_for_absence()
 
-    @step
+    @steps_checker.step
     def launch_instance(self, image_name, instance_name, network_name,
                         check=True):
         """Step to launch instance from image."""
@@ -240,7 +240,7 @@ class ImagesSteps(BaseSteps):
             if check:
                 form.wait_for_absence()
 
-    @step
+    @steps_checker.step
     def check_images_pagination(self, image_names):
         """Step to check images pagination."""
         page_images = self._page_images()
@@ -283,13 +283,13 @@ class ImagesSteps(BaseSteps):
         assert_that(page_images.table_images.link_prev.is_present,
                     equal_to(False))
 
-    @step
+    @steps_checker.step
     def check_image_present(self, image_name, timeout=None):
         """Step to check image is present."""
         self._page_images().table_images.row(
             name=image_name).wait_for_presence(timeout)
 
-    @step
+    @steps_checker.step
     def check_flavors_limited_in_launch_instance_form(self, image_name,
                                                       disk_size, ram_size):
         """Step to check flavors are limited in launch instance form."""
@@ -321,7 +321,7 @@ class ImagesSteps(BaseSteps):
                                     equal_to(False))
                 form.cancel()
 
-    @step
+    @steps_checker.step
     def check_public_image_visible(self, image_name):
         """Step to check public image is visible."""
         with self._page_images() as page:

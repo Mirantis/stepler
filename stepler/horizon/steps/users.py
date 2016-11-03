@@ -21,7 +21,7 @@ import pom
 from hamcrest import assert_that, equal_to  # noqa
 from waiting import wait
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -33,7 +33,7 @@ class UsersSteps(BaseSteps):
         """Open users page if it isn't opened."""
         return self._open(self.app.page_users)
 
-    @step
+    @steps_checker.step
     def create_user(self, username, password, project=None, role=None,
                     check=True):
         """Step to create user."""
@@ -58,7 +58,7 @@ class UsersSteps(BaseSteps):
             self.close_notification('success')
             page_users.table_users.row(name=username).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def delete_user(self, username, check=True):
         """Step to delete user."""
         page_users = self._page_users()
@@ -73,7 +73,7 @@ class UsersSteps(BaseSteps):
             self.close_notification('success')
             page_users.table_users.row(name=username).wait_for_absence()
 
-    @step
+    @steps_checker.step
     def delete_users(self, usernames, check=True):
         """Step to delete users."""
         page_users = self._page_users()
@@ -90,7 +90,7 @@ class UsersSteps(BaseSteps):
             for username in usernames:
                 page_users.table_users.row(name=username).wait_for_absence()
 
-    @step
+    @steps_checker.step
     def change_user_password(self, username, new_password, check=True):
         """Step to change user password."""
         page_users = self._page_users()
@@ -108,7 +108,7 @@ class UsersSteps(BaseSteps):
                 self.close_notification('success')
                 form.wait_for_absence()
 
-    @step
+    @steps_checker.step
     def filter_users(self, query, check=True):
         """Step to filter users."""
         page_users = self._page_users()
@@ -128,7 +128,7 @@ class UsersSteps(BaseSteps):
 
             wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
 
-    @step
+    @steps_checker.step
     def sort_users(self, reverse=False, check=True):
         """Step to sort users."""
         with self._page_users().table_users as table:
@@ -151,7 +151,7 @@ class UsersSteps(BaseSteps):
 
                 wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
 
-    @step
+    @steps_checker.step
     def toggle_user(self, username, enable, check=True):
         """Step to disable user."""
         if enable:
@@ -172,7 +172,7 @@ class UsersSteps(BaseSteps):
                 self.close_notification('success')
                 assert_that(row.cell('enabled').value, equal_to(need_status))
 
-    @step
+    @steps_checker.step
     def update_user(self, username, new_username, check=True):
         """Step to update user."""
         page_users = self._page_users()
@@ -189,13 +189,13 @@ class UsersSteps(BaseSteps):
             self.close_notification('success')
             page_users.table_users.row(name=new_username).wait_for_presence()
 
-    @step
+    @steps_checker.step
     def check_user_present(self, user_name):
         """Step to check user is present."""
         with self._page_users().table_users.row(name=user_name) as row:
             assert_that(row.is_present, equal_to(True))
 
-    @step
+    @steps_checker.step
     def check_user_not_deleted(self, user_name):
         """Step to check user is not deleted."""
         with self._page_users().table_users.row(
@@ -203,7 +203,7 @@ class UsersSteps(BaseSteps):
             menu.button_toggle.click()
             assert_that(menu.item_delete.is_present, equal_to(False))
 
-    @step
+    @steps_checker.step
     def check_user_enable_status(self, user_name, is_enabled=True):
         """Step to check user enable status."""
         enable_value = 'Yes' if is_enabled else 'No'
@@ -211,7 +211,7 @@ class UsersSteps(BaseSteps):
                 name=user_name).cell('enabled') as cell:
             assert_that(cell.value, equal_to(enable_value))
 
-    @step
+    @steps_checker.step
     def check_empty_users_list(self):
         """Step to check users list is empty."""
         page_users = self._page_users()

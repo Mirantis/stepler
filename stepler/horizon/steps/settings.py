@@ -20,7 +20,7 @@ Settings steps
 from hamcrest import assert_that, equal_to  # noqa
 from urlparse import urlparse
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -32,7 +32,7 @@ class SettingsSteps(BaseSteps):
         """Open settings page if it isn't opened."""
         return self._open(self.app.page_settings)
 
-    @step
+    @steps_checker.step
     def update_settings(self,
                         lang=None,
                         timezone=None,
@@ -55,7 +55,7 @@ class SettingsSteps(BaseSteps):
                 self.close_notification('success')
                 form.wait_for_presence()
 
-    @step
+    @steps_checker.step
     def get_current_settings(self):
         """Current user settings."""
         with self._page_settings().form_settings as form:
@@ -70,7 +70,7 @@ class SettingsSteps(BaseSteps):
         """Open page to change user password if it isn't opened."""
         return self._open(self.app.page_password)
 
-    @step
+    @steps_checker.step
     def change_user_password(self, current_password, new_password, check=True):
         """Step to change user password."""
         page_password = self._page_password()
@@ -84,7 +84,7 @@ class SettingsSteps(BaseSteps):
         if check:
             self.app.page_login.label_error_message.wait_for_presence()
 
-    @step
+    @steps_checker.step
     def check_dashboard_help_url(self, help_url):
         """Step to check dashboard help URL."""
         with self.app.page_base.dropdown_menu_account as menu:

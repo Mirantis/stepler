@@ -20,7 +20,7 @@ Horizon steps for defaults
 import pom
 from hamcrest import assert_that, equal_to  # noqa
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -32,7 +32,7 @@ class DefaultsSteps(BaseSteps):
         """Open access & security page."""
         return self._open(self.app.page_defaults)
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def update_defaults(self, defaults, check=True):
         """Step to update defaults."""
@@ -51,7 +51,7 @@ class DefaultsSteps(BaseSteps):
                     getattr(page_defaults, 'label_' + default_name).value,
                     equal_to(str(default_value)))
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def get_defaults(self, defaults):
         """Step to get defaults."""

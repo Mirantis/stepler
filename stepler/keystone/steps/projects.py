@@ -21,7 +21,7 @@ from hamcrest import assert_that, empty, equal_to  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'ProjectSteps'
@@ -31,7 +31,7 @@ __all__ = [
 class ProjectSteps(BaseSteps):
     """Project steps."""
 
-    @step
+    @steps_checker.step
     def create_project(self, project_name, domain='default', check=True):
         """Step to create project.
 
@@ -55,7 +55,7 @@ class ProjectSteps(BaseSteps):
 
         return project
 
-    @step
+    @steps_checker.step
     def delete_project(self, project, check=True):
         """Step to delete project."""
         self._client.delete(project.id)
@@ -63,7 +63,7 @@ class ProjectSteps(BaseSteps):
         if check:
             self.check_project_presence(project, present=False)
 
-    @step
+    @steps_checker.step
     def check_project_presence(self, project, present=True, timeout=0):
         """Check step that project is present."""
         def predicate():
@@ -75,7 +75,7 @@ class ProjectSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def get_projects(self, check=True):
         """Step to get projects."""
         projects = list(self._client.list())
@@ -83,7 +83,7 @@ class ProjectSteps(BaseSteps):
             assert projects
         return projects
 
-    @step
+    @steps_checker.step
     def get_current_project(self, session, check=True):
         """Step to get current project.
 

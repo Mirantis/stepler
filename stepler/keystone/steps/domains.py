@@ -21,7 +21,7 @@ from hamcrest import assert_that, is_not, empty, equal_to  # noqa
 from waiting import wait
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     'DomainSteps'
@@ -31,7 +31,7 @@ __all__ = [
 class DomainSteps(BaseSteps):
     """Domain steps."""
 
-    @step
+    @steps_checker.step
     def get_domains(self, check=True):
         """Step to get domains.
 
@@ -47,7 +47,7 @@ class DomainSteps(BaseSteps):
             assert_that(domains, is_not(empty()))
         return domains
 
-    @step
+    @steps_checker.step
     def get_domain(self, name, check=True):
         """Step to find domain.
 
@@ -67,7 +67,7 @@ class DomainSteps(BaseSteps):
 
         return domain
 
-    @step
+    @steps_checker.step
     def create_domain(self, domain_name, check=True):
         """Step to create domain.
 
@@ -86,7 +86,7 @@ class DomainSteps(BaseSteps):
 
         return domain
 
-    @step
+    @steps_checker.step
     def delete_domain(self, domain, check=True):
         """Step to delete domain.
 
@@ -100,7 +100,7 @@ class DomainSteps(BaseSteps):
         if check:
             self.check_domain_presence(domain, present=False)
 
-    @step
+    @steps_checker.step
     def check_domain_presence(self, domain, present=True, timeout=0):
         """Step to check domain presence.
 

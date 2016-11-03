@@ -21,7 +21,7 @@ Neutron steps
 from waiting import wait
 
 from stepler.base import BaseSteps
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 __all__ = [
     "NeutronSteps"
@@ -31,7 +31,7 @@ __all__ = [
 class NeutronSteps(BaseSteps):
     """Neutron steps."""
 
-    @step
+    @steps_checker.step
     def create_network(self, network_name, check=True):
         """Step to create network."""
         network = self._client.create(network_name)['network']
@@ -41,7 +41,7 @@ class NeutronSteps(BaseSteps):
 
         return network
 
-    @step
+    @steps_checker.step
     def delete_network(self, network, check=True):
         """Step to delete network."""
         self._client.delete(network['id'])
@@ -49,7 +49,7 @@ class NeutronSteps(BaseSteps):
         if check:
             self.check_network_presence(network, present=False)
 
-    @step
+    @steps_checker.step
     def check_network_presence(self, network, present=True, timeout=0):
         """Verify step to check network is present."""
         def predicate():
@@ -61,7 +61,7 @@ class NeutronSteps(BaseSteps):
 
         wait(predicate, timeout_seconds=timeout)
 
-    @step
+    @steps_checker.step
     def get_network(self, name):
         """Step to get network."""
         target_network = None
@@ -75,7 +75,7 @@ class NeutronSteps(BaseSteps):
 
         return target_network
 
-    @step
+    @steps_checker.step
     def get_network_id_by_mac(self, mac):
         """Step to get network ID by server MAC."""
         network_id = self._client.list_ports(
@@ -83,7 +83,7 @@ class NeutronSteps(BaseSteps):
         return network_id
 
     # TODO(schipiga): need refactor it after copy from mos-integration-tests.
-    @step
+    @steps_checker.step
     def get_dhcp_host_by_network(self, net_id, filter_attr='host',
                                  is_alive=True):
         """Step to get DHCP host name by network ID."""

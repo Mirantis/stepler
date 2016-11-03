@@ -19,7 +19,7 @@ Metadata definitions steps
 
 import pom
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -53,7 +53,7 @@ class NamespacesSteps(BaseSteps):
         """Open namespaces page if it isn't opened."""
         return self._open(self.app.page_metadata_definitions)
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def create_namespace(self, namespace_name, namespace_source='Direct Input',
                          check=True):
@@ -72,7 +72,7 @@ class NamespacesSteps(BaseSteps):
             page_metadata_definitions.table_namespaces.row(
                 name=namespace_name).wait_for_presence()
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def delete_namespace(self, namespace_name, check=True):
         """Step to delete namespace."""

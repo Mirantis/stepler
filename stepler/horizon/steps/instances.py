@@ -21,7 +21,7 @@ from hamcrest import assert_that, equal_to, is_not  # noqa
 from waiting import wait
 
 from stepler.horizon import config
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -33,7 +33,7 @@ class InstancesSteps(BaseSteps):
         """Open instances page if it isn't opened."""
         return self._open(self.app.page_instances)
 
-    @step
+    @steps_checker.step
     def create_instance(self, instance_name, network_name='admin_internal_net',
                         count=1, check=True):
         """Step to create instance."""
@@ -79,7 +79,7 @@ class InstancesSteps(BaseSteps):
 
         return instance_names
 
-    @step
+    @steps_checker.step
     def delete_instances(self, instance_names, check=True):
         """Step to delete instances."""
         page_instances = self._page_instances()
@@ -97,7 +97,7 @@ class InstancesSteps(BaseSteps):
                 page_instances.table_instances.row(
                     name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def delete_instance(self, instance_name, check=True):
         """Step to delete instance."""
         page_instances = self._page_instances()
@@ -114,7 +114,7 @@ class InstancesSteps(BaseSteps):
             page_instances.table_instances.row(
                 name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def lock_instance(self, instance_name, check=True):
         """Step to lock instance."""
         with self._page_instances().table_instances.row(
@@ -126,7 +126,7 @@ class InstancesSteps(BaseSteps):
                 self.close_notification('success')
                 menu.wait_for_absence()
 
-    @step
+    @steps_checker.step
     def unlock_instance(self, instance_name, check=True):
         """Step to unlock instance."""
         with self._page_instances().table_instances.row(
@@ -138,7 +138,7 @@ class InstancesSteps(BaseSteps):
                 self.close_notification('success')
                 menu.wait_for_absence()
 
-    @step
+    @steps_checker.step
     def view_instance(self, instance_name, check=True):
         """Step to view instance."""
         self._page_instances().table_instances.row(
@@ -148,7 +148,7 @@ class InstancesSteps(BaseSteps):
             assert_that(self.app.page_instance.info_instance.label_name.value,
                         equal_to(instance_name))
 
-    @step
+    @steps_checker.step
     def filter_instances(self, query, check=True):
         """Step to filter instances."""
         page_instances = self._page_instances()
@@ -167,7 +167,7 @@ class InstancesSteps(BaseSteps):
             wait(check_rows, timeout_seconds=config.UI_TIMEOUT,
                  sleep_seconds=0.1)
 
-    @step
+    @steps_checker.step
     def reset_instances_filter(self, check=True):
         """Step to reset instances filter."""
         page_instances = self._page_instances()
@@ -178,7 +178,7 @@ class InstancesSteps(BaseSteps):
             assert_that(page_instances.field_filter_instances.value,
                         equal_to(''))
 
-    @step
+    @steps_checker.step
     def check_flavor_absent_in_instance_launch_form(self, flavor):
         """Step to check flavor is absent in instance launch form."""
         page_instances = self._page_instances()
@@ -195,13 +195,13 @@ class InstancesSteps(BaseSteps):
                             is_not(equal_to(flavor.name)))
             form.cancel()
 
-    @step
+    @steps_checker.step
     def check_instance_active(self, instance_name):
         """Step to check instance has active status."""
         self._page_instances().table_instances.row(
             name=instance_name).wait_for_status('Active')
 
-    @step
+    @steps_checker.step
     def check_instances_pagination(self, instances):
         """Step to check instances pagination."""
         page_instances = self._page_instances()

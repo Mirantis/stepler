@@ -23,7 +23,7 @@ import pom
 from hamcrest import assert_that, equal_to, contains_string  # noqa
 from waiting import wait
 
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -37,7 +37,7 @@ class ApiAccessSteps(BaseSteps):
         access_page.label_api_access.click()
         return access_page.tab_api_access
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def download_rc_v2(self, check=True):
         """Step to download v2 file."""
@@ -64,7 +64,7 @@ class ApiAccessSteps(BaseSteps):
                 content,
                 contains_string('OS_TENANT_ID={}'.format(self._project_id)))
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def download_rc_v3(self, check=True):
         """Step to download v3 file."""
@@ -91,7 +91,7 @@ class ApiAccessSteps(BaseSteps):
                 content,
                 contains_string('OS_PROJECT_ID={}'.format(self._project_id)))
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def view_credentials(self, check=True):
         """Step to view credentials."""

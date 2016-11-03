@@ -22,7 +22,7 @@ from hamcrest import assert_that, equal_to, starts_with, has_length  # noqa
 from waiting import wait
 
 from stepler.horizon.config import EVENT_TIMEOUT
-from stepler.third_party.steps_checker import step
+from stepler.third_party import steps_checker
 
 from .base import BaseSteps
 
@@ -40,7 +40,7 @@ class VolumesSteps(BaseSteps):
             page.label_volumes.click()
             return page.tab_volumes
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def create_volume(self, volume_name, source_type='Image', volume_type=None,
                       description=None, check=True):
@@ -73,7 +73,7 @@ class VolumesSteps(BaseSteps):
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def delete_volume(self, volume_name, check=True):
         """Step to delete volume."""
@@ -91,7 +91,7 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=volume_name).wait_for_absence(EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def edit_volume(self, volume_name, new_volume_name, check=True):
         """Step to edit volume."""
@@ -108,7 +108,7 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=new_volume_name).wait_for_presence()
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def delete_volumes(self, volume_names, check=True):
         """Step to delete volumes."""
@@ -127,7 +127,7 @@ class VolumesSteps(BaseSteps):
                 tab_volumes.table_volumes.row(
                     name=volume_name).wait_for_absence(EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def view_volume(self, volume_name, check=True):
         """Step to view volume."""
@@ -138,7 +138,7 @@ class VolumesSteps(BaseSteps):
             assert_that(self.app.page_volume.info_volume.label_name.value,
                         equal_to(volume_name))
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def change_volume_type(self, volume_name, volume_type=None, check=True):
         """Step to change volume type."""
@@ -160,7 +160,7 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=volume_name, type=volume_type).wait_for_presence()
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def upload_volume_to_image(self, volume_name, image_name, check=True):
         """Step to upload volume to image."""
@@ -180,7 +180,7 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=volume_name).wait_for_status('Available')
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def extend_volume(self, volume_name, new_size=2, check=True):
         """Step to extend volume size."""
@@ -210,7 +210,7 @@ class VolumesSteps(BaseSteps):
             page.label_volumes.click()
             return page.tab_volumes
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def change_volume_status(self, volume_name, status=None, check=True):
         """Step to change volume status."""
@@ -232,7 +232,7 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=volume_name, status=status).wait_for_presence()
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def launch_volume_as_instance(self, volume_name, instance_name,
                                   network_name, count=1, check=True):
@@ -265,7 +265,7 @@ class VolumesSteps(BaseSteps):
             if check:
                 form.wait_for_absence()
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def attach_instance(self, volume_name, instance_name, check=True):
         """Step to attach instance."""
@@ -289,7 +289,7 @@ class VolumesSteps(BaseSteps):
                 row.wait_for_status('In-use')
                 assert instance_name in row.cell('attached_to').value
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def detach_instance(self, volume_name, instance_name, check=True):
         """Step to detach instance."""
@@ -310,7 +310,7 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=volume_name).wait_for_status('Available')
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def create_transfer(self, volume_name, transfer_name, check=True):
         """Step to create transfer."""
@@ -338,7 +338,7 @@ class VolumesSteps(BaseSteps):
 
         return transfer_id, transfer_key
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def accept_transfer(self, transfer_id, transfer_key, volume_name,
                         check=True):
@@ -357,7 +357,7 @@ class VolumesSteps(BaseSteps):
             tab_volumes.table_volumes.row(
                 name=volume_name, status='Available').wait_for_presence()
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def migrate_volume(self, volume_name, new_host=None, check=True):
         """Step to migrate host."""
@@ -408,7 +408,7 @@ class VolumesSteps(BaseSteps):
             page.label_backups.click()
             return page.tab_backups
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def create_snapshot(self, volume_name, snapshot_name, description=None,
                         check=True):
@@ -434,7 +434,7 @@ class VolumesSteps(BaseSteps):
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def delete_snapshot(self, snapshot_name, check=True):
         """Step to delete volume snapshot."""
@@ -452,7 +452,7 @@ class VolumesSteps(BaseSteps):
             tab_snapshots.table_snapshots.row(
                 name=snapshot_name).wait_for_absence(EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def delete_snapshots(self, snapshot_names, check=True):
         """Step to delete volume snapshots."""
@@ -471,7 +471,7 @@ class VolumesSteps(BaseSteps):
                 tab_snapshots.table_snapshots.row(
                     name=snapshot_name).wait_for_absence(EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def update_snapshot(self, snapshot_name, new_snapshot_name,
                         description=None, check=True):
@@ -495,7 +495,7 @@ class VolumesSteps(BaseSteps):
                 name=new_snapshot_name,
                 status='Available').wait_for_presence()
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def create_volume_from_snapshot(self, snapshot_name, check=True):
         """Step to create volume from spanshot."""
@@ -513,7 +513,7 @@ class VolumesSteps(BaseSteps):
             self._tab_volumes().table_volumes.row(
                 name=snapshot_name).wait_for_status('Available')
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def create_backup(self, volume_name, backup_name, description=None,
                       container=None, check=True):
@@ -544,7 +544,7 @@ class VolumesSteps(BaseSteps):
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
 
-    @step
+    @steps_checker.step
     @pom.timeit('Step')
     def delete_backups(self, backup_names, check=True):
         """Step to delete volume backups."""
@@ -563,13 +563,13 @@ class VolumesSteps(BaseSteps):
                 tab_backups.table_backups.row(
                     name=backup_name).wait_for_absence(EVENT_TIMEOUT)
 
-    @step
+    @steps_checker.step
     def check_volume_present(self, volume_name, timeout=None):
         """Check volume is present."""
         self.tab_volumes().table_volumes.row(
             name=volume_name, status='Available').wait_for_presence(timeout)
 
-    @step
+    @steps_checker.step
     def check_volumes_pagination(self, volume_names):
         """Step to check volumes pagination."""
         tab_volumes = self.tab_volumes()
@@ -617,7 +617,7 @@ class VolumesSteps(BaseSteps):
         assert_that(tab_volumes.table_volumes.link_prev.is_present,
                     equal_to(False))
 
-    @step
+    @steps_checker.step
     def check_snapshots_pagination(self, snapshot_names):
         """Step to check snapshots pagination."""
         tab_snapshots = self.tab_snapshots()
@@ -665,7 +665,7 @@ class VolumesSteps(BaseSteps):
         assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
                     equal_to(False))
 
-    @step
+    @steps_checker.step
     def check_backups_pagination(self, backup_names):
         """Step to check backups pagination."""
         tab_backups = self.tab_backups()
@@ -713,7 +713,7 @@ class VolumesSteps(BaseSteps):
         assert_that(tab_backups.table_backups.link_prev.is_present,
                     equal_to(False))
 
-    @step
+    @steps_checker.step
     def check_backup_creation_form_name_field_max_length(self, volume_name,
                                                          expected_length):
         """Step to check max possible length of backup name input.
@@ -740,7 +740,7 @@ class VolumesSteps(BaseSteps):
             form.cancel()
         assert_that(backup_name, has_length(expected_length))
 
-    @step
+    @steps_checker.step
     def check_snapshot_creation_form_name_field_max_length(self, volume_name,
                                                            expected_length):
         """Step to check max length of snapshot creation form name input.
