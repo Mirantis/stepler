@@ -51,7 +51,7 @@ class Row(ui.Row):
         self.wait_for_presence()
         with self.cell('status') as cell:
             wait(lambda: cell.value not in self.transit_statuses,
-                 timeout_seconds=EVENT_TIMEOUT, sleep_seconds=0.1)
+                 timeout_seconds=timeout, sleep_seconds=0.1)
             assert cell.value == status
 
 
