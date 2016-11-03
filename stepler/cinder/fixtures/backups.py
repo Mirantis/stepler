@@ -24,6 +24,7 @@ from stepler.cinder import steps
 __all__ = [
     'backup_steps',
     'create_backup',
+    'backups_cleanup',
 ]
 
 
@@ -64,3 +65,23 @@ def create_backup(backup_steps):
 
     for backup in backups:
         backup_steps.delete_backup(backup)
+
+
+@pytest.yield_fixture
+def backups_cleanup(backup_steps):
+    """Function fixture to clear created backups after test.
+
+    It stores ids of all backups before test and remove all new backups
+    after test.
+
+    Args:
+        backup_steps (object): instantiated volume backup steps
+    """
+    preserve_backups_ids = set(
+        backup.id for backup in backup_steps.get_backups(check=False))
+
+    yield
+
+    for backup in backup_steps.get_backups(check=False):
+        if backup.id not in preserve_backups_ids:
+            backup_steps.delete_backup(backup)
