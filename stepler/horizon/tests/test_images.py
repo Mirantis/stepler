@@ -67,7 +67,7 @@ class TestAnyOne(object):
         assert metadata == image_metadata
 
     @pytest.mark.idempotent_id('4016e9af-257b-4df2-8c63-5716f134e5bb')
-    def test_remove_protected_image(self, horizon, create_image, images_steps):
+    def test_remove_protected_image(self, create_image, images_steps):
         """Verify that user can't delete protected image."""
         image_name = next(generate_ids('image', length=20))
         create_image(image_name, protected=True)

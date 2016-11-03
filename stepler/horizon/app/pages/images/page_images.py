@@ -55,10 +55,7 @@ class TableImages(_ui.Table):
 
 @ui.register_ui(
     checkbox_protected=_ui.CheckBox(By.NAME, 'protected'),
-    combobox_disk_format=_ui.ComboBox(
-        By.XPATH,
-        './/div[contains(@class, "themable-select") and '
-        'select[@name="disk_format"]]'),
+    combobox_disk_format=ui.ComboBox(By.NAME, 'disk_format'),
     combobox_source_type=ui.ComboBox(By.NAME, 'source_type'),
     field_image_file=ui.TextField(By.NAME, 'image_file'),
     field_image_url=ui.TextField(By.NAME, 'image_url'),
