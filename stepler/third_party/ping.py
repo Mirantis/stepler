@@ -115,7 +115,7 @@ class Pinger(object):
             waiting.wait(
                 lambda: not self.remote.execute('ps -o pid | grep {}'.format(
                     pid)).is_ok,
-                timeout_seconds=count * 2 + 5)
+                timeout_seconds=count * 10)
         self.remote.execute('kill -SIGINT {}'.format(pid))
         result.stdout = self.remote.check_call("cat {}".format(
             output_file)).stdout
@@ -153,8 +153,7 @@ class Pinger(object):
             object: instance of PingResult
         """
         with self.executor(count=count) as result:
-            pass
-        return result
+            return result
 
     def __enter__(self):
         self.cm = self.executor(count=None)
