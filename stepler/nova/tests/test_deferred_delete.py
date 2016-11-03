@@ -111,8 +111,9 @@ def test_restore_soft_deleted_server(
         server_steps.check_ping_to_server_floating(
             server_2, timeout=config.PING_CALL_TIMEOUT)
 
-        server_steps.check_ping_between_servers_via_floating(
-            [server_1, server_2], timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+        server_steps.check_ping_between_servers(
+            [server_1, server_2], ip_type=config.FLOATING_IP,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
         attach_volume_to_server(server_1, volume)
 
@@ -122,8 +123,9 @@ def test_restore_soft_deleted_server(
         server_steps.check_ping_to_server_floating(
             server_1, timeout=config.PING_CALL_TIMEOUT)
 
-        server_steps.check_ping_between_servers_via_floating(
-            [server_1, server_2], timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+        server_steps.check_ping_between_servers(
+            [server_1, server_2], ip_type=config.FLOATING_IP,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('2498c8dd-a48e-4044-8c14-6d5d603e6f0b')

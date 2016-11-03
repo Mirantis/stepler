@@ -122,5 +122,6 @@ def test_live_evacuation(cirros_image,
     for server in servers:
         server_steps.check_instance_hypervisor_hostname(server, host_name_2)
 
-    server_steps.check_ping_between_servers_via_floating(
-        servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+    server_steps.check_ping_between_servers(
+        servers, ip_type=config.FLOATING_IP,
+        timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)

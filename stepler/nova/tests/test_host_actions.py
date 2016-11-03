@@ -180,5 +180,6 @@ def test_migrate_instances(cirros_image,
         floating_ip = nova_create_floating_ip()
         server_steps.attach_floating_ip(server, floating_ip)
 
-    server_steps.check_ping_between_servers_via_floating(
-        servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+    server_steps.check_ping_between_servers(
+        servers, ip_type=config.FLOATING_IP,
+        timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)

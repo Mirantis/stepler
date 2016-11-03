@@ -183,3 +183,85 @@ def test_remove_incorrect_fixed_ip_from_server(
     server_steps.detach_fixed_ip(server)
 
     server_steps.get_server_ssh(server, ip=nova_floating_ip.ip)
+
+
+@pytest.mark.idempotent_id('023648c3-8eee-4c91-8993-bb3999a86ab8')
+def test_attach_detach_fixed_ip_to_server(
+        flavor,
+        security_group,
+        keypair,
+        cirros_image,
+        network,
+        subnet,
+        router,
+        nova_create_floating_ip,
+        add_router_interfaces,
+        server,
+        server_steps):
+    """**Scenario:** Basic operations with fixed IPs on an instance.
+
+    Test to check server network connection after attach new
+    fixed IP, then detach old fixed IP from server
+
+    **Setup:**
+
+    #. Create flavor
+    #. Create security_group
+    #. Create keypair
+    #. Upload cirros image
+    #. Create network
+    #. Created subnet
+    #. Created router
+
+    **Steps:**
+
+    #. Add subnet to created router
+    #. Boot two servers from cirros image
+    #. Create two nova floating ips
+    #. Attach floating IP to server to each server
+    #. Get SSH connection to servers
+    #. Get servers fixed IPs
+    #. Check that each fixed IP can be pinged from each server
+    #. To server 1 attach new fixed IP
+    #. From server 1 detach old fixed IP
+    #. Check that each fixed IP (excluding old server 1 fixed IP and
+        including new fixed IP) can be pinged from each server.
+
+    **Teardown:**
+
+    #. Delete flavor
+    #. Delete security_group
+    #. Delete keypair
+    #. Delete cirros image
+    #. Delete floating IPs
+    #. Delete network
+    #. Delete subnet
+    #. Delete router
+    """
+    add_router_interfaces(router, [subnet])
+
+    server_1, server_2 = server(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME)
+
+    server_1_float = nova_create_floating_ip()
+    server_2_float = nova_create_floating_ip()
+
+    server_steps.attach_floating_ip(server_1, server_1_float)
+    server_steps.attach_floating_ip(server_2, server_2_float)
+
+    server_steps.check_ping_between_servers(servers=(server_1, server_2),
+                                            ip_type=config.FIXED_IP)
+
+    # More likely there is a bug in product.
+    # After attaching another one fixed IP to server it became unavailable.
+    # Issue is constantly reproducing on MOS 9.1 snapshot #268.
+    server_steps.attach_fixed_ip(server_1, network['id'])
+    server_steps.detach_fixed_ip(server_1)
+
+    server_steps.check_ping_between_servers(servers=(server_1, server_2),
+                                            ip_type=config.FIXED_IP)
