@@ -106,11 +106,11 @@ class SnapshotSteps(base.BaseSteps):
 
         def predicate():
             # Make a dict with actual presence values for each snapshot
-            actial_presence = dict.fromkeys(snapshot_ids, False)
+            actual_presence = dict.fromkeys(snapshot_ids, False)
             for snapshot in self._client.list():
-                if snapshot.id in actial_presence:
-                    actial_presence[snapshot.id] = True
-            return expect_that(actial_presence, equal_to(expected_presence))
+                if snapshot.id in actual_presence:
+                    actual_presence[snapshot.id] = True
+            return expect_that(actual_presence, equal_to(expected_presence))
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
@@ -146,7 +146,7 @@ class SnapshotSteps(base.BaseSteps):
             list: snapshots collection
 
         Raises:
-            AsserionError: if check was failed
+            AssertionError: if check was failed
         """
         snapshots = list(self._client.list())
 

@@ -44,7 +44,7 @@ def cinder_quota_steps(cinder_client):
 
 @pytest.yield_fixture
 def big_snapshot_quota(session, cinder_quota_steps, project_steps):
-    """Function fixture to increase cinder snapshots coutn quota up.
+    """Function fixture to increase cinder snapshots count quota up.
 
     This fixture restore original quota value after test.
 

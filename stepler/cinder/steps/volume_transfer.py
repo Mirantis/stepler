@@ -135,8 +135,8 @@ class VolumeTransferSteps(base.BaseSteps):
                 timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
     @steps_checker.step
-    def check_transfer_not_created_with_long_tranfer_name(self, volume,
-                                                          transfer_name):
+    def check_transfer_not_created_with_long_transfer_name(self, volume,
+                                                           transfer_name):
         """Step for negative test case of transfer creation with invalid name.
 
         Args:

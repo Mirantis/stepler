@@ -41,7 +41,7 @@ def test_negative_create_volume_transfer_long_name(volume, transfer_steps):
     #. Delete cinder volume
     """
     long_name = next(utils.generate_ids(length=256))
-    transfer_steps.check_transfer_not_created_with_long_tranfer_name(
+    transfer_steps.check_transfer_not_created_with_long_transfer_name(
         volume, transfer_name=long_name)
 
 
