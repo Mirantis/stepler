@@ -28,6 +28,7 @@ __all__ = sorted([  # sort for documentation
 
     'get_session',
     'session',
+    'uncleanable',
 
     'report_log',
     'report_dir',
