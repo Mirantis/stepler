@@ -30,28 +30,29 @@ def test_launch_server_from_image_using_all_flavors(
         keypair,
         create_server_context,
         flavor_steps):
+    # TODO (sandriichenko): launchpad can't find bug 1680616
     """**Scenario:** Launch server from image using all standard flavors.
 
-    This test verifies test #1680616
+    This test verifies bug #1680616
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create security group with allow ping rule
-        #. Create keypair
+    #. Upload cirros image
+    #. Create security group with allow ping rule
+    #. Create keypair
 
     **Steps:**
 
-        #. Get list of all flavors
-        #. Create and boot server using every flavor
-        #. Check that server status is active
+    #. Get list of all flavors
+    #. Create and boot server using every flavor
+    #. Check that server status is active
 
     **Teardown:**
 
-        #. Delete servers
-        #. Delete security group
-        #. Delete keypair
-        #. Delete cirros image
+    #. Delete servers
+    #. Delete security group
+    #. Delete keypair
+    #. Delete cirros image
     """
     flavors = flavor_steps.get_flavors()
 
@@ -87,27 +88,27 @@ def test_launch_vm_from_volume_using_all_flavors(
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create security group with allow ping rule
-        #. Create keypair
-        #. Create volume from cirros image
+    #. Upload cirros image
+    #. Create security group with allow ping rule
+    #. Create keypair
+    #. Create volume from cirros image
 
     **Steps:**
 
-        #. Get list of all flavors
-        #. Create and boot server from volume using every flavor
-        #. Check that server status is active
-        #. Assign floating IP to server
-        #. Check that server is available via ping
+    #. Get list of all flavors
+    #. Create and boot server from volume using every flavor
+    #. Check that server status is active
+    #. Assign floating IP to server
+    #. Check that server is available via ping
 
     **Teardown:**
 
-        #. Delete servers
-        #. Delete security group
-        #. Delete keypair
-        #. Delete cirros image
-        #. Delete volume
-        #. Delete floating IP
+    #. Delete servers
+    #. Delete security group
+    #. Delete keypair
+    #. Delete cirros image
+    #. Delete volume
+    #. Delete floating IP
     """
     flavors = flavor_steps.get_flavors()
 
