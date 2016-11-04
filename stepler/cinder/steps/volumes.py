@@ -131,8 +131,8 @@ class VolumeSteps(base.BaseSteps):
 
                 if snapshot_id:
                     assert_that(volume.snapshot_id, equal_to(snapshot_id))
-                if name:
-                    assert_that(volume.name, equal_to(name))
+                if names:
+                    assert_that(volume.name, is_in(names))
                 if size:
                     assert_that(volume.size, equal_to(size))
                 if volume_type:
