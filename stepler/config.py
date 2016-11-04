@@ -47,6 +47,7 @@ UBUNTU_XENIAL_QCOW2_URL = 'https://cloud-images.ubuntu.com/xenial/current/xenial
 FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases/23/Cloud/x86_64/Images/Fedora-Cloud-Base-23-20151030.x86_64.qcow2'  # noqa E501
 CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'  # noqa E501
 UBUNTU_ISO_URL = 'http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-amd64/current/images/netboot/mini.iso'  # noqa E501
+BAREMETAL_UBUNTU = 'http://172.18.162.84:8000/dib-user-image-dkms-grub.raw'
 
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa E501
@@ -108,6 +109,7 @@ BACKUP_DELETE_TIMEOUT = 3 * 60
 
 # Glance
 IMAGE_AVAILABLE_TIMEOUT = 5 * 60
+BAREMETAL_FUEL_DISK_INFO = [{"name": "sda", "extra": [], "free_space": 11000, "type": "disk", "id": "sda", "size": 11000, "volumes": [{"mount": "/", "type": "partition", "file_system": "ext4", "size": 10000}]}]  # noqa
 
 # Neutron
 ADMIN_INTERNAL_NETWORK_NAME = 'admin_internal_net'
@@ -128,13 +130,13 @@ PING_CALL_TIMEOUT = 5 * 60
 PING_BETWEEN_SERVERS_TIMEOUT = 5 * 60
 USERDATA_EXECUTING_TIMEOUT = 5 * 60
 SSH_CLIENT_TIMEOUT = 60
-SSH_CONNECT_TIMEOUT = 5 * 60
+SSH_CONNECT_TIMEOUT = 8 * 60
 LIVE_MIGRATE_TIMEOUT = 5 * 60
 LIVE_MIGRATION_PING_MAX_LOSS = 20
 VERIFY_RESIZE_TIMEOUT = 3 * 60
 SOFT_DELETED_TIMEOUT = 30
 SERVER_DELETE_TIMEOUT = 3 * 60
-SERVER_ACTIVE_TIMEOUT = 3 * 60
+SERVER_ACTIVE_TIMEOUT = 10 * 60
 SERVER_UPDATE_TIMEOUT = 2 * 60
 
 NOVA_AVAILABILITY_TIMEOUT = 2 * 60
@@ -158,6 +160,9 @@ STACK_DELETING_TIMEOUT = 3 * 60
 STACK_UPDATING_TIMEOUT = 5 * 60
 RESOURCE_NAME = 'stepler_cirros_image'
 HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-templates/master/hot/resource_group/resource_group.yaml'  # noqa
+
+# Ironic
+BAREMETAL_NETWORK = 'baremetal'
 
 # CLI clients
 SERVER_LIST_TIMEOUT = 60
