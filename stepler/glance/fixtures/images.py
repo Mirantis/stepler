@@ -17,6 +17,7 @@ Glance fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 
 from hamcrest import assert_that, is_not  # noqa
@@ -40,6 +41,7 @@ __all__ = [
     'ubuntu_image',
     'images_cleanup',
     'ubuntu_xenial_image',
+    'baremetal_ubuntu_image',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -321,3 +323,29 @@ def cirros_image(get_glance_steps):
         is_api=False).delete_images([_cirros_image])
 
     SKIPPED_IMAGES.remove(_cirros_image)
+
+
+@pytest.yield_fixture
+def baremetal_ubuntu_image(glance_steps):
+    """Function fixture to create ubuntu image with options.
+
+    Args:
+        glance_steps (function): glance steps
+
+    Returns:
+        object: ubuntu glance image
+    """
+    image_name = next(utils.generate_ids('baremetal-ubuntu'))
+    image_path = utils.get_file_path(config.BAREMETAL_UBUNTU)
+    fuel_disk_info = json.dumps(config.BAREMETAL_FUEL_DISK_INFO)
+    image = glance_steps.create_images([image_name],
+                                       image_path,
+                                       disk_format='raw',
+                                       container_format='bare',
+                                       cpu_arch="x86_64",
+                                       hypervisor_type="baremetal",
+                                       fuel_disk_info=fuel_disk_info)[0]
+
+    yield image
+
+    glance_steps.delete_images([image])
