@@ -35,22 +35,22 @@ def test_dispatch_external_event(
 
     **Setup:**
 
-        #. Create cirros image
-        #. Create network
-        #. Create subnet
-        #. Create server
+    #. Create cirros image
+    #. Create network
+    #. Create subnet
+    #. Create server
 
     **Steps:**
 
-        #. Check in nova-api log that the external event "network-vif-plugged"
-           have been created for this instance and got "status": "completed"
+    #. Check in nova-api log that the external event "network-vif-plugged"
+       have been created for this instance and got "status": "completed"
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete subnet
-        #. Delete network
-        #. Delete cirros image
+    #. Delete server
+    #. Delete subnet
+    #. Delete network
+    #. Delete cirros image
     """
     network_name = next(utils.generate_ids('network'))
     network = create_network(network_name)

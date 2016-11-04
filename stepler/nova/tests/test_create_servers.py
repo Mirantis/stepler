@@ -30,9 +30,10 @@ def test_launch_server_from_image_using_all_flavors(
         keypair,
         create_server_context,
         flavor_steps):
+    # TODO (sandriichenko): launchpad can't find bug 1680616
     """**Scenario:** Launch server from image using all standard flavors.
 
-    This test verifies test #1680616
+    This test verifies bug #1680616
 
     **Setup:**
 
