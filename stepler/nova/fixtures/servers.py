@@ -95,20 +95,27 @@ def get_server_steps(request, get_nova_client):
 
 
 @pytest.fixture
-def server_steps(get_server_steps, servers_cleanup):
+def server_steps(get_server_steps):
     """Function fixture to get nova steps.
 
     Args:
         get_server_steps (function): function to get server steps
-        servers_cleanup (function): function to make servers cleanup right
-            after server steps initialization
 
-    Returns:
+    Yields:
         ServerSteps: instantiated server steps.
     """
+    def _get_server_ids():
+        # check=False because in best case no servers will be
+        servers = _server_steps.get_servers(
+            name_prefix=config.STEPLER_PREFIX, check=False)
+        return {server.id for server in servers}
+
     _server_steps = get_server_steps()
-    servers_cleanup(_server_steps)
-    return _server_steps
+    server_ids = _get_server_ids()
+
+    yield _server_steps
+
+    _server_steps.delete_servers(_get_server_ids() - server_ids)
 
 
 @pytest.yield_fixture
