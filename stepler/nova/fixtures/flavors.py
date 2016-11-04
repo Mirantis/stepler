@@ -28,6 +28,7 @@ __all__ = [
     'flavor',
     'flavor_steps',
     'tiny_flavor',
+    'baremetal_flavor',
 ]
 
 
@@ -98,3 +99,19 @@ def tiny_flavor(flavor_steps):
         object: tiny flavor
     """
     return flavor_steps.get_flavor(name=config.FLAVOR_TINY)
+
+
+@pytest.fixture
+def baremetal_flavor(create_flavor):
+    """Function fixture to create baremetal flavor before test.
+
+     Args:
+        create_flavor (function): function to create flavor with options
+
+    Returns:
+        object: baremetal flavor
+    """
+    return create_flavor(next(generate_ids('bm_flavor')),
+                         ram=config.BAREMETAL_RAM,
+                         vcpus=config.BAREMETAL_VCPUS,
+                         disk=config.BAREMETAL_DISK)
