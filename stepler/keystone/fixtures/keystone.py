@@ -38,8 +38,8 @@ def get_keystone_client(get_session):
     Returns:
         function: function to get keystone client
     """
-    def _get_client(*args, **kwgs):
-        return client.Client(session=get_session(*args, **kwgs))
+    def _get_client(**credentials):
+        return client.Client(session=get_session(**credentials))
     return _get_client
 
 
