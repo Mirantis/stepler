@@ -169,7 +169,7 @@ class VolumeSteps(base.BaseSteps):
 
         Args:
             volume (object): cinder volume to check presence status
-            present (bool): flag whether volume should present or not
+            must_present (bool): flag whether volume should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -193,6 +193,7 @@ class VolumeSteps(base.BaseSteps):
         Args:
             volume (object): cinder volume to check status
             status (str): volume status name to check
+            transit_statuses (tuple): possible volume transitional statuses
             timeout (int): seconds to wait a result of check
 
         Raises:
