@@ -133,6 +133,7 @@ class ServerSteps(base.BaseSteps):
         """Step to retrieve servers from nova.
 
         Args:
+            name_prefix (str): prefix of server names to get
             check (bool): flag whether to check step or not
         Returns:
             list: server list
@@ -435,6 +436,7 @@ class ServerSteps(base.BaseSteps):
             remote_from (object|None): instance of
                 stepler.third_party.ssh.SshClient. If None - ping executing
                 from local host.
+            ping_count (int): count of attempts to ping
             timeout (int): seconds to wait for success ping
 
         Raises:
@@ -647,7 +649,7 @@ class ServerSteps(base.BaseSteps):
             remote (object): instance of stepler.third_party.ssh.SshClient
             check (bool): flag whether to check step or not
         Raises:
-            Exception: if commmand exit code is not 0
+            Exception: if command exit code is not 0
         """
         remote.check_call('cpulimit -b -l 50 -- gzip -9 '
                           '< /dev/urandom > /dev/null')
@@ -664,9 +666,9 @@ class ServerSteps(base.BaseSteps):
             remote (object): instance of stepler.third_party.ssh.SshClient
             check (bool): flag whether to check step or not
         Raises:
-            Exception: if commmand exit code is not 0
+            Exception: if command exit code is not 0
         """
-        # To aviod inifine loop, count of workers to stress is limited to 3.
+        # To avoid infinite loop, count of workers to stress is limited to 3.
         # This value is suitable for most cases.
         for i in range(1, 4):
             remote.kill_process('stress')
@@ -750,7 +752,6 @@ class ServerSteps(base.BaseSteps):
         Args:
             server_ssh (object): instance of stepler.third_party.ssh.SshClient
             timestamp (str): timestamp to check
-            check (bool): flag whether to check step or not
 
         Raises:
             AssertionError: if timestamp on root and ephemeral are not equal
