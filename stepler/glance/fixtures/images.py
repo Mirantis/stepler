@@ -17,6 +17,7 @@ Glance fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 
 from hamcrest import assert_that, is_not  # noqa
@@ -40,6 +41,7 @@ __all__ = [
     'ubuntu_image',
     'images_cleanup',
     'ubuntu_xenial_image',
+    'baremetal_ubuntu_image',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -235,11 +237,12 @@ def create_images_context(get_glance_steps, uncleanable):
     """
 
     @context.context
-    def _create_images_context(image_names, image_url):
+    def _create_images_context(image_names, image_url, **kwargs):
         images = get_glance_steps(
             version=config.CURRENT_GLANCE_VERSION, is_api=False).create_images(
                 image_names=image_names,
-                image_path=utils.get_file_path(image_url))
+                image_path=utils.get_file_path(image_url),
+                **kwargs)
 
         for image in images:
             uncleanable.image_ids.add(image.id)
@@ -302,4 +305,25 @@ def cirros_image(create_images_context):
     """
     with create_images_context(utils.generate_ids('cirros'),
                                config.CIRROS_QCOW2_URL) as images:
+        yield images[0]
+
+
+@pytest.fixture(scope='session')
+def baremetal_ubuntu_image(create_images_context):
+    """Session fixture to create baremetal ubuntu image with default options.
+
+    Args:
+        create_images_context (function): function to create images as context
+
+    Returns:
+        object: ubuntu image
+    """
+    disk_info = json.dumps(config.BAREMETAL_DISK_INFO)
+    with create_images_context(utils.generate_ids('baremetal-ubuntu'),
+                               config.BAREMETAL_UBUNTU,
+                               disk_format='raw',
+                               container_format='bare',
+                               cpu_arch="x86_64",
+                               hypervisor_type="baremetal",
+                               fuel_disk_info=disk_info) as images:
         yield images[0]

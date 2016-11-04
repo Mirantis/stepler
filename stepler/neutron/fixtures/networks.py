@@ -29,7 +29,8 @@ __all__ = [
     'public_network',
     'network_steps',
     'admin_internal_network',
-    'internal_network'
+    'internal_network',
+    'baremetal_network',
 ]
 
 
@@ -125,3 +126,16 @@ def admin_internal_network(network_steps):
     """
     return network_steps.get_network_by_name(
         name=config.ADMIN_INTERNAL_NETWORK_NAME)
+
+
+@pytest.fixture
+def baremetal_network(network_steps):
+    """Function fixture to find baremetal network before test.
+
+     Args:
+         network_steps (object): instantiated network steps
+
+    Returns:
+        object: baremetal network
+    """
+    return network_steps.get_network_by_name(name=config.BAREMETAL_NETWORK)

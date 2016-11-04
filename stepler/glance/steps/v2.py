@@ -40,7 +40,8 @@ class GlanceStepsV2(BaseGlanceSteps):
                       image_names=None,
                       disk_format='qcow2',
                       container_format='bare',
-                      check=True):
+                      check=True,
+                      **kwargs):
         """Step to create images.
 
         Args:
@@ -50,6 +51,8 @@ class GlanceStepsV2(BaseGlanceSteps):
             disk_format (str): format of image disk
             container_format (str): format of image container
             check (bool): flag whether to check step or not
+            **kwargs: Optional. A dictionary containing the attributes
+                        of the resource
 
         Returns:
             list: glance images
@@ -63,7 +66,8 @@ class GlanceStepsV2(BaseGlanceSteps):
             image = self._client.images.create(
                 name=image_name,
                 disk_format=disk_format,
-                container_format=container_format)
+                container_format=container_format,
+                **kwargs)
 
             self._client.images.upload(image.id, open(image_path, 'rb'))
             images.append(image)
