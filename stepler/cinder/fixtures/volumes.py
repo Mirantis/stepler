@@ -104,7 +104,8 @@ def volume_steps(get_volume_steps, uncleanable):
     def _get_volumes():
         # check=False because in best case no volumes will be
         return _volume_steps.get_volumes(
-            name_prefix=config.STEPLER_PREFIX, check=False)
+            metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
+            check=False)
 
     _volume_steps = get_volume_steps()
     volume_ids_before = [volume.id for volume in _get_volumes()]
