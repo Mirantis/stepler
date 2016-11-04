@@ -37,10 +37,10 @@ def get_cinder_client(get_session):
     Returns:
         function: function to get cinder client
     """
-    def _get_cinder_client(*args, **kwgs):
+    def _get_cinder_client(**credentials):
         return cinderclient.Client(
             version=config.CURRENT_CINDER_VERSION,
-            session=get_session(*args, **kwgs))
+            session=get_session(**credentials))
 
     return _get_cinder_client
 

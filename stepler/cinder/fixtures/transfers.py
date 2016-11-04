@@ -38,9 +38,9 @@ def get_transfer_steps(get_cinder_client):
     Returns:
         function: function to get transfer steps.
     """
-    def _get_transfer_steps(*args, **kwargs):
+    def _get_transfer_steps(**credentials):
         return steps.VolumeTransferSteps(
-            get_cinder_client(*args, **kwargs).transfers)
+            get_cinder_client(**credentials).transfers)
 
     return _get_transfer_steps
 
