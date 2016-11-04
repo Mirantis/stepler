@@ -79,6 +79,7 @@ class VolumeSteps(base.BaseSteps):
                        description=None,
                        snapshot_id=None,
                        source_volid=None,
+                       metadata=None,
                        check=True):
         """Step to create volumes.
 
@@ -90,6 +91,7 @@ class VolumeSteps(base.BaseSteps):
             description (str): description
             snapshot_id (str): ID of the snapshot
             source_volid (str): ID of source volume to clone from
+            metadata (dict): volume metadata
             check (bool): flag whether to check step or not
 
         Returns:
@@ -100,6 +102,11 @@ class VolumeSteps(base.BaseSteps):
         """
         image_id = None if image is None else image.id
         volumes = []
+
+        metadata = metadata or {}
+        # Volume can have no name. Mark it as stepler-created via metadata.
+        metadata[config.STEPLER_PREFIX] = True
+
         for name in names:
             volume = self._client.volumes.create(size,
                                                  name=name,
@@ -107,7 +114,8 @@ class VolumeSteps(base.BaseSteps):
                                                  volume_type=volume_type,
                                                  description=description,
                                                  source_volid=source_volid,
-                                                 snapshot_id=snapshot_id)
+                                                 snapshot_id=snapshot_id,
+                                                 metadata=metadata)
             volumes.append(volume)
 
         if check:
@@ -198,10 +206,12 @@ class VolumeSteps(base.BaseSteps):
         assert_that(volume.status.lower(), equal_to(status.lower()))
 
     @steps_checker.step
-    def get_volumes(self, name_prefix=None, check=True):
+    def get_volumes(self, name_prefix=None, metadata=None, check=True):
         """Step to retrieve volumes.
 
         Args:
+            name_prefix (str): prefix to filter volumes by name
+            metadata (dict): data to filter volume by metadata key-value
             check (bool): flag whether to check step or not
 
         Returns:
@@ -215,6 +225,17 @@ class VolumeSteps(base.BaseSteps):
         if name_prefix:
             volumes = [volume for volume in volumes
                        if (volume.name or '').startswith(name_prefix)]
+
+        if metadata:
+            filtered_volumes = []
+            metaset = set(metadata.items())
+
+            for volume in volumes:
+                volume_metaset = set(volume.metadata.items())
+                if metaset.issubset(volume_metaset):
+                    filtered_volumes.append(volume)
+
+            volumes = filtered_volumes
 
         if check:
             assert_that(volumes, is_not(empty()))
