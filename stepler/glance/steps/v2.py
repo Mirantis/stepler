@@ -41,7 +41,8 @@ class GlanceStepsV2(BaseGlanceSteps):
                       disk_format='qcow2',
                       container_format='bare',
                       visibility='private',
-                      check=True):
+                      check=True,
+                      **kwargs):
         """Step to create images.
 
         Args:
@@ -53,6 +54,8 @@ class GlanceStepsV2(BaseGlanceSteps):
             visibility (str): image visibility (private or public). Default is
                 private.
             check (bool): flag whether to check step or not
+            **kwargs: Optional. A dictionary containing the attributes
+                        of the resource
 
         Returns:
             list: glance images
@@ -68,6 +71,7 @@ class GlanceStepsV2(BaseGlanceSteps):
                 disk_format=disk_format,
                 container_format=container_format,
                 visibility=visibility)
+                **kwargs)
 
             self._client.images.upload(image.id, open(image_path, 'rb'))
             images.append(image)

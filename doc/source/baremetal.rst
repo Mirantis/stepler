@@ -17,3 +17,7 @@ Ironic node tests
 
 .. automodule:: stepler.baremetal.tests.test_node_set_maintenance
    :members:
+
+.. automodule:: stepler.baremetal.tests.test_baremetal_node
+   :members:
+
