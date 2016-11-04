@@ -33,6 +33,7 @@ __all__ = sorted([  # sort for documentation
     'cirros_image',
     'create_image',
     'create_images',
+    'create_images_context',
     'get_glance_steps',
     'glance_steps',
     'glance_steps_v1',
