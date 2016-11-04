@@ -34,6 +34,5 @@ def test_create_image_from_volume(upload_volume_to_image, disk_format):
     #. Delete raw|qcow2 image
     #. Delete cinder volume
     """
-    volume_name = next(utils.generate_ids('volume'))
-    image_name = next(utils.generate_ids('image'))
-    upload_volume_to_image(volume_name, image_name, disk_format=disk_format)
+    upload_volume_to_image(image_name=next(utils.generate_ids('image')),
+                           disk_format=disk_format)

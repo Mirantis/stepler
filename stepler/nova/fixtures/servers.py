@@ -290,10 +290,7 @@ def live_migration_server(request,
     boot_from_volume = params.get('boot_from_volume', False)
 
     if boot_from_volume:
-        volume = volume_steps.create_volumes(
-            names=utils.generate_ids('volume', count=1),
-            size=20,
-            image=ubuntu_image)[0]
+        volume = volume_steps.create_volumes(size=20, image=ubuntu_image)[0]
 
         block_device_mapping = {'vda': volume.id}
         kwargs = dict(image=None, block_device_mapping=block_device_mapping)
