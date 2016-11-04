@@ -72,7 +72,7 @@ class VolumeSteps(base.BaseSteps):
 
     @steps_checker.step
     def create_volumes(self,
-                       names,
+                       names=config.DEFAULT,
                        size=1,
                        image=None,
                        volume_type=None,
@@ -107,6 +107,9 @@ class VolumeSteps(base.BaseSteps):
         # Volume can have no name. Mark it as stepler-created via metadata.
         # Metadata should contain only string values.
         metadata[config.STEPLER_PREFIX] = config.STEPLER_PREFIX
+
+        if names == config.DEFAULT:
+            names = utils.generate_ids()
 
         for name in names:
             volume = self._client.volumes.create(size,
@@ -379,9 +382,13 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.OverLimit, error_message))
 
     @steps_checker.step
-    def volume_upload_to_image(self, volume, image_name,
-                               force=False, container_format='bare',
-                               disk_format='raw', check=True):
+    def volume_upload_to_image(self,
+                               volume,
+                               image_name=config.DEFAULT,
+                               force=False,
+                               container_format='bare',
+                               disk_format='raw',
+                               check=True):
         """Step to upload volume to image.
 
         Args:
@@ -399,6 +406,9 @@ class VolumeSteps(base.BaseSteps):
         Returns:
             object: image
         """
+        if image_name == config.DEFAULT:
+            image_name = next(utils.generate_ids())
+
         response, image = self._client.volumes.upload_to_image(
             volume=volume,
             force=force,
