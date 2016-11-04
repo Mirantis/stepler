@@ -98,6 +98,7 @@ def server_steps(get_server_steps, uncleanable):
 
     Args:
         get_server_steps (function): function to get server steps
+        uncleanable (AttrDict): data structure with skipped resources
 
     Yields:
         ServerSteps: instantiated server steps

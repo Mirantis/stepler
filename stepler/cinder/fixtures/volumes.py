@@ -91,20 +91,33 @@ def get_volume_steps(get_cinder_client):
 
 
 @pytest.fixture
-def volume_steps(get_volume_steps, volumes_cleanup):
+def volume_steps(get_volume_steps, uncleanable):
     """Function fixture to get volume steps.
 
     Args:
         get_volume_steps (function): function to get volume steps
-        volumes_cleanup (function): function to make volumes cleanup right
-            after volume steps initialization
+        uncleanable (AttrDict): data structure with skipped resources
 
-    Returns:
+    Yields:
         stepler.cinder.steps.VolumeSteps: instantiated volume steps
     """
+    def _get_volumes():
+        # check=False because in best case no volumes will be
+        return _volume_steps.get_volumes(
+            name_prefix=config.STEPLER_PREFIX, check=False)
+
     _volume_steps = get_volume_steps()
-    volumes_cleanup(_volume_steps)
-    return _volume_steps
+    volume_ids_before = [volume.id for volume in _get_volumes()]
+
+    yield _volume_steps
+
+    deleting_volumes = []
+    for volume in _get_volumes():
+        if volume.id not in uncleanable.volume_ids:
+            if volume.id not in volume_ids_before:
+                deleting_volumes.append(volume)
+
+    _volume_steps.delete_volumes(deleting_volumes)
 
 
 @pytest.yield_fixture
@@ -193,7 +206,7 @@ def upload_volume_to_image(create_volume, volume_steps, glance_steps):
 
 
 @pytest.fixture
-def volume(create_volume):
+def volume(volume_steps):
     """Function fixture to create volume with default options before test.
 
     Args:
@@ -202,5 +215,5 @@ def volume(create_volume):
     Returns:
         object: cinder volume
     """
-    volume_name = next(utils.generate_ids('volume'))
-    return create_volume(name=volume_name)
+    return volume_steps.create_volumes(
+        names=utils.generate_ids('volume', count=1))[0]
