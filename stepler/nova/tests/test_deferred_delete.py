@@ -159,14 +159,14 @@ def test_server_deleted_after_reclaim_timeout(
     **Steps:**
 
     #. Update '/etc/nova/nova.conf' with 'reclaim_instance_interval=30'
-           and restart nova-api and nova-compute on all nodes
+       and restart nova-api and nova-compute on all nodes
     #. Create and run two instances (vm1, vm2) inside same net
     #. Create and attach floating IPs to instances
     #. Check that ping are successful between vms
     #. Create a volume and attach it to an instance vm1
     #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
     #. Wait for the reclaim instance interval to expire and make sure
-           that vm1 is deleted
+       that vm1 is deleted
     #. Check that volume is released now and has an Available state
     #. Attach the volume to vm2 and check that it has 'in-use' state.
     #. Detach the volume
