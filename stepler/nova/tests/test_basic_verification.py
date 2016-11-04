@@ -122,12 +122,12 @@ def test_delete_server_with_precreated_port(
         #. Delete subnet
         #. Delete flavor
     """
-    server_name = next(utils.generate_ids('server'))
-    server = server_steps.create_server(server_name,
-                                        image=cirros_image,
-                                        flavor=flavor,
-                                        ports=[port])
-    server_steps.delete_servers([server])
+    servers = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=1),
+        image=cirros_image,
+        flavor=flavor,
+        ports=[port])
+    server_steps.delete_servers(servers)
     port_steps.check_presence(port)
 
 
