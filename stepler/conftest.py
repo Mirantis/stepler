@@ -121,6 +121,7 @@ __all__ = sorted([  # sort for documentation
     'get_router_steps',
     'get_subnet_steps',
     'admin_internal_network',
+    'baremetal_network',
 
     'create_flavor',
     'flavor',

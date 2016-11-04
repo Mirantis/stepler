@@ -29,6 +29,7 @@ __all__ = sorted([  # sort for documentation
     'network',
     'public_network',
     'internal_network',
+    'baremetal_network',
     'create_port',
     'port',
     'create_subnet',
