@@ -38,8 +38,6 @@ __all__ = sorted([  # sort for documentation
     'report_log',
     'report_dir',
 
-    'create_volume',
-    'create_volumes',
     'volume',
     'cinder_client',
     'get_cinder_client',

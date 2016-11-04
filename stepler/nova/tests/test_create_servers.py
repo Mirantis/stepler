@@ -36,22 +36,22 @@ def test_launch_server_from_image_using_all_flavors(
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create security group with allow ping rule
-        #. Create keypair
+    #. Upload cirros image
+    #. Create security group with allow ping rule
+    #. Create keypair
 
     **Steps:**
 
-        #. Get list of all flavors
-        #. Create and boot server using every flavor
-        #. Check that server status is active
+    #. Get list of all flavors
+    #. Create and boot server using every flavor
+    #. Check that server status is active
 
     **Teardown:**
 
-        #. Delete servers
-        #. Delete security group
-        #. Delete keypair
-        #. Delete cirros image
+    #. Delete servers
+    #. Delete security group
+    #. Delete keypair
+    #. Delete cirros image
     """
     flavors = flavor_steps.get_flavors()
 
@@ -78,7 +78,7 @@ def test_launch_vm_from_volume_using_all_flavors(
         keypair,
         nova_floating_ip,
         create_server_context,
-        create_volume,
+        volume_steps,
         flavor_steps,
         server_steps):
     """**Scenario:** Launch VM from volume using all standard flavors.
@@ -87,36 +87,36 @@ def test_launch_vm_from_volume_using_all_flavors(
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create security group with allow ping rule
-        #. Create keypair
-        #. Create volume from cirros image
+    #. Upload cirros image
+    #. Create security group with allow ping rule
+    #. Create keypair
+    #. Create volume from cirros image
 
     **Steps:**
 
-        #. Get list of all flavors
-        #. Create and boot server from volume using every flavor
-        #. Check that server status is active
-        #. Assign floating IP to server
-        #. Check that server is available via ping
+    #. Get list of all flavors
+    #. Create and boot server from volume using every flavor
+    #. Check that server status is active
+    #. Assign floating IP to server
+    #. Check that server is available via ping
 
     **Teardown:**
 
-        #. Delete servers
-        #. Delete security group
-        #. Delete keypair
-        #. Delete cirros image
-        #. Delete volume
-        #. Delete floating IP
+    #. Delete servers
+    #. Delete security group
+    #. Delete keypair
+    #. Delete cirros image
+    #. Delete volume
+    #. Delete floating IP
     """
     flavors = flavor_steps.get_flavors()
 
-    volume_name = next(utils.generate_ids(prefix='volume'))
-    volume = create_volume(name=volume_name, image=cirros_image)
+    volume = volume_steps.create_volumes(
+        names=utils.generate_ids('volume', count=1),
+        image=cirros_image)[0]
 
     for flavor in flavors:
-        server_name = next(utils.generate_ids(prefix='server',
-                                              postfix=flavor.name))
+        server_name = next(utils.generate_ids('server', postfix=flavor.name))
 
         with create_server_context(
                 server_name=server_name,

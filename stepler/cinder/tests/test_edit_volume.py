@@ -25,94 +25,91 @@ from stepler.third_party import utils
 @pytest.mark.idempotent_id('2df43a46-72b0-4d25-bf68-13d07776af7c')
 @pytest.mark.parametrize('new_volume_name',
                          ['', next(utils.generate_ids('volume'))])
-def test_edit_volume_name(create_volume, volume_steps, new_volume_name):
-    """**Scenario:** Verify ability to change volume name
+def test_edit_volume_name(volume_steps, new_volume_name):
+    """**Scenario:** Verify ability to change volume name.
 
     **Steps:**
 
-        #. Create volume
-        #. Change volume name
+    #. Create volume
+    #. Change volume name
 
     **Teardown:**
 
-        #. Delete volume
+    #. Delete volume
     """
-    volume = create_volume()
+    volume = volume_steps.create_volumes(names=[None])[0]
     volume_steps.update_volume(volume, new_name=new_volume_name)
 
 
 @pytest.mark.idempotent_id('1c5ef0e5-64ac-43d5-b9f2-97cb4ad62e95')
 @pytest.mark.parametrize('new_volume_description',
                          ['', next(utils.generate_ids('description'))])
-def test_edit_volume_description(create_volume, volume_steps,
-                                 new_volume_description):
-    """**Scenario:** Verify ability to change volume description
+def test_edit_volume_description(volume_steps, new_volume_description):
+    """**Scenario:** Verify ability to change volume description.
 
     **Steps:**
 
-        #. Create volume
-        #. Change volume description
+    #. Create volume
+    #. Change volume description
 
     **Teardown:**
 
-        #. Delete volume
+    #. Delete volume
     """
-    volume = create_volume()
+    volume = volume_steps.create_volumes(names=[None])[0]
     volume_steps.update_volume(volume, new_description=new_volume_description)
 
 
 @pytest.mark.idempotent_id('f9561bef-2455-4274-8926-c2d6670752e1')
-def test_negative_edit_volume_name_too_long_name(create_volume, volume_steps):
-    """**Scenario:** Verify inability to change volume name to name longer
-    than 255 symbols
+def test_negative_edit_volume_name_too_long_name(volume_steps):
+    """**Scenario:** Verify inability to change volume name to name >255 chars.
 
     **Steps:**
 
-        #. Create volume
-        #. Try to change volume name to name longer than 255 characters
+    #. Create volume
+    #. Try to change volume name to name longer than 255 characters
 
     **Teardown:**
 
-        #. Delete volume
+    #. Delete volume
     """
-    volume = create_volume()
+    volume = volume_steps.create_volumes(names=[None])[0]
     volume_new_name = next(utils.generate_ids(length=256))
     volume_steps.check_volume_update_failed(volume, new_name=volume_new_name)
 
 
 @pytest.mark.idempotent_id('7cb4af1e-2228-43ca-bc78-719d85fb0b2a')
-def test_volume_enable_bootable(create_volume, volume_steps):
-    """**Scenario:** Verify ability to enable volume bootable status
+def test_volume_enable_bootable(volume_steps):
+    """**Scenario:** Verify ability to enable volume bootable status.
 
     **Steps:**
 
-        #. Create volume
-        #. Enable volume bootable status
+    #. Create volume
+    #. Enable volume bootable status
 
     **Teardown:**
 
-        #. Delete volume
+    #. Delete volume
     """
-    volume = create_volume()
+    volume = volume_steps.create_volumes(names=[None])[0]
     volume_steps.set_volume_bootable(volume, True)
 
 
 @pytest.mark.idempotent_id('515ff471-e814-4074-8026-680a2131942c')
-def test_volume_disable_bootable(create_image, create_volume, volume_steps):
-    """**Scenario:** Verify ability to disable volume bootable status
+def test_volume_disable_bootable(create_image, volume_steps):
+    """**Scenario:** Verify ability to disable volume bootable status.
 
     **Steps:**
 
-        #. Create image
-        #. Create volume from image
-        #. Disable volume bootable status
+    #. Create image
+    #. Create volume from image
+    #. Disable volume bootable status
 
     **Teardown:**
 
-        #. Delete volume
-        #. Delete image
+    #. Delete volume
+    #. Delete image
     """
-    image_name = next(utils.generate_ids('image'))
-    image = create_image(image_name, config.UBUNTU_ISO_URL)
-    volume = create_volume(image=image)
+    image = create_image(utils.generate_ids('image'), config.UBUNTU_ISO_URL)
+    volume = volume_steps.create_volumes(names=[None], image=image)[0]
     volume_steps.set_volume_bootable(volume, False)

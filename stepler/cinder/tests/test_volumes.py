@@ -28,18 +28,18 @@ def test_create_volume_from_snapshot(volume_snapshot, volume_steps):
 
     **Setup:**
 
-        #. Create volume1
-        #. Create snapshot from volume1
+    #. Create volume1
+    #. Create snapshot from volume1
 
     **Steps:**
 
-        #. Create volume2 from snapshot
-        #. Delete volume2
+    #. Create volume2 from snapshot
+    #. Delete volume2
 
     **Teardown:**
 
-        #. Delete snapshot
-        #. Delete volume1
+    #. Delete snapshot
+    #. Delete volume1
     """
     volumes = volume_steps.create_volumes(
         names=utils.generate_ids('volume', count=1),
@@ -67,7 +67,7 @@ def test_create_delete_many_volumes(volume_steps, volumes_count):
 
 
 @pytest.mark.idempotent_id('45783965-096f-46d6-a863-e466cc9d2d49')
-def test_create_volume_without_name(create_volume):
+def test_create_volume_without_name(volume_steps):
     """**Scenario:** Verify creation of volume without name.
 
     **Steps:**
@@ -78,11 +78,11 @@ def test_create_volume_without_name(create_volume):
 
     #. Delete volume
     """
-    create_volume()
+    volume_steps.create_volumes(names=[None])
 
 
 @pytest.mark.idempotent_id('8b08bc8f-e1f4-4f6e-8f98-dfcb1f9f538a')
-def test_create_volume_description(create_volume):
+def test_create_volume_description(volume_steps):
     """**Scenario:** Verify creation of volume with description.
 
     **Steps:**
@@ -94,11 +94,11 @@ def test_create_volume_description(create_volume):
     #. Delete volume
     """
     description = next(utils.generate_ids(prefix='volume'))
-    create_volume(description=description)
+    volume_steps.create_volumes(names=[None], description=description)
 
 
 @pytest.mark.idempotent_id('56cc7c76-ae92-423d-81ad-8cece5f875ad')
-def test_create_volume_description_max(create_volume):
+def test_create_volume_description_max(volume_steps):
     """**Scenario:** Verify creation of volume with max description length.
 
     **Steps:**
@@ -110,7 +110,7 @@ def test_create_volume_description_max(create_volume):
     #. Delete volume
     """
     description = next(utils.generate_ids(prefix='volume', length=255))
-    create_volume(description=description)
+    volume_steps.create_volumes(names=[None], description=description)
 
 
 @pytest.mark.idempotent_id('978a580d-22c3-4e98-8ff9-7ff8541cdd48')
@@ -127,7 +127,7 @@ def test_create_volume_wrong_size(volume_steps, size):
 
 
 @pytest.mark.idempotent_id('331ef3fb-f048-4684-bf78-433923ab4a48')
-def test_create_volume_max_size(volume_size_quota, create_volume):
+def test_create_volume_max_size(volume_size_quota, volume_steps):
     """**Scenario:** Verify creation of volume with max volume size.
 
     **Setup:**
@@ -144,7 +144,7 @@ def test_create_volume_max_size(volume_size_quota, create_volume):
     #. Delete volume
     #. Set max volume size quota to its initial value
     """
-    create_volume(size=volume_size_quota)
+    volume_steps.create_volumes(names=[None], size=volume_size_quota)
 
 
 @pytest.mark.idempotent_id('ed2a92fc-356c-4ae5-835b-99a9ce4d8fe0')
@@ -185,28 +185,27 @@ def test_negative_create_volume_name_long(volume_steps):
 @pytest.mark.idempotent_id('34ca65a0-a254-49c5-8157-13e11c88a5b3')
 def test_negative_create_volume_non_exist_volume_type(cirros_image,
                                                       volume_steps):
-    """**Scenario:** Verify volume creation from image with non existed
-    volume type.
+    """**Scenario:** Can't create volume from image with fake volume type.
 
     **Setup:**
 
-        #. Create cirros image
+    #. Create cirros image
 
     **Steps:**
 
-        #. Try to create volume from image using non existed volume type
-        #. Check that NotFound exception raised
+    #. Try to create volume from image using non existed volume type
+    #. Check that NotFound exception raised
 
     **Teardown:**
 
-        #. Delete cirros image
+    #. Delete cirros image
     """
     volume_steps.check_volume_not_created_with_non_exist_volume_type(
         cirros_image)
 
 
 @pytest.mark.idempotent_id('f2e90086-42d7-4257-96ef-10ca5ea3a4c3')
-def test_create_volume_from_volume(volume, create_volume):
+def test_create_volume_from_volume(volume, volume_steps):
     """**Scenario:** Verify creation of volume from volume.
 
     **Setup:**
@@ -222,9 +221,9 @@ def test_create_volume_from_volume(volume, create_volume):
     #. Delete volume2
     #. Delete volume
     """
-    volume_from_volume_name = next(
-        utils.generate_ids(prefix='volume-from-volume'))
-    create_volume(name=volume_from_volume_name, source_volid=volume.id)
+    volume_steps.create_volumes(
+        names=utils.generate_ids('volume-from-volume', count=1),
+        source_volid=volume.id)
 
 
 @pytest.mark.idempotent_id('fbcb9a58-9a4d-4864-88db-c08a14475994')
@@ -278,7 +277,7 @@ def test_negative_delete_volume_cascade(volume,
 # TODO(aallakhverdieva): add check for count of cinder hosts (need more than 1)
 @pytest.mark.idempotent_id('f0c407a3-7aa1-400c-9a9f-6c69870e3fb9')
 def test_migrate_volume(volume, volume_steps, os_faults_steps):
-    """**Scenario:** Migrate volume to another host
+    """**Scenario:** Migrate volume to another host.
 
     **Setup:**
 
