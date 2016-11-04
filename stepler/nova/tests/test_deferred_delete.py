@@ -33,6 +33,7 @@ def test_restore_soft_deleted_server(
         keypair,
         security_group,
         router,
+        volume,
         patch_ini_file_and_restart_services,
         add_router_interfaces,
         nova_create_floating_ip,
@@ -113,8 +114,6 @@ def test_restore_soft_deleted_server(
         server_steps.check_ping_between_servers_via_floating(
             [server_1, server_2], timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
-        volume = volume_steps.create_volumes(
-            names=utils.generate_ids('volume', count=1))[0]
         attach_volume_to_server(server_1, volume)
 
         server_steps.delete_servers([server_1], soft=True)
@@ -136,6 +135,7 @@ def test_server_deleted_after_reclaim_timeout(
         keypair,
         security_group,
         router,
+        volume,
         patch_ini_file_and_restart_services,
         add_router_interfaces,
         attach_volume_to_server,
@@ -210,9 +210,6 @@ def test_server_deleted_after_reclaim_timeout(
             security_groups=[security_group],
             username=config.CIRROS_USERNAME)[0]
 
-        volume = volume_steps.create_volumes(
-            names=utils.generate_ids('volume', count=1))[0]
-
         attach_volume_to_server(server_1, volume)
         server_steps.delete_servers([server_1], soft=True)
 
@@ -241,6 +238,7 @@ def test_force_delete_server_before_deferred_cleanup(
         keypair,
         security_group,
         router,
+        volume,
         patch_ini_file_and_restart_services,
         add_router_interfaces,
         create_server_context,
@@ -309,8 +307,6 @@ def test_force_delete_server_before_deferred_cleanup(
                 security_groups=[security_group],
                 username=config.CIRROS_USERNAME)[0]
 
-            volume = volume_steps.create_volumes(
-                names=utils.generate_ids('volume', count=1))[0]
             attach_volume_to_server(server_1, volume)
 
             server_steps.delete_servers([server_1], soft=True)

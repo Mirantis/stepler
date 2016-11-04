@@ -290,10 +290,7 @@ def live_migration_server(request,
     boot_from_volume = params.get('boot_from_volume', False)
 
     if boot_from_volume:
-        volume = volume_steps.create_volumes(
-            names=utils.generate_ids('volume', count=1),
-            size=20,
-            image=ubuntu_image)[0]
+        volume = volume_steps.create_volumes(size=20, image=ubuntu_image)[0]
 
         block_device_mapping = {'vda': volume.id}
         kwargs = dict(image=None, block_device_mapping=block_device_mapping)
@@ -301,13 +298,12 @@ def live_migration_server(request,
         kwargs = dict(image=ubuntu_image)
 
     server = server_steps.create_servers(
-        server_names=utils.generate_ids('server', count=1),
         flavor=flavor,
         keypair=keypair,
         networks=[network],
         security_groups=[security_group],
         userdata=config.INSTALL_LM_WORKLOAD_USERDATA,
-        username='ubuntu',
+        username=config.UBUNTU_USERNAME,
         **kwargs)[0]
 
     server_steps.check_server_log_contains_record(

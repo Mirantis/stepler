@@ -65,9 +65,10 @@ class ServerSteps(base.BaseSteps):
         """Step to create servers.
 
         Args:
-            server_names (list): names of created servers
             image (object|None): image or None (to use volume)
             flavor (object): flavor
+            server_names (list): names of created servers, if not specified
+                one server name will be generated
             networks (list): networks objects
             ports (list): ports objects
             keypair (object): keypair

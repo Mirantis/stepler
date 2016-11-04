@@ -69,10 +69,8 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     add_router_interfaces(router, [subnet])
     volume_size = flavor.disk + 1
 
-    volume = volume_steps.create_volumes(
-        names=utils.generate_ids('volume', count=1),
-        size=volume_size,
-        image=cirros_image)[0]
+    volume = volume_steps.create_volumes(size=volume_size,
+                                         image=cirros_image)[0]
 
     block_device_mapping = {'vda': volume.id}
 
