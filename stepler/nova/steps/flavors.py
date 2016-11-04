@@ -17,10 +17,11 @@ Flavor steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, has_entries, is_not  # noqa
+from hamcrest import assert_that, empty, equal_to, has_entries, is_not  # noqa
 from novaclient import exceptions
 
 from stepler.base import BaseSteps
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -88,15 +89,15 @@ class FlavorSteps(BaseSteps):
         self._client.delete(flavor.id)
 
         if check:
-            self.check_flavor_presence(flavor, present=False)
+            self.check_flavor_presence(flavor, must_present=False)
 
     @steps_checker.step
-    def check_flavor_presence(self, flavor, present=True, timeout=0):
+    def check_flavor_presence(self, flavor, must_present=True, timeout=0):
         """Verify step to check flavor is present.
 
         Args:
             flavor (object): nova flavor to check presence status
-            present (bool): flag whether flavor should present or no
+            must_present (bool): flag whether flavor should present or no
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -107,9 +108,10 @@ class FlavorSteps(BaseSteps):
                 # After deleting flavor `get` method still return object,
                 # so it was changed to find
                 self._client.find(id=flavor.id)
-                return present
+                is_present = True
             except exceptions.NotFound:
-                return not present
+                is_present = False
+            return expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_flavor_presence, timeout_seconds=timeout)
 
