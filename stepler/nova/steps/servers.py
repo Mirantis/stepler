@@ -36,6 +36,7 @@ from stepler.third_party.matchers import expect_that
 from stepler.third_party import ping
 from stepler.third_party import ssh
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = [
@@ -48,9 +49,9 @@ class ServerSteps(base.BaseSteps):
 
     @steps_checker.step
     def create_servers(self,
-                       server_names,
                        image,
                        flavor,
+                       server_names=config.DEFAULT,
                        networks=(),
                        ports=(),
                        keypair=None,
@@ -98,6 +99,9 @@ class ServerSteps(base.BaseSteps):
             'private_key': private_key
         }
         meta = chunk_serializer.dump(credentials, config.CREDENTIALS_PREFIX)
+
+        if server_names == config.DEFAULT:
+            server_names = utils.generate_ids()
 
         servers = []
         for server_name in server_names:

@@ -77,8 +77,7 @@ def test_metadata_reach_all_booted_vm(
     flavor = flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
     network = network_steps.get_network_by_name('admin_internal_net')
 
-    server_name = next(utils.generate_ids('server'))
-    with create_server_context(server_name,
+    with create_server_context(next(utils.generate_ids('server')),
                                image=ubuntu_image,
                                flavor=flavor,
                                networks=[network],
@@ -147,7 +146,7 @@ def test_put_metadata_on_instances_on_single_compute(
     cmd_del_meta = DEL_META_CMD_TEMPLATE.format(host=host_1)
 
     host1_servers = server_steps.create_servers(
-        server_names=utils.generate_ids('server_host1', count=2),
+        server_names=utils.generate_ids(count=2),
         image=ubuntu_image,
         flavor=flavor,
         networks=[network],
@@ -156,7 +155,7 @@ def test_put_metadata_on_instances_on_single_compute(
         availability_zone='nova:{}'.format(host_1))
 
     host2_servers = server_steps.create_servers(
-        server_names=utils.generate_ids('server_host2', count=2),
+        server_names=utils.generate_ids(count=2),
         image=ubuntu_image,
         flavor=flavor,
         networks=[network],

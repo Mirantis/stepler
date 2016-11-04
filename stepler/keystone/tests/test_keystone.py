@@ -97,13 +97,11 @@ def test_restart_all_services(cirros_image,
     user_name = next(utils.generate_ids('user'))
     create_user(user_name=user_name, password=user_name)
 
-    server_steps.create_servers(
-        server_names=utils.generate_ids('server', count=1),
-        image=cirros_image,
-        flavor=tiny_flavor,
-        networks=[admin_internal_network],
-        keypair=keypair,
-        security_groups=[security_group])
+    server_steps.create_servers(image=cirros_image,
+                                flavor=tiny_flavor,
+                                networks=[admin_internal_network],
+                                keypair=keypair,
+                                security_groups=[security_group])
 
 
 @pytest.mark.idempotent_id('14ed4331-c05e-4b9a-9723-eac8c6f3f26a')

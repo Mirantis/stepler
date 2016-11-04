@@ -343,14 +343,12 @@ def test_migration_with_ephemeral_disk(
     flavor = create_flavor(
         next(generate_ids('flavor')), ram=64, disk=1, vcpus=1, ephemeral=1)
 
-    server = server_steps.create_servers(
-        server_names=generate_ids('server', count=1),
-        image=cirros_image,
-        flavor=flavor,
-        keypair=keypair,
-        networks=[network],
-        security_groups=[security_group],
-        username=config.CIRROS_USERNAME)[0]
+    server = server_steps.create_servers(image=cirros_image,
+                                         flavor=flavor,
+                                         keypair=keypair,
+                                         networks=[network],
+                                         security_groups=[security_group],
+                                         username=config.CIRROS_USERNAME)[0]
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
     timestamp = str(time.time())

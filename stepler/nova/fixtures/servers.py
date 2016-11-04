@@ -199,8 +199,7 @@ def server(cirros_image, flavor, internal_network, server_steps):
     Returns:
         object: nova server
     """
-    return server_steps.create_servers(next(utils.generate_ids('server')),
-                                       image=cirros_image,
+    return server_steps.create_servers(image=cirros_image,
                                        flavor=flavor,
                                        networks=[internal_network])[0]
 

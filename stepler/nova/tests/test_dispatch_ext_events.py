@@ -58,7 +58,6 @@ def test_dispatch_external_event(
     create_subnet(subnet_name, network=network, cidr='192.168.1.0/24')
 
     server = server_steps.create_servers(
-        server_names=utils.generate_ids('server', count=1),
         image=cirros_image,
         flavor=flavor,
         networks=[network],
