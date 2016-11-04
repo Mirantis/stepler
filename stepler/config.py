@@ -60,6 +60,7 @@ STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
 
 # IMAGE / SERVER CREDENTIALS
 CIRROS_USERNAME = 'cirros'
+UBUNTU_USERNAME = 'ubuntu'
 
 # CURRENT API VERSIONS
 CURRENT_GLANCE_VERSION = '2'
