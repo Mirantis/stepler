@@ -77,7 +77,6 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     block_device_mapping = {'vda': volume.id}
 
     server = server_steps.create_servers(
-        server_names=utils.generate_ids('server', count=1),
         image=None,
         flavor=flavor,
         networks=[network],
@@ -123,11 +122,9 @@ def test_delete_server_with_precreated_port(
     #. Delete subnet
     #. Delete flavor
     """
-    servers = server_steps.create_servers(
-        server_names=utils.generate_ids('server', count=1),
-        image=cirros_image,
-        flavor=flavor,
-        ports=[port])
+    servers = server_steps.create_servers(image=cirros_image,
+                                          flavor=flavor,
+                                          ports=[port])
     server_steps.delete_servers(servers)
     port_steps.check_presence(port)
 
@@ -173,14 +170,12 @@ def test_remove_incorrect_fixed_ip_from_server(
     #. Delete cirros image
     #. Delete nova floating ip
     """
-    server = server_steps.create_servers(
-        server_names=utils.generate_ids('server', count=1),
-        image=cirros_image,
-        flavor=flavor,
-        networks=[admin_internal_network],
-        keypair=keypair,
-        security_groups=[security_group],
-        username=config.CIRROS_USERNAME)[0]
+    server = server_steps.create_servers(image=cirros_image,
+                                         flavor=flavor,
+                                         networks=[admin_internal_network],
+                                         keypair=keypair,
+                                         security_groups=[security_group],
+                                         username=config.CIRROS_USERNAME)[0]
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
     ip_fake = next(utils.generate_ips())

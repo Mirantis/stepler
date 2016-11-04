@@ -85,7 +85,6 @@ def test_restore_soft_deleted_server(
         add_router_interfaces(router, [subnet])
 
         server_1 = server_steps.create_servers(
-            server_names=utils.generate_ids('server', count=1),
             image=cirros_image,
             flavor=flavor,
             networks=[network],
@@ -99,7 +98,6 @@ def test_restore_soft_deleted_server(
             server_1, timeout=config.PING_CALL_TIMEOUT)
 
         server_2 = server_steps.create_servers(
-            server_names=utils.generate_ids('server', count=1),
             image=cirros_image,
             flavor=flavor,
             networks=[network],
@@ -197,7 +195,6 @@ def test_server_deleted_after_reclaim_timeout(
         add_router_interfaces(router, [subnet])
 
         server_1 = server_steps.create_servers(
-            server_names=utils.generate_ids('server', count=1),
             image=cirros_image,
             flavor=flavor,
             networks=[network],
@@ -206,7 +203,6 @@ def test_server_deleted_after_reclaim_timeout(
             username=config.CIRROS_USERNAME)[0]
 
         server_2 = server_steps.create_servers(
-            server_names=utils.generate_ids('server', count=1),
             image=cirros_image,
             flavor=flavor,
             networks=[network],
@@ -296,9 +292,8 @@ def test_force_delete_server_before_deferred_cleanup(
 
         add_router_interfaces(router, [subnet])
 
-        server_name_1 = next(utils.generate_ids('server'))
         with create_server_context(
-                server_name_1,
+                next(utils.generate_ids('server')),
                 image=cirros_image,
                 flavor=flavor,
                 networks=[network],
@@ -307,7 +302,6 @@ def test_force_delete_server_before_deferred_cleanup(
                 username=config.CIRROS_USERNAME) as server_1:
 
             server_2 = server_steps.create_servers(
-                server_names=utils.generate_ids('server', count=1),
                 image=cirros_image,
                 flavor=flavor,
                 networks=[network],
