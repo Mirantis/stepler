@@ -24,7 +24,7 @@ from stepler.third_party import utils
 
 @pytest.mark.parametrize("disk_format", ["raw", "qcow2"])
 @pytest.mark.idempotent_id('daf829d8-9b81-47f3-9a34-2fe5e9bdfa3a')
-def test_create_volume_from_image(create_image, volume_steps, disk_format):
+def test_create_volume_from_image(glance_steps, volume_steps, disk_format):
     """**Scenario:** Verify that volume from raw|qcow2 image is created.
 
     **Steps:**
@@ -32,9 +32,9 @@ def test_create_volume_from_image(create_image, volume_steps, disk_format):
     #. Create cinder volume from raw|qcow2 image
     #. Delete cinder volume
     """
-    image = create_image(utils.generate_ids('image'),
-                         config.UBUNTU_ISO_URL,
-                         disk_format=disk_format)
+    image = glance_steps.create_images(
+        utils.get_file_path(config.UBUNTU_ISO_URL),
+        disk_format=disk_format)[0]
 
     volume_steps.create_volumes(
         names=utils.generate_ids('volume', count=1), image=image)

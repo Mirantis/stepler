@@ -24,6 +24,7 @@ import pytest
 
 from stepler import config
 from stepler.glance import steps
+from stepler.third_party import context
 from stepler.third_party import utils
 
 __all__ = [
@@ -31,8 +32,7 @@ __all__ = [
     'api_glance_steps_v1',
     'api_glance_steps_v2',
     'cirros_image',
-    'create_image',
-    'create_images',
+    'create_images_context',
     'get_glance_steps',
     'glance_steps',
     'glance_steps_v1',
@@ -48,7 +48,7 @@ SKIPPED_IMAGES = []  # TODO(schipiga): describe its mechanism in docs
 
 
 @pytest.yield_fixture
-def images_cleanup():
+def unexpected_images_cleanup():
     """Callable function fixture to clear unexpected images.
 
     It provides cleanup before and after test. Cleanup before test is callable
@@ -162,16 +162,16 @@ def glance_steps(get_glance_steps, images_cleanup):
 
     Args:
         get_glance_steps (function): function to get glance steps
-        images_cleanup (function): function to make images cleanup right
-            after glance steps initialization
+        images_cleanup (function): function to cleanup images after test
 
-    Returns:
-        GlanceStepsV1: instantiated glance steps v1
+    Yields:
+        object: instantiated glance steps of current version
     """
     _glance_steps = get_glance_steps(
         version=config.CURRENT_GLANCE_VERSION, is_api=False)
-    images_cleanup(_glance_steps)
-    return _glance_steps
+
+    with images_cleanup(_glance_steps):
+        yield _glance_steps
 
 
 @pytest.fixture
@@ -188,136 +188,117 @@ def api_glance_steps(get_glance_steps):
         version=config.CURRENT_GLANCE_VERSION, is_api=True)
 
 
-@pytest.yield_fixture
-def create_images(glance_steps):
-    """Callable function fixture to create images with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created images.
-
-    Args:
-        glance_steps (object): instantiated glance steps
-
-    Returns:
-        function: function to create images as batch with options
-    """
-    images = []
-
-    def _create_images(image_names, image_url, *args, **kwgs):
-        image_path = utils.get_file_path(image_url)
-        _images = glance_steps.create_images(
-            image_names, image_path, *args, **kwgs)
-        images.extend(_images)
-        return _images
-
-    yield _create_images
-
-    if images:
-        glance_steps.delete_images(images)
-
-
 @pytest.fixture
-def create_image(create_images):
-    """Callable function fixture to create single image with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created images.
+def images_cleanup(uncleanable):
+    """Callable function fixture to cleanup images after test.
 
     Args:
-        create_images (function): function to create images with options
+        uncleanable (AttrDict): data structure with skipped resources
 
     Returns:
-        function: function to create single image with options
+        function: function to cleanup images
     """
-    def _create_image(image_name, image_url, *args, **kwgs):
-        return create_images([image_name], image_url, *args, **kwgs)[0]
+    @context.context
+    def _images_cleanup(glance_steps):
 
-    return _create_image
+        def _get_images():
+            # check=False because in best case no servers will be
+            return glance_steps.get_images(
+                name_prefix=config.STEPLER_PREFIX, check=False)
+
+        image_ids_before = [image.id for image in _get_images()]
+
+        yield
+
+        deleting_images = []
+        for image in _get_images():
+
+            if (image.id not in uncleanable.image_ids and
+                    image.id not in image_ids_before):
+                deleting_images.append(image)
+
+        glance_steps.delete_images(deleting_images)
+
+    return _images_cleanup
 
 
-@pytest.yield_fixture(scope='session')
-def ubuntu_image(get_glance_steps):
+@pytest.fixture(scope='session')
+def create_images_context(get_glance_steps, uncleanable):
+    """Session callable fixture to create image.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+        uncleanable (AttrDict): data structure with skipped resources
+
+    Returns:
+        object: ubuntu glance image
+    """
+    @context.context
+    def _create_images_context(image_names, image_url):
+        images = get_glance_steps(
+            version=config.CURRENT_GLANCE_VERSION,
+            is_api=False).create_images(image_names,
+                                        utils.get_file_path(image_url))
+
+        for image in images:
+            uncleanable.image_ids.add(image.id)
+
+        yield images
+
+        get_glance_steps(
+            version=config.CURRENT_GLANCE_VERSION,
+            is_api=False).delete_images(images)
+
+        for image in images:
+            uncleanable.image_ids.remove(image.id)
+
+    return _create_images_context
+
+
+@pytest.fixture(scope='session')
+def ubuntu_image(create_images_context):
     """Session fixture to create ubuntu image.
 
     Creates image from config.UBUNTU_QCOW2_URL with default options.
 
     Args:
-        get_glance_steps (function): function to get glance steps
+        create_images_context (function): function to create images as context
 
     Returns:
         object: ubuntu glance image
     """
-    image_name = next(utils.generate_ids('ubuntu'))
-    image_path = utils.get_file_path(config.UBUNTU_QCOW2_URL)
-
-    _ubuntu_image = get_glance_steps(
-        version=config.CURRENT_GLANCE_VERSION,
-        is_api=False).create_images([image_name], image_path)[0]
-
-    SKIPPED_IMAGES.append(_ubuntu_image)
-
-    yield _ubuntu_image
-
-    get_glance_steps(
-        version=config.CURRENT_GLANCE_VERSION,
-        is_api=False).delete_images([_ubuntu_image])
-
-    SKIPPED_IMAGES.remove(_ubuntu_image)
+    with create_images_context(utils.generate_ids('ubuntu'),
+                               config.UBUNTU_QCOW2_URL) as images:
+        yield images[0]
 
 
-@pytest.yield_fixture(scope='session')
-def ubuntu_xenial_image(get_glance_steps):
+@pytest.fixture(scope='session')
+def ubuntu_xenial_image(create_images_context):
     """Session fixture to create ubuntu xenial image.
 
     Creates image from config.UBUNTU_XENIAL_QCOW2_URL with default options.
 
     Args:
-        get_glance_steps (function): function to get glance steps
+        create_images_context (function): function to create images as context
 
     Returns:
-        object: ubuntu glance image
+        object: ubuntu xenial glance image
     """
-    image_name = next(utils.generate_ids('ubuntu-xenial'))
-    image_path = utils.get_file_path(config.UBUNTU_XENIAL_QCOW2_URL)
-
-    _ubuntu_image = get_glance_steps(
-        version=config.CURRENT_GLANCE_VERSION,
-        is_api=False).create_images([image_name], image_path)[0]
-
-    SKIPPED_IMAGES.append(_ubuntu_image)
-
-    yield _ubuntu_image
-
-    get_glance_steps(
-        version=config.CURRENT_GLANCE_VERSION,
-        is_api=False).delete_images([_ubuntu_image])
-
-    SKIPPED_IMAGES.remove(_ubuntu_image)
+    with create_images_context(utils.generate_ids('ubuntu-xenial'),
+                               config.UBUNTU_XENIAL_QCOW2_URL) as images:
+        yield images[0]
 
 
-@pytest.yield_fixture(scope='session')
-def cirros_image(get_glance_steps):
+@pytest.fixture(scope='session')
+def cirros_image(create_images_context):
     """Session fixture to create cirros image with default options.
 
     Args:
-        get_glance_steps (function): function to get glance steps
+        create_images_context (function): function to create images as context
 
     Returns:
         object: cirros glance image
     """
-    image_name = next(utils.generate_ids('cirros'))
-    image_path = utils.get_file_path(config.CIRROS_QCOW2_URL)
-
-    _cirros_image = get_glance_steps(
-        version=config.CURRENT_GLANCE_VERSION,
-        is_api=False).create_images([image_name], image_path)[0]
-
-    SKIPPED_IMAGES.append(_cirros_image)
-
-    yield _cirros_image
-
-    get_glance_steps(
-        version=config.CURRENT_GLANCE_VERSION,
-        is_api=False).delete_images([_cirros_image])
-
-    SKIPPED_IMAGES.remove(_cirros_image)
+    with create_images_context(utils.generate_ids('cirros'),
+                               config.CIRROS_QCOW2_URL) as images:
+        yield images[0]
