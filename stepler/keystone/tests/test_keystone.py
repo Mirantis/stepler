@@ -154,3 +154,42 @@ def test_verification_of_bug_1546197(role_steps,
     user_project_steps.get_projects()
     role_steps.revoke_role(role=admin_role, user=user, project=project)
     user_project_steps.check_get_projects_requires_authentication()
+
+
+@pytest.mark.idempotent_id('e52e771c-b8e4-4af5-981f-76b975e5b110')
+def test_modify_project_members_update_quotas(admin_role,
+                                              create_project,
+                                              create_group,
+                                              role_steps,
+                                              project_steps):
+    """**Scenario:** Failed to modify project members and update project quotas.
+
+    https://bugs.launchpad.net/horizon/+bug/1326668
+
+    **Setup:**
+    #. Get admin role
+
+
+    **Steps:**
+    #. Create project
+    #. Create group
+    #. Add new project in admin tenant
+    #. Get projects
+    #. Delete new project from admin tenant
+    #. Get projects
+
+    **Teardown:**
+
+    #. Delete group
+    #. Delete project
+    """
+    project_name = next(utils.generate_ids('project'))
+    group_name = next(utils.generate_ids('group'))
+
+    project = create_project(project_name)
+    group = create_group(group_name)
+
+    role_steps.grant_role(role=admin_role, project=project, group=group)
+    project_steps.get_projects()
+    role_steps.revoke_role(role=admin_role, project=project, group=group)
+    project_steps.get_projects()
