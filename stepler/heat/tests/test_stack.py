@@ -59,25 +59,25 @@ def test_create_stack_with_aws(
 
     **Setup:**
 
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
 
     **Steps:**
 
-        #. Add router interface to created network
-        #. Read AWS template from file
-        #. Create stack with template with parameters:
+    #. Add router interface to created network
+    #. Read AWS template from file
+    #. Create stack with template with parameters:
             internal_network, internal_subnet, external_network
-        #. Check stack reach "COMPLETE" status
+    #. Check stack reach "COMPLETE" status
 
     **Teardown:**
 
-        #. Delete stack
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
+    #. Delete stack
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
     """
     add_router_interfaces(router, [subnet])
     template = read_heat_template('aws')
@@ -98,13 +98,13 @@ def test_create_stack_with_heat_resources(read_heat_template, create_stack):
 
     **Steps:**
 
-        #. Read Heat resources template from file
-        #. Create stack with template
-        #. Check stack reach "COMPLETE" status
+    #. Read Heat resources template from file
+    #. Create stack with template
+    #. Check stack reach "COMPLETE" status
 
     **Teardown:**
 
-        #. Delete stack
+    #. Delete stack
     """
     template = read_heat_template('heat_resources')
     stack_name = next(utils.generate_ids('stack'))
@@ -126,25 +126,25 @@ def test_create_stack_with_wait_condition(
 
     **Setup:**
 
-        #. Create cirros image
-        #. Create flavor
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
+    #. Create cirros image
+    #. Create flavor
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
 
     **Steps:**
 
-        #. Read template with WaitCondition resources
-        #. Create stack with template with parameters:
+    #. Read template with WaitCondition resources
+    #. Create stack with template with parameters:
             image, flavor, private_net
-        #. Check stack reach "COMPLETE" status
+    #. Check stack reach "COMPLETE" status
 
     **Teardown:**
 
-        #. Delete stack
-        #. Delete flavor
-        #. Delete image
+    #. Delete stack
+    #. Delete flavor
+    #. Delete image
     """
     add_router_interfaces(router, [subnet])
     template = read_heat_template('wait_condition')
@@ -172,29 +172,29 @@ def test_create_stack_with_neutron_resources(
         create_stack):
     """**Scenario:** Create stack with Neutron resources.
 
-        **Setup:**
+    **Setup:**
 
-        #. Create cirros image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
+    #. Create cirros image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
 
     **Steps:**
 
-        #. Add router interface to created network
-        #. Read Heat resources template from file
-        #. Create stack with template with parameters:
+    #. Add router interface to created network
+    #. Read Heat resources template from file
+    #. Create stack with template with parameters:
             image, flavor, public_net_id, private_net_id, private_subnet_id
-        #. Check stack reach "COMPLETE" status
+    #. Check stack reach "COMPLETE" status
 
     **Teardown:**
 
-        #. Delete stack
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete cirros image
+    #. Delete stack
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete cirros image
     """
     add_router_interfaces(router, [subnet])
     template = read_heat_template('neutron_resources')
@@ -224,31 +224,31 @@ def test_create_stack_with_nova_resources(
         create_stack):
     """**Scenario:** Create stack with Nova resources.
 
-        **Setup:**
+    **Setup:**
 
-        #. Create cirros image
-        #. Create flavor
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
+    #. Create cirros image
+    #. Create flavor
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
 
     **Steps:**
 
-        #. Add router interface to created network
-        #. Read Heat resources template from file
-        #. Create stack with template with parameters:
+    #. Add router interface to created network
+    #. Read Heat resources template from file
+    #. Create stack with template with parameters:
             image, flavor, public_net_id, private_net_id, private_subnet_id
-        #. Check stack reach "COMPLETE" status
+    #. Check stack reach "COMPLETE" status
 
     **Teardown:**
 
-        #. Delete stack
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete flavor
-        #. Delete cirros image
+    #. Delete stack
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete flavor
+    #. Delete cirros image
     """
     add_router_interfaces(router, [subnet])
     template = read_heat_template('nova_resources')
@@ -282,29 +282,29 @@ def test_create_stack_with_docker(
 
     **Setup:**
 
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
 
     **Steps:**
 
-        #. Add router interface to created network
-        #. Read docker host template from file
-        #. Create stack with template with parameters:
-            key, flavor, image, public_net, int_network_id
-        #. Check stack reach "COMPLETE" status
-        #. Get created server floating_ip
-        #. Read docker_containers template
-        #. Create stack with template with `docker_endpoint` parameter
-        #. Check stack reach "COMPLETE" status
+    #. Add router interface to created network
+    #. Read docker host template from file
+    #. Create stack with template with parameters:
+       key, flavor, image, public_net, int_network_id
+    #. Check stack reach "COMPLETE" status
+    #. Get created server floating_ip
+    #. Read docker_containers template
+    #. Create stack with template with `docker_endpoint` parameter
+    #. Check stack reach "COMPLETE" status
 
     **Teardown:**
 
-        #. Delete stacks
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
+    #. Delete stacks
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
     """
     add_router_interfaces(router, [subnet])
     docker_port = 2376
