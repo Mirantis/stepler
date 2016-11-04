@@ -20,7 +20,9 @@ Glance steps v2
 from hamcrest import assert_that, empty, is_not, equal_to  # noqa
 from waiting import wait
 
+from stepler import config
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
 from .base import BaseGlanceSteps
 
@@ -33,35 +35,18 @@ class GlanceStepsV2(BaseGlanceSteps):
     """Glance steps for v2."""
 
     @steps_checker.step
-    def create_image(self, image_name, image_path, disk_format='qcow2',
-                     container_format='bare', check=True):
-        """Step to create image.
-
-        Args:
-            image_name (str): name of created image
-            image_path (str): path to image at local machine
-            disk_format (str): format of image disk
-            container_format (str): format of image container
-            check (bool): flag whether to check step or not
-
-        Returns:
-            object: glance image
-        """
-        images = self.create_images([image_name],
-                                    image_path,
-                                    disk_format,
-                                    container_format,
-                                    check)
-        return images[0]
-
-    @steps_checker.step
-    def create_images(self, image_names, image_path, disk_format='qcow2',
-                      container_format='bare', check=True):
+    def create_images(self,
+                      image_path,
+                      image_names=config.DEFAULT,
+                      disk_format='qcow2',
+                      container_format='bare',
+                      check=True):
         """Step to create images.
 
         Args:
-            image_names (list): names of created images
             image_path (str): path to image at local machine
+            image_names (list): names of created images, if is not specified
+                one image name will be generated
             disk_format (str): format of image disk
             container_format (str): format of image container
             check (bool): flag whether to check step or not
@@ -69,13 +54,18 @@ class GlanceStepsV2(BaseGlanceSteps):
         Returns:
             list: glance images
         """
+        if image_names == config.DEFAULT:
+            image_names = utils.generate_ids()
+
         images = []
 
         for image_name in image_names:
+
             image = self._client.images.create(
                 name=image_name,
                 disk_format=disk_format,
                 container_format=container_format)
+
             self._client.images.upload(image.id, open(image_path, 'rb'))
             images.append(image)
 
@@ -84,16 +74,6 @@ class GlanceStepsV2(BaseGlanceSteps):
                 self.check_image_status(image, 'active', timeout=180)
 
         return images
-
-    @steps_checker.step
-    def delete_image(self, image, check=True):
-        """Step to delete image.
-
-        Args:
-            image (object): glance image
-            check (bool): flag whether to check step or not
-        """
-        self.delete_images([image], check)
 
     @steps_checker.step
     def delete_images(self, images, check=True):
