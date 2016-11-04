@@ -111,15 +111,11 @@ def test_launch_vm_from_volume_using_all_flavors(
     """
     flavors = flavor_steps.get_flavors()
 
-    volume = volume_steps.create_volumes(
-        names=utils.generate_ids('volume', count=1),
-        image=cirros_image)[0]
+    volume = volume_steps.create_volumes(image=cirros_image)[0]
 
     for flavor in flavors:
-        server_name = next(utils.generate_ids('server', postfix=flavor.name))
-
         with create_server_context(
-                server_name=server_name,
+                server_name=next(utils.generate_ids()),
                 image=None,
                 block_device_mapping={'vda': volume.id},
                 flavor=flavor,
