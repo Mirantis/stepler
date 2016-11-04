@@ -23,10 +23,8 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('43b96116-a0ba-45cc-b584-af9ee838ba49')
-def test_change_volume_type_from_empty(volume_type,
-                                       create_volume,
-                                       volume_steps):
-    """**Scenario:** Verify change volume type from empty value
+def test_change_volume_type_from_empty(volume_type, volume_steps):
+    """**Scenario:** Verify change volume type from empty value.
 
     **Steps:**
 
@@ -39,15 +37,13 @@ def test_change_volume_type_from_empty(volume_type,
     #. Delete volume
     #. Delete volume type
     """
-    volume = create_volume()
+    volume = volume_steps.create_volumes(names=[None])[0]
     volume_steps.change_volume_type(volume, volume_type, config.POLICY_NEVER)
 
 
 @pytest.mark.idempotent_id('a5cee93e-6d58-420e-a61c-85cbd10d6725')
-def test_change_volume_type(create_volume_type,
-                            create_volume,
-                            volume_steps):
-    """**Scenario:** Verify change volume type
+def test_change_volume_type(create_volume_type, volume_steps):
+    """**Scenario:** Verify change volume type.
 
     **Steps:**
 
@@ -60,10 +56,9 @@ def test_change_volume_type(create_volume_type,
     #. Delete volume
     #. Delete volume types
     """
-    volume_type_name_1 = next(utils.generate_ids('volume_type'))
-    volume_type_name_2 = next(utils.generate_ids('volume_type'))
-    volume_type_1 = create_volume_type(volume_type_name_1)
-    volume_type_2 = create_volume_type(volume_type_name_2)
+    volume_type_1 = create_volume_type(utils.generate_ids('volume_type'))
+    volume_type_2 = create_volume_type(utils.generate_ids('volume_type'))
 
-    volume = create_volume(volume_type=volume_type_1.name)
+    volume = volume_steps.create_volumes(
+        names=[None], volume_type=volume_type_1.name)[0]
     volume_steps.change_volume_type(volume, volume_type_2, config.POLICY_NEVER)

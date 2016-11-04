@@ -36,45 +36,45 @@ def test_restore_soft_deleted_server(
         patch_ini_file_and_restart_services,
         add_router_interfaces,
         nova_create_floating_ip,
-        create_volume,
         attach_volume_to_server,
+        volume_steps,
         server_steps):
     """**Scenario:** Restore previously deleted instance
 
     **Setup:**
 
-        #. Create cirros image
-        #. Create flavor
-        #. Create net and subnet
-        #. Create keypair
-        #. Create security group
-        #. Create router
+    #. Create cirros image
+    #. Create flavor
+    #. Create net and subnet
+    #. Create keypair
+    #. Create security group
+    #. Create router
 
     **Steps:**
 
-        #. Update /etc/nova/nova.conf with 'reclaim_instance_interval=86400'
-           and restart nova-api and nova-compute on all nodes
-        #. Add router interface
-        #. Create and run two instances (vm1, vm2) inside same net
-        #. Create and attach floating IPs to instances
-        #. Check that ping are successful between vms
-        #. Create a volume and attach it to an instance vm1
-        #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
-        #. Restore vm1 instance and check that it's in 'ACTIVE' state
-        #. Check that ping are successful between vms
+    #. Update /etc/nova/nova.conf with 'reclaim_instance_interval=86400'
+       and restart nova-api and nova-compute on all nodes
+    #. Add router interface
+    #. Create and run two instances (vm1, vm2) inside same net
+    #. Create and attach floating IPs to instances
+    #. Check that ping are successful between vms
+    #. Create a volume and attach it to an instance vm1
+    #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
+    #. Restore vm1 instance and check that it's in 'ACTIVE' state
+    #. Check that ping are successful between vms
 
     **Teardown:**
 
-        #. Delete volume
-        #. Delete vms
-        #. Delete router and router interface
-        #. Delete security group
-        #. Delete keypair
-        #. Delete net and subnet
-        #. Delete flavor
-        #. Delete cirros image
-        #. Restore original config files and restart nova-api and
-           nova-compute on all nodes
+    #. Delete volume
+    #. Delete vms
+    #. Delete router and router interface
+    #. Delete security group
+    #. Delete keypair
+    #. Delete net and subnet
+    #. Delete flavor
+    #. Delete cirros image
+    #. Restore original config files and restart nova-api and
+       nova-compute on all nodes
     """
     with patch_ini_file_and_restart_services(
             NOVA_SERVICES,
@@ -115,8 +115,8 @@ def test_restore_soft_deleted_server(
         server_steps.check_ping_between_servers_via_floating(
             [server_1, server_2], timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
-        volume_name = next(utils.generate_ids('volume'))
-        volume = create_volume(volume_name)
+        volume = volume_steps.create_volumes(
+            names=utils.generate_ids('volume', count=1))[0]
         attach_volume_to_server(server_1, volume)
 
         server_steps.delete_servers([server_1], soft=True)
@@ -140,7 +140,6 @@ def test_server_deleted_after_reclaim_timeout(
         router,
         patch_ini_file_and_restart_services,
         add_router_interfaces,
-        create_volume,
         attach_volume_to_server,
         detach_volume_from_server,
         server_steps,
@@ -150,44 +149,44 @@ def test_server_deleted_after_reclaim_timeout(
 
     **Setup:**
 
-        #. Create cirros image
-        #. Create flavor
-        #. Create net and subnet
-        #. Create keypair
-        #. Create security group
-        #. Create router
+    #. Create cirros image
+    #. Create flavor
+    #. Create net and subnet
+    #. Create keypair
+    #. Create security group
+    #. Create router
 
     **Steps:**
 
-        #. Update '/etc/nova/nova.conf' with 'reclaim_instance_interval=30'
+    #. Update '/etc/nova/nova.conf' with 'reclaim_instance_interval=30'
            and restart nova-api and nova-compute on all nodes
-        #. Create and run two instances (vm1, vm2) inside same net
-        #. Create and attach floating IPs to instances
-        #. Check that ping are successful between vms
-        #. Create a volume and attach it to an instance vm1
-        #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
-        #. Wait for the reclaim instance interval to expire and make sure
+    #. Create and run two instances (vm1, vm2) inside same net
+    #. Create and attach floating IPs to instances
+    #. Check that ping are successful between vms
+    #. Create a volume and attach it to an instance vm1
+    #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
+    #. Wait for the reclaim instance interval to expire and make sure
            that vm1 is deleted
-        #. Check that volume is released now and has an Available state
-        #. Attach the volume to vm2 and check that it has 'in-use' state.
-        #. Detach the volume
+    #. Check that volume is released now and has an Available state
+    #. Attach the volume to vm2 and check that it has 'in-use' state.
+    #. Detach the volume
 
     **Teardown:**
 
-        #. Delete volume
-        #. Delete vms
-        #. Delete security group
-        #. Delete keypair
-        #. Delete net and subnet
-        #. Delete flavor
-        #. Delete cirros image
-        #. Restore original config files and restart nova-api and
-           nova-compute on all nodes
+    #. Delete volume
+    #. Delete vms
+    #. Delete security group
+    #. Delete keypair
+    #. Delete net and subnet
+    #. Delete flavor
+    #. Delete cirros image
+    #. Restore original config files and restart nova-api and
+       nova-compute on all nodes
 
-        ~! BUG !~
-        https://bugs.launchpad.net/cinder/+bug/1463856
-        Cinder volume isn't available after instance soft-deleted timer
-        expired while volume is still attached.
+    ~! BUG !~
+    https://bugs.launchpad.net/cinder/+bug/1463856
+    Cinder volume isn't available after instance soft-deleted timer
+    expired while volume is still attached.
     """
     with patch_ini_file_and_restart_services(
             NOVA_SERVICES,
@@ -215,8 +214,8 @@ def test_server_deleted_after_reclaim_timeout(
             security_groups=[security_group],
             username=config.CIRROS_USERNAME)[0]
 
-        volume_name = next(utils.generate_ids('volume'))
-        volume = create_volume(volume_name)
+        volume = volume_steps.create_volumes(
+            names=utils.generate_ids('volume', count=1))[0]
 
         attach_volume_to_server(server_1, volume)
         server_steps.delete_servers([server_1], soft=True)
@@ -249,7 +248,6 @@ def test_force_delete_server_before_deferred_cleanup(
         patch_ini_file_and_restart_services,
         add_router_interfaces,
         create_server_context,
-        create_volume,
         attach_volume_to_server,
         detach_volume_from_server,
         server_steps,
@@ -258,37 +256,37 @@ def test_force_delete_server_before_deferred_cleanup(
 
     **Setup:**
 
-        #. Create cirros image
-        #. Create flavor
-        #. Create net and subnet
-        #. Create keypair
-        #. Create security group
-        #. Create router
+    #. Create cirros image
+    #. Create flavor
+    #. Create net and subnet
+    #. Create keypair
+    #. Create security group
+    #. Create router
 
     **Steps:**
 
-        #. Update /etc/nova/nova.conf with 'reclaim_instance_interval=86400'
-           and restart nova-api and nova-compute on all nodes
-        #. Create and run two instances (vm1, vm2) inside same net
-        #. Create a volume and attach it to an instance vm1
-        #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
-        #. Delete instance vm1 with 'force' option and check that it's not
-           present.
-        #. Check that volume is released now and has an Available state;
-        #. Attach the volume to vm2 and check that it has 'in-use' state.
-        #. Detach the volume
+    #. Update /etc/nova/nova.conf with 'reclaim_instance_interval=86400'
+       and restart nova-api and nova-compute on all nodes
+    #. Create and run two instances (vm1, vm2) inside same net
+    #. Create a volume and attach it to an instance vm1
+    #. Delete instance vm1 and check that it's in 'SOFT_DELETE' state
+    #. Delete instance vm1 with 'force' option and check that it's not
+       present.
+    #. Check that volume is released now and has an Available state;
+    #. Attach the volume to vm2 and check that it has 'in-use' state.
+    #. Detach the volume
 
     **Teardown:**
 
-        #. Delete volume
-        #. Delete vms
-        #. Delete security group
-        #. Delete keypair
-        #. Delete net and subnet
-        #. Delete flavor
-        #. Delete cirros image
-        #. Restore original config files and restart nova-api and
-           nova-compute on all nodes
+    #. Delete volume
+    #. Delete vms
+    #. Delete security group
+    #. Delete keypair
+    #. Delete net and subnet
+    #. Delete flavor
+    #. Delete cirros image
+    #. Restore original config files and restart nova-api and
+       nova-compute on all nodes
     """
     with patch_ini_file_and_restart_services(
             NOVA_SERVICES,
@@ -317,8 +315,8 @@ def test_force_delete_server_before_deferred_cleanup(
                 security_groups=[security_group],
                 username=config.CIRROS_USERNAME)[0]
 
-            volume_name = next(utils.generate_ids('volume'))
-            volume = create_volume(volume_name)
+            volume = volume_steps.create_volumes(
+                names=utils.generate_ids('volume', count=1))[0]
             attach_volume_to_server(server_1, volume)
 
             server_steps.delete_servers([server_1], soft=True)

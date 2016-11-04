@@ -27,8 +27,6 @@ from stepler import config
 from stepler.third_party import utils
 
 __all__ = [
-    'create_volume',
-    'create_volumes',
     'get_volume_steps',
     'volume_steps',
     'upload_volume_to_image',
@@ -121,58 +119,7 @@ def volume_steps(get_volume_steps, uncleanable):
 
 
 @pytest.yield_fixture
-def create_volumes(volume_steps, server_steps, detach_volume_from_server):
-    """Callable function fixture to create volumes with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created volumes.
-
-    Args:
-        volume_steps (object): instantiated volume steps
-
-    Returns:
-        function: function to create volumes as batch with options
-    """
-    volumes = []
-
-    def _create_volumes(names, *args, **kwgs):
-        _volumes = volume_steps.create_volumes(names, *args, **kwgs)
-        volumes.extend(_volumes)
-        return _volumes
-
-    yield _create_volumes
-
-    if volumes:
-        for volume in volumes:
-            attached_server_ids = volume_steps.get_servers_attached_to_volume(
-                volume)
-            for server_id in attached_server_ids:
-                server = server_steps.get_server(id=server_id)
-                detach_volume_from_server(volume, server)
-        volume_steps.delete_volumes(volumes)
-
-
-@pytest.fixture
-def create_volume(create_volumes):
-    """Callable function fixture to create single volume with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created volumes.
-
-    Args:
-        create_volumes (function): function to create volumes with options
-
-    Returns:
-        function: function to create single volume with options
-    """
-    def _create_volume(name=None, *args, **kwgs):
-        return create_volumes([name], *args, **kwgs)[0]
-
-    return _create_volume
-
-
-@pytest.yield_fixture
-def upload_volume_to_image(create_volume, volume_steps, glance_steps):
+def upload_volume_to_image(volume_steps, glance_steps):
     """Callable function fixture to upload volume to image.
 
     Can be called several times during a test.
@@ -189,7 +136,7 @@ def upload_volume_to_image(create_volume, volume_steps, glance_steps):
     images = []
 
     def _upload_volume_to_image(volume_name, image_name, disk_format):
-        volume = create_volume(volume_name)
+        volume = volume_steps.create_volumes([volume_name])[0]
         image_info = volume_steps.volume_upload_to_image(
             volume=volume, image_name=image_name, disk_format=disk_format)
         image = glance_steps.get_image(

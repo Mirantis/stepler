@@ -251,7 +251,7 @@ def live_migration_server(request,
                           subnet,
                           router,
                           add_router_interfaces,
-                          create_volume,
+                          volume_steps,
                           server_steps):
     """Fixture to create server for live migration tests.
 
@@ -291,8 +291,11 @@ def live_migration_server(request,
     boot_from_volume = params.get('boot_from_volume', False)
 
     if boot_from_volume:
-        volume = create_volume(
-            next(utils.generate_ids('volume')), size=20, image=ubuntu_image)
+        volume = volume_steps.create_volumes(
+            names=utils.generate_ids('volume', count=1),
+            size=20,
+            image=ubuntu_image)[0]
+
         block_device_mapping = {'vda': volume.id}
         kwargs = dict(image=None, block_device_mapping=block_device_mapping)
     else:

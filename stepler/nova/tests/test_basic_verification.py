@@ -32,7 +32,7 @@ def test_boot_instance_from_volume_bigger_than_flavor(
         subnet,
         router,
         add_router_interfaces,
-        create_volume,
+        volume_steps,
         server_steps):
     """**Scenario:** Boot instance from volume bigger than flavor size.
 
@@ -40,38 +40,40 @@ def test_boot_instance_from_volume_bigger_than_flavor(
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Create security group with allow ping rule
-        #. Create flavor
+    #. Upload cirros image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Create security group with allow ping rule
+    #. Create flavor
 
     **Steps:**
 
-        #. Set router default gateway to public network
-        #. Add router interface to created network
-        #. Create volume from cirros image with disk size bigger than flavor
-        #. Boot server from volume
-        #. Assign floating ip to server
-        #. Check that ping to server's floating ip is successful
+    #. Set router default gateway to public network
+    #. Add router interface to created network
+    #. Create volume from cirros image with disk size bigger than flavor
+    #. Boot server from volume
+    #. Assign floating ip to server
+    #. Check that ping to server's floating ip is successful
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete flavor
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete cirros image
+    #. Delete server
+    #. Delete flavor
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete cirros image
     """
     add_router_interfaces(router, [subnet])
     volume_size = flavor.disk + 1
-    volume = create_volume(
-        next(utils.generate_ids('volume')),
+
+    volume = volume_steps.create_volumes(
+        names=utils.generate_ids('volume', count=1),
         size=volume_size,
-        image=cirros_image)
+        image=cirros_image)[0]
+
     block_device_mapping = {'vda': volume.id}
 
     server = server_steps.create_servers(
@@ -101,25 +103,25 @@ def test_delete_server_with_precreated_port(
 
     **Setup:**
 
-        #. Create flavor
-        #. Create network
-        #. Create subnet
-        #. Upload cirros image
-        #. Create port
+    #. Create flavor
+    #. Create network
+    #. Create subnet
+    #. Upload cirros image
+    #. Create port
 
     **Steps:**
 
-        #. Boot server with created port
-        #. Delete server
-        #. Check that port is still present
+    #. Boot server with created port
+    #. Delete server
+    #. Check that port is still present
 
     **Teardown:**
 
-        #. Delete port
-        #. Delete cirros image
-        #. Delete network
-        #. Delete subnet
-        #. Delete flavor
+    #. Delete port
+    #. Delete cirros image
+    #. Delete network
+    #. Delete subnet
+    #. Delete flavor
     """
     servers = server_steps.create_servers(
         server_names=utils.generate_ids('server', count=1),

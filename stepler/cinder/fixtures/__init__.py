@@ -26,8 +26,6 @@ from .volumes import *  # noqa
 from .volume_types import *  # noqa
 
 __all__ = sorted([  # sort for documentation
-    'create_volume',
-    'create_volumes',
     'cinder_client',
     'get_cinder_client',
     'get_transfer_steps',
