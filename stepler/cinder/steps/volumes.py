@@ -72,7 +72,7 @@ class VolumeSteps(base.BaseSteps):
 
     @steps_checker.step
     def create_volumes(self,
-                       names,
+                       names=None,
                        size=1,
                        image=None,
                        volume_type=None,
@@ -84,7 +84,8 @@ class VolumeSteps(base.BaseSteps):
         """Step to create volumes.
 
         Args:
-            names (list): names of created volume
+            names (list): names of created volume, if not specified
+                one volume name will be generated
             size (int): size of created volume (in GB)
             image (object): glance image to create volume from
             volume_type (str): type of volume
@@ -100,6 +101,7 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired|AssertionError: if check was failed
         """
+        names = names or utils.generate_ids()
         image_id = None if image is None else image.id
         volumes = []
 
@@ -379,13 +381,17 @@ class VolumeSteps(base.BaseSteps):
             raises(exceptions.OverLimit, error_message))
 
     @steps_checker.step
-    def volume_upload_to_image(self, volume, image_name,
-                               force=False, container_format='bare',
-                               disk_format='raw', check=True):
+    def volume_upload_to_image(self,
+                               volume,
+                               image_name=None,
+                               force=False,
+                               container_format='bare',
+                               disk_format='raw',
+                               check=True):
         """Step to upload volume to image.
 
         Args:
-            volume (str): The :class:`Volume` to upload
+            volume (object): The :class:`Volume` to upload
             image_name (str): The new image name
             force (bool): Enables or disables upload of a volume that is
             attached to an instance
@@ -399,6 +405,8 @@ class VolumeSteps(base.BaseSteps):
         Returns:
             object: image
         """
+        image_name = image_name or next(utils.generate_ids())
+
         response, image = self._client.volumes.upload_to_image(
             volume=volume,
             force=force,
