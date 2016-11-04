@@ -100,7 +100,6 @@ def test_put_metadata_on_instances_on_single_compute(
         network,
         subnet,
         nova_availability_zone_hosts,
-        create_servers,
         flavor_steps,
         server_steps,
         os_faults_steps,
@@ -147,7 +146,7 @@ def test_put_metadata_on_instances_on_single_compute(
     cmd_set_meta = SET_META_CMD_TEMPLATE.format(host=host_1)
     cmd_del_meta = DEL_META_CMD_TEMPLATE.format(host=host_1)
 
-    host1_servers = create_servers(
+    host1_servers = server_steps.create_servers(
         server_names=utils.generate_ids('server_host1', count=2),
         image=ubuntu_image,
         flavor=flavor,
@@ -156,7 +155,7 @@ def test_put_metadata_on_instances_on_single_compute(
         security_groups=[security_group],
         availability_zone='nova:{}'.format(host_1))
 
-    host2_servers = create_servers(
+    host2_servers = server_steps.create_servers(
         server_names=utils.generate_ids('server_host2', count=2),
         image=ubuntu_image,
         flavor=flavor,

@@ -22,7 +22,7 @@ from stepler import config
 from stepler.third_party import utils
 
 
-@pytest.mark.idempotent_id('')
+@pytest.mark.idempotent_id('101ccfbf-5693-4d29-8878-296fea791a81')
 def test_boot_instance_from_volume_bigger_than_flavor(
         flavor,
         security_group,
@@ -33,7 +33,6 @@ def test_boot_instance_from_volume_bigger_than_flavor(
         router,
         add_router_interfaces,
         create_volume,
-        create_server,
         server_steps):
     """**Scenario:** Boot instance from volume bigger than flavor size.
 
@@ -75,13 +74,13 @@ def test_boot_instance_from_volume_bigger_than_flavor(
         image=cirros_image)
     block_device_mapping = {'vda': volume.id}
 
-    server_name = next(utils.generate_ids('server'))
-    server = create_server(server_name,
-                           image=None,
-                           flavor=flavor,
-                           networks=[network],
-                           security_groups=[security_group],
-                           block_device_mapping=block_device_mapping)
+    server = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=1),
+        image=None,
+        flavor=flavor,
+        networks=[network],
+        security_groups=[security_group],
+        block_device_mapping=block_device_mapping)[0]
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
@@ -139,7 +138,6 @@ def test_remove_incorrect_fixed_ip_from_server(
         cirros_image,
         nova_floating_ip,
         admin_internal_network,
-        create_server,
         server_steps):
     """**Scenario:** [negative] Remove incorrect fixed IP from an instance.
 
@@ -173,17 +171,16 @@ def test_remove_incorrect_fixed_ip_from_server(
     #. Delete cirros image
     #. Delete nova floating ip
     """
-    server_name = next(utils.generate_ids('server'))
-    server = create_server(
-        server_name=server_name,
+    server = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=1),
         image=cirros_image,
         flavor=flavor,
         networks=[admin_internal_network],
         keypair=keypair,
         security_groups=[security_group],
-        username=config.CIRROS_USERNAME)
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+        username=config.CIRROS_USERNAME)[0]
 
+    server_steps.attach_floating_ip(server, nova_floating_ip)
     ip_fake = next(utils.generate_ips())
 
     server_steps.check_server_doesnot_detach_unattached_fixed_ip(

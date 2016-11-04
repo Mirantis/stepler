@@ -35,7 +35,6 @@ def test_restore_soft_deleted_server(
         router,
         patch_ini_file_and_restart_services,
         add_router_interfaces,
-        create_server,
         nova_create_floating_ip,
         create_volume,
         attach_volume_to_server,
@@ -85,28 +84,28 @@ def test_restore_soft_deleted_server(
 
         add_router_interfaces(router, [subnet])
 
-        server_name_1 = next(utils.generate_ids('server'))
-        server_1 = create_server(server_name_1,
-                                 image=cirros_image,
-                                 flavor=flavor,
-                                 networks=[network],
-                                 keypair=keypair,
-                                 security_groups=[security_group],
-                                 username=config.CIRROS_USERNAME)
+        server_1 = server_steps.create_servers(
+            server_names=utils.generate_ids('server', count=1),
+            image=cirros_image,
+            flavor=flavor,
+            networks=[network],
+            keypair=keypair,
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME)[0]
 
         floating_ip_1 = nova_create_floating_ip()
         server_steps.attach_floating_ip(server_1, floating_ip_1)
         server_steps.check_ping_to_server_floating(
             server_1, timeout=config.PING_CALL_TIMEOUT)
 
-        server_name_2 = next(utils.generate_ids('server'))
-        server_2 = create_server(server_name_2,
-                                 image=cirros_image,
-                                 flavor=flavor,
-                                 networks=[network],
-                                 keypair=keypair,
-                                 security_groups=[security_group],
-                                 username=config.CIRROS_USERNAME)
+        server_2 = server_steps.create_servers(
+            server_names=utils.generate_ids('server', count=1),
+            image=cirros_image,
+            flavor=flavor,
+            networks=[network],
+            keypair=keypair,
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME)[0]
 
         floating_ip_2 = nova_create_floating_ip()
         server_steps.attach_floating_ip(server_2, floating_ip_2)
@@ -141,7 +140,6 @@ def test_server_deleted_after_reclaim_timeout(
         router,
         patch_ini_file_and_restart_services,
         add_router_interfaces,
-        create_server,
         create_volume,
         attach_volume_to_server,
         detach_volume_from_server,
@@ -208,14 +206,14 @@ def test_server_deleted_after_reclaim_timeout(
             security_groups=[security_group],
             username=config.CIRROS_USERNAME)[0]
 
-        server_name_2 = next(utils.generate_ids('server'))
-        server_2 = create_server(server_name_2,
-                                 image=cirros_image,
-                                 flavor=flavor,
-                                 networks=[network],
-                                 keypair=keypair,
-                                 security_groups=[security_group],
-                                 username=config.CIRROS_USERNAME)
+        server_2 = server_steps.create_servers(
+            server_names=utils.generate_ids('server', count=1),
+            image=cirros_image,
+            flavor=flavor,
+            networks=[network],
+            keypair=keypair,
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME)[0]
 
         volume_name = next(utils.generate_ids('volume'))
         volume = create_volume(volume_name)
@@ -251,7 +249,6 @@ def test_force_delete_server_before_deferred_cleanup(
         patch_ini_file_and_restart_services,
         add_router_interfaces,
         create_server_context,
-        create_server,
         create_volume,
         attach_volume_to_server,
         detach_volume_from_server,
@@ -311,14 +308,14 @@ def test_force_delete_server_before_deferred_cleanup(
                 security_groups=[security_group],
                 username=config.CIRROS_USERNAME) as server_1:
 
-            server_name_2 = next(utils.generate_ids('server'))
-            server_2 = create_server(server_name_2,
-                                     image=cirros_image,
-                                     flavor=flavor,
-                                     networks=[network],
-                                     keypair=keypair,
-                                     security_groups=[security_group],
-                                     username=config.CIRROS_USERNAME)
+            server_2 = server_steps.create_servers(
+                server_names=utils.generate_ids('server', count=1),
+                image=cirros_image,
+                flavor=flavor,
+                networks=[network],
+                keypair=keypair,
+                security_groups=[security_group],
+                username=config.CIRROS_USERNAME)[0]
 
             volume_name = next(utils.generate_ids('volume'))
             volume = create_volume(volume_name)

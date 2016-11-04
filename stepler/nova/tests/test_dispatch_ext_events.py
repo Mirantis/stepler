@@ -29,9 +29,9 @@ def test_dispatch_external_event(
         security_group,
         create_network,
         create_subnet,
-        create_server,
+        server_steps,
         os_faults_steps):
-    """**Scenario:** Dispatch an external event
+    """**Scenario:** Dispatch an external event.
 
     **Setup:**
 
@@ -57,13 +57,12 @@ def test_dispatch_external_event(
     subnet_name = next(utils.generate_ids('subnet'))
     create_subnet(subnet_name, network=network, cidr='192.168.1.0/24')
 
-    server_name = next(utils.generate_ids('server'))
-    server = create_server(
-        server_name,
+    server = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=1),
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        security_groups=[security_group])
+        security_groups=[security_group])[0]
 
     nodes = os_faults_steps.get_nodes(service_names=[config.NOVA_API])
 

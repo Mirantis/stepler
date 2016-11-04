@@ -65,9 +65,7 @@ __all__ = sorted([  # sort for documentation
     'attach_volume_to_server',
     'detach_volume_from_server',
 
-    'create_server',
     'create_server_context',
-    'create_servers',
     'create_servers_context',
     'get_server_steps',
     'get_ssh_proxy_cmd',

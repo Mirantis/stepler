@@ -303,7 +303,6 @@ def test_migration_with_ephemeral_disk(
         router,
         add_router_interfaces,
         create_flavor,
-        create_server,
         server_steps):
     """**Scenario:** LM of VM with data on root and ephemeral disk.
 
@@ -344,15 +343,15 @@ def test_migration_with_ephemeral_disk(
     flavor = create_flavor(
         next(generate_ids('flavor')), ram=64, disk=1, vcpus=1, ephemeral=1)
 
-    server_name = next(generate_ids('server'))
-    server = create_server(
-        server_name,
+    server = server_steps.create_servers(
+        server_names=generate_ids('server', count=1),
         image=cirros_image,
         flavor=flavor,
         keypair=keypair,
         networks=[network],
         security_groups=[security_group],
-        username='cirros')
+        username=config.CIRROS_USERNAME)[0]
+
     server_steps.attach_floating_ip(server, nova_floating_ip)
     timestamp = str(time.time())
     with server_steps.get_server_ssh(server,

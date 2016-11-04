@@ -28,9 +28,7 @@ from stepler.third_party import context
 from stepler.third_party import utils
 
 __all__ = [
-    'create_server',
     'create_server_context',
-    'create_servers',
     'create_servers_context',
     'get_server_steps',
     'get_ssh_proxy_cmd',
@@ -120,40 +118,6 @@ def server_steps(get_server_steps):
             deleting_servers.append(server)
 
     _server_steps.delete_servers(deleting_servers)
-
-
-@pytest.yield_fixture
-def create_servers(server_steps):
-    """Fixture to create servers with options.
-
-    Can be called several times during test.
-    """
-    names = []
-
-    def _create_servers(server_names, *args, **kwgs):
-        server_names = list(server_names)
-        names.extend(server_names)
-        _servers = server_steps.create_servers(server_names, *args, **kwgs)
-        return _servers
-
-    yield _create_servers
-
-    if names:
-        servers = [s for s in server_steps.get_servers(check=False)
-                   if s.name in names]
-        server_steps.delete_servers(servers)
-
-
-@pytest.fixture
-def create_server(create_servers):
-    """Fixture to create server with options.
-
-    Can be called several times during test.
-    """
-    def _create_server(server_name, *args, **kwgs):
-        return create_servers([server_name], *args, **kwgs)[0]
-
-    return _create_server
 
 
 @pytest.fixture
@@ -286,10 +250,8 @@ def live_migration_server(request,
                           router,
                           add_router_interfaces,
                           create_volume,
-                          create_server,
                           server_steps):
     """Fixture to create server for live migration tests.
-
 
     This fixture create server and add floating ip to it.
     It can boot server from ubuntu image or volume with parametrization.
@@ -302,7 +264,6 @@ def live_migration_server(request,
             ], indirect=True)
         def test_foo(live_migration_server):
             pass
-
 
     Args:
         request (obj): pytest SubRequest instance
@@ -317,7 +278,6 @@ def live_migration_server(request,
         add_router_interfaces (function): callable fixture to add interface to
             router
         create_volume (function): callable fixture to create volume
-        create_server (function): callable fixture to create server
         server_steps (obj): instance of ServerSteps
 
     Returns:
@@ -336,16 +296,15 @@ def live_migration_server(request,
     else:
         kwargs = dict(image=ubuntu_image)
 
-    server_name = next(utils.generate_ids('server'))
-    server = create_server(
-        server_name,
+    server = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=1),
         flavor=flavor,
         keypair=keypair,
         networks=[network],
         security_groups=[security_group],
         userdata=config.INSTALL_LM_WORKLOAD_USERDATA,
         username='ubuntu',
-        **kwargs)
+        **kwargs)[0]
 
     server_steps.check_server_log_contains_record(
         server,

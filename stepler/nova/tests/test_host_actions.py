@@ -29,10 +29,10 @@ def test_host_resources_info(cirros_image,
                              subnet,
                              keypair,
                              security_group,
-                             create_servers,
+                             server_steps,
                              hypervisor_steps,
                              host_steps):
-    """**Scenario:** Get info about resources' usage on nodes
+    """**Scenario:** Get info about resources' usage on nodes.
 
     **Setup:**
 
@@ -74,14 +74,15 @@ def test_host_resources_info(cirros_image,
     usage_data_1 = host_steps.get_usage_data(host_1)
     usage_data_2 = host_steps.get_usage_data(host_2)
 
-    server_names = utils.generate_ids('server', count=2)
-    availability_zone = 'nova:' + host_name_1
-    servers_host_1 = create_servers(server_names, cirros_image, flavor,
-                                    networks=[network],
-                                    keypair=keypair,
-                                    security_groups=[security_group],
-                                    availability_zone=availability_zone,
-                                    username=config.CIRROS_USERNAME)
+    servers_host_1 = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=2),
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        availability_zone='nova:' + host_name_1,
+        username=config.CIRROS_USERNAME)
 
     project_id = servers_host_1[0].tenant_id
     host_steps.check_host_usage_changing(host_1,
@@ -95,14 +96,15 @@ def test_host_resources_info(cirros_image,
     usage_data_1 = host_steps.get_usage_data(host_1)
     usage_data_2 = host_steps.get_usage_data(host_2)
 
-    server_names = utils.generate_ids('server', count=2)
-    availability_zone = 'nova:' + host_name_2
-    servers_host_2 = create_servers(server_names, cirros_image, flavor,
-                                    networks=[network],
-                                    keypair=keypair,
-                                    security_groups=[security_group],
-                                    availability_zone=availability_zone,
-                                    username=config.CIRROS_USERNAME)
+    servers_host_2 = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=2),
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        availability_zone='nova:' + host_name_2,
+        username=config.CIRROS_USERNAME)
 
     project_id = servers_host_2[0].tenant_id
     host_steps.check_host_usage_changing(host_1,
@@ -124,10 +126,9 @@ def test_migrate_instances(cirros_image,
                            add_router_interfaces,
                            keypair,
                            hypervisor_steps,
-                           create_servers,
                            server_steps,
                            nova_create_floating_ip):
-    """**Scenario:** Migrate instances from the specified host to other hosts
+    """**Scenario:** Migrate instances from the specified host to other hosts.
 
     **Setup:**
 
@@ -160,17 +161,18 @@ def test_migrate_instances(cirros_image,
         #. Delete cirros image
     """
     add_router_interfaces(router, [subnet])
-
     hypervisor = hypervisor_steps.get_hypervisors()[0]
-    availability_zone = 'nova:' + hypervisor.hypervisor_hostname
 
-    server_names = utils.generate_ids('server', count=3)
-    servers = create_servers(server_names, cirros_image, flavor,
-                             networks=[network],
-                             keypair=keypair,
-                             security_groups=[security_group],
-                             availability_zone=availability_zone,
-                             username=config.CIRROS_USERNAME)
+    servers = server_steps.create_servers(
+        server_names=utils.generate_ids('server', count=3),
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        availability_zone='nova:' + hypervisor.hypervisor_hostname,
+        username=config.CIRROS_USERNAME)
+
     server_steps.migrate_servers(servers)
     server_steps.confirm_resize_servers(servers)
 
