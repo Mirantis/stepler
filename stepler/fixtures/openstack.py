@@ -17,6 +17,7 @@ Openstack fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import attrdict
 from keystoneauth1 import identity
 from keystoneauth1 import session as _session
 import pytest
@@ -25,7 +26,8 @@ from stepler import config
 
 __all__ = [
     'get_session',
-    'session'
+    'session',
+    'uncleanable',
 ]
 
 
@@ -88,3 +90,18 @@ def session(get_session):
       keystoneauth1.session.Session: instantiated keystone session
     """
     return get_session()
+
+
+@pytest.fixture(scope=session)
+def uncleanable():
+    """Session fixture to get data structure with resources not to cleanup.
+
+    Each test uses cleanup resources mechanism, but some resources should be
+    skipped there, because they should be present during several tests. This
+    data structure contains such resources.
+    """
+    data = attrdict.AttrDict()
+    data.image_ids = set()
+    data.server_ids = set()
+    data.volume_ids = set()
+    return data

@@ -93,7 +93,7 @@ def get_server_steps(request, get_nova_client):
 
 
 @pytest.fixture
-def server_steps(get_server_steps):
+def server_steps(get_server_steps, uncleanable):
     """Function fixture to get nova steps.
 
     Args:
@@ -114,8 +114,9 @@ def server_steps(get_server_steps):
 
     deleting_servers = []
     for server in _get_servers():
-        if server.id not in server_ids_before:
-            deleting_servers.append(server)
+        if server.id not in uncleanable.server_ids:
+            if server.id not in server_ids_before:
+                deleting_servers.append(server)
 
     _server_steps.delete_servers(deleting_servers)
 
