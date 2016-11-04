@@ -44,77 +44,7 @@ __all__ = [
 
 
 class ServerSteps(base.BaseSteps):
-    """Nova steps."""
-
-    @steps_checker.step
-    def create_server(self,
-                      server_name,
-                      image,
-                      flavor,
-                      networks=(),
-                      ports=(),
-                      keypair=None,
-                      security_groups=None,
-                      availability_zone='nova',
-                      block_device_mapping=None,
-                      username=None,
-                      password=None,
-                      userdata=None,
-                      check=True):
-        """Step to create server.
-
-        Args:
-            server_name (str): name of created server
-            image (object|None): image or None (to use volume)
-            flavor (object): flavor
-            networks (list): networks objects
-            ports (list): ports objects
-            keypair (object): keypair
-            security_groups (list|tuple): security groups
-            availability_zone (str): name of availability zone
-            block_device_mapping (dict|None): block device mapping for server
-            username (str): username to store with server metadata
-            password (str): password to store with server metadata
-            userdata (str): userdata (script) to execute on instance after boot
-            check (bool): flag whether to check step or not
-
-        Returns:
-            object: nova server
-        """
-        sec_groups = [s.id for s in security_groups or []]
-        image_id = None if image is None else image.id
-        keypair_id = None if keypair is None else keypair.id
-        nics = []
-        for network in networks:
-            nics.append({'net-id': network['id']})
-        for port in ports:
-            nics.append({'port-id': port['id']})
-
-        # Store credentials to server metadata
-        private_key = None if keypair is None else keypair.private_key
-        credentials = {
-            'username': username,
-            'password': password,
-            'private_key': private_key
-        }
-        meta = chunk_serializer.dump(credentials, config.CREDENTIALS_PREFIX)
-        server = self._client.create(
-            name=server_name,
-            image=image_id,
-            flavor=flavor.id,
-            nics=nics,
-            key_name=keypair_id,
-            availability_zone=availability_zone,
-            security_groups=sec_groups,
-            block_device_mapping=block_device_mapping,
-            userdata=userdata,
-            meta=meta)
-
-        if check:
-            self.check_server_status(server, config.STATUS_ACTIVE,
-                                     timeout=config.SERVER_ACTIVE_TIMEOUT)
-
-        return server
+    """Nova server steps."""
 
     @steps_checker.step
     def create_servers(self,
@@ -151,29 +81,43 @@ class ServerSteps(base.BaseSteps):
         Returns:
             list: nova servers
         """
+        sec_groups = [s.id for s in security_groups or []]
+        image_id = None if image is None else image.id
+        keypair_id = None if keypair is None else keypair.id
+        nics = []
+        for network in networks:
+            nics.append({'net-id': network['id']})
+        for port in ports:
+            nics.append({'port-id': port['id']})
+
+        # Store credentials to server metadata
+        private_key = None if keypair is None else keypair.private_key
+        credentials = {
+            'username': username,
+            'password': password,
+            'private_key': private_key
+        }
+        meta = chunk_serializer.dump(credentials, config.CREDENTIALS_PREFIX)
+
         servers = []
         for server_name in server_names:
-            server = self.create_server(
-                server_name,
-                image=image,
-                flavor=flavor,
-                networks=networks,
-                ports=ports,
-                keypair=keypair,
-                security_groups=security_groups,
+            server = self._client.create(
+                name=server_name,
+                image=image_id,
+                flavor=flavor.id,
+                nics=nics,
+                key_name=keypair_id,
                 availability_zone=availability_zone,
+                security_groups=sec_groups,
                 block_device_mapping=block_device_mapping,
                 userdata=userdata,
-                username=username,
-                password=password,
-                check=False)
+                meta=meta)
             servers.append(server)
 
         if check:
             for server in servers:
                 self.check_server_status(server, config.STATUS_ACTIVE,
                                          timeout=config.SERVER_ACTIVE_TIMEOUT)
-
         return servers
 
     @steps_checker.step

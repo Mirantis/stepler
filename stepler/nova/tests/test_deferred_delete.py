@@ -199,15 +199,14 @@ def test_server_deleted_after_reclaim_timeout(
 
         add_router_interfaces(router, [subnet])
 
-        server_name_1 = next(utils.generate_ids('server'))
-        server_1 = server_steps.create_server(
-            server_name_1,
+        server_1 = server_steps.create_servers(
+            server_names=utils.generate_ids('server', count=1),
             image=cirros_image,
             flavor=flavor,
             networks=[network],
             keypair=keypair,
             security_groups=[security_group],
-            username=config.CIRROS_USERNAME)
+            username=config.CIRROS_USERNAME)[0]
 
         server_name_2 = next(utils.generate_ids('server'))
         server_2 = create_server(server_name_2,
