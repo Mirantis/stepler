@@ -40,8 +40,8 @@ def get_project_steps(get_keystone_client):
     Returns:
         function: function to get project steps.
     """
-    def _get_steps():
-        return steps.ProjectSteps(get_keystone_client().projects)
+    def _get_steps(*args, **kwgs):
+        return steps.ProjectSteps(get_keystone_client(*args, **kwgs).projects)
 
     return _get_steps
 

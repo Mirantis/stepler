@@ -17,7 +17,8 @@ Project steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, equal_to  # noqa
+from hamcrest import assert_that, empty, equal_to, calling, raises  # noqa
+from keystoneclient import exceptions
 from waiting import wait
 
 from stepler.base import BaseSteps
@@ -103,3 +104,14 @@ class ProjectSteps(BaseSteps):
         if check:
             assert_that(project.id, equal_to(project_id))
         return project
+
+    @steps_checker.step
+    def check_get_projects_requires_authentication(self):
+        """Step to check unauthorized request returns (HTTP 401)
+
+        Raises:
+            AssertionError: if check was triggered to an error
+        """
+        exception_message = "The request you have made requires authentication"
+        assert_that(calling(self.get_projects),
+                    raises(exceptions.Unauthorized), exception_message)
