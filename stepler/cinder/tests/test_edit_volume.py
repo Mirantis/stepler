@@ -96,7 +96,7 @@ def test_volume_enable_bootable(volume_steps):
 
 
 @pytest.mark.idempotent_id('515ff471-e814-4074-8026-680a2131942c')
-def test_volume_disable_bootable(create_image, volume_steps):
+def test_volume_disable_bootable(glance_steps, volume_steps):
     """**Scenario:** Verify ability to disable volume bootable status.
 
     **Steps:**
@@ -110,6 +110,8 @@ def test_volume_disable_bootable(create_image, volume_steps):
     #. Delete volume
     #. Delete image
     """
-    image = create_image(utils.generate_ids('image'), config.UBUNTU_ISO_URL)
+    image = glance_steps.create_images(
+        utils.get_file_path(config.UBUNTU_ISO_URL))[0]
+
     volume = volume_steps.create_volumes(names=[None], image=image)[0]
     volume_steps.set_volume_bootable(volume, False)
