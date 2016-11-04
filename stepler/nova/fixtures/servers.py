@@ -24,8 +24,8 @@ import pytest
 
 from stepler import config
 from stepler.nova.steps import ServerSteps
-from stepler.third_party.context import context
-from stepler.third_party.utils import generate_ids
+from stepler.third_party import context
+from stepler.third_party import utils
 
 __all__ = [
     'create_server',
@@ -102,7 +102,7 @@ def server_steps(get_server_steps):
         get_server_steps (function): function to get server steps
 
     Yields:
-        ServerSteps: instantiated server steps.
+        ServerSteps: instantiated server steps
     """
     def _get_server_ids():
         # check=False because in best case no servers will be
@@ -176,7 +176,7 @@ def create_servers_context(server_steps):
     Returns:
         function: function to use as context manager to create servers
     """
-    @context
+    @context.context
     def _create_servers_context(server_names, *args, **kwgs):
         servers = server_steps.create_servers(server_names, *args, **kwgs)
         yield servers
@@ -208,7 +208,7 @@ def create_server_context(create_servers_context):
     Returns:
         function: function to use as context manager to create server
     """
-    @context
+    @context.context
     def _create_server_context(server_name, *args, **kwgs):
         with create_servers_context([server_name], *args, **kwgs) as servers:
             yield servers[0]
@@ -217,22 +217,22 @@ def create_server_context(create_servers_context):
 
 
 @pytest.fixture
-def server(create_server, cirros_image, flavor, internal_network):
+def server(cirros_image, flavor, internal_network, server_steps):
     """Function fixture to create server with default options before test.
 
     Args:
-        create_server (function): function to create a nova server
         cirros_image (object): cirros image from glance
         flavor (object): nova flavor
         internal_network (object): neutron internal network
+        server_steps (ServerSteps): instantiated server steps
 
     Returns:
         object: nova server
     """
-    return create_server(next(generate_ids('server')),
-                         image=cirros_image,
-                         flavor=flavor,
-                         networks=[internal_network])
+    return server_steps.create_servers(next(utils.generate_ids('server')),
+                                       image=cirros_image,
+                                       flavor=flavor,
+                                       networks=[internal_network])[0]
 
 
 # TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.
@@ -326,13 +326,13 @@ def live_migration_server(request,
 
     if boot_from_volume:
         volume = create_volume(
-            next(generate_ids('volume')), size=20, image=ubuntu_image)
+            next(utils.generate_ids('volume')), size=20, image=ubuntu_image)
         block_device_mapping = {'vda': volume.id}
         kwargs = dict(image=None, block_device_mapping=block_device_mapping)
     else:
         kwargs = dict(image=ubuntu_image)
 
-    server_name = next(generate_ids('server'))
+    server_name = next(utils.generate_ids('server'))
     server = create_server(
         server_name,
         flavor=flavor,
