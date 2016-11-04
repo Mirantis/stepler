@@ -127,7 +127,7 @@ def test_delete_server_with_precreated_port(
                                         image=cirros_image,
                                         flavor=flavor,
                                         ports=[port])
-    server_steps.delete_server(server)
+    server_steps.delete_servers([server])
     port_steps.check_presence(port)
 
 

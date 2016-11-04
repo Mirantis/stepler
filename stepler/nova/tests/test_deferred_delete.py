@@ -120,7 +120,7 @@ def test_restore_soft_deleted_server(
         volume = create_volume(volume_name)
         attach_volume_to_server(server_1, volume)
 
-        server_steps.delete_server(server_1, soft=True)
+        server_steps.delete_servers([server_1], soft=True)
         server_steps.restore_server(server_1)
 
         server_steps.check_ping_to_server_floating(
@@ -222,7 +222,7 @@ def test_server_deleted_after_reclaim_timeout(
         volume = create_volume(volume_name)
 
         attach_volume_to_server(server_1, volume)
-        server_steps.delete_server(server_1, soft=True)
+        server_steps.delete_servers([server_1], soft=True)
 
         # TODO(ssokolov) workaround for bug
         # https://bugs.launchpad.net/nova/+bug/1463856
@@ -325,7 +325,7 @@ def test_force_delete_server_before_deferred_cleanup(
             volume = create_volume(volume_name)
             attach_volume_to_server(server_1, volume)
 
-            server_steps.delete_server(server_1, soft=True)
+            server_steps.delete_servers([server_1], soft=True)
 
         volume_steps.check_volume_status(
             volume, config.STATUS_AVAILABLE,

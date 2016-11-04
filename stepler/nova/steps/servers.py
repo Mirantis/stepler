@@ -177,31 +177,12 @@ class ServerSteps(base.BaseSteps):
         return servers
 
     @steps_checker.step
-    def delete_server(self, server, soft=False, check=True):
-        """Step to delete server.
-
-        Args:
-            server (object): nova server
-            force (bool): delete option
-            soft (bool): indicator that server is expected soft-deleted
-            check (bool): flag whether to check step or not
-        """
-        if soft:
-            self._soft_delete_server(server, check)
-        else:
-            self._hard_delete_server(server, check)
-
-    @steps_checker.step
     def delete_servers(self, servers, soft=False, check=True):
         """Step to delete servers."""
-        for server in servers:
-            self.delete_server(server, soft=soft, check=False)
-
-        if check:
-            for server in servers:
-                self.check_server_presence(
-                    server, present=False,
-                    timeout=config.SERVER_DELETE_TIMEOUT)
+        if soft:
+            self._soft_delete_servers(servers, check)
+        else:
+            self._hard_delete_servers(servers, check)
 
     @steps_checker.step
     def get_servers(self, name_prefix=None, check=True):
@@ -883,21 +864,25 @@ class ServerSteps(base.BaseSteps):
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
-    def _soft_delete_server(self, server, check):
+    def _soft_delete_servers(self, servers, check):
         # it doesn't delete server really, just hides server and marks it as
         # trash for nova garbage collection after reclaim timeout.
-        server.delete()
+        for server in servers:
+            server.delete()
 
         if check:
-            self.check_server_presence(
-                server, present=False, by_name=True,
-                timeout=config.SOFT_DELETED_TIMEOUT)
-            self.check_server_status(server, config.STATUS_SOFT_DELETED)
+            for server in servers:
+                self.check_server_presence(
+                    server, present=False, by_name=True,
+                    timeout=config.SOFT_DELETED_TIMEOUT)
+                self.check_server_status(server, config.STATUS_SOFT_DELETED)
 
-    def _hard_delete_server(self, server, check):
-        server.force_delete()  # delete server really
+    def _hard_delete_servers(self, servers, check):
+        for server in servers:
+            server.force_delete()  # delete server really
 
         if check:
-            self.check_server_presence(
-                server, present=False,
-                timeout=config.SERVER_DELETE_TIMEOUT)
+            for server in servers:
+                self.check_server_presence(
+                    server, present=False,
+                    timeout=config.SERVER_DELETE_TIMEOUT)

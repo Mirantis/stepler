@@ -104,18 +104,22 @@ def server_steps(get_server_steps):
     Yields:
         ServerSteps: instantiated server steps
     """
-    def _get_server_ids():
+    def _get_servers():
         # check=False because in best case no servers will be
-        servers = _server_steps.get_servers(
+        return _server_steps.get_servers(
             name_prefix=config.STEPLER_PREFIX, check=False)
-        return {server.id for server in servers}
 
     _server_steps = get_server_steps()
-    server_ids = _get_server_ids()
+    server_ids_before = [server.id for server in _get_servers()]
 
     yield _server_steps
 
-    _server_steps.delete_servers(_get_server_ids() - server_ids)
+    deleting_servers = []
+    for server in _get_servers():
+        if server.id not in server_ids_before:
+            deleting_servers.append(server)
+
+    _server_steps.delete_servers(deleting_servers)
 
 
 @pytest.yield_fixture
