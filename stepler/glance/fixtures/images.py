@@ -17,8 +17,6 @@ Glance fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
 from hamcrest import assert_that, is_not  # noqa
 import pytest
 
@@ -40,44 +38,48 @@ __all__ = [
     'ubuntu_image',
     'images_cleanup',
     'ubuntu_xenial_image',
+    'unexpected_images_cleanup',
 ]
 
-LOGGER = logging.getLogger(__name__)
-# images which should be missed, when unexpected images will be removed
-SKIPPED_IMAGES = []  # TODO(schipiga): describe its mechanism in docs
 
-
-@pytest.yield_fixture
-def unexpected_images_cleanup():
-    """Callable function fixture to clear unexpected images.
+@pytest.fixture
+def unexpected_images_cleanup(uncleanable):
+    """Callable function fixture to cleanup unexpected images.
 
     It provides cleanup before and after test. Cleanup before test is callable
     with injecton of glance steps. Should be called before returning of
     instantiated glance steps.
+
+    Args:
+        uncleanable (AttrDict): data structure with skipped resources
+
+    Returns:
+        function: function to cleanup unexpected images
     """
-    _glance_steps = [None]
+    @context.context
+    def _unexpected_images_cleanup(glance_steps):
 
-    def _images_cleanup(glance_steps):
-        assert_that(glance_steps, is_not(None))
-        _glance_steps[0] = glance_steps  # inject glance steps for finalizer
-        # check=False because in best case no images will be present
-        images = glance_steps.get_images(name_prefix=config.STEPLER_PREFIX,
-                                         check=False)
-        if SKIPPED_IMAGES:
-            image_names = [image.name for image in SKIPPED_IMAGES]
+        def _cleanup():
+            # check=False because in best case no images will be present
+            images = glance_steps.get_images(
+                name_prefix=config.STEPLER_PREFIX, check=False)
 
-            LOGGER.debug(
-                "SKIPPED_IMAGES contains images {!r}. They will not be "
-                "removed in cleanup procedure.".format(image_names))
+            deleting_images = []
+            for image in images:
+                if image.id not in uncleanable.image_ids:
+                    deleting_images.append(image)
 
-            images = [image for image in images if image not in SKIPPED_IMAGES]
+            glance_steps.delete_images(deleting_images)
 
-        if images:
-            glance_steps.delete_images(images)
+        if config.DISABLE_UNEXPECTED_RESOURCES_CLEANUP_BEFORE_TEST:
+            _cleanup()
 
-    yield _images_cleanup
+        yield
 
-    _images_cleanup(_glance_steps[0])
+        if config.DISABLE_UNEXPECTED_RESOURCES_CLEANUP_BEFORE_TEST:
+            _cleanup()
+
+    return _unexpected_images_cleanup
 
 
 # TODO(schipiga): In future will rename `glance_steps` -> `image_steps`
