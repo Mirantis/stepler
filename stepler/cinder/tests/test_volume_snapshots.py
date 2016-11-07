@@ -18,12 +18,13 @@ Snapshots tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('0b2e09ad-ab3d-454d-9eb5-6dbdd1b1db52')
 @pytest.mark.usefixtures('big_snapshot_quota')
-def test_create_multiple_snapshots(volume, create_snapshot, create_snapshots,
+def test_create_multiple_snapshots(volume,
                                    snapshot_steps):
     """**Scenario:** Test creating multiple snapshots
 
@@ -48,9 +49,13 @@ def test_create_multiple_snapshots(volume, create_snapshot, create_snapshots,
     #. Delete volume
     #. Restore cinder snapshots count quota
     """
-    names = utils.generate_ids('snapshot', count=70)
-    snapshots = [create_snapshot(volume, name) for name in names]
+    names = utils.generate_ids(count=70)
+    snapshots = [snapshot_steps.create_snapshots(volume, names=[name])[0]
+                 for name in names]
     snapshot_steps.delete_snapshots(snapshots, check=False)
 
-    names = utils.generate_ids('snapshot', count=50)
-    snapshots = create_snapshots(volume, names=names)
+    names = utils.generate_ids(count=50)
+    snapshots = snapshot_steps.create_snapshots(volume, names=names)
+    snapshot_steps.check_snapshots_presence(
+        snapshots, must_present=False,
+        timeout=(len(snapshots) * config.SNAPSHOT_DELETE_TIMEOUT))
