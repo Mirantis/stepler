@@ -56,13 +56,13 @@ class BaseCliSteps(base.BaseSteps):
         environ = environ or {}
         environ_string = ' '.join("{0}='{1}'".format(*item)
                                   for item in environ.items())
-        cmd = ("timeout {timeout} "
-               "bash -c '{source_cmd} {env} {command}'").format(
+        cmd = (u"timeout {timeout} "
+               u"bash -c '{source_cmd} {env} {command}'").format(
                    timeout=timeout,
                    source_cmd=source_cmd,
                    env=environ_string,
                    command=cmd)
-        result = self._client(cmd=cmd)
+        result = self._client(cmd=cmd.encode('utf-8'))
         payload = result[0].payload
         if check:
             assert_that(payload['rc'], is_(0))
