@@ -110,3 +110,20 @@ def test_stack_preview(empty_heat_template_path, cli_heat_steps):
         name=stack_name,
         template_file=empty_heat_template_path,
         parameters=parameters)
+
+
+@pytest.mark.idempotent_id('f115c4f1-5293-46bc-9b3f-736a2a19d5ab')
+@pytest.mark.usefixtures('stacks_cleanup')
+def test_stack_show(empty_stack, cli_heat_steps, stack_steps):
+    """**Scenario:** Show stack with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Call ``heat stack-show``
+    #. Check that result has correct stack_name and id
+    """
+    cli_heat_steps.show_stack(empty_stack.to_dict())

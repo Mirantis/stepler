@@ -17,7 +17,7 @@ Heat CLI steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_, empty  # noqa H301
+from hamcrest import assert_that, is_, empty, has_entries  # noqa H301
 
 from stepler.cli_clients.steps import base
 from stepler import config
@@ -114,3 +114,26 @@ class CliHeatSteps(base.BaseCliSteps):
         if check:
             assert_that(stack['id'], is_('None'))
         return stack
+
+    @steps_checker.step
+    def show_stack(self, stack, check=True):
+        """Step to show stack.
+
+        Args:
+            stack (dict): heat stack to show
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if output contains wrong stack's name or id
+        """
+        cmd = 'heat stack-show {}'.format(stack['id'])
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_DELETING_TIMEOUT, check=check)
+
+        stack_table = output_parser.table(stdout)
+        show_result = {key: value for key, value in stack_table['values']}
+        if check:
+            assert_that(
+                show_result,
+                has_entries(
+                    stack_name=stack['stack_name'], id=stack['id']))
