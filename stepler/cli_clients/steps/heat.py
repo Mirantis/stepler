@@ -84,3 +84,33 @@ class CliHeatSteps(base.BaseCliSteps):
 
         if check:
             assert_that(stderr, is_(empty()))
+
+    @steps_checker.step
+    def preview_stack(self, name, template_file, parameters=None, check=True):
+        """Step to preview stack.
+
+        Args:
+            name (str): name of stack preview
+            template_file (str): path to stack template file
+            parameters (list, optional): additional parameters to template
+            check (bool): flag whether to check step or not
+
+        Returns:
+            dict: stack preview result
+
+        Raises:
+            AssertionError: if stack preview returns not 'None' stack's id
+        """
+        parameters = parameters or {}
+        cmd = 'heat stack-preview {name} -f {file}'.format(name=name,
+                                                           file=template_file)
+        for key, value in parameters.items():
+            cmd += ' --parameters {}={}'.format(key, value)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_DELETING_TIMEOUT, check=check)
+
+        stack_table = output_parser.table(stdout)
+        stack = {key: value for key, value in stack_table['values']}
+        if check:
+            assert_that(stack['id'], is_('None'))
+        return stack
