@@ -41,9 +41,7 @@ def test_create_volume_from_snapshot(volume_snapshot, volume_steps):
     #. Delete snapshot
     #. Delete volume1
     """
-    volumes = volume_steps.create_volumes(
-        names=utils.generate_ids('volume', count=1),
-        snapshot_id=volume_snapshot.id)
+    volumes = volume_steps.create_volumes(snapshot_id=volume_snapshot.id)
     volume_steps.delete_volumes(volumes)
 
 
@@ -62,7 +60,7 @@ def test_create_delete_many_volumes(volume_steps, volumes_count):
     #. Delete volumes
     """
     volumes = volume_steps.create_volumes(
-        names=utils.generate_ids('volume', count=volumes_count))
+        names=utils.generate_ids(count=volumes_count))
     volume_steps.delete_volumes(volumes)
 
 
@@ -87,14 +85,14 @@ def test_create_volume_description(volume_steps):
 
     **Steps:**
 
-    #. Create volume with description
+    #. Create volume without name but with description
 
     **Teardown:**
 
     #. Delete volume
     """
-    description = next(utils.generate_ids(prefix='volume'))
-    volume_steps.create_volumes(names=[None], description=description)
+    volume_steps.create_volumes(names=[None],
+                                description=next(utils.generate_ids()))
 
 
 @pytest.mark.idempotent_id('56cc7c76-ae92-423d-81ad-8cece5f875ad')
@@ -109,8 +107,8 @@ def test_create_volume_description_max(volume_steps):
 
     #. Delete volume
     """
-    description = next(utils.generate_ids(prefix='volume', length=255))
-    volume_steps.create_volumes(names=[None], description=description)
+    volume_steps.create_volumes(
+        description=next(utils.generate_ids(length=255)))
 
 
 @pytest.mark.idempotent_id('978a580d-22c3-4e98-8ff9-7ff8541cdd48')
@@ -144,7 +142,7 @@ def test_create_volume_max_size(volume_size_quota, volume_steps):
     #. Delete volume
     #. Set max volume size quota to its initial value
     """
-    volume_steps.create_volumes(names=[None], size=volume_size_quota)
+    volume_steps.create_volumes(size=volume_size_quota)
 
 
 @pytest.mark.idempotent_id('ed2a92fc-356c-4ae5-835b-99a9ce4d8fe0')
@@ -178,8 +176,8 @@ def test_negative_create_volume_name_long(volume_steps):
     #. Try to create volume with name length > 255
     #. Check that BadRequest exception raised
     """
-    long_name = next(utils.generate_ids(length=256))
-    volume_steps.check_volume_not_created_with_long_name(name=long_name)
+    volume_steps.check_volume_not_created_with_long_name(
+        name=next(utils.generate_ids(length=256)))
 
 
 @pytest.mark.idempotent_id('34ca65a0-a254-49c5-8157-13e11c88a5b3')
@@ -221,13 +219,11 @@ def test_create_volume_from_volume(volume, volume_steps):
     #. Delete volume2
     #. Delete volume
     """
-    volume_steps.create_volumes(
-        names=utils.generate_ids('volume-from-volume', count=1),
-        source_volid=volume.id)
+    volume_steps.create_volumes(source_volid=volume.id)
 
 
 @pytest.mark.idempotent_id('fbcb9a58-9a4d-4864-88db-c08a14475994')
-def test_delete_volume_cascade(volume_steps, snapshot_steps):
+def test_delete_volume_cascade(volume, volume_steps, snapshot_steps):
     """**Scenario:** Verify volume deletion with cascade option.
 
     **Steps:**
@@ -237,11 +233,9 @@ def test_delete_volume_cascade(volume_steps, snapshot_steps):
     #. Delete volume with cascade option
     #. Check that snapshot is deleted too
     """
-    volume_name = next(utils.generate_ids('volume'))
-    volumes = volume_steps.create_volumes([volume_name])
     snapshot_name = next(utils.generate_ids('snapshot'))
-    snapshots = snapshot_steps.create_snapshots(volumes[0], [snapshot_name])
-    volume_steps.delete_volumes(volumes, cascade=True)
+    snapshots = snapshot_steps.create_snapshots(volume, [snapshot_name])
+    volume_steps.delete_volumes([volume], cascade=True)
     snapshot_steps.check_snapshots_presence(snapshots, must_present=False)
 
 

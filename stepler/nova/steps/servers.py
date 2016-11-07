@@ -51,7 +51,7 @@ class ServerSteps(base.BaseSteps):
     def create_servers(self,
                        image,
                        flavor,
-                       server_names=config.DEFAULT,
+                       server_names=None,
                        networks=(),
                        ports=(),
                        keypair=None,
@@ -65,9 +65,10 @@ class ServerSteps(base.BaseSteps):
         """Step to create servers.
 
         Args:
-            server_names (list): names of created servers
             image (object|None): image or None (to use volume)
             flavor (object): flavor
+            server_names (list): names of created servers, if not specified
+                one server name will be generated
             networks (list): networks objects
             ports (list): ports objects
             keypair (object): keypair
@@ -82,6 +83,7 @@ class ServerSteps(base.BaseSteps):
         Returns:
             list: nova servers
         """
+        server_names = server_names or utils.generate_ids()
         sec_groups = [s.id for s in security_groups or []]
         image_id = None if image is None else image.id
         keypair_id = None if keypair is None else keypair.id
@@ -99,9 +101,6 @@ class ServerSteps(base.BaseSteps):
             'private_key': private_key
         }
         meta = chunk_serializer.dump(credentials, config.CREDENTIALS_PREFIX)
-
-        if server_names == config.DEFAULT:
-            server_names = utils.generate_ids()
 
         servers = []
         for server_name in server_names:
