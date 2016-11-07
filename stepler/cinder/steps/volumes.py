@@ -101,7 +101,7 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired|AssertionError: if check was failed
         """
-        names = names or utils.generate_ids()
+        names = names or next(utils.generate_ids())
         image_id = None if image is None else image.id
         volumes = []
 
