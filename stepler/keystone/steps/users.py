@@ -206,7 +206,7 @@ class UserSteps(BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check is failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         def _check_user_presence():
             try:

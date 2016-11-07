@@ -76,7 +76,7 @@ class IronicPortSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         def predicate():
             try:
@@ -96,7 +96,7 @@ class IronicPortSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         self._client.port.delete(port.uuid)
         if check:

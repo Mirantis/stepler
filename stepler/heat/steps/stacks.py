@@ -76,7 +76,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
 
         def predicate():
@@ -110,7 +110,7 @@ class StackSteps(base.BaseSteps):
             stack (obj): stack to delete
             check (bool): flag whether to check step or not
         Raises:
-            TimeoutExpired: if check failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         stack.delete()
 
@@ -128,7 +128,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
 
         stack_id = getattr(stack, 'id', stack)
@@ -185,7 +185,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         def predicate():
             stack.get()

@@ -184,7 +184,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         if by_name:
             def predicate():
@@ -215,7 +215,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
 
         def predicate():
@@ -254,7 +254,7 @@ class ServerSteps(base.BaseSteps):
             ssh.SshClient: instantiated ssh client to server ip
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         if not ip:
             if not proxy_cmd:  # server is available via floating IP directly
@@ -285,7 +285,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         def predicate():
             try:
@@ -338,7 +338,7 @@ class ServerSteps(base.BaseSteps):
             None: IF check=False
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         ips_before_attach = self.get_ips(server, 'fixed').keys()
         server.add_fixed_ip(network_id)
@@ -366,7 +366,7 @@ class ServerSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         if not fixed_ip:
             fixed_ip = self.get_ips(server, 'fixed').keys()[0]
@@ -600,7 +600,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
 
         def predicate():
@@ -711,7 +711,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
 
         def predicate():
@@ -800,7 +800,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check was triggered to an error after timeout
         """
         matcher = has_entries(custom_meta)
         if not present:
