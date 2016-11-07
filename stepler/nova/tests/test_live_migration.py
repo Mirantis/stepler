@@ -37,33 +37,33 @@ def test_network_connectivity_to_vm_during_live_migration(
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
-        #. Create security group with allow ping rule
-        #. Create flavor
-        #. Add router interface to created network
-        #. Boot server from cirros image
-        #. Assign floating ip to server
+    #. Upload cirros image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Add router interface to created network
+    #. Boot server from cirros image
+    #. Assign floating ip to server
 
     **Steps:**
 
-        #. Start ping to server floating ip
-        #. Migrate server to another hypervisor
-        #. Stop ping
-        #. Check that ping loss is not more than 20
+    #. Start ping to server floating ip
+    #. Migrate server to another hypervisor
+    #. Stop ping
+    #. Check that ping loss is not more than 20
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete flavor
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete cirros image
+    #. Delete server
+    #. Delete flavor
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete cirros image
     """
     with server_steps.check_ping_loss_context(
             nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
@@ -87,32 +87,32 @@ def test_server_migration_with_cpu_workload(live_migration_server,
 
     **Setup:**
 
-        #. Upload ubuntu image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
-        #. Create security group with allow ping rule
-        #. Create flavor
-        #. Add router interface to created network
-        #. Boot server from image or volume
-        #. Assign floating ip to server
+    #. Upload ubuntu image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Add router interface to created network
+    #. Boot server from image or volume
+    #. Assign floating ip to server
 
     **Steps:**
 
-        #. Start CPU workload on server
-        #. Migrate server to another hypervisor
-        #. Check that ping to server's floating ip is successful
+    #. Start CPU workload on server
+    #. Migrate server to another hypervisor
+    #. Check that ping to server's floating ip is successful
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete flavor
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete ubuntu image
+    #. Delete server
+    #. Delete flavor
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete ubuntu image
     """
     server = live_migration_server
     with server_steps.get_server_ssh(server,
@@ -142,32 +142,32 @@ def test_server_migration_with_memory_workload(live_migration_server,
 
     **Setup:**
 
-        #. Upload ubuntu image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
-        #. Create security group with allow ping rule
-        #. Create flavor
-        #. Add router interface to created network
-        #. Boot server from image or volume
-        #. Assign floating ip to server
+    #. Upload ubuntu image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Add router interface to created network
+    #. Boot server from image or volume
+    #. Assign floating ip to server
 
     **Steps:**
 
-        #. Start memory workload on server
-        #. Migrate server to another hypervisor
-        #. Check that ping to server's floating ip is successful
+    #. Start memory workload on server
+    #. Migrate server to another hypervisor
+    #. Check that ping to server's floating ip is successful
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete flavor
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete ubuntu image
+    #. Delete server
+    #. Delete flavor
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete ubuntu image
     """
     server = live_migration_server
     with server_steps.get_server_ssh(server,
@@ -195,32 +195,32 @@ def test_server_migration_with_disk_workload(live_migration_server,
 
     **Setup:**
 
-        #. Upload ubuntu image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
-        #. Create security group with allow ping rule
-        #. Create flavor
-        #. Add router interface to created network
-        #. Boot server from image or volume
-        #. Assign floating ip to server
+    #. Upload ubuntu image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Add router interface to created network
+    #. Boot server from image or volume
+    #. Assign floating ip to server
 
     **Steps:**
 
-        #. Start disk workload on server
-        #. Migrate server to another hypervisor
-        #. Check that ping to server's floating ip is successful
+    #. Start disk workload on server
+    #. Migrate server to another hypervisor
+    #. Check that ping to server's floating ip is successful
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete flavor
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete ubuntu image
+    #. Delete server
+    #. Delete flavor
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete ubuntu image
     """
     server = live_migration_server
     with server_steps.get_server_ssh(server,
@@ -248,32 +248,32 @@ def test_server_migration_with_network_workload(
 
     **Setup:**
 
-        #. Upload ubuntu image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
-        #. Create security group with allow ping rule
-        #. Create flavor
-        #. Add router interface to created network
-        #. Boot server from image or volume
-        #. Assign floating ip to server
+    #. Upload ubuntu image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Add router interface to created network
+    #. Boot server from image or volume
+    #. Assign floating ip to server
 
     **Steps:**
 
-        #. Start network workload on server
-        #. Migrate server to another hypervisor
-        #. Check that ping to server's floating ip is successful
+    #. Start network workload on server
+    #. Migrate server to another hypervisor
+    #. Check that ping to server's floating ip is successful
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete flavor
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete ubuntu image
+    #. Delete server
+    #. Delete flavor
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete ubuntu image
     """
     server = live_migration_server
     with server_steps.get_server_ssh(server,
@@ -308,36 +308,36 @@ def test_migration_with_ephemeral_disk(
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Set router default gateway to public network
-        #. Create security group with allow ping rule
+    #. Upload cirros image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
+    #. Create security group with allow ping rule
 
     **Steps:**
 
-        #. Add router interface to created network
-        #. Create flavor woth ephemeral disk
-        #. Boot server from cirros image with created flavor
-        #. Assign floating ip to server
-        #. Create timestamp on on root and ephemeral disks
-        #. Start ping instance
-        #. Migrate server to another hypervisor
-        #. Stop ping
-        #. Check that ping loss is not more than 20
-        #. Verify timestamp on root and ephemeral disks
+    #. Add router interface to created network
+    #. Create flavor woth ephemeral disk
+    #. Boot server from cirros image with created flavor
+    #. Assign floating ip to server
+    #. Create timestamp on on root and ephemeral disks
+    #. Start ping instance
+    #. Migrate server to another hypervisor
+    #. Stop ping
+    #. Check that ping loss is not more than 20
+    #. Verify timestamp on root and ephemeral disks
 
     **Teardown:**
 
-        #. Delete server
-        #. Delete flavor
-        #. Delete volume
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete cirros image
+    #. Delete server
+    #. Delete flavor
+    #. Delete volume
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete cirros image
     """
     add_router_interfaces(router, [subnet])
     flavor = create_flavor(

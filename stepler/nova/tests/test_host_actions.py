@@ -36,34 +36,34 @@ def test_host_resources_info(cirros_image,
 
     **Setup:**
 
-        #. Create cirros image
-        #. Create flavor
-        #. Create net and subnet
-        #. Create keypair
-        #. Create security group
+    #. Create cirros image
+    #. Create flavor
+    #. Create net and subnet
+    #. Create keypair
+    #. Create security group
 
     **Steps:**
 
-        #. Get resource info for node-1 and node-2
-        #. Create two instances on node-1
-        #. Get resource info for node-1 and check that resource usage is
-           changed and project_id appears in results
-        #. Get resource info for node-2 and check that resource usage is
-           not changed
-        #. Create two instances on node-2
-        #. Get resource info for node-1 and check that resource usage is
-           not changed
-        #. Get resource info for node-2 and check that resource usage is
-           changed and project_id appears in results
+    #. Get resource info for node-1 and node-2
+    #. Create two instances on node-1
+    #. Get resource info for node-1 and check that resource usage is
+       changed and project_id appears in results
+    #. Get resource info for node-2 and check that resource usage is
+       not changed
+    #. Create two instances on node-2
+    #. Get resource info for node-1 and check that resource usage is
+       not changed
+    #. Get resource info for node-2 and check that resource usage is
+       changed and project_id appears in results
 
     **Teardown:**
 
-        #. Delete instances
-        #. Delete security group
-        #. Delete keypair
-        #. Delete net and subnet
-        #. Delete flavor
-        #. Delete cirros image
+    #. Delete instances
+    #. Delete security group
+    #. Delete keypair
+    #. Delete net and subnet
+    #. Delete flavor
+    #. Delete cirros image
     """
     hypervisors = hypervisor_steps.get_hypervisors()
     host_name_1 = hypervisors[0].hypervisor_hostname
@@ -132,33 +132,34 @@ def test_migrate_instances(cirros_image,
 
     **Setup:**
 
-        #. Upload cirros image
-        #. Create network
-        #. Create subnet
-        #. Create router
-        #. Create security group with allowed ping and ssh rules
-        #. Create flavor
+    #. Upload cirros image
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Create security group with allowed ping and ssh rules
+    #. Create flavor
 
     **Steps:**
 
-        #. Set router default gateway to public network
-        #. Add router interface to created network
-        #. Boot 3 servers on the same hypervisor
-        #. Start migration for all servers
-        #. Check that every instance is rescheduled to other hypervisor
-        #. Confirm resize for every instance
-        #. Check that every migrated instance has an ACTIVE status
-        #. Assign floating ip for all servers.
-        #. Send pings between all servers to check network connectivity
+    #. Set router default gateway to public network
+    #. Add router interface to created network
+    #. Boot 3 servers on the same hypervisor
+    #. Start migration for all servers
+    #. Check that every instance is rescheduled to other hypervisor
+    #. Confirm resize for every instance
+    #. Check that every migrated instance has an ACTIVE status
+    #. Assign floating ip for all servers.
+    #. Send pings between all servers to check network connectivity
 
     **Teardown:**
-        #. Delete all servers
-        #. Delete flavor
-        #. Delete security group
-        #. Delete router
-        #. Delete subnet
-        #. Delete network
-        #. Delete cirros image
+
+    #. Delete all servers
+    #. Delete flavor
+    #. Delete security group
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete cirros image
     """
     add_router_interfaces(router, [subnet])
     hypervisor = hypervisor_steps.get_hypervisors()[0]
