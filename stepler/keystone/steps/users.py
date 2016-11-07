@@ -109,7 +109,7 @@ class UserSteps(BaseSteps):
         self._client.delete(user.id)
 
         if check:
-            self.check_user_presence(user, present=False)
+            self.check_user_presence(user, must_present=False)
 
     @steps_checker.step
     def get_user(self, name, domain='default', group=None, check=True):
