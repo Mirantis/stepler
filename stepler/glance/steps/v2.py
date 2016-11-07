@@ -40,6 +40,7 @@ class GlanceStepsV2(BaseGlanceSteps):
                       image_names=None,
                       disk_format='qcow2',
                       container_format='bare',
+                      visibility='private',
                       check=True):
         """Step to create images.
 
@@ -49,6 +50,8 @@ class GlanceStepsV2(BaseGlanceSteps):
                 one image name will be generated
             disk_format (str): format of image disk
             container_format (str): format of image container
+            visibility (str): image visibility (private or public). Default is
+                private.
             check (bool): flag whether to check step or not
 
         Returns:
@@ -63,7 +66,8 @@ class GlanceStepsV2(BaseGlanceSteps):
             image = self._client.images.create(
                 name=image_name,
                 disk_format=disk_format,
-                container_format=container_format)
+                container_format=container_format,
+                visibility=visibility)
 
             self._client.images.upload(image.id, open(image_path, 'rb'))
             images.append(image)
