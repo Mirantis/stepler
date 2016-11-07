@@ -155,3 +155,15 @@ class CliHeatSteps(base.BaseCliSteps):
             cmd += ' --parameters {}={}'.format(key, value)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
+
+    @steps_checker.step
+    def cancel_stack_update(self, stack, check=True):
+        """Step to update stack.
+
+        Args:
+            stack (dict): heat stack to update
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat stack-cancel-update {}'.format(stack['id'])
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)

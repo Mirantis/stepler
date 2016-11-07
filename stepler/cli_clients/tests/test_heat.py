@@ -162,3 +162,76 @@ def test_stack_update(empty_heat_template_path,
         config.HEAT_COMPLETE_STATUS,
         transit_statuses=[config.HEAT_IN_PROGRESS_STATUS],
         timeout=config.STACK_UPDATING_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('809fdf33-e528-40dd-9042-e619072e1ab4')
+def test_cancel_stack_update(cirros_image,
+                             flavor,
+                             public_network,
+                             network,
+                             subnet,
+                             router,
+                             add_router_interfaces,
+                             create_flavor,
+                             read_heat_template,
+                             create_stack,
+                             cli_heat_steps,
+                             stack_steps):
+    """**Scenario:** Cancel stack updating with heat CLI.
+
+    Note:
+        This test verifies bug #1570825
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create network
+    #. Create subnet
+    #. Create router
+    #. Set router default gateway to public network
+
+    **Steps:**
+
+    #. Create 2'nd flavor
+    #. Add router interface to created network
+    #. Read Heat resources template from file
+    #. Create stack with template with parameters
+    #. Start stack updating with 2'nd flavor
+    #. Cancel stack updating with CLI
+    #. Check stack status
+
+    **Teardown:**
+
+    #. Delete stack
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    #. Delete flavors
+    #. Delete cirros image
+    """
+    flavor2_name = next(utils.generate_ids('flavor'))
+    flavor2 = create_flavor(flavor2_name, ram=2048, vcpus=1, disk=5)
+
+    add_router_interfaces(router, [subnet])
+
+    template = read_heat_template('nova_server')
+    stack_name = next(utils.generate_ids('stack'))
+    parameters = {
+        'image': cirros_image.id,
+        'flavor': flavor.id,
+        'network': network['id'],
+    }
+    stack = create_stack(stack_name, template=template, parameters=parameters)
+
+    parameters['flavor'] = flavor2.id
+    stack_steps.update_stack(stack, template=template, parameters=parameters,
+                             check=False
+                             )
+
+    cli_heat_steps.cancel_stack_update(stack.to_dict())
+    stack_steps.check_status(
+        stack,
+        config.HEAT_COMPLETE_STATUS,
+        transit_statuses=[config.HEAT_IN_PROGRESS_STATUS],
+        timeout=config.STACK_UPDATING_TIMEOUT)
