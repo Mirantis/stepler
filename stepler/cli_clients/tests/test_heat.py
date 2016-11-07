@@ -90,3 +90,23 @@ def test_stack_delete(empty_stack, cli_heat_steps, stack_steps):
     cli_heat_steps.delete_stack({'id': empty_stack.id})
     stack_steps.check_presence(
         empty_stack, present=False, timeout=config.STACK_DELETING_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('bf105cea-1ada-47b5-aae1-7a59cfa4617e')
+def test_stack_preview(empty_heat_template_path, cli_heat_steps):
+    """**Scenario:** Preview stack with heat CLI.
+
+    **Setup:**
+
+    #. Upload template to node
+
+    **Steps:**
+
+    #. Preview stack
+    """
+    parameters = {'param': 'string'}
+    stack_name = next(utils.generate_ids('stack'))
+    cli_heat_steps.preview_stack(
+        name=stack_name,
+        template_file=empty_heat_template_path,
+        parameters=parameters)
