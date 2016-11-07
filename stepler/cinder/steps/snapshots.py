@@ -119,7 +119,7 @@ class SnapshotSteps(base.BaseSteps):
         """Step to check snapshots status.
 
         Args:
-            snapshots (object): cinder volume snapshots to check status
+            snapshots (list): cinder volume snapshots to check status
             status (str): snapshot status name to check
             timeout (int): seconds to wait a result of check
 
