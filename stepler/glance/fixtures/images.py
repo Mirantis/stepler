@@ -233,12 +233,13 @@ def create_images_context(get_glance_steps, uncleanable):
     Returns:
         object: ubuntu glance image
     """
+
     @context.context
     def _create_images_context(image_names, image_url):
         images = get_glance_steps(
-            version=config.CURRENT_GLANCE_VERSION,
-            is_api=False).create_images(image_names,
-                                        utils.get_file_path(image_url))
+            version=config.CURRENT_GLANCE_VERSION, is_api=False).create_images(
+                image_names=image_names,
+                image_path=utils.get_file_path(image_url))
 
         for image in images:
             uncleanable.image_ids.add(image.id)
