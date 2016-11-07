@@ -36,7 +36,7 @@ class CliOpenstackSteps(base.BaseCliSteps):
             str: result of command shell execution
 
         Raises:
-            AssertionError: if check was failed
+            TimeoutExpired|AssertionError: if check failed after timeout
         """
         cmd = 'openstack server list'
         result = self.execute_command(

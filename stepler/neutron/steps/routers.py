@@ -69,7 +69,7 @@ class RouterSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
@@ -112,7 +112,7 @@ class RouterSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         router_id = router['id']
@@ -165,7 +165,7 @@ class RouterSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
