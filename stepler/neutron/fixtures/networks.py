@@ -28,22 +28,41 @@ __all__ = [
     'network',
     'public_network',
     'network_steps',
+    'get_network_steps',
     'admin_internal_network',
     'internal_network'
 ]
 
 
+@pytest.fixture(scope="session")
+def get_network_steps(get_neutron_client):
+    """Callable session fixture to get network steps.
+
+    Args:
+        get_neutron_client (function): function to get instantiated neutron
+            client
+
+    Returns:
+        function: function to get instantiated network steps
+    """
+    def _get_steps():
+        return steps.NetworkSteps(get_neutron_client().networks)
+
+    return _get_steps
+
+
 @pytest.fixture
-def network_steps(neutron_client):
+def network_steps(get_network_steps):
     """Function fixture to get network steps.
 
     Args:
-        neutron_client (object): instantiated neutron client
+        get_network_steps (function): function to get instantiated network
+            steps
 
     Returns:
         stepler.neutron.steps.NetworkSteps: instantiated network steps
     """
-    return steps.NetworkSteps(neutron_client.networks)
+    return get_network_steps()
 
 
 @pytest.yield_fixture

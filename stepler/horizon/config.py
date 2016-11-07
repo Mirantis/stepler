@@ -39,7 +39,10 @@ ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT = list(
 USER_NAME, USER_PASSWD, USER_PROJECT = list(
     utils.generate_ids(
         'user', count=3))
+
 FLOATING_NETWORK_NAME = 'admin_floating_net'
-INTERNAL_NETWORK_NAME = 'admin_internal_net'
+INTERNAL_NETWORK_NAME = next(utils.generate_ids('internal_net'))
+INTERNAL_SUBNET_NAME = next(utils.generate_ids('internal_subnet'))
+ROUTER_NAME = next(utils.generate_ids('router'))
 
 XVFB_LOCK = '/tmp/xvfb.lock'

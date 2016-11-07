@@ -115,6 +115,10 @@ __all__ = sorted([  # sort for documentation
     'router_steps',
     'subnet_steps',
     'port_steps',
+    'get_neutron_client',
+    'get_network_steps',
+    'get_router_steps',
+    'get_subnet_steps',
     'admin_internal_network',
 
     'create_flavor',

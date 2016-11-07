@@ -26,14 +26,41 @@ __all__ = [
     'create_router',
     'router',
     'add_router_interfaces',
-    'router_steps'
+    'router_steps',
+    'get_router_steps',
 ]
 
 
+@pytest.fixture(scope="session")
+def get_router_steps(get_neutron_client):
+    """Callable session fixture to get router steps.
+
+    Args:
+        get_neutron_client (function): function to get instantiated neutron
+            client
+
+    Returns:
+        function: function to get instantiated router steps
+    """
+
+    def _get_steps():
+        return steps.RouterSteps(get_neutron_client().routers)
+
+    return _get_steps
+
+
 @pytest.fixture
-def router_steps(neutron_client):
-    """Fixture to get router steps."""
-    return steps.RouterSteps(neutron_client.routers)
+def router_steps(get_router_steps):
+    """Function fixture to get router steps.
+
+    Args:
+        get_router_steps (function): function to get instantiated router
+            steps
+
+    Returns:
+        stepler.neutron.steps.RouterSteps: instantiated router steps
+    """
+    return get_router_steps()
 
 
 @pytest.yield_fixture
