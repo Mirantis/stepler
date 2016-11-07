@@ -328,3 +328,19 @@ class ImagesSteps(BaseSteps):
             page.open()
             page.button_public_images.click()
             page.table_images.row(name=image_name).wait_for_presence()
+
+    @step
+    def check_non_public_image_not_visible(self, image_name):
+        """Step to check non-public image is not visible for other projects.
+
+        Args:
+            image_name (str): image name
+
+        Raises:
+            AssertionError: if image is available in public images list
+        """
+        with self._page_images() as page:
+            page.open()
+            page.button_public_images.click()
+            assert_that(page.table_images.row(name=image_name).is_present,
+                        equal_to(False))
