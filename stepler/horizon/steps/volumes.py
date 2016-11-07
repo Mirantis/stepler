@@ -18,10 +18,10 @@ Volumes steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to, starts_with, has_length  # noqa
+from hamcrest import assert_that, equal_to, starts_with, has_length, any_of  # noqa H301
 from waiting import wait
 
-from stepler.horizon.config import EVENT_TIMEOUT
+from stepler.horizon import config
 from stepler.third_party import steps_checker
 
 from .base import BaseSteps
@@ -42,9 +42,33 @@ class VolumesSteps(BaseSteps):
 
     @steps_checker.step
     @pom.timeit('Step')
-    def create_volume(self, volume_name, source_type='Image', volume_type=None,
-                      description=None, check=True):
-        """Step to create volume."""
+    def create_volume(self, volume_name,
+                      source_type=config.IMAGE_SOURCE,
+                      source_name=None,
+                      volume_type=None,
+                      volume_size=None,
+                      description=None,
+                      check=True):
+        """Step to create volume.
+
+        Args:
+            volume_name (str): name of volume
+            source_type (str): type of source. Should be one of
+                "Image" or "Volume"
+            source_name (str): name of source (image or volume) to
+                create volume from it
+            volume_type (str): type of volume
+            volume_size (int): Size of volume in GB
+            description (str): description of volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check was falsed
+        """
+        assert_that(source_type,
+                    any_of(config.IMAGE_SOURCE, config.VOLUME_SOURCE),
+                    'source_type should be one of {}'.format(
+                        [config.IMAGE_SOURCE, config.VOLUME_SOURCE]))
         tab_volumes = self._tab_volumes()
         tab_volumes.button_create_volume.click()
 
@@ -52,13 +76,26 @@ class VolumesSteps(BaseSteps):
             form.field_name.value = volume_name
             form.combobox_source_type.value = source_type
 
-            image_sources = form.combobox_image_source.values
-            form.combobox_image_source.value = image_sources[-1]
+            if source_type == config.IMAGE_SOURCE:
+
+                image_sources = form.combobox_image_source.values
+                image_source = source_name or image_sources[-1]
+
+                form.combobox_image_source.value = image_source
+
+            else:
+                volume_sources = form.combobox_volume_source.values
+                volume_source = source_name or volume_sources[-1]
+
+                form.combobox_volume_source.value = volume_source
 
             if volume_type is not None:
                 if not volume_type:
                     volume_type = form.combobox_volume_type.values[-1]
                 form.combobox_volume_type.value = volume_type
+
+            if volume_size is not None:
+                form.field_size.value = volume_size
 
             if description is not None:
                 form.field_description.value = description
@@ -89,7 +126,7 @@ class VolumesSteps(BaseSteps):
         if check:
             self.close_notification('success')
             tab_volumes.table_volumes.row(
-                name=volume_name).wait_for_absence(EVENT_TIMEOUT)
+                name=volume_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     @pom.timeit('Step')
@@ -125,7 +162,7 @@ class VolumesSteps(BaseSteps):
             self.close_notification('success')
             for volume_name in volume_names:
                 tab_volumes.table_volumes.row(
-                    name=volume_name).wait_for_absence(EVENT_TIMEOUT)
+                    name=volume_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     @pom.timeit('Step')
@@ -392,7 +429,8 @@ class VolumesSteps(BaseSteps):
                 return not page_volumes.tab_volumes.table_volumes.row(
                     name=volume_name, host=old_host).is_present
 
-            wait(is_old_host_volume_absent, timeout_seconds=EVENT_TIMEOUT * 2)
+            wait(is_old_host_volume_absent,
+                 timeout_seconds=config.EVENT_TIMEOUT * 2)
 
         return old_host, new_host
 
@@ -450,7 +488,7 @@ class VolumesSteps(BaseSteps):
         if check:
             self.close_notification('success')
             tab_snapshots.table_snapshots.row(
-                name=snapshot_name).wait_for_absence(EVENT_TIMEOUT)
+                name=snapshot_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     @pom.timeit('Step')
@@ -469,7 +507,7 @@ class VolumesSteps(BaseSteps):
             self.close_notification('success')
             for snapshot_name in snapshot_names:
                 tab_snapshots.table_snapshots.row(
-                    name=snapshot_name).wait_for_absence(EVENT_TIMEOUT)
+                    name=snapshot_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     @pom.timeit('Step')
@@ -561,7 +599,7 @@ class VolumesSteps(BaseSteps):
             self.close_notification('success')
             for backup_name in backup_names:
                 tab_backups.table_backups.row(
-                    name=backup_name).wait_for_absence(EVENT_TIMEOUT)
+                    name=backup_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def check_volume_present(self, volume_name, timeout=None):
