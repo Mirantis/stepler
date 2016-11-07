@@ -48,9 +48,8 @@ def test_create_multiple_snapshots(volume, create_snapshot, create_snapshots,
     #. Delete volume
     #. Restore cinder snapshots count quota
     """
-    names = utils.generate_ids('snapshot', count=70)
-    snapshots = [create_snapshot(volume, name) for name in names]
+    snapshots = create_snapshot(volume,
+                                names=next(utils.generate_ids(count=70)))
     snapshot_steps.delete_snapshots(snapshots, check=False)
 
-    names = utils.generate_ids('snapshot', count=50)
-    snapshots = create_snapshots(volume, names=names)
+    create_snapshots(volume, names=next(utils.generate_ids(count=50)))

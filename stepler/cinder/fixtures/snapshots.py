@@ -20,7 +20,6 @@ Snapshot fixtures
 import pytest
 
 from stepler.cinder import steps
-from stepler.third_party import utils
 
 __all__ = [
     'snapshot_steps',
@@ -86,22 +85,20 @@ def create_snapshot(create_snapshots):
     Returns:
         function: function to create volumes as batch with options
     """
-    def _create_snapshot(volume, name=None, *args, **kwgs):
-        return create_snapshots(volume, [name], *args, **kwgs)[0]
+    def _create_snapshot(volume, *args, **kwgs):
+        return create_snapshots(volume, *args, **kwgs)[0]
 
     return _create_snapshot
 
 
 @pytest.yield_fixture
-def volume_snapshot(volume, create_snapshot):
+def volume_snapshot(volume):
     """Function fixture to create snapshot with default options before test.
 
     Args:
         volume (object):  cinder volume
-        create_snapshot (function): function to create single snapshot
 
     Returns:
         object: cinder volume snapshot
     """
-    snapshot_name = next(utils.generate_ids('snapshot'))
-    return create_snapshot(volume, snapshot_name)
+    return create_snapshot(volume)[0]

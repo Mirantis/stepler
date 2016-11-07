@@ -23,6 +23,7 @@ from stepler import base
 from stepler import config
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = ['SnapshotSteps']
@@ -34,13 +35,14 @@ class SnapshotSteps(base.BaseSteps):
     @steps_checker.step
     def create_snapshots(self,
                          volume,
-                         names,
+                         names=None,
                          check=True):
         """Step to create snapshots.
 
         Args:
             volume (object): volume of the snapshots
-            names (str): name of created snapshots
+            names (list): names of created snapshots, if not specified
+                one snapshot name will be generated
             check (bool): flag whether to check step or not
 
         Returns:
@@ -49,6 +51,7 @@ class SnapshotSteps(base.BaseSteps):
         Raises:
             TimeoutExpired|AssertionError: if check was failed
         """
+        names = names or utils.generate_ids('snapshot')
         snapshots = []
         for name in names:
             snapshot = self._client.create(name=name, volume_id=volume.id)
