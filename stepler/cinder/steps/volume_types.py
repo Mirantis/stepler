@@ -104,7 +104,7 @@ class VolumeTypeSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():

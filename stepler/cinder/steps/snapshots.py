@@ -74,7 +74,7 @@ class SnapshotSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-           TimeoutExpired: if check was failed after timeout
+           TimeoutExpired: if check failed after timeout
         """
         for snapshot in snapshots:
             self._client.delete(snapshot=snapshot.id)
@@ -98,7 +98,7 @@ class SnapshotSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         snapshot_ids = [snapshot.id for snapshot in snapshots]
         # Make a dict with desired presence values for each snapshot
@@ -124,7 +124,7 @@ class SnapshotSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         for snapshot in snapshots:
 
