@@ -128,13 +128,16 @@ class BackupSteps(base.BaseSteps):
         """Check step volume backup status.
 
         Args:
-            backup (object): volume backup to check status
+            backup (object or str): volume backup object or its id
+                to check status
             status (str): backup status name to check
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check was failed after timeout
         """
+        if not hasattr(backup, 'id'):
+            backup = self.get_backup_by_id(backup)
 
         def predicate():
             backup.get()
