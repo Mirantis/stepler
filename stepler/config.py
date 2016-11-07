@@ -20,8 +20,6 @@ Config
 import os
 import uuid
 
-DEFAULT = object()
-
 PROJECT_DOMAIN_NAME = os.environ.get('OS_PROJECT_DOMAIN_NAME', 'default')
 USER_DOMAIN_NAME = os.environ.get('OS_USER_DOMAIN_NAME', 'default')
 PROJECT_NAME = os.environ.get('OS_PROJECT_NAME', 'admin')
@@ -60,6 +58,7 @@ STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
 
 # IMAGE / SERVER CREDENTIALS
 CIRROS_USERNAME = 'cirros'
+UBUNTU_USERNAME = 'ubuntu'
 
 # CURRENT API VERSIONS
 CURRENT_GLANCE_VERSION = '2'

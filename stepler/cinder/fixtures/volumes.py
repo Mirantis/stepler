@@ -24,7 +24,6 @@ import pytest
 
 from stepler.cinder import steps
 from stepler import config
-from stepler.third_party import utils
 
 __all__ = [
     'get_volume_steps',
@@ -136,10 +135,11 @@ def upload_volume_to_image(volume_steps, glance_steps):
     """
     images = []
 
-    def _upload_volume_to_image(volume_name, image_name, disk_format):
-        volume = volume_steps.create_volumes([volume_name])[0]
+    def _upload_volume_to_image(disk_format):
+        volume = volume_steps.create_volumes()[0]
         image_info = volume_steps.volume_upload_to_image(
-            volume=volume, image_name=image_name, disk_format=disk_format)
+            volume=volume, disk_format=disk_format)
+
         image = glance_steps.get_image(
             id=image_info['os-volume_upload_image']['image_id'])
         images.append(image)
@@ -163,5 +163,4 @@ def volume(volume_steps):
     Returns:
         object: cinder volume
     """
-    return volume_steps.create_volumes(
-        names=utils.generate_ids('volume', count=1))[0]
+    return volume_steps.create_volumes()[0]
