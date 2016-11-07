@@ -105,13 +105,13 @@ def test_restart_all_services(cirros_image,
 
 
 @pytest.mark.idempotent_id('14ed4331-c05e-4b9a-9723-eac8c6f3f26a')
-def test_verification_of_bug_1546197(role_steps,
-                                     project_steps,
-                                     get_project_steps,
-                                     create_project,
-                                     create_user):
+def test_check_objects_are_revoked(role_steps,
+                                   get_project_steps,
+                                   create_project,
+                                   create_user):
     """**Scenario:** Check that keystone objects are revoked correctly.
 
+    https://bugs.launchpad.net/mos/+bug/1546197
     When you delete a role assignment using a user+role+project pairing,
     unscoped tokens between the user+project are unnecessarily revoked as
     well. In fact, two events are created for each role assignment deletion
