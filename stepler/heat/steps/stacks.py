@@ -92,6 +92,7 @@ class StackSteps(base.BaseSteps):
 
         Args:
             check (bool): flag whether to check step or not
+
         Returns:
             list: stacks list
         """
@@ -109,6 +110,7 @@ class StackSteps(base.BaseSteps):
         Args:
             stack (obj): stack to delete
             check (bool): flag whether to check step or not
+
         Raises:
             TimeoutExpired: if check failed after timeout
         """
@@ -218,6 +220,7 @@ class StackSteps(base.BaseSteps):
     @steps_checker.step
     def check_output_list(self, output_list):
         """Step to check stack attributes in format: output_key - description.
+        
         Args:
             output_list (dict): stack output list
 
