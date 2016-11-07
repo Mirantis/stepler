@@ -24,97 +24,48 @@ from stepler.third_party import utils
 
 __all__ = [
     'snapshot_steps',
-    'create_snapshot',
-    'create_snapshots',
-    'volume_snapshot',
+    'snapshot',
     'snapshots_cleanup',
 ]
 
 
 @pytest.fixture
-def snapshot_steps(cinder_client):
+def snapshot_steps(cinder_client, snapshots_cleanup):
     """Function fixture to get snapshot steps.
 
     Args:
         cinder_client (object): instantiated cinder client
+        snapshots_cleanup (function): function fixture to cleanup snapshots
 
-     Returns:
+    Yields:
          stepler.cinder.steps.SnapshotSteps: instantiated snapshot steps
     """
-    return steps.SnapshotSteps(cinder_client.volume_snapshots)
+    _snapshot_steps = steps.SnapshotSteps(cinder_client.volume_snapshots)
+
+    with snapshots_cleanup(_snapshot_steps):
+        yield _snapshot_steps
 
 
-@pytest.yield_fixture
-def create_snapshots(snapshot_steps):
-    """Callable function fixture to create snapshots with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created snapshots.
-
-    Args:
-        snapshot_steps (object): instantiated snapshot steps
-
-    Returns:
-        function: function to create snapshots as batch with options
-    """
-    snapshots_names = set()
-
-    def _create_snapshots(volume, names, *args, **kwgs):
-        names = list(names)
-        snapshots_names.update(names)
-        _snapshots = snapshot_steps.create_snapshots(
-            volume, names, *args, **kwgs)
-        return _snapshots
-
-    yield _create_snapshots
-
-    all_snapshots = snapshot_steps.get_snapshots(check=False)
-    snapshots = [snapshot for snapshot in all_snapshots
-                 if snapshot.name in snapshots_names]
-    snapshot_steps.delete_snapshots(snapshots)
-
-
-@pytest.yield_fixture
-def create_snapshot(create_snapshots):
-    """Callable function fixture to create volumes with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created volumes.
-
-    Args:
-        snapshot_steps (object): instantiated snapshot steps
-
-    Returns:
-        function: function to create volumes as batch with options
-    """
-    def _create_snapshot(volume, name=None, *args, **kwgs):
-        return create_snapshots(volume, [name], *args, **kwgs)[0]
-
-    return _create_snapshot
-
-
-@pytest.yield_fixture
-def volume_snapshot(volume, create_snapshot):
+@pytest.fixture
+def snapshot(volume, snapshot_steps):
     """Function fixture to create snapshot with default options before test.
 
     Args:
-        volume (object):  cinder volume
-        create_snapshot (function): function to create single snapshot
+        volume (object): cinder volume
+        snapshot_steps (object): instantiated snapshot steps
 
     Returns:
         object: cinder volume snapshot
     """
     snapshot_name = next(utils.generate_ids('snapshot'))
-    return create_snapshot(volume, snapshot_name)
+    return snapshot_steps.create_snapshot(volume, snapshot_name)
 
 
 @pytest.fixture
 def snapshots_cleanup(snapshot_steps):
     """Function fixture to clear created snapshots after test.
-
     It stores ids of all snapshots before test and remove all new
     snapshots after test.
-
     Args:
         snapshot_steps (object): instantiated volume snapshot steps
     """
