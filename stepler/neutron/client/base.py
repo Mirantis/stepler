@@ -11,24 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import weakref
-
 
 class BaseNeutronManager(object):
     """Base Neutron components manager."""
 
     NAME = ''
 
-    def __init__(self, client, rest_client):
+    def __init__(self, client):
         """Init base neutron manager
 
         Args:
             client (obj): initialized client wrapper (for access to another
                 managers)
-            rest_client (obj): initialized neutronclient object
         """
-        self.client = weakref.proxy(client)
-        self._rest_client = rest_client
+        self.client = client
+        self._rest_client = self.client._rest_client
 
     @property
     def _create_method(self):

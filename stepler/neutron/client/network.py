@@ -19,10 +19,20 @@ class NetworkManager(base.BaseNeutronManager):
 
     NAME = 'network'
 
-    def create(self, name):
-        """Create new neutron network."""
+    def create(self, name, project_id=None):
+        """Create new neutron network.
+
+        Args:
+            name (str): name of the network
+            project_id (str|None): project id to create network in it. If None
+                - network will be created on current project
+
+        Returns:
+            dict: created network
+        """
         return super(NetworkManager, self).create(name=name,
-                                                  admin_state_up=True)
+                                                  admin_state_up=True,
+                                                  tenant_id=project_id)
 
     def delete(self, network_id):
         """Delete network."""
