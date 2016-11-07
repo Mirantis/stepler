@@ -61,6 +61,7 @@ class ResourceSteps(base.BaseSteps):
         Args:
             stack (object): heat stack
             name (str): resource name
+            check (bool): flag whether check step or not
 
         Returns:
             object: stack resource
@@ -73,14 +74,15 @@ class ResourceSteps(base.BaseSteps):
                                        stack,
                                        resource_name):
         """Step to check that after stack updating
-        physical_resource_id was chanched.
+        physical_resource_id was changed.
 
         Args:
-            physical_resource_id (str): befor updating
+            physical_resource_id (str): resource id before updating
             stack (object): heat stack
+            resource_name (str): name of the resource
 
         Raises:
-            AssertionError: if physical_resource_id wasn't chanched
+            AssertionError: if physical_resource_id wasn't changed
         """
         physical_resource_id_changed = self.get_resource(stack, resource_name)
 
