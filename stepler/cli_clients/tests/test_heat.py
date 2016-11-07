@@ -130,3 +130,35 @@ def test_stack_show(empty_stack, cli_heat_steps):
     #. Delete stack
     """
     cli_heat_steps.show_stack(empty_stack.to_dict())
+
+
+@pytest.mark.idempotent_id('9db8f266-106d-436f-ac8b-05ee58fab674')
+def test_stack_update(empty_heat_template_path,
+                      empty_stack,
+                      cli_heat_steps,
+                      stack_steps):
+    """**Scenario:** Update stack with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Update stack with CLI
+    #. Check that stack status is ``update_complete``
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    parameters = {'param': 'string2'}
+    cli_heat_steps.update_stack(
+        empty_stack.to_dict(),
+        template_file=empty_heat_template_path,
+        parameters=parameters)
+    stack_steps.check_status(
+        empty_stack,
+        config.HEAT_COMPLETE_STATUS,
+        transit_statuses=[config.HEAT_IN_PROGRESS_STATUS],
+        timeout=config.STACK_UPDATING_TIMEOUT)
