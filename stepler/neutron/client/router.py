@@ -19,9 +19,22 @@ class RouterManager(base.BaseNeutronManager):
 
     NAME = 'router'
 
-    def create(self, name, distributed=False):
-        """Create router."""
+    def create(self, name, distributed=False, project_id=None):
+        """Create router.
+
+        Args:
+            name (str): name of router
+            distributed (bool): flag whatever router should be distributed or
+                not
+            project_id (str|None): project id to create router on it. If None
+                - router will create on current project
+
+        Returns:
+            dict: created router
+        """
         query = {'name': name, 'distributed': distributed}
+        if project_id is not None:
+            query['tenant_id'] = project_id
         return super(RouterManager, self).create(**query)
 
     def set_gateway(self, router_id, network_id):
@@ -86,6 +99,6 @@ class RouterManager(base.BaseNeutronManager):
         """
         self.clear_gateway(router_id)
         for port in self.get_interfaces_ports(router_id):
-            self.delete_interface_port(router_id, port_id=port['id'])
+            self.remove_port_interface(router_id, port_id=port['id'])
 
         super(RouterManager, self).delete(router_id)

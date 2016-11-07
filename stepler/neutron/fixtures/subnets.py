@@ -25,14 +25,41 @@ from stepler.third_party.utils import generate_ids
 __all__ = [
     'create_subnet',
     'subnet',
-    'subnet_steps'
+    'subnet_steps',
+    'get_subnet_steps',
 ]
 
 
+@pytest.fixture(scope="session")
+def get_subnet_steps(get_neutron_client):
+    """Callable session fixture to get router steps.
+
+    Args:
+        get_neutron_client (function): function to get instantiated neutron
+            client
+
+    Returns:
+        function: function to get instantiated subnet steps
+    """
+
+    def _get_steps(**credentials):
+        return steps.SubnetSteps(get_neutron_client(**credentials).subnets)
+
+    return _get_steps
+
+
 @pytest.fixture
-def subnet_steps(neutron_client):
-    """Fixture to get subnet steps."""
-    return steps.SubnetSteps(neutron_client.subnets)
+def subnet_steps(get_subnet_steps):
+    """Function fixture to get subnet steps.
+
+    Args:
+        get_subnet_steps (function): function to get instantiated subnet
+            steps
+
+    Returns:
+        stepler.neutron.steps.SubnetSteps: instantiated subnet steps
+    """
+    return get_subnet_steps()
 
 
 @pytest.yield_fixture

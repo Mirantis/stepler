@@ -30,16 +30,18 @@ class NetworkSteps(base.BaseSteps):
     """Network steps."""
 
     @steps_checker.step
-    def create(self, network_name, check=True):
+    def create(self, network_name, check=True, **kwargs):
         """Step to create network.
 
         Args:
             network_name (str): network name
             check (bool): flag whether to check step or not
+            **kwargs: other arguments to pass to API
+
         Returns:
             dict: network
         """
-        network = self._client.create(network_name)
+        network = self._client.create(network_name, **kwargs)
 
         if check:
             self.check_presence(network)
@@ -79,17 +81,20 @@ class NetworkSteps(base.BaseSteps):
         waiting.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_network_by_name(self, name):
+    def get_network_by_name(self, name, **kwargs):
         """Step to get network by name.
 
         Args:
             name (str): network name
+            **kwargs: other arguments to pass to API
+
         Returns:
             dict: network
+
         Raises:
             LookupError: if zero or more than one networks found
         """
-        return self._client.find(name=name)
+        return self._client.find(name=name, **kwargs)
 
     @steps_checker.step
     def get_network(self, check=True, **kwargs):

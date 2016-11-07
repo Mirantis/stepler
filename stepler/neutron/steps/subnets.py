@@ -29,7 +29,7 @@ class SubnetSteps(base.BaseSteps):
     """Subnet steps."""
 
     @steps_checker.step
-    def create(self, subnet_name, network, cidr, check=True):
+    def create(self, subnet_name, network, cidr, check=True, **kwargs):
         """Step to create subnet.
 
         Args:
@@ -37,12 +37,15 @@ class SubnetSteps(base.BaseSteps):
             network (dict): network to create subnet on
             cidr (str): cidr for subnet (like 192.168.1.0/24"")
             check (bool): flag whether to check step or not
+            **kwargs: other arguments to pass to API
+
         Returns:
             dict: subnet
         """
         subnet = self._client.create(name=subnet_name,
                                      network_id=network['id'],
-                                     cidr=cidr)
+                                     cidr=cidr,
+                                     **kwargs)
 
         if check:
             self.check_presence(subnet)

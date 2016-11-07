@@ -20,8 +20,20 @@ from stepler.neutron.client import subnet
 class NeutronClient(object):
     """Wrapper for python-neutronclient."""
     def __init__(self, client):
-        self._client = client
-        self.networks = network.NetworkManager(self, client)
-        self.ports = port.PortManager(self, client)
-        self.routers = router.RouterManager(self, client)
-        self.subnets = subnet.SubnetManager(self, client)
+        self._rest_client = client
+
+    @property
+    def networks(self):
+        return network.NetworkManager(self)
+
+    @property
+    def ports(self):
+        return port.PortManager(self)
+
+    @property
+    def routers(self):
+        return router.RouterManager(self)
+
+    @property
+    def subnets(self):
+        return subnet.SubnetManager(self)
