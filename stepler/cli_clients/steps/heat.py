@@ -137,3 +137,21 @@ class CliHeatSteps(base.BaseCliSteps):
                 show_result,
                 has_entries(
                     stack_name=stack['stack_name'], id=stack['id']))
+
+    @steps_checker.step
+    def update_stack(self, stack, template_file, parameters=None, check=True):
+        """Step to update stack.
+
+        Args:
+            stack (dict): heat stack to update
+            template_file (str): path to stack template file
+            parameters (list, optional): additional parameters to template
+            check (bool): flag whether to check step or not
+        """
+        parameters = parameters or {}
+        cmd = 'heat stack-update {id} -f {file}'.format(id=stack['id'],
+                                                        file=template_file)
+        for key, value in parameters.items():
+            cmd += ' --parameters {}={}'.format(key, value)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
