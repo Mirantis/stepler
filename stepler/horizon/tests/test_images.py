@@ -21,6 +21,7 @@ import pytest
 
 from stepler.horizon import config
 from stepler.horizon.utils import generate_ids, generate_files  # noqa
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('any_one')
@@ -118,3 +119,28 @@ class TestAnyOne(object):
                                      network_name=config.INTERNAL_NETWORK_NAME)
         instances_steps.check_instance_active(instance_name)
         instances_steps.delete_instance(instance_name)
+
+    @pytest.mark.idempotent_id('451ea18f-e513-48ac-999a-4e719516478e')
+    def test_image_privacy(self, new_user_with_project, glance_steps,
+                           images_steps, auth_steps):
+        """Verify that non public image is not visible for other users.
+
+        **Steps:**
+
+        #. Create image with visibility='private'
+        #. Create new user with new project
+        #. Logout
+        #. Login as newly created user
+        #. Check that image is not available as public image
+
+        **Teardown:**
+
+        #. Delete image
+        #. Delete user and project
+        """
+        image = glance_steps.create_images(
+            utils.get_file_path(config.CIRROS_QCOW2_URL))[0]
+        auth_steps.logout()
+        auth_steps.login(new_user_with_project['username'],
+                         new_user_with_project['password'])
+        images_steps.check_non_public_image_not_visible(image.name)
