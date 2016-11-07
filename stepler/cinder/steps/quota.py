@@ -40,7 +40,7 @@ class CinderQuotaSteps(base.BaseSteps):
             int: size in gigabytes
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         quota = self._client.get(project.id).gigabytes
         if check:
@@ -76,7 +76,7 @@ class CinderQuotaSteps(base.BaseSteps):
             int: current quota value
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         quota = self._client.get(project.id).snapshots
         if check:
@@ -93,7 +93,7 @@ class CinderQuotaSteps(base.BaseSteps):
             check (bool|True): flag whether to check step or not
 
         No Longer Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         self._client.update(project.id, snapshots=value)
         if check:

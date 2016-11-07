@@ -76,7 +76,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
@@ -128,7 +128,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         stack_id = getattr(stack, 'id', stack)
@@ -166,7 +166,7 @@ class StackSteps(base.BaseSteps):
             check (bool): flag whether check step or not
 
         Raises:
-            TimeoutExpired: if check was failed
+            TimeoutExpired: if check failed after timeout
         """
         self._client.update(stack_id=stack.id, template=template)
 
@@ -185,7 +185,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def predicate():
             stack.get()
@@ -206,7 +206,7 @@ class StackSteps(base.BaseSteps):
             list: stack output list
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         output_list = self._client.output_list(stack.id)
 
@@ -222,7 +222,7 @@ class StackSteps(base.BaseSteps):
             output_list (dict): stack output list
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         assert_that(output_list['outputs'][0].keys(),
                     equal_to([u'output_key', u'description']))

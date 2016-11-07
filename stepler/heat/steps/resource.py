@@ -41,7 +41,7 @@ class ResourceSteps(base.BaseSteps):
             list: resource list for stack
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         resources = self._client.list(stack_id=stack.id)
 

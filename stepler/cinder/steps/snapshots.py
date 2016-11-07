@@ -47,7 +47,7 @@ class SnapshotSteps(base.BaseSteps):
             list: cinder volume snapshots
 
         Raises:
-            TimeoutExpired|AssertionError: if check was failed
+            TimeoutExpired|AssertionError: if check failed after timeout
         """
         snapshots = []
         for name in names:
@@ -74,7 +74,7 @@ class SnapshotSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-           TimeoutExpired: if check was failed after timeout
+           TimeoutExpired: if check failed after timeout
         """
         for snapshot in snapshots:
             self._client.delete(snapshot=snapshot.id)
@@ -98,7 +98,7 @@ class SnapshotSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         snapshot_ids = [snapshot.id for snapshot in snapshots]
         # Make a dict with desired presence values for each snapshot
@@ -124,7 +124,7 @@ class SnapshotSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         for snapshot in snapshots:
 
@@ -146,7 +146,7 @@ class SnapshotSteps(base.BaseSteps):
             list: snapshots collection
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         snapshots = list(self._client.list())
 

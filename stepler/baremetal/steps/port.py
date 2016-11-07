@@ -54,7 +54,7 @@ class IronicPortSteps(base.BaseSteps):
             port (object): ironic port
 
         Raises:
-            TimeoutExpired|AssertionError: if check was failed
+            TimeoutExpired|AssertionError: if check failed after timeout
         """
         port = self._client.port.create(address=address,
                                         node_uuid=node.uuid,
@@ -76,7 +76,7 @@ class IronicPortSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def predicate():
             try:
@@ -96,7 +96,7 @@ class IronicPortSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         self._client.port.delete(port.uuid)
         if check:
@@ -113,7 +113,7 @@ class IronicPortSteps(base.BaseSteps):
             ports (list): list of ironic ports
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed after timeout
         """
         ports = self._client.port.list()
         if check:
