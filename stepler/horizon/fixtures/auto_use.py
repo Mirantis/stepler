@@ -134,29 +134,50 @@ def video_capture(report_dir, logger):
 
 
 @pytest.yield_fixture(scope='session')
-def test_env(virtual_display, get_project_steps, get_user_steps,
-             get_role_steps):
+def test_env(virtual_display,
+             get_project_steps,
+             get_user_steps,
+             get_role_steps,
+             get_network_steps,
+             get_router_steps,
+             get_subnet_steps):
     """Fixture to prepare test environment.
 
     This fixture creates 2 projects, 2 users and grant admin and member roles
-    on projects to users.
+    on projects to users. This fixture also creates network with subnet and
+    router for each project.
 
     Args:
         virtual_display (None): virtual display fixture
         get_project_steps (function): function to get project steps
         get_user_steps (function): function to get user steps
         get_role_steps (function): function to get role steps
+        get_network_steps (function): function to get network steps
+        get_router_steps (function): function to get router steps
+        get_subnet_steps (function): function to get subnet steps
     """
-    _build_test_env(get_project_steps, get_user_steps,
-                    get_role_steps)
+    _build_test_env(get_project_steps, get_user_steps, get_role_steps,
+                    get_network_steps, get_router_steps, get_subnet_steps)
     yield
-    _destroy_test_env(get_project_steps, get_user_steps)
+    _destroy_test_env(get_project_steps, get_user_steps, get_network_steps,
+                      get_router_steps, get_subnet_steps)
 
 
-def _build_test_env(get_project_steps, get_user_steps, get_role_steps):
+def _build_test_env(get_project_steps,
+                    get_user_steps,
+                    get_role_steps,
+                    get_network_steps,
+                    get_router_steps,
+                    get_subnet_steps):
     project_steps = get_project_steps()
-    admin_project = project_steps.create_project(config.ADMIN_PROJECT)
-    user_project = project_steps.create_project(config.USER_PROJECT)
+    network_steps = get_network_steps()
+    subnet_steps = get_subnet_steps()
+    router_steps = get_router_steps()
+
+    admin_project = _setup_project(project_steps, network_steps, subnet_steps,
+                                   router_steps, config.ADMIN_PROJECT)
+    user_project = _setup_project(project_steps, network_steps, subnet_steps,
+                                  router_steps, config.USER_PROJECT)
 
     role_steps = get_role_steps()
     admin_role = role_steps.get_role(name="admin")
@@ -164,16 +185,19 @@ def _build_test_env(get_project_steps, get_user_steps, get_role_steps):
 
     user_steps = get_user_steps()
     admin = user_steps.create_user(
-        user_name=config.ADMIN_NAME,
-        password=config.ADMIN_PASSWD)
+        user_name=config.ADMIN_NAME, password=config.ADMIN_PASSWD)
     user = user_steps.create_user(
-        user_name=config.USER_NAME,
-        password=config.USER_PASSWD)
+        user_name=config.USER_NAME, password=config.USER_PASSWD)
     role_steps.grant_role(admin_role, admin, project=admin_project)
     role_steps.grant_role(member_role, user, project=user_project)
 
 
-def _destroy_test_env(get_project_steps, get_user_steps):
+def _destroy_test_env(get_project_steps,
+                      get_user_steps,
+                      get_network_steps,
+                      get_router_steps,
+                      get_subnet_steps):
+
     user_steps = get_user_steps()
     users = user_steps.get_users()
     for user in users:
@@ -182,6 +206,43 @@ def _destroy_test_env(get_project_steps, get_user_steps):
 
     project_steps = get_project_steps()
     projects = project_steps.get_projects()
+    network_steps = get_network_steps()
+    router_steps = get_router_steps()
     for project in projects:
         if project.name in [config.ADMIN_PROJECT, config.USER_PROJECT]:
-            project_steps.delete_project(project)
+            _delete_project(project_steps, network_steps, router_steps,
+                            project)
+
+
+def _setup_project(project_steps,
+                   network_steps,
+                   subnet_steps,
+                   router_steps,
+                   project_name):
+    project = project_steps.create_project(project_name)
+    int_network = network_steps.create(
+        config.INTERNAL_NETWORK_NAME, project_id=project.id)
+    subnet = subnet_steps.create(
+        config.INTERNAL_SUBNET_NAME,
+        network=int_network,
+        cidr="10.0.0.0/24",
+        project_id=project.id)
+    router = router_steps.create(config.ROUTER_NAME, project_id=project.id)
+    external_net = network_steps.get_network_by_name(
+        config.FLOATING_NETWORK_NAME)
+    router_steps.set_gateway(router, external_net)
+    router_steps.add_subnet_interface(router, subnet)
+    return project
+
+
+def _delete_project(project_steps,
+                    network_steps,
+                    router_steps,
+                    project):
+    router = router_steps.get_router(name=config.ROUTER_NAME,
+                                     tenant_id=project.id)
+    router_steps.delete(router)
+    network = network_steps.get_network_by_name(
+        config.INTERNAL_NETWORK_NAME, tenant_id=project.id)
+    network_steps.delete(network)
+    project_steps.delete_project(project)

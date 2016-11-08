@@ -24,8 +24,22 @@ class SubnetManager(base.BaseNeutronManager):
                network_id,
                cidr,
                ip_version=4,
-               dns_nameservers=('8.8.8.8', '8.8.4.4')):
-        """Create subnet action."""
+               dns_nameservers=('8.8.8.8', '8.8.4.4'),
+               project_id=None):
+        """Create subnet action.
+
+        Args:
+            name (str): name of subnet
+            network_id (str): id of the network to create subnet in it
+            cidr (str): CIDR to create subnet with (for example: "10.0.0.0/24")
+            ip_version (int): ip version (4 or 6)
+            dns_nameservers (tuple of str): dns nameservers of subnet
+            project_id (str|None): project id to create subnet in it. If None
+                - subnet will be created in the current project
+
+        Returns:
+            dict: created subnet
+        """
         query = {
             "network_id": network_id,
             "ip_version": ip_version,
@@ -34,6 +48,8 @@ class SubnetManager(base.BaseNeutronManager):
         }
         if dns_nameservers is not None:
             query['dns_nameservers'] = dns_nameservers
+        if project_id is not None:
+            query['tenant_id'] = project_id
         return super(SubnetManager, self).create(**query)
 
     def get_ports(self, subnet_id):

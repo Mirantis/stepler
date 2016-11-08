@@ -29,17 +29,20 @@ class RouterSteps(base.BaseSteps):
     """Router steps."""
 
     @steps_checker.step
-    def create(self, router_name, distributed=False, check=True):
+    def create(self, router_name, distributed=False, check=True, **kwargs):
         """Step to create router.
 
         Args:
             router_name (str): router name
             distributed (bool): should router be distributed
             check (bool): flag whether to check step or not
+            **kwargs: other arguments to pass to API
+
         Returns:
             dict: router
         """
-        router = self._client.create(name=router_name, distributed=distributed)
+        router = self._client.create(name=router_name, distributed=distributed,
+                                     **kwargs)
 
         if check:
             self.check_presence(router)
@@ -173,3 +176,18 @@ class RouterSteps(base.BaseSteps):
             return present == (subnet['id'] in subnet_ids)
 
         waiting.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_router(self, **kwargs):
+        """Step to get router.
+
+        Args:
+            **kwargs: filter to match router
+
+        Returns:
+            dict: router
+
+        Raises:
+            LookupError: if zero or more than one routers found
+        """
+        return self._client.get_router(**kwargs)

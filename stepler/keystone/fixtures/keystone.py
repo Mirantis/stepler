@@ -32,7 +32,7 @@ def get_keystone_client(get_session):
     """Callable session fixture to get keystone client.
 
     Args:
-        get_session (keystoneauth1.session.Session): authenticated keystone
+        get_session (function): function to get authenticated keystone
             session
 
     Returns:

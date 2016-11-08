@@ -24,11 +24,34 @@ from stepler.neutron.client import client
 
 __all__ = [
     'neutron_client',
+    'get_neutron_client',
 ]
 
 
+@pytest.fixture(scope="session")
+def get_neutron_client(get_session):
+    """Callable session fixture to get neutron client wrapper.
+
+    Args:
+        get_session (function): function to get authenticated keystone
+            session
+
+    Returns:
+        function: function to get instantiated neutron client wrapper
+    """
+    def _get_client():
+        rest_client = Client(session=get_session())
+        return client.NeutronClient(rest_client)
+
+    return _get_client
+
+
 @pytest.fixture
-def neutron_client(session):
-    """Fixture to get neutron client wrapper."""
-    rest_client = Client(session=session)
-    return client.NeutronClient(rest_client)
+def neutron_client(get_neutron_client):
+    """Function fixture to get neutron client wrapper.
+
+    Args:
+        get_neutron_client (function): function to get instantiated neutron
+            client wrapper
+    """
+    return get_neutron_client()

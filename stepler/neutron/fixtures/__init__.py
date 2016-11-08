@@ -39,8 +39,12 @@ __all__ = sorted([  # sort for documentation
     'create_port',
     'port_steps',
     'neutron_client',
+    'get_neutron_client',
     'network_steps',
+    'get_network_steps',
     'router_steps',
+    'get_router_steps',
     'subnet_steps',
+    'get_subnet_steps',
     'admin_internal_network',
 ])
