@@ -44,10 +44,11 @@ class ProjectSteps(BaseSteps):
         Returns:
             object: project
         """
-        project = self._client.create(project_name, domain)
+        project = self._client.create(name=project_name, domain=domain)
 
         if check:
             self.check_project_presence(project)
+            assert_that(project.name, equal_to(project_name))
             if hasattr(domain, 'id'):
                 domain_id = domain.id
             else:

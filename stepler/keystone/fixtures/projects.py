@@ -67,8 +67,8 @@ def create_project(project_steps):
     """
     projects = []
 
-    def _create_project(project_name, domain):
-        project = project_steps.create_project(project_name, domain)
+    def _create_project(*args, **kwargs):
+        project = project_steps.create_project(*args, **kwargs)
         projects.append(project)
         return project
 
@@ -79,7 +79,7 @@ def create_project(project_steps):
 
 
 @pytest.fixture
-def project(domain, create_project):
+def project(create_project):
     """Fixture to create project with default options before test."""
     project_name = next(generate_ids('project'))
-    return create_project(project_name, domain)
+    return create_project(project_name)
