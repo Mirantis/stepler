@@ -275,6 +275,7 @@ MIGRATION_START_TIMEOUT = 15
 LIVE_EVACUATE_CLI_TIMEOUT = 60
 LIVE_EVACUATE_TIMEOUT = 5 * 60
 IMAGE_CREATION_TIMEOUT = 60
+CLI_DOWNLOAD_IMAGE_TIMEOUT = 60
 
 # For DevStack cmd should looks like `source devstack/openrc admin admin`
 OPENRC_ACTIVATE_CMD = os.environ.get('OPENRC_ACTIVATE_CMD', 'source /root/openrc')  # noqa E501

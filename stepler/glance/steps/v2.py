@@ -290,7 +290,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
     @steps_checker.step
     def check_that_image_id_is_changed(self, image_name, image_id):
-        """Step to check that after updating heat stack image_id was changed
+        """Step to check that after updating heat stack image_id was changed.
 
         Args:
             image_name (str): image name that was replaced
@@ -301,3 +301,18 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         image_id_changed = self.get_image(name=image_name)['id']
         assert_that(image_id_changed, is_not(image_id))
+
+    @steps_checker.step
+    def check_image_hash(self, uploaded_image_path, downloaded_image_path):
+        """Step to check hash sum of uploaded image and downloaded image.
+
+        Args:
+            uploaded_image_path (str): path to uploaded image
+            downloaded_image_path (str): path to downloaded image
+
+        Raises:
+            AssertionError: if hash sum is mismatched
+        """
+        uploaded_md5 = utils.get_md5sum(uploaded_image_path)
+        downloaded_md5 = utils.get_md5sum(downloaded_image_path)
+        assert_that(uploaded_md5, equal_to(downloaded_md5))
