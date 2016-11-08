@@ -17,7 +17,12 @@ Glance CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, contains_string, equal_to  # noqa
+import hashlib
+import os
+import os.path
+import tempfile
+
+from hamcrest import assert_that, contains_string, equal_to, empty, is_  # noqa
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -91,3 +96,60 @@ class CliGlanceSteps(base.BaseCliSteps):
             check=False)
         assert_that(exit_code, equal_to(1))
         assert_that(stderr, contains_string(error_message))
+
+    @steps_checker.step
+    def create_file(self, size=0):
+        """Step to create file.
+
+        Args:
+            size (int): file size in MB
+        """
+        temp = tempfile.NamedTemporaryFile()
+        temp.write(os.urandom(size * 1024))
+        temp.close()
+        return temp.name
+
+    @steps_checker.step
+    def get_image_id(self, name):
+        """Step to create image.
+        """
+        cmd = ("glance image-create --name Test --container-format bare "
+               "--disk-format qcow2 --file {0} | "
+               "grep id |awk ' {print $4} ' ").format(name)
+        result = self.execute_command(cmd)
+        return result
+
+    @steps_checker.step
+    def download_image(self, uploaded_image_id, downloaded_image_name):
+        """Step to download image.
+        """
+        cmd = 'glance image-download {0} > {1}'.format(
+            uploaded_image_id, downloaded_image_name)
+        result = self.execute_command(cmd)
+        return result
+
+    @steps_checker.step
+    def md5_sum(self, fname):
+        hash_md5 = hashlib.md5()
+        with open(fname, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+
+    @steps_checker.step
+    def delete_image(self, image_id, check=True):
+        """Step to delete image.
+        """
+        cmd = 'glance image-delete {}'.format(image_id)
+        result = self.execute_command(cmd, check=check)
+        if check:
+            assert_that(result, is_(empty()))
+
+    @steps_checker.step
+    def delete_file(self, name_file):
+        """Step to delete file.
+        """
+        if os.path.exists(name_file) is True:
+            os.remove(name_file)
+        else:
+            return False
