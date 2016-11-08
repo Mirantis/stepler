@@ -19,6 +19,7 @@ Glance CLI client fixtures
 
 import pytest
 
+
 from stepler.cli_clients import steps
 
 __all__ = [
