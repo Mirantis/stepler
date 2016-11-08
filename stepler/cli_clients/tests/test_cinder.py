@@ -35,6 +35,7 @@ def test_volume_backup_non_unicode_name(volume, backups_cleanup,
     **Steps:**
 
     #. Create volume backup with non unicode symbols name using CLI
+    #. Check that backup status is available
 
     **Teardown:**
 
@@ -42,6 +43,32 @@ def test_volume_backup_non_unicode_name(volume, backups_cleanup,
     #. Delete volume
     """
     backup_dict = cli_cinder_steps.create_volume_backup(volume, name=u"シンダー")
-    backup = backup_steps.get_backup_by_id(backup_dict['id'])
-    backup_steps.check_backup_status(backup, config.STATUS_AVAILABLE,
+    backup_steps.check_backup_status(backup_dict['id'],
+                                     config.STATUS_AVAILABLE,
+                                     timeout=config.BACKUP_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('07eb81c1-ca1f-4c65-93c4-f3378e62adfd')
+def test_volume_backup_non_unicode_description(volume, backups_cleanup,
+                                               cli_cinder_steps, backup_steps):
+    """**Scenario:** Create volume backup with non unicode symbols description.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume backup with non unicode symbols description using CLI
+    #. Check that backup status is available
+
+    **Teardown:**
+
+    #. Delete volume backup
+    #. Delete volume
+    """
+    backup_dict = cli_cinder_steps.create_volume_backup(volume,
+                                                        description=u"シンダー")
+    backup_steps.check_backup_status(backup_dict['id'],
+                                     config.STATUS_AVAILABLE,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
