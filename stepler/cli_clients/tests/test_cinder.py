@@ -72,3 +72,54 @@ def test_volume_backup_non_unicode_description(volume, backups_cleanup,
     backup_steps.check_backup_status(backup_dict['id'],
                                      config.STATUS_AVAILABLE,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('955c4976-ddc7-4d8d-b5c6-1c2bc991af39')
+def test_volume_backup_non_unicode_container(volume, backups_cleanup,
+                                             cli_cinder_steps, backup_steps):
+    """**Scenario:** Create volume backup with non unicode container name.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume backup with non unicode container name using CLI
+    #. Check that backup status is available
+
+    **Teardown:**
+
+    #. Delete volume backup
+    #. Delete volume
+    """
+    backup_dict = cli_cinder_steps.create_volume_backup(volume,
+                                                        container=u"シンダー")
+    backup_steps.check_backup_status(backup_dict['id'],
+                                     config.STATUS_AVAILABLE,
+                                     timeout=config.BACKUP_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('ef21745a-6fdc-456b-8e2c-2533f24b5eae')
+def test_volume_transfer_non_unicode_name(volume, transfer_cleanup,
+                                          cli_cinder_steps, volume_steps):
+    """**Scenario:** Create volume transfer with non unicode name.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume transfer with non unicode name using CLI
+    #. Check that volume status is 'awaiting-transfer'
+
+    **Teardown:**
+
+    #. Delete volume transfer
+    #. Delete volume
+    """
+    cli_cinder_steps.create_volume_transfer(volume, name=u"シンダー")
+    volume_steps.check_volume_status(volume,
+                                     status=config.STATUS_AWAITING_TRANSFER,
+                                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
