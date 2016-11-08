@@ -31,6 +31,7 @@ __all__ = [
     'cli_cinder_steps',
 
     'cli_glance_steps',
+    'cli_download_image',
 
     'cli_heat_steps',
     'empty_heat_template_path',
