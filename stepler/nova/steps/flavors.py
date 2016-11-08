@@ -97,7 +97,7 @@ class FlavorSteps(BaseSteps):
 
         Args:
             flavor (object): nova flavor to check presence status
-            must_present (bool): flag whether flavor should present or no
+            must_present (bool): flag whether flavor should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

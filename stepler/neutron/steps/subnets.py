@@ -68,7 +68,7 @@ class SubnetSteps(base.BaseSteps):
 
         Args:
             subnet (dict): subnet to check presence status
-            presented (bool): flag whether subnet should present or no
+            presented (bool): flag whether subnet should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

@@ -106,7 +106,7 @@ class DomainSteps(BaseSteps):
 
         Args:
             domain (object): domain
-            present (bool): flag whether domain should present or no
+            present (bool): flag whether domain should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

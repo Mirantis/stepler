@@ -65,7 +65,7 @@ class RouterSteps(base.BaseSteps):
 
         Args:
             router (dict): router to check presence status
-            presented (bool): flag whether router should present or no
+            presented (bool): flag whether router should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -108,7 +108,7 @@ class RouterSteps(base.BaseSteps):
 
         Args:
             router (dict): router to check gateway presence status
-            presented (bool): flag whether router should present or no
+            presented (bool): flag whether router should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -160,8 +160,8 @@ class RouterSteps(base.BaseSteps):
         Args:
             router (dict): router to check
             subnet (dict): subnet to find in router interfaces
-            presented (bool): flag whether router should contains interface
-                to subnet or no
+            present (bool): flag whether router should contains interface
+                to subnet or not
             timeout (int): seconds to wait a result of check
 
         Raises:

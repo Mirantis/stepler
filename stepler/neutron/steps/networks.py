@@ -65,7 +65,7 @@ class NetworkSteps(base.BaseSteps):
 
         Args:
             network (dict): network to check presence status
-            present (bool): flag whether network should present or no
+            present (bool): flag whether network should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
