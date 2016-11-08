@@ -17,6 +17,10 @@ Glance CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
+import os
+import tempfile
+
 from hamcrest import assert_that, contains_string, equal_to  # noqa
 from six import moves
 
@@ -91,3 +95,56 @@ class CliGlanceSteps(base.BaseCliSteps):
             check=False)
         assert_that(exit_code, equal_to(1))
         assert_that(stderr, contains_string(error_message))
+
+    @steps_checker.step
+    def create_file(self, size=0):
+        """Step to create file.
+
+        Args:
+            size (int): file size in MB
+        """
+        temp = tempfile.NamedTemporaryFile()
+        temp.write(os.urandom(size * 1024))
+        temp.close()
+        return temp.name
+
+    @steps_checker.step
+    def download_image(self, uploaded_image_id, downloaded_image_name,
+                       check=True):
+        """Step to download image.
+
+        Args:
+            uploaded_image_id(str): id of created image
+            downloaded_image_name(str): name and path of image file
+        """
+        cmd = 'glance image-download {0} > {1}'.format(
+            uploaded_image_id, downloaded_image_name)
+        result = self.execute_command(cmd, check=check)
+        if check:
+            assert_that(downloaded_image_name,
+                        os.path.exists(downloaded_image_name))
+        return result
+
+    @steps_checker.step
+    def check_md5sum(self, obj, check=True):
+        """Step for getting checksum
+
+        Args:
+            obj: path or file for getting checksum
+        """
+        if check:
+            assert_that(type(obj), str or file)
+            if type(obj) is str:
+                assert_that(os.path.exists(str), equal_to(True))
+        hash_md5 = hashlib.md5()
+        if type(obj) is str:
+            f = open(obj, "rb")
+        elif type(obj) is file:
+            f = obj
+        else:
+            raise TypeError("Not file or filepath on system.")
+        for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        if type(obj) is str:
+            f.close()
+        return hash_md5.hexdigest()
