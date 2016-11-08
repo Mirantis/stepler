@@ -27,7 +27,7 @@ def test_create_server_on_baremetal_node(keypair,
                                          nova_floating_ip,
                                          network_steps,
                                          server_steps):
-    """**Scenario:** Launch server on baremetal node
+    """**Scenario:** Launch server on baremetal node.
 
     **Setup:**
 
@@ -40,6 +40,7 @@ def test_create_server_on_baremetal_node(keypair,
 
     #. Create and boot server
     #. Check that server status is active
+    #. Attach floating ip to server
     #. Check ssh access to server
 
     **Teardown:**

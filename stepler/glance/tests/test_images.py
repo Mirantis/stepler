@@ -27,18 +27,18 @@ def test_share_glance_image(ubuntu_image, project, glance_steps):
 
     **Setup:**
 
-        #. Create ubuntu image
-        #. Create project
+    #. Create ubuntu image
+    #. Create project
 
     **Steps:**
 
-        #. Bind another project to image
-        #. Unbind project from image
+    #. Bind another project to image
+    #. Unbind project from image
 
     **Teardown:**
 
-        #. Delete project
-        #. Delete ubuntu image
+    #. Delete project
+    #. Delete ubuntu image
     """
     glance_steps.bind_project(ubuntu_image, project)
     glance_steps.unbind_project(ubuntu_image, project)
