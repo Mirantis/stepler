@@ -255,3 +255,56 @@ def test_stack_show_events_list(empty_stack, cli_heat_steps):
     #. Delete stack
     """
     cli_heat_steps.get_stack_events_list(empty_stack.to_dict())
+
+
+@pytest.mark.idempotent_id('050e4422-5aa4-44da-b5f4-b69bde929037')
+def test_stack_suspend(empty_stack, cli_heat_steps, stack_steps):
+    """**Scenario:** Show stack events_list with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Call ``heat action-suspend``
+    #. Check that stack's `stack_status` is SUSPEND_COMPLETE
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    cli_heat_steps.suspend_stack(empty_stack.to_dict())
+    stack_steps.check_stack_status(
+        empty_stack,
+        config.STACK_STATUS_SUSPEND_COMPLETE,
+        timeout=config.STACK_SUSPEND_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('8c897eeb-0916-4390-b2f5-a61551c35852')
+def test_stack_resume(empty_stack,
+                      cli_heat_steps,
+                      stack_steps,
+                      heat_action_steps):
+    """**Scenario:** Show stack events_list with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Suspend stack
+    #. Call ``heat action-resume``
+    #. Check that stack's `stack_status` is RESUME_COMPLETE
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    heat_action_steps.suspend(empty_stack, stack_steps)
+    cli_heat_steps.resume_stack(empty_stack.to_dict())
+    stack_steps.check_stack_status(
+        empty_stack,
+        config.STACK_STATUS_RESUME_COMPLETE,
+        timeout=config.STACK_RESUME_TIMEOUT)

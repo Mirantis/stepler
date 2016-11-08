@@ -1,0 +1,22 @@
+heat_template_version: '2013-05-23'
+description: 'Template which creates single instance'
+
+parameters:
+  image:
+    type: string
+  flavor: {type: string}
+  network: {type: string}
+
+resources:
+  server:
+    type: OS::Nova::Server
+    properties:
+      flavor: {get_param: flavor}
+      flavor_update_policy: REPLACE
+      image: {get_param: image}
+      name: ost1-test_heat
+      networks:
+        - network: {Ref: network}
+outputs:
+  servers:
+    value: {get_resource: server}
