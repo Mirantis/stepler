@@ -23,12 +23,38 @@ from stepler import config
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('26888f92-a5f9-4cf8-a6a6-22c766d41197')
+def test_stack_output_show(create_stack,
+                           read_heat_template,
+                           stack_steps):
+    """**Scenario:** Check stack output show has correct output.
+
+    **Steps:**
+
+    #. Read template from file
+    #. Create stack with template
+    #. Get output show
+    #. Check that attribute output_show exist
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    template = read_heat_template('random_str')
+    stack_name = next(utils.generate_ids('stack'))
+    stack = create_stack(stack_name, template)
+    output_show = stack_steps.get_stack_output_show(stack, 'random_str1')
+    stack_steps.check_output_show(output_show)
+
+
+@pytest.mark.idempotent_id('2c0122e4-c39f-4384-a144-56f656b9792c')
 def test_stack_output_list(create_stack,
                            read_heat_template,
                            stack_steps):
     """**Scenario:** Check stack output list has correct output.
 
     **Steps:**
+
     #. Read template from file
     #. Create stack with template
     #. Get output list

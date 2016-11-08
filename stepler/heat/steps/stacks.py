@@ -17,7 +17,7 @@ Heat stack steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, is_not, empty  # noqa
+from hamcrest import assert_that, equal_to, is_not, empty, only_contains  # noqa
 import waiting
 
 from stepler import base
@@ -76,7 +76,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
@@ -130,7 +130,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         stack_id = getattr(stack, 'id', stack)
@@ -170,7 +170,7 @@ class StackSteps(base.BaseSteps):
             check (bool): flag whether check step or not
 
         Raises:
-            TimeoutExpired: if check was failed
+            TimeoutExpired: if check failed
         """
         kwargs = {}
         if template is not None:
@@ -194,7 +194,7 @@ class StackSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def predicate():
             stack.get()
@@ -215,7 +215,7 @@ class StackSteps(base.BaseSteps):
             list: stack output list
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed
         """
         output_list = self._client.output_list(stack.id)
 
@@ -232,7 +232,43 @@ class StackSteps(base.BaseSteps):
             output_list (dict): stack output list
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed
         """
         assert_that(output_list['outputs'][0].keys(),
                     equal_to([u'output_key', u'description']))
+
+    @steps_checker.step
+    def get_stack_output_show(self, stack, output_key, check=True):
+        """Step to get output show.
+
+        Args:
+            stack (obj): stack object
+            output_key (str): the name of a stack output
+            check (bool): flag whether check step or not
+
+        Returns:
+            dict: stack output
+
+        Raises:
+            AssertionError: if check failed
+        """
+        output_show = self._client.output_show(stack_id=stack.id,
+                                               output_key=output_key)
+        if check:
+            assert_that(output_show, is_not(empty()))
+            assert_that(output_show['output']['output_key'],
+                        equal_to(output_key))
+
+        return output_show
+
+    @steps_checker.step
+    def check_output_show(self, output_show):
+        """Step to check stack attributes.
+
+        Args:
+            output_show (dict): stack output
+
+        Raises:
+            AssertionError: if check failed
+        """
+        assert_that(output_show['output'], only_contains(is_not(empty())))
