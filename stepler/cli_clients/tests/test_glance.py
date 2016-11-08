@@ -18,6 +18,7 @@ Glance CLI tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
@@ -179,3 +180,34 @@ def test_delete_image_member(cirros_image,
     cli_glance_steps.delete_image_member(cirros_image, project,
                                          api_version=api_version)
     glance_steps.check_image_bind_status(cirros_image, project, bound=False)
+
+
+@pytest.mark.idempotent_id('9290e363-0607-45be-be0a-1e832da59b94',
+                           file_option=True)
+@pytest.mark.idempotent_id('a4172d9b-38a1-4c18-9cc2-e9eddd514c7d',
+                           file_option=False)
+@pytest.mark.parametrize('file_option',
+                         [True, False],
+                         ids=['via file option', 'via stdout redirecting'])
+def test_download_glance_image(cirros_image,
+                               cli_download_image,
+                               glance_steps,
+                               file_option):
+    """**Scenario:** Download glance image via CLI.
+
+    **Setup:**
+
+    #. Upload cirros image
+
+    **Steps:**
+
+    #. Download cirros image via CLI
+    #. Compare md5 of uploaded cirros image and downloaded cirros image
+
+    **Teardown:**
+
+    #. Delete cirros image
+    """
+    downloaded_image_path = cli_download_image(cirros_image, file_option)
+    glance_steps.check_image_hash(utils.get_file_path(config.CIRROS_QCOW2_URL),
+                                  downloaded_image_path)
