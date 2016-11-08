@@ -17,13 +17,15 @@ Glance CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, contains_string, is_not, is_in  # noqa
+from hamcrest import assert_that, contains_string, is_in, is_not, equal_to  # noqa
+
 from six import moves
 
 from stepler.cli_clients.steps import base
 from stepler import config
 from stepler.third_party import output_parser
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
 
 class CliGlanceSteps(base.BaseCliSteps):
@@ -186,3 +188,25 @@ class CliGlanceSteps(base.BaseCliSteps):
         cmd = 'glance member-delete {0} {1}'.format(image.id, project.id)
         self.execute_command(
             cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+
+    @steps_checker.step
+    def download_image(self, image, file_option=True, check=True):
+        """Step to download image.
+
+        Args:
+            image_object(file): image file
+            file_path(str): path of image file
+            file_option(bool) : flag for selecting of command
+            check (bool): flag whether to check result or not
+
+        """
+        file_path = '/tmp/' + next(utils.generate_ids())
+
+        cmd = 'glance image-download'
+        if file_option:
+            cmd += ' --file {0} {1}'.format(file_path, image.id)
+        else:
+            cmd += ' {0} > {1}'.format(image.id, file_path)
+        self.execute_command(cmd, check=check)
+
+        return file_path
