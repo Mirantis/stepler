@@ -60,7 +60,7 @@ def create_volumes(volumes_steps_ui):
             volumes.append(volume)
             _volumes.append(volume)
 
-        tab_volumes = volumes_steps_ui.tab_volumes()
+        tab_volumes = volumes_steps_ui._tab_volumes()
         for volume_name in volume_names:
             tab_volumes.table_volumes.row(
                 name=volume_name).wait_for_status('Available')

@@ -610,7 +610,7 @@ class VolumesSteps(BaseSteps):
     @steps_checker.step
     def check_volumes_pagination(self, volume_names):
         """Step to check volumes pagination."""
-        tab_volumes = self.tab_volumes()
+        tab_volumes = self._tab_volumes()
         tab_volumes.table_volumes.row(
             name=volume_names[2]).wait_for_presence(30)
 
