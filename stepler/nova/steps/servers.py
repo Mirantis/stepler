@@ -184,7 +184,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         if by_name:
             def predicate():
@@ -215,7 +215,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
@@ -254,7 +254,7 @@ class ServerSteps(base.BaseSteps):
             ssh.SshClient: instantiated ssh client to server ip
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         if not ip:
             if not proxy_cmd:  # server is available via floating IP directly
@@ -285,7 +285,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def predicate():
             try:
@@ -338,7 +338,7 @@ class ServerSteps(base.BaseSteps):
             None: IF check=False
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         ips_before_attach = self.get_ips(server, 'fixed').keys()
         server.add_fixed_ip(network_id)
@@ -366,7 +366,7 @@ class ServerSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         if not fixed_ip:
             fixed_ip = self.get_ips(server, 'fixed').keys()[0]
@@ -443,7 +443,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait for success ping
 
         Raises:
-            TimeoutExpired: if check was False after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
@@ -467,7 +467,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait for result of check
 
         Raises:
-            TimeoutExpired: if check was False after timeout
+            TimeoutExpired: if check failed after timeout
         """
         floating_ip = self.get_ips(server, 'floating').keys()[0]
         self.check_ping_for_ip(floating_ip, timeout=timeout)
@@ -494,7 +494,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait for result of check
 
         Raises:
-            TimeoutExpired: if check was False after timeout
+            TimeoutExpired: if check failed after timeout
         """
         ping_plan = self._get_ping_plan(servers)
         for server, ips in ping_plan.items():
@@ -518,7 +518,7 @@ class ServerSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was False after timeout
+            TimeoutExpired: if check failed after timeout
         """
         server.get()
         current_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
@@ -544,7 +544,7 @@ class ServerSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was False after timeout
+            TimeoutExpired: if check failed after timeout
         """
         old_hosts = {}
         for server in servers:
@@ -572,7 +572,7 @@ class ServerSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was False after timeout
+            TimeoutExpired: if check failed after timeout
         """
         for server in servers:
             server.confirm_resize()
@@ -600,7 +600,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
@@ -711,7 +711,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
 
         def predicate():
@@ -777,7 +777,6 @@ class ServerSteps(base.BaseSteps):
         Args:
             server (object): nova instance
             check (bool): flag whether to check step or not
-
         """
         server.restore()
 
@@ -800,7 +799,7 @@ class ServerSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         matcher = has_entries(custom_meta)
         if not present:
@@ -811,6 +810,111 @@ class ServerSteps(base.BaseSteps):
             return expect_that(server.metadata, matcher)
 
         waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def pause_server(self, server, check=True):
+        """Step to pause nova server.
+
+        Args:
+            server (object): nova instance to pause
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+
+        Returns:
+            server (object): server in Paused state
+        """
+        server.pause()
+
+        if check:
+            self.check_server_status(
+                server, config.STATUS_PAUSED,
+                transit_statuses=[config.STATUS_ACTIVE,
+                                  config.STATUS_PAUSING],
+                timeout=config.SERVER_UPDATE_TIMEOUT)
+        return server
+
+    @steps_checker.step
+    def rebuild_server(self, server, image, check=True):
+        """Step to rebuild nova server.
+
+        Args:
+            server (object): nova instance to rebuild
+            image (object): image used for instance rebuild
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        server.rebuild(image)
+
+        if check:
+            self.check_server_status(
+                server, config.STATUS_ACTIVE,
+                transit_statuses=[config.STATUS_REBUILDING,
+                                  config.STATUS_REBUILD_SPAWNING],
+                timeout=config.SERVER_UPDATE_TIMEOUT)
+
+    @steps_checker.step
+    def rescue_server(self, server, check=True):
+        """Step to rescue nova server.
+
+        Args:
+            server (object): nova instance to rescue
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+
+        Returns:
+            server (object): server in Rescue state
+        """
+        server.rescue()
+
+        if check:
+            self.check_server_status(
+                server, config.STATUS_RESCUE,
+                transit_statuses=[config.STATUS_ACTIVE,
+                                  config.STATUS_RESCUING],
+                timeout=config.SERVER_UPDATE_TIMEOUT)
+        return server
+
+    @steps_checker.step
+    def check_server_not_rebuilt_in_paused_state(self, server, image):
+        """Step to check server will not be rebuilt in Paused state.
+
+        Args:
+            server (obj): server to be set to Paused state
+            image (object): image used for instance rebuild
+
+        Raises:
+            AssertionError: if check failed
+        """
+        exception_message = ("Cannot 'rebuild' instance " + server.id +
+                             " while it is in vm_state paused")
+        assert_that(
+            calling(self.rebuild_server).with_args(
+                self.pause_server(server), image, check=False),
+            raises(nova_exceptions.Conflict, exception_message))
+
+    @steps_checker.step
+    def check_server_not_rebuilt_in_rescue_state(self, server, image):
+        """Step to check server will not be rebuilt in Rescue state.
+
+        Args:
+            server (obj): server to be set to Rescue state
+            image (object): image used for instance rebuild
+
+        Raises:
+            AssertionError: if check failed
+        """
+        exception_message = ("Cannot 'rebuild' instance " + server.id +
+                             " while it is in vm_state rescue")
+        assert_that(
+            calling(self.rebuild_server).with_args(
+                self.rescue_server(server), image, check=False),
+            raises(nova_exceptions.Conflict, exception_message))
 
     def _soft_delete_servers(self, servers, check):
         # it doesn't delete server really, just hides server and marks it as

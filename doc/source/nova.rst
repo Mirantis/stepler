@@ -26,3 +26,6 @@ Nova tests
 
 .. automodule:: stepler.nova.tests.test_metadata
    :members:
+
+.. automodule:: stepler.nova.tests.test_rebuild_negative
+   :members:

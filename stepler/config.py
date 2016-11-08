@@ -85,6 +85,12 @@ STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_SUCCESS = 'success'
 STATUS_VERIFY_RESIZE = 'verify_resize'
 STATUS_UPLOADING = 'uploading'
+STATUS_REBUILDING = 'rebuilding'
+STATUS_REBUILD_SPAWNING = 'rebuild_spawning'
+STATUS_PAUSED = 'paused'
+STATUS_PAUSING = 'pausing'
+STATUS_RESCUE = 'rescue'
+STATUS_RESCUING = 'rescuing'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
