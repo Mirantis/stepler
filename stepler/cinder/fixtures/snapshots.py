@@ -27,6 +27,7 @@ __all__ = [
     'create_snapshot',
     'create_snapshots',
     'volume_snapshot',
+    'snapshots_cleanup',
 ]
 
 
@@ -105,3 +106,23 @@ def volume_snapshot(volume, create_snapshot):
     """
     snapshot_name = next(utils.generate_ids('snapshot'))
     return create_snapshot(volume, snapshot_name)
+
+
+@pytest.yield_fixture
+def snapshots_cleanup(snapshot_steps):
+    """Function fixture to clear created snapshots after test.
+
+    It stores ids of all snapshots before test and remove all new
+    snapshots after test.
+
+    Args:
+        snapshot_steps (object): instantiated volume snapshot steps
+    """
+    preserve_snapshot_ids = set(
+        snapshot.id for snapshot in snapshot_steps.get_snapshots(check=False))
+
+    yield
+
+    for snapshot in snapshot_steps.get_snapshots(check=False):
+        if snapshot.id not in preserve_snapshot_ids:
+            snapshot_steps.delete_snapshots([snapshot])

@@ -119,7 +119,8 @@ class SnapshotSteps(base.BaseSteps):
         """Step to check snapshots status.
 
         Args:
-            snapshots (list): cinder volume snapshots to check status
+            snapshots (list): list of cinder volume snapshots objects
+                or its ids to check status
             status (str): snapshot status name to check
             timeout (int): seconds to wait a result of check
 
@@ -127,6 +128,8 @@ class SnapshotSteps(base.BaseSteps):
             TimeoutExpired: if check was failed after timeout
         """
         for snapshot in snapshots:
+            if not hasattr(snapshot, 'id'):
+                snapshot = self.get_snapshot_by_id(snapshot)
 
             def predicate():
                 snapshot.get()
@@ -153,3 +156,25 @@ class SnapshotSteps(base.BaseSteps):
         if check:
             assert_that(snapshots, is_not(empty()))
         return snapshots
+
+    @steps_checker.step
+    def get_snapshot_by_id(self, snapshot_id, check=True):
+        """Step to get snapshot object from cinder using snapshot id.
+
+        Args:
+            snapshot_id (str): volume snapshot id
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: volume snapshot
+
+        Raises:
+            exceptions.NotFound: if snapshot with snapshot_id doesn't exist
+            AssertionError: if check failed
+        """
+        snapshot = self._client.get(snapshot_id)
+
+        if check:
+            assert_that(snapshot.id, equal_to(snapshot_id))
+
+        return snapshot

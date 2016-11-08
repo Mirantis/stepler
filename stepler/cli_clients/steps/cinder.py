@@ -56,4 +56,35 @@ class CliCinderSteps(base.BaseCliSteps):
 
         backup_table = output_parser.table(stdout)
         backup = {key: value for key, value in backup_table['values']}
+
         return backup
+
+    @steps_checker.step
+    def create_volume_snapshot(self, volume, name=None, description=None,
+                               check=True):
+        """Step to create volume snapshot using CLI.
+
+        Args:
+            volume (object): cinder volume
+            name (str): name of snapshot to create
+            description (str): description
+            check (bool): flag whether to check step or not
+
+        Returns:
+            dict: cinder volume snapshot
+        """
+        cmd = 'cinder snapshot-create'
+        if name:
+            cmd += ' --name ' + name
+        if description:
+            cmd += ' --description ' + description
+
+        cmd += ' ' + volume.id
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.SNAPSHOT_AVAILABLE_TIMEOUT, check=check)
+
+        snapshot_table = output_parser.table(stdout)
+        snapshot = {key: value for key, value in snapshot_table['values']}
+
+        return snapshot

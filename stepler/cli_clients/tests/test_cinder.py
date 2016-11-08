@@ -72,3 +72,60 @@ def test_volume_backup_non_unicode_description(volume, backups_cleanup,
     backup_steps.check_backup_status(backup_dict['id'],
                                      config.STATUS_AVAILABLE,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('107affa2-fc40-4c7e-8b11-cc1940bd7259')
+def test_volume_snapshot_non_unicode_name(volume, snapshots_cleanup,
+                                          cli_cinder_steps, snapshot_steps):
+    """**Scenario:** Create snapshot with non unicode symbols name.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume snapshot with non unicode symbols name using CLI
+    #. Check that snapshot status is available
+
+    **Teardown:**
+
+    #. Delete volume snapshot
+    #. Delete volume
+    """
+    snapshot_dict = cli_cinder_steps.create_volume_snapshot(volume,
+                                                            name=u"シンダー")
+    snapshot_steps.check_snapshots_status(
+        [snapshot_dict['id']],
+        config.STATUS_AVAILABLE,
+        timeout=config.SNAPSHOT_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('107affa2-fc40-4c7e-8b11-cc1940bd7259')
+def test_volume_snapshot_non_unicode_description(volume,
+                                                 snapshots_cleanup,
+                                                 cli_cinder_steps,
+                                                 snapshot_steps):
+    """**Scenario:** Create snapshot with non unicode symbols description.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume snapshot with non unicode symbols description
+        using CLI
+    #. Check that snapshot status is available
+
+    **Teardown:**
+
+    #. Delete volume snapshot
+    #. Delete volume
+    """
+    snapshot_dict = cli_cinder_steps.create_volume_snapshot(
+        volume, description=u"シンダー")
+    snapshot_steps.check_snapshots_status(
+        [snapshot_dict['id']],
+        config.STATUS_AVAILABLE,
+        timeout=config.SNAPSHOT_AVAILABLE_TIMEOUT)
