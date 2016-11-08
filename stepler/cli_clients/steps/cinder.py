@@ -57,3 +57,28 @@ class CliCinderSteps(base.BaseCliSteps):
         backup_table = output_parser.table(stdout)
         backup = {key: value for key, value in backup_table['values']}
         return backup
+
+    @steps_checker.step
+    def create_volume_transfer(self, volume, name=None, check=True):
+        """Step to create volume transfer using CLI.
+
+        Args:
+            volume (object): cinder volume
+            name (str): name of transfer to create
+            check (bool): flag whether to check step or not
+
+        Returns:
+            dict: cinder volume transfer
+        """
+        cmd = 'cinder transfer-create'
+        if name:
+            cmd += ' --name ' + name
+
+        cmd += ' ' + volume.id
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.TRANSFER_CREATE_TIMEOUT, check=check)
+
+        transfer_table = output_parser.table(stdout)
+        transfer = {key: value for key, value in transfer_table['values']}
+        return transfer
