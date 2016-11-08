@@ -152,12 +152,17 @@ SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
 HEAT_VERSION = 1
 HEAT_IN_PROGRESS_STATUS = 'in_progress'
 HEAT_COMPLETE_STATUS = 'complete'
+STACK_STATUS_CREATE_COMPLETE = 'create_complete'
 STACK_STATUS_UPDATE_COMPLETE = 'update_complete'
+STACK_STATUS_SUSPEND_COMPLETE = 'suspend_complete'
+STACK_STATUS_RESUME_COMPLETE = 'resume_complete'
 STACK_CREATION_TIMEOUT = 5 * 60
 STACK_DELETING_TIMEOUT = 3 * 60
 STACK_UPDATING_TIMEOUT = 5 * 60
 STACK_PREVIEW_TIMEOUT = 60
 STACK_SHOW_TIMEOUT = 60
+STACK_SUSPEND_TIMEOUT = 60
+STACK_RESUME_TIMEOUT = 60
 RESOURCE_NAME = 'stepler_cirros_image'
 HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-templates/master/hot/resource_group/resource_group.yaml'  # noqa
 
