@@ -43,7 +43,7 @@ class KeypairSteps(BaseSteps):
             keypair (object): keypair
 
         Raises:
-            TimeoutExpired: if check was triggered to an error after timeout
+            TimeoutExpired: if check failed after timeout
         """
         keypair = self._client.create(keypair_name, public_key=public_key)
 
@@ -63,7 +63,7 @@ class KeypairSteps(BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was triggered to an error after timeout
+            TimeoutExpired: if check failed after timeout
         """
         self._client.delete(keypair.id)
 
@@ -80,7 +80,7 @@ class KeypairSteps(BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was triggered to an error after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def predicate():
             try:

@@ -115,7 +115,7 @@ class VolumeSteps(base.BaseSteps):
             list: cinder volumes
 
         Raises:
-            TimeoutExpired|AssertionError: if check was failed
+            TimeoutExpired|AssertionError: if check failed after timeout
         """
         names = names or utils.generate_ids()
         image_id = None if image is None else image.id
@@ -195,7 +195,7 @@ class VolumeSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def _check_volume_presence():
             try:
@@ -219,7 +219,7 @@ class VolumeSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired|AssertionError: if check failed after timeout
         """
         def predicate():
             volume.get()
@@ -242,7 +242,7 @@ class VolumeSteps(base.BaseSteps):
             list: volume list
 
         Raises:
-            AssertionError: if check was failed
+            TimeoutExpired|AssertionError: if check failed after timeout
         """
         volumes = self._client.volumes.list()
 
@@ -275,7 +275,7 @@ class VolumeSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def predicate():
             volume.get()
@@ -306,7 +306,7 @@ class VolumeSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def predicate():
             volume.get()
@@ -324,7 +324,7 @@ class VolumeSteps(base.BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         server_ids = server_ids or []
 
@@ -343,7 +343,7 @@ class VolumeSteps(base.BaseSteps):
             size (int): volume size
 
         Raises:
-            AssertionError: if check was failed after timeout
+            AssertionError: if check failed
         """
         error_message = 'New size for extend must be greater than current size'
         assert_that(
@@ -358,7 +358,7 @@ class VolumeSteps(base.BaseSteps):
             size (int): volume size
 
         Raises:
-            AssertionError: if check was triggered to an error
+            AssertionError: if check failed
         """
         error_message = 'must be an integer.+greater than (?:0|zero)'
         assert_that(
@@ -374,7 +374,7 @@ class VolumeSteps(base.BaseSteps):
             size (int): volume size in gb
 
         Raises:
-            AssertionError: if check was False
+            AssertionError: if check failed
         """
         error_message = (
             "Requested volume or snapshot exceeds allowed gigabytes quota.")
@@ -392,7 +392,7 @@ class VolumeSteps(base.BaseSteps):
             size (int): volume size
 
         Raises:
-            AssertionError: if check was failed after timeout
+            AssertionError: if check failed
         """
         error_message = (
             "VolumeSizeExceedsAvailableQuota: "
@@ -457,7 +457,7 @@ class VolumeSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         self._client.volumes.extend(volume, size)
 
@@ -477,7 +477,7 @@ class VolumeSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed
         """
         update_data = {}
         if new_name:
@@ -501,7 +501,7 @@ class VolumeSteps(base.BaseSteps):
             new_description(str): new description for volume
 
         Raises:
-            BadRequest: if check was failed
+            BadRequest: if check failed
         """
         assert_that(
             calling(
@@ -561,7 +561,7 @@ class VolumeSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            AssertionError: if check was failed
+            AssertionError: if check failed
         """
         if bootable:
             bootable = 'true'
@@ -584,7 +584,7 @@ class VolumeSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
 
         Raises:
-            TimeoutExpired: if check was failed after timeout
+            TimeoutExpired: if check failed after timeout
         """
         self._client.volumes.retype(volume, volume_type.name, policy)
 
@@ -600,7 +600,7 @@ class VolumeSteps(base.BaseSteps):
             volume (object): cinder volume
 
         Raises:
-            BadRequest: if check was failed
+            BadRequest: if check failed
         """
         assert_that(calling(self.delete_volumes).with_args([volume],
                                                            check=False),
