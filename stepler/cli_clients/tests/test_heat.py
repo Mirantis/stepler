@@ -307,3 +307,27 @@ def test_stack_resume(empty_stack,
         empty_stack,
         config.STACK_STATUS_RESUME_COMPLETE,
         timeout=config.STACK_RESUME_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('13031bc9-19e5-4ab9-8478-968f8fc925f2')
+def test_stack_check_resources(empty_stack, cli_heat_steps, stack_steps):
+    """**Scenario:** Check stack resources with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Call ``heat action-check``
+    #. Check that stack's `stack_status` is CHECK_COMPLETE
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    cli_heat_steps.stack_resources_check(empty_stack)
+    stack_steps.check_stack_status(
+        empty_stack,
+        config.STACK_STATUS_CHECK_COMPLETE,
+        timeout=config.STACK_CHECK_TIMEOUT)
