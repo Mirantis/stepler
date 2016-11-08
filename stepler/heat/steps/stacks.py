@@ -159,18 +159,25 @@ class StackSteps(base.BaseSteps):
         return stack.output_show(output_key)['output']
 
     @steps_checker.step
-    def update_stack(self, stack, template, check=True):
+    def update_stack(self, stack, template=None, parameters=None, check=True):
         """Step to update stack.
 
         Args:
             stack (obj): stack object
-            template (str): stack template on which to perform the operation
+            template (str, optional): stack template on which to perform the
+                operation. Default is None.
+            parameters (dict, optional): stack parameters to update
             check (bool): flag whether check step or not
 
         Raises:
             TimeoutExpired: if check was failed
         """
-        self._client.update(stack_id=stack.id, template=template)
+        kwargs = {}
+        if template is not None:
+            kwargs['template'] = template
+        if parameters is not None:
+            kwargs['parameters'] = parameters
+        self._client.update(stack_id=stack.id, **kwargs)
 
         if check:
             self.check_stack_status(stack,
