@@ -19,6 +19,8 @@ Glance steps v2
 
 from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa
 from glanceclient import exc
+from stepler.third_party.utils import get_md5sum
+
 
 from stepler import config
 from stepler.third_party.matchers import expect_that
@@ -290,7 +292,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
     @steps_checker.step
     def check_that_image_id_is_changed(self, image_name, image_id):
-        """Step to check that after updating heat stack image_id was changed
+        """Step to check that after updating heat stack image_id was changed.
 
         Args:
             image_name (str): image name that was replaced
@@ -301,3 +303,18 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         image_id_changed = self.get_image(name=image_name)['id']
         assert_that(image_id_changed, is_not(image_id))
+
+    @steps_checker.step
+    def check_image_hash(self, image, downloaded_path):
+        """Step to check hash sum of image and downloaded image.
+
+        Args:
+            image (object): glance image
+            downloaded_path (str): path to downloaded image
+
+        Raises:
+            AssertionError: if hash sum is mismatched
+        """
+        md5_sum_first = get_md5sum(image)
+        md5_sum_second = get_md5sum(downloaded_path)
+        assert_that(md5_sum_first, equal_to(md5_sum_second))
