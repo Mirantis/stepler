@@ -1,4 +1,5 @@
 """
+<<<<<<< HEAD
 ----------------
 Glance CLI tests
 ----------------
@@ -15,6 +16,9 @@ Glance CLI tests
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+from hamcrest import assert_that
+from hamcrest import equal_to
 
 import pytest
 
@@ -39,3 +43,33 @@ def test_upload_image_without_properties(cli_glance_steps, api_version):
     """
     cli_glance_steps.check_negative_image_create_without_properties(
         filename=next(utils.generate_ids()), api_version=api_version)
+
+
+@pytest.mark.idempotent_id('9290e363-0607-45be-be0a-1e832da59b94')
+@pytest.mark.usefixtures('images_cleanup')
+@pytest.mark.usefixtures('delete_file')
+def test_generate_glance_image(glance_steps, cli_glance_steps, cirros_image):
+    """**Scenario:** Validate Glance image (upload/download, compare md5-sum
+    of image).
+
+    **Steps:**
+
+    #. download image to disk via wget or generate a payload image
+    #. create image
+    #. download image
+    #. compare md5sum
+
+    **Teardown:**
+
+    #. Delete image
+    #. Delete file
+    """
+    md5sum_cirros = cli_glance_steps.md5(cirros_image)
+    uploaded_image_id = glance_steps.create_images_from_file(
+        cirros_image, image_names=None, disk_format='qcow2',
+        container_format='bare', check=True)
+    downloaded_image_name = cli_glance_steps.create_file()
+    cli_glance_steps.download_image(uploaded_image_id[0], downloaded_image_name)
+    md5sum_cirros_downloaded = cli_glance_steps.md5(downloaded_image_name)
+    assert_that(md5sum_cirros, equal_to(md5sum_cirros_downloaded))
+
