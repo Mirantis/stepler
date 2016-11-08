@@ -239,7 +239,10 @@ def _get_ast_attrs(node):
     Some attributes are skipped because they are not related to function body
     and just create side effect.
     """
-    skip_list = ('args', 'decorator_list')
+    skip_list = ()
+    if isinstance(node, ast.FunctionDef):
+        skip_list = ('args', 'decorator_list')
+
     attrs = []
     for name in dir(node):
         if not name.startswith('_') and name not in skip_list:
@@ -281,8 +284,7 @@ def _get_ast_nodes(node, node_type, bucket=None):
             if isinstance(elem, ast.AST):
                 if isinstance(elem, node_type):
                     bucket.append(elem)
-                else:
-                    bucket = _get_ast_nodes(elem, node_type, bucket)
+                bucket = _get_ast_nodes(elem, node_type, bucket)
     return bucket
 
 
