@@ -266,6 +266,42 @@ class VolumeSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
+    def check_volume_name(self, volume, name, timeout=0):
+        """Step to check volume name.
+
+        Args:
+            volume (object): cinder volume
+            name (str): expected volume name
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def predicate():
+            volume.get()
+            return expect_that(volume.name, equal_to(name))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_volume_description(self, volume, description, timeout=0):
+        """Step to check volume description.
+
+        Args:
+            volume (object): cinder volume
+            description (int): expected volume description
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was failed after timeout
+        """
+        def predicate():
+            volume.get()
+            return expect_that(volume.description, equal_to(description))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def check_volume_size(self, volume, size, timeout=0):
         """Step to check volume size.
 

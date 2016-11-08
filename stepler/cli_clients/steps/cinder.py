@@ -27,6 +27,29 @@ class CliCinderSteps(base.BaseCliSteps):
     """CLI cinder client steps."""
 
     @steps_checker.step
+    def edit_volume(self, volume, name=None, description=None, check=True):
+        """Step to edit volume using CLI.
+
+        Args:
+            volume (object): cinder volume to edit
+            name (str): new volume name
+            description (str): new volume description
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'cinder rename'
+
+        if description:
+            cmd += ' --description ' + description
+
+        cmd += ' ' + volume.id
+        if name:
+            cmd += ' ' + name
+
+        self.execute_command(cmd,
+                             timeout=config.VOLUME_AVAILABLE_TIMEOUT,
+                             check=check)
+
+    @steps_checker.step
     def create_volume_backup(self, volume, name=None, description=None,
                              container=None, check=True):
         """Step to create volume backup using CLI.
