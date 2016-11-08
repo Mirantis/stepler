@@ -18,6 +18,7 @@ Utils
 # limitations under the License.
 
 import email.utils
+import hashlib
 import inspect
 import logging
 import os
@@ -367,3 +368,20 @@ class AttrDict(attrdict.AttrDict):
         """Update fields from buffer on exit from context manager."""
         updated_fields = self._updated_fields.pop(id(self))
         self.update(updated_fields)
+
+
+def get_md5sum(file_type):
+    """Getting checksum.
+
+    Args:
+        file(obj|str): path or file-like object
+
+    Returns:
+        str: string with checksum
+    """
+    hash_md5 = hashlib.md5()
+    f = open(file_type)
+    for chunk in iter(lambda: f.read(4096), b""):
+        hash_md5.update(chunk)
+    f.close()
+    return hash_md5.hexdigest()
