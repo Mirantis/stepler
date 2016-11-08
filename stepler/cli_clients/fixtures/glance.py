@@ -23,6 +23,7 @@ from stepler.cli_clients import steps
 
 __all__ = [
     'cli_glance_steps',
+    'cli_download_image',
 ]
 
 
@@ -34,3 +35,24 @@ def cli_glance_steps(remote_executor):
         CliGlanceSteps: instantiated glance CLI steps
     """
     return steps.CliGlanceSteps(remote_executor)
+
+
+@pytest.fixture
+def cli_download_image(nova_api_node,
+                       os_faults_steps,
+                       cli_glance_steps):
+    """Callable function fixture to download image via CLI.
+
+    Args:
+        nova_api_node (obj): controller (node with nova-api service)
+        os_faults_steps (OsFaultsSteps): instantiated os-faults steps
+        cli_glance_steps (CliGlanceSteps): instantiated glance CLI steps
+
+    Returns:
+        function: function to download image via CLI.
+    """
+    def _download_image(image, file_option=True):
+        remote_path = cli_glance_steps.download_image(image, file_option)
+        return os_faults_steps.download_file(nova_api_node, remote_path)
+
+    return _download_image
