@@ -86,6 +86,49 @@ class GlanceStepsV2(BaseGlanceSteps):
         return images
 
     @steps_checker.step
+    def create_images_from_file(self,
+                                image_file,
+                                image_names=None,
+                                disk_format='qcow2',
+                                container_format='bare',
+                                check=True):
+        """Step to create images.
+
+        Args:
+            image_path (file): file contain the payload with image
+            image_names (list): names of created images, if not specified
+                one image name will be generated
+            disk_format (str): format of image disk
+            container_format (str): format of image container
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: glance images
+        """
+        image_names = image_names or utils.generate_ids()
+
+        images = []
+
+        for image_name in image_names:
+
+            image = self._client.images.create(
+                name=image_name,
+                disk_format=disk_format,
+                container_format=container_format)
+
+            self._client.images.upload(image.id, image_file)
+            images.append(image)
+
+        if check:
+            for image in images:
+                self.check_image_status(
+                    image,
+                    config.STATUS_ACTIVE,
+                    timeout=config.IMAGE_AVAILABLE_TIMEOUT)
+
+        return images
+
+    @steps_checker.step
     def delete_images(self, images, check=True):
         """Step to delete images.
 
