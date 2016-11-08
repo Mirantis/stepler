@@ -1,6 +1,6 @@
 """
 ---------------
- Volume fixtures
+Volume fixtures
 ---------------
 """
 
@@ -126,7 +126,6 @@ def upload_volume_to_image(volume_steps, glance_steps):
     After the test it destroys all created objects.
 
     Args:
-        create_volume (function): function to create volume with options
         volume_steps (VolumeSteps): instantiated volume steps
         glance_steps (GlanceSteps): instantiated glance steps
 
@@ -158,7 +157,7 @@ def volume(volume_steps):
     """Function fixture to create volume with default options before test.
 
     Args:
-        create_volume (function): function to create single volume with options
+        volume_steps (VolumeSteps): instantiated volume steps
 
     Returns:
         object: cinder volume
