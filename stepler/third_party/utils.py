@@ -18,6 +18,7 @@ Utils
 # limitations under the License.
 
 import email.utils
+import hashlib
 import inspect
 import logging
 import os
@@ -29,6 +30,8 @@ import attrdict
 import requests
 import six
 
+from hamcrest import assert_that
+from hamcrest import equal_to
 from stepler import config
 from stepler.third_party import context
 
@@ -309,6 +312,7 @@ def slugify(string):
     return ''.join(s if s.isalnum() else '_' for s in string).strip('_')
 
 
+
 def get_size(value, to):
     """Get size of value with specified type."""
     _map = {'TB': 1024 * 1024 * 1024 * 1024,
@@ -353,3 +357,27 @@ class AttrDict(attrdict.AttrDict):
         """Update fields from buffer on exit from context manager."""
         updated_fields = self._updated_fields.pop(id(self))
         self.update(updated_fields)
+
+
+def get_md5sum(obj):
+    """Getting checksum
+
+    Args:
+        file_(obj|str): path or file-like object
+    """
+
+    assert_that((type(obj) is str) or hasattr(obj, 'read'), True)
+    if type(obj) is str:
+        assert_that(os.path.exists(str), equal_to(True))
+    hash_md5 = hashlib.md5()
+    if type(obj) is str:
+        f = open(obj, "rb")
+    elif hasattr(obj, 'read'):
+        f = obj
+    else:
+        raise TypeError("Not file or filepath on system.")
+    for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    if type(obj) is str:
+        f.close()
+    return hash_md5.hexdigest()
