@@ -18,6 +18,7 @@ Glance CLI client fixtures
 # limitations under the License.
 
 import pytest
+import os
 
 from stepler.cli_clients import steps
 
@@ -34,3 +35,13 @@ def cli_glance_steps(remote_executor):
         CliGlanceSteps: instantiated glance CLI steps
     """
     return steps.CliGlanceSteps(remote_executor)
+
+
+@pytest.fixture
+def delete_file(name_file):
+    """Step to delete file.
+    """
+    if os.path.exists(name_file) is True:
+        os.remove(name_file)
+    else:
+        return False
