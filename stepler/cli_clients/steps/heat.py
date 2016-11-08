@@ -75,10 +75,10 @@ class CliHeatSteps(base.BaseCliSteps):
         """Step to delete stack.
 
         Args:
-            stack (dict): stack to delete
+            stack (obj): stack to delete
             check (bool): flag whether to check step or not
         """
-        cmd = 'heat stack-delete {}'.format(stack['id'])
+        cmd = 'heat stack-delete {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_DELETING_TIMEOUT, check=check)
 
@@ -120,13 +120,13 @@ class CliHeatSteps(base.BaseCliSteps):
         """Step to show stack.
 
         Args:
-            stack (dict): heat stack to show
+            stack (obj): heat stack to show
             check (bool): flag whether to check step or not
 
         Raises:
             AssertionError: if output contains wrong stack's name or id
         """
-        cmd = 'heat stack-show {}'.format(stack['id'])
+        cmd = 'heat stack-show {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_SHOW_TIMEOUT, check=check)
 
@@ -136,20 +136,20 @@ class CliHeatSteps(base.BaseCliSteps):
             assert_that(
                 show_result,
                 has_entries(
-                    stack_name=stack['stack_name'], id=stack['id']))
+                    stack_name=stack.stack_name, id=stack.id))
 
     @steps_checker.step
     def update_stack(self, stack, template_file, parameters=None, check=True):
         """Step to update stack.
 
         Args:
-            stack (dict): heat stack to update
+            stack (obj): heat stack to update
             template_file (str): path to stack template file
             parameters (list, optional): additional parameters to template
             check (bool): flag whether to check step or not
         """
         parameters = parameters or {}
-        cmd = 'heat stack-update {id} -f {file}'.format(id=stack['id'],
+        cmd = 'heat stack-update {id} -f {file}'.format(id=stack.id,
                                                         file=template_file)
         for key, value in parameters.items():
             cmd += ' --parameters {}={}'.format(key, value)
@@ -161,10 +161,10 @@ class CliHeatSteps(base.BaseCliSteps):
         """Step to cancel stack update.
 
         Args:
-            stack (dict): heat stack to cancel update
+            stack (obj): heat stack to cancel update
             check (bool): flag whether to check step or not
         """
-        cmd = 'heat stack-cancel-update {}'.format(stack['id'])
+        cmd = 'heat stack-cancel-update {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
 
@@ -187,3 +187,27 @@ class CliHeatSteps(base.BaseCliSteps):
         if check:
             assert_that(events, is_not(empty()))
         return events
+
+    @steps_checker.step
+    def suspend_stack(self, stack, check=True):
+        """Step to suspend stack.
+
+        Args:
+            stack (obj): heat stack
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat action-suspend {}'.format(stack.id)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_SUSPEND_TIMEOUT, check=check)
+
+    @steps_checker.step
+    def resume_stack(self, stack, check=True):
+        """Step to resume stack.
+
+        Args:
+            stack (obj): heat stack
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat action-resume {}'.format(stack.id)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_RESUME_TIMEOUT, check=check)

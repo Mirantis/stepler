@@ -22,9 +22,7 @@ import waiting
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
-from stepler.third_party import waiter
 
 __all__ = ['StackSteps']
 
@@ -49,13 +47,13 @@ class StackSteps(base.BaseSteps):
         """
         parameters = parameters or {}
         files = files or {}
-        response = self._client.create(
+        response = self._client.stacks.create(
             stack_name=name,
             template=template,
             files=files,
             parameters=parameters)
 
-        stack = self._client.get(response['stack']['id'])
+        stack = self._client.stacks.get(response['stack']['id'])
         if check:
             self.check_status(
                 stack,
@@ -65,9 +63,18 @@ class StackSteps(base.BaseSteps):
 
         return stack
 
+    def _get_property(self, stack, property_name, transit_values=(),
+                      timeout=0):
+        def predicate():
+            stack.get()
+            return getattr(stack, property_name).lower() not in transit_values
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+        return getattr(stack, property_name)
+
     @steps_checker.step
     def check_status(self, stack, status, transit_statuses=(), timeout=0):
-        """Verify step to check stack status.
+        """Verify step to check stack's `status` property.
 
         Args:
             stack (obj): heat stack to check its status
@@ -79,12 +86,34 @@ class StackSteps(base.BaseSteps):
             TimeoutExpired|AssertionError: if check failed after timeout
         """
 
-        def predicate():
-            stack.get()
-            return stack.status.lower() not in transit_statuses
+        value = self._get_property(
+            stack,
+            'status',
+            transit_values=transit_statuses,
+            timeout=timeout)
+        assert_that(value.lower(), equal_to(status.lower()))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
-        assert_that(stack.status.lower(), equal_to(status.lower()))
+    @steps_checker.step
+    def check_stack_status(self, stack, status, transit_statuses=(),
+                           timeout=0):
+        """Verify step to check stack's `stack_status` property.
+
+        Args:
+            stack (obj): heat stack to check its status
+            status (str): expected stack status
+            transit_statuses (iterable): allowed transit statuses
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was failed after timeout
+        """
+
+        value = self._get_property(
+            stack,
+            'stack_status',
+            transit_values=transit_statuses,
+            timeout=timeout)
+        assert_that(value.lower(), equal_to(status.lower()))
 
     @steps_checker.step
     def get_stacks(self, check=True):
@@ -96,7 +125,7 @@ class StackSteps(base.BaseSteps):
         Returns:
             list: stacks list
         """
-        stacks = list(self._client.list())
+        stacks = list(self._client.stacks.list())
 
         if check:
             assert_that(stacks, is_not(empty()))
@@ -137,7 +166,7 @@ class StackSteps(base.BaseSteps):
 
         def predicate():
             try:
-                next(self._client.list(id=stack_id))
+                next(self._client.stacks.list(id=stack_id))
                 return present
             except StopIteration:
                 return not present
@@ -177,31 +206,12 @@ class StackSteps(base.BaseSteps):
             kwargs['template'] = template
         if parameters is not None:
             kwargs['parameters'] = parameters
-        self._client.update(stack_id=stack.id, **kwargs)
+        self._client.stacks.update(stack_id=stack.id, **kwargs)
 
         if check:
             self.check_stack_status(stack,
                                     config.STACK_STATUS_UPDATE_COMPLETE,
                                     timeout=config.STACK_UPDATING_TIMEOUT)
-
-    @steps_checker.step
-    def check_stack_status(self, stack, status, timeout=0):
-        """Step to check stack status.
-
-        Args:
-            stack (obj): stack object
-            status (str): stack status name to check
-            timeout (int): seconds to wait a result of check
-
-        Raises:
-            TimeoutExpired: if check failed after timeout
-        """
-        def predicate():
-            stack.get()
-            return expect_that(stack.stack_status.lower(),
-                               equal_to(status.lower()))
-
-        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_stack_output_list(self, stack, check=True):
@@ -217,7 +227,7 @@ class StackSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        output_list = self._client.output_list(stack.id)
+        output_list = self._client.stacks.output_list(stack.id)
 
         if check:
             assert_that(output_list, is_not(empty()))
@@ -236,3 +246,23 @@ class StackSteps(base.BaseSteps):
         """
         assert_that(output_list['outputs'][0].keys(),
                     equal_to([u'output_key', u'description']))
+
+    @steps_checker.step
+    def suspend(self, stack, check=True):
+        """Step to suspend stack.
+
+        Args:
+            stack (obj): heat stack
+            check (bool, optional): flag whether check step or not
+
+        Raises:
+            AssertionError: if stack's stack_status is not
+                config.STACK_STATUS_SUSPEND_COMPLETE after suspending
+        """
+        self._client.actions.suspend(stack.id)
+        if check:
+            self.check_stack_status(
+                stack,
+                config.STACK_STATUS_SUSPEND_COMPLETE,
+                transit_statuses=[config.STACK_STATUS_CREATE_COMPLETE],
+                timeout=config.STACK_SUSPEND_TIMEOUT)
