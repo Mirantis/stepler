@@ -41,7 +41,7 @@ def stack_steps(heat_client):
     Returns:
         stepler.heat.steps.StackSteps: initialized heat stack steps
     """
-    return steps.StackSteps(heat_client.stacks)
+    return steps.StackSteps(heat_client)
 
 
 @pytest.yield_fixture
