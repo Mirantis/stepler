@@ -179,3 +179,28 @@ def test_delete_image_member(cirros_image,
     cli_glance_steps.delete_image_member(cirros_image, project,
                                          api_version=api_version)
     glance_steps.check_image_bind_status(cirros_image, project, bound=False)
+
+
+@pytest.mark.idempotent_id('9290e363-0607-45be-be0a-1e832da59b94')
+@pytest.mark.usefixtures('delete_file')
+def test_upload_glance_image(cirros_image, glance_steps, cli_glance_steps):
+    """**Scenario:** Upload image to glance via CLI.
+
+    **Setup:**
+
+    #. Create image
+
+    **Steps:**
+
+    #. Download image to disk via wget or generate a payload image
+    #. Upload image
+    #. Compare md5sum
+
+    **Teardown:**
+
+    #. Delete image
+    #. Delete file
+    """
+    with utils.generate_file_context(size=0) as cirros_image_file:
+            cli_glance_steps.download_image(cirros_image, cirros_image_file)
+            glance_steps.check_image_hash(cirros_image, cirros_image_file)
