@@ -23,6 +23,54 @@ import pytest
 from stepler import config
 
 
+@pytest.mark.idempotent_id('79d599b8-4b3c-4fc9-84bd-4b6353816d4d')
+def test_change_volume_name_non_unicode(volume,
+                                        cli_cinder_steps,
+                                        volume_steps):
+    """**Scenario:** Change volume name with non unicode symbols.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Change volume name with non unicode symbols using CLI
+    #. Check that volume name was changed
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    new_volume_name = u"シンダー"
+    cli_cinder_steps.edit_volume(volume, name=new_volume_name)
+    volume_steps.check_volume_name(volume, new_volume_name)
+
+
+@pytest.mark.idempotent_id('a57d8603-b46a-45df-bd75-ef4b6caa433e')
+def test_change_volume_description_non_unicode(volume,
+                                               cli_cinder_steps,
+                                               volume_steps):
+    """**Scenario:** Change volume description with non unicode symbols.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Change volume description with non unicode symbols using CLI
+    #. Check that volume description was changed
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    new_volume_description = u"シンダー"
+    cli_cinder_steps.edit_volume(volume, description=new_volume_description)
+    volume_steps.check_volume_description(volume, new_volume_description)
+
+
 @pytest.mark.idempotent_id('225d218b-6562-431d-bdf9-0ec0221c0f86')
 def test_volume_backup_non_unicode_name(volume, backups_cleanup,
                                         cli_cinder_steps, backup_steps):
