@@ -17,8 +17,12 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
+import os
+
 from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa
 from glanceclient import exc
+
 
 from stepler import config
 from stepler.third_party.matchers import expect_that
@@ -94,6 +98,49 @@ class GlanceStepsV2(BaseGlanceSteps):
                         image,
                         config.STATUS_QUEUED,
                         timeout=config.IMAGE_QUEUED_TIMEOUT)
+
+        return images
+
+    @steps_checker.step
+    def create_images_from_file(self,
+                                image_file,
+                                image_names=None,
+                                disk_format='qcow2',
+                                container_format='bare',
+                                check=True):
+        """Step to create images.
+
+        Args:
+            image_path (file): file contain the payload with image
+            image_names (list): names of created images, if not specified
+                one image name will be generated
+            disk_format (str): format of image disk
+            container_format (str): format of image container
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: glance images
+        """
+        image_names = image_names or utils.generate_ids()
+
+        images = []
+
+        for image_name in image_names:
+
+            image = self._client.images.create(
+                name=image_name,
+                disk_format=disk_format,
+                container_format=container_format)
+
+            self._client.images.upload(image.id, image_file)
+            images.append(image)
+
+        if check:
+            for image in images:
+                self.check_image_status(
+                    image,
+                    config.STATUS_ACTIVE,
+                    timeout=config.IMAGE_AVAILABLE_TIMEOUT)
 
         return images
 
@@ -301,3 +348,40 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         image_id_changed = self.get_image(name=image_name)['id']
         assert_that(image_id_changed, is_not(image_id))
+
+    @steps_checker.step
+    def check_md5sum(self, obj, check=True):
+        """Step for getting checksum
+
+        Args:
+            obj: path or file for getting checksum
+        """
+        if check:
+            assert_that((type(obj) is str) or hasattr(obj, 'read'), True)
+            if type(obj) is str:
+                assert_that(os.path.exists(str), equal_to(True))
+        hash_md5 = hashlib.md5()
+        if type(obj) is str:
+            f = open(obj, "rb")
+        elif hasattr(obj, 'read'):
+            f = obj
+        else:
+            raise TypeError("Not file or filepath on system.")
+        for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        if type(obj) is str:
+            f.close()
+        return hash_md5.hexdigest()
+
+    @steps_checker.step
+    def check_image_hash(self, obj1, obj2, check=True):
+        """Step to comparing checksum files.
+
+        Args:
+            obj1: path or file for comparing
+            obj2: path or file for comparing
+        """
+        md5_sum_first = self.check_md5sum(obj1)
+        md5_sum_second = self.check_md5sum(obj2)
+        if check:
+            assert_that(md5_sum_first, equal_to(md5_sum_second))
