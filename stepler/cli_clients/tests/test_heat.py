@@ -235,3 +235,23 @@ def test_cancel_stack_update(cirros_image,
         config.HEAT_COMPLETE_STATUS,
         transit_statuses=[config.HEAT_IN_PROGRESS_STATUS],
         timeout=config.STACK_UPDATING_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('37599b0d-0c2f-483e-98b9-4e6756476c51')
+def test_stack_show_events_list(empty_stack, cli_heat_steps):
+    """**Scenario:** Show stack events_list with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Call ``heat event-list``
+    #. Check that result table is not empty
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    cli_heat_steps.get_stack_events_list(empty_stack.to_dict())

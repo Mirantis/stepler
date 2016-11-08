@@ -116,3 +116,17 @@ def _table_columns(first_table_row):
         positions.append((start, end))
         start = end + 1
     return positions
+
+
+# TODO(gdyuldin): refactor after coping from tempest
+def listing(output_lines):
+    """Return list of dicts with basic item info parsed from cli output."""
+
+    items = []
+    table_ = table(output_lines)
+    for row in table_['values']:
+        item = {}
+        for col_idx, col_key in enumerate(table_['headers']):
+            item[col_key] = row[col_idx]
+        items.append(item)
+    return items
