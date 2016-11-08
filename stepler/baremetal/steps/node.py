@@ -86,7 +86,7 @@ class IronicNodeSteps(BaseSteps):
 
         Args:
             node (object): ironic node to check presence status
-            must_present (bool): flag whether node should present or no
+            must_present (bool): flag whether node should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

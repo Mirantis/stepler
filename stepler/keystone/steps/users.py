@@ -202,7 +202,7 @@ class UserSteps(BaseSteps):
 
         Args:
             user (object): user
-            must_present (bool): flag whether user should present or no
+            must_present (bool): flag whether user should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -267,7 +267,7 @@ class UserSteps(BaseSteps):
                 in the group
             group (str or keystoneclient.v3.groups.Group): the group to check
                 the user in
-            must_present (bool): flag whether group should present or no
+            must_present (bool): flag whether group should present or not
             timeout (int): seconds to wait a result of check
 
         Returns:

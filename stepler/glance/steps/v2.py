@@ -187,7 +187,7 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         Args:
             image (object): glance image to check presence status
-            presented (bool): flag whether image should present or no
+            presented (bool): flag whether image should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

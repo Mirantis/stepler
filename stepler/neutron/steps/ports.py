@@ -62,7 +62,7 @@ class PortSteps(base.BaseSteps):
 
         Args:
             port (dict): neutron port to check presence status
-            present (bool): flag whether port should present or no
+            present (bool): flag whether port should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

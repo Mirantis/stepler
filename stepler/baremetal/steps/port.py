@@ -72,7 +72,7 @@ class IronicPortSteps(base.BaseSteps):
 
         Args:
             port (object): ironic port
-            present (bool): flag whether port should present or no
+            present (bool): flag whether port should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

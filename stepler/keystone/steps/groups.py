@@ -90,7 +90,7 @@ class GroupSteps(base.BaseSteps):
 
         Args:
             group (object): the keystone group to be checked
-            must_present (bool): flag whether group should present or no
+            must_present (bool): flag whether group should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:

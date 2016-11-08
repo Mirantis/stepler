@@ -220,7 +220,7 @@ def is_iterable(obj):
     """Define whether object is iterable or no (skip strings).
 
     Args:
-        obj (object): obj to define whether it's iterable or no
+        obj (object): obj to define whether it's iterable or not
 
     Returns:
         bool: True or False
