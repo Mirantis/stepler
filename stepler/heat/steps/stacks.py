@@ -236,3 +236,40 @@ class StackSteps(base.BaseSteps):
         """
         assert_that(output_list['outputs'][0].keys(),
                     equal_to([u'output_key', u'description']))
+
+    @steps_checker.step
+    def get_stack_output_show(self, stack, output_key, check=True):
+        """Step to get output show.
+
+        Args:
+            stack (obj): stack object
+            output_key (str): the name of a stack output
+            check (bool): flag whether check step or not
+
+        Returns:
+            dict: stack output
+
+        Raises:
+            AssertionError: if check was failed
+        """
+        output_show = self._client.output_show(stack_id=stack.id,
+                                               output_key=output_key)
+        if check:
+            assert_that(output_show, is_not(empty()))
+            assert_that(stack, is_not(empty()))
+            assert_that(output_key, is_not(empty()))
+
+        return output_show
+
+    @steps_checker.step
+    def check_output_show(self, output_show):
+        """Step to check stack attributes.
+
+        Args:
+            output_show (dict): stack output
+
+        Raises:
+            AssertionError: if check was failed
+        """
+        for attribute in output_show['output']:
+            assert_that(attribute, is_not(empty()))
