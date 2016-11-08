@@ -18,6 +18,7 @@ Utils
 # limitations under the License.
 
 import email.utils
+import hashlib
 import inspect
 import logging
 import os
@@ -28,6 +29,7 @@ import uuid
 import attrdict
 import requests
 import six
+
 
 from stepler.third_party import context
 
@@ -367,3 +369,18 @@ class AttrDict(attrdict.AttrDict):
         """Update fields from buffer on exit from context manager."""
         updated_fields = self._updated_fields.pop(id(self))
         self.update(updated_fields)
+
+
+def get_md5sum(file):
+    """Getting checksum
+
+    Args:
+        file_(obj|str): path or file-like object
+    """
+
+    hash_md5 = hashlib.md5()
+    f = open(file)
+    for chunk in iter(lambda: f.read(4096), b""):
+        hash_md5.update(chunk)
+    f.close()
+    return hash_md5.hexdigest()
