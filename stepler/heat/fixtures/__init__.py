@@ -17,6 +17,7 @@ Heat fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .actions import *  # noqa
 from .heat import *  # noqa
 from .stacks import *  # noqa
 from .templates import *  # noqa

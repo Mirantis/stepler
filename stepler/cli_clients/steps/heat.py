@@ -184,3 +184,27 @@ class CliHeatSteps(base.BaseCliSteps):
         if check:
             assert_that(events, is_not(empty()))
         return events
+
+    @steps_checker.step
+    def suspend_stack(self, stack, check=True):
+        """Step to suspend stack.
+
+        Args:
+            stack (dict): heat stack to suspend
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat action-suspend {}'.format(stack['id'])
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_SUSPEND_TIMEOUT, check=check)
+
+    @steps_checker.step
+    def resume_stack(self, stack, check=True):
+        """Step to resume stack.
+
+        Args:
+            stack (dict): heat stack to resume
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat action-resume {}'.format(stack['id'])
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_RESUME_TIMEOUT, check=check)
