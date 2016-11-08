@@ -17,7 +17,7 @@ Heat CLI steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_, empty, has_entries  # noqa H301
+from hamcrest import assert_that, is_, is_not, empty, has_entries  # noqa H301
 
 from stepler.cli_clients.steps import base
 from stepler import config
@@ -167,3 +167,23 @@ class CliHeatSteps(base.BaseCliSteps):
         cmd = 'heat stack-cancel-update {}'.format(stack['id'])
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
+
+    @steps_checker.step
+    def get_stack_events_list(self, stack, check=True):
+        """Step to show stack's events list.
+
+        Args:
+            stack (obj): heat stack to show events list
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: list of stack events
+        """
+        cmd = 'heat event-list {}'.format(stack.id)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
+
+        events = output_parser.listing(stdout)
+        if check:
+            assert_that(events, is_not(empty()))
+        return events
