@@ -17,7 +17,7 @@ Heat stack steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, is_not, empty  # noqa
+from hamcrest import assert_that, equal_to, is_not, empty, only_contains  # noqa
 import waiting
 
 from stepler import base
@@ -214,6 +214,25 @@ class StackSteps(base.BaseSteps):
                                     timeout=config.STACK_UPDATING_TIMEOUT)
 
     @steps_checker.step
+    def check_stack_status(self, stack, status, timeout=0):
+        """Step to check stack status.
+
+        Args:
+            stack (obj): stack object
+            status (str): stack status name to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def predicate():
+            stack.get()
+            return expect_that(stack.stack_status.lower(),
+                               equal_to(status.lower()))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def get_stack_output_list(self, stack, check=True):
         """Step to get output list.
 
@@ -266,3 +285,39 @@ class StackSteps(base.BaseSteps):
                 config.STACK_STATUS_SUSPEND_COMPLETE,
                 transit_statuses=[config.STACK_STATUS_CREATE_COMPLETE],
                 timeout=config.STACK_SUSPEND_TIMEOUT)
+
+    @steps_checker.step
+    def get_stack_output_show(self, stack, output_key, check=True):
+        """Step to get output show.
+
+        Args:
+            stack (obj): stack object
+            output_key (str): the name of a stack output
+            check (bool): flag whether check step or not
+
+        Returns:
+            dict: stack output
+
+        Raises:
+            AssertionError: if check failed
+        """
+        output_show = self._client.stacks.output_show(stack_id=stack.id,
+                                                      output_key=output_key)
+        if check:
+            assert_that(output_show, is_not(empty()))
+            assert_that(output_show['output']['output_key'],
+                        equal_to(output_key))
+
+        return output_show
+
+    @steps_checker.step
+    def check_output_show(self, output_show):
+        """Step to check stack attributes.
+
+        Args:
+            output_show (dict): stack output
+
+        Raises:
+            AssertionError: if check failed
+        """
+        assert_that(output_show['output'], only_contains(is_not(empty())))
