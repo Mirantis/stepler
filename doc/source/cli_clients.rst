@@ -12,6 +12,9 @@ Openstack CLI
 Openstack CLI tests
 -------------------
 
+.. automodule:: stepler.cli_clients.tests.test_cinder
+   :members:
+
 .. automodule:: stepler.cli_clients.tests.test_nova
    :members:
 

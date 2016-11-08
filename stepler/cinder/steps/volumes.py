@@ -266,6 +266,24 @@ class VolumeSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
+    def check_volume_properties(self, volume, timeout=0, **properties):
+        """Step to check volume's properties.
+
+        Args:
+            volume (object): cinder volume
+            timeout (int): seconds to wait a result of check
+            properties: volume's properties to check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def predicate():
+            volume.get()
+            return expect_that(volume, has_properties(properties))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def check_volume_size(self, volume, size, timeout=0):
         """Step to check volume size.
 
