@@ -22,9 +22,7 @@ import waiting
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
-from stepler.third_party import waiter
 
 __all__ = ['StackSteps']
 
@@ -65,9 +63,18 @@ class StackSteps(base.BaseSteps):
 
         return stack
 
+    def _get_property(self, stack, property_name, transit_values=(),
+                      timeout=0):
+        def predicate():
+            stack.get()
+            return getattr(stack, property_name).lower() not in transit_values
+
+        waiting.wait(predicate, timeout_seconds=timeout)
+        return getattr(stack, property_name)
+
     @steps_checker.step
     def check_status(self, stack, status, transit_statuses=(), timeout=0):
-        """Verify step to check stack status.
+        """Verify step to check stack's `status` property.
 
         Args:
             stack (obj): heat stack to check its status
@@ -79,12 +86,34 @@ class StackSteps(base.BaseSteps):
             TimeoutExpired: if check was failed after timeout
         """
 
-        def predicate():
-            stack.get()
-            return stack.status.lower() not in transit_statuses
+        value = self._get_property(
+            stack,
+            'status',
+            transit_values=transit_statuses,
+            timeout=timeout)
+        assert_that(value.lower(), equal_to(status.lower()))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
-        assert_that(stack.status.lower(), equal_to(status.lower()))
+    @steps_checker.step
+    def check_stack_status(self, stack, status, transit_statuses=(),
+                           timeout=0):
+        """Verify step to check stack's `stack_status` property.
+
+        Args:
+            stack (obj): heat stack to check its status
+            status (str): expected stack status
+            transit_statuses (iterable): allowed transit statuses
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check was failed after timeout
+        """
+
+        value = self._get_property(
+            stack,
+            'stack_status',
+            transit_values=transit_statuses,
+            timeout=timeout)
+        assert_that(value.lower(), equal_to(status.lower()))
 
     @steps_checker.step
     def get_stacks(self, check=True):
@@ -185,25 +214,6 @@ class StackSteps(base.BaseSteps):
                                     timeout=config.STACK_UPDATING_TIMEOUT)
 
     @steps_checker.step
-    def check_stack_status(self, stack, status, timeout=0):
-        """Step to check stack status.
-
-        Args:
-            stack (obj): stack object
-            status (str): stack status name to check
-            timeout (int): seconds to wait a result of check
-
-        Raises:
-            TimeoutExpired: if check was failed after timeout
-        """
-        def predicate():
-            stack.get()
-            return expect_that(stack.stack_status.lower(),
-                               equal_to(status.lower()))
-
-        waiter.wait(predicate, timeout_seconds=timeout)
-
-    @steps_checker.step
     def get_stack_output_list(self, stack, check=True):
         """Step to get output list.
 
@@ -236,3 +246,22 @@ class StackSteps(base.BaseSteps):
         """
         assert_that(output_list['outputs'][0].keys(),
                     equal_to([u'output_key', u'description']))
+
+    @steps_checker.step
+    def suspend(self, stack, check=True):
+        """Step to suspend stack.
+
+        Args:
+            stack (obj): stack to suspend
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        stack.suspend()
+
+        if check:
+            self.check_stack_status(
+                stack,
+                status=config.STACK_STATUS_SUSPEND_COMPLETE,
+                timeout=config.STACK_SUSPEND_TIMEOUT)
