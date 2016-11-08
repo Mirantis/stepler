@@ -25,6 +25,7 @@ __all__ = [
     'transfer_steps',
     'create_volume_transfer',
     'get_transfer_steps',
+    'transfers_cleanup',
 ]
 
 
@@ -81,3 +82,19 @@ def create_volume_transfer(transfer_steps):
 
     for volume_transfer in volume_transfers:
         transfer_steps.delete_volume_transfer(volume_transfer)
+
+
+@pytest.yield_fixture
+def transfers_cleanup(transfer_steps):
+    """Function fixture to clear created transfers after test.
+
+    Args:
+        transfer_steps (object): instantiated volume transfer steps
+    """
+    preserve_transfers_ids = set(
+        transfer.id for transfer in transfer_steps.get_transfers(check=False))
+    yield
+
+    for transfer in transfer_steps.get_transfers(check=False):
+        if transfer.id not in preserve_transfers_ids:
+            transfer_steps.delete_volume_transfer(transfer)
