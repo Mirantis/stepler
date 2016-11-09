@@ -31,6 +31,7 @@ class BaseCliSteps(base.BaseSteps):
                         use_openrc=True,
                         environ=None,
                         timeout=0,
+                        should_pass=True,
                         check=True):
         """Execute client command in shell.
 
@@ -40,6 +41,7 @@ class BaseCliSteps(base.BaseSteps):
             environ (dict): shell environment variables to set before `cmd`
                 executing. By default it not set any variable
             timeout (int): seconds to wait command executed
+            should_pass (bool): flag whether 'OK' status expected or not
             check (bool): flag whether to check result or not
 
         Returns:
@@ -62,8 +64,11 @@ class BaseCliSteps(base.BaseSteps):
                    source_cmd=source_cmd,
                    env=environ_string,
                    command=cmd)
-        result = self._client(cmd=cmd.encode('utf-8'))
+        result = self._client(cmd=cmd.encode('utf-8'), should_pass=should_pass)
         payload = result[0].payload
         if check:
-            assert_that(payload['rc'], is_(0))
+            if should_pass:
+                assert_that(payload['rc'], is_(0))
+            else:
+                assert_that(payload['rc'], is_(1))
         return payload['rc'], payload['stdout'], payload['stderr']
