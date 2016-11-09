@@ -87,7 +87,7 @@ def test_stack_delete(empty_stack, cli_heat_steps, stack_steps):
     #. Delete stack
     #. Check that stack is not exist
     """
-    cli_heat_steps.delete_stack({'id': empty_stack.id})
+    cli_heat_steps.delete_stack(empty_stack)
     stack_steps.check_presence(
         empty_stack, present=False, timeout=config.STACK_DELETING_TIMEOUT)
 
@@ -129,7 +129,7 @@ def test_stack_show(empty_stack, cli_heat_steps):
 
     #. Delete stack
     """
-    cli_heat_steps.show_stack(empty_stack.to_dict())
+    cli_heat_steps.show_stack(empty_stack)
 
 
 @pytest.mark.idempotent_id('9db8f266-106d-436f-ac8b-05ee58fab674')
@@ -154,7 +154,7 @@ def test_stack_update(empty_heat_template_path,
     """
     parameters = {'param': 'string2'}
     cli_heat_steps.update_stack(
-        empty_stack.to_dict(),
+        empty_stack,
         template_file=empty_heat_template_path,
         parameters=parameters)
     stack_steps.check_status(
@@ -229,7 +229,7 @@ def test_cancel_stack_update(cirros_image,
                              check=False
                              )
 
-    cli_heat_steps.cancel_stack_update(stack.to_dict())
+    cli_heat_steps.cancel_stack_update(stack)
     stack_steps.check_status(
         stack,
         config.HEAT_COMPLETE_STATUS,
@@ -255,3 +255,55 @@ def test_stack_show_events_list(empty_stack, cli_heat_steps):
     #. Delete stack
     """
     cli_heat_steps.get_stack_events_list(empty_stack)
+
+
+@pytest.mark.idempotent_id('050e4422-5aa4-44da-b5f4-b69bde929037')
+def test_stack_suspend(empty_stack, cli_heat_steps, stack_steps):
+    """**Scenario:** Suspend stack with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Call ``heat action-suspend``
+    #. Check that stack's `stack_status` is SUSPEND_COMPLETE
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    cli_heat_steps.suspend_stack(empty_stack)
+    stack_steps.check_stack_status(
+        empty_stack,
+        config.STACK_STATUS_SUSPEND_COMPLETE,
+        timeout=config.STACK_SUSPEND_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('8c897eeb-0916-4390-b2f5-a61551c35852')
+def test_stack_resume(empty_stack,
+                      cli_heat_steps,
+                      stack_steps):
+    """**Scenario:** Resume stack with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Suspend stack
+    #. Call ``heat action-resume``
+    #. Check that stack's `stack_status` is RESUME_COMPLETE
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    stack_steps.suspend(empty_stack)
+    cli_heat_steps.resume_stack(empty_stack)
+    stack_steps.check_stack_status(
+        empty_stack,
+        config.STACK_STATUS_RESUME_COMPLETE,
+        timeout=config.STACK_RESUME_TIMEOUT)
