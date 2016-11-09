@@ -172,6 +172,7 @@ STACK_SHOW_TIMEOUT = 60
 STACK_SUSPEND_TIMEOUT = 60
 STACK_RESUME_TIMEOUT = 60
 STACK_CHECK_TIMEOUT = 3 * 60
+STACK_CLI_TIMEOUT = 60
 RESOURCE_NAME = 'stepler_cirros_image'
 HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-templates/master/hot/resource_group/resource_group.yaml'  # noqa
 

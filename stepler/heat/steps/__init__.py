@@ -21,8 +21,10 @@ Contains steps specific for heat.
 
 from .stacks import *  # noqa
 from .resource import *  # noqa
+from .resource_types import *  # noqa
 
 __all__ = [
     'StackSteps',
     'ResourceSteps',
+    'ResourceTypeSteps',
 ]
