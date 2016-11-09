@@ -31,6 +31,7 @@ def log(func):
     @functools.wraps(func)
     def wrapper(*args, **kwgs):
         # reject self from log args if it is present
+        __tracebackhide__ = True
         log_args = _reject_self_from_args(func, args)
 
         func_name = getattr(func, '__name__', str(func))
