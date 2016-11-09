@@ -14,6 +14,3 @@ Glance tests
 
 .. automodule:: stepler.glance.tests.test_images
    :members:
-
-.. automodule:: stepler.glance.tests.test_create_image_from_volume
-    :members:
