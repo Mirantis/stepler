@@ -325,11 +325,15 @@ class OsFaultsSteps(base.BaseSteps):
             cmd (str): bash command to execute
             check (bool): flag whether check step or not
 
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution 
+                failed in case of check=True
+
         Returns:
             list: AnsibleExecutionRecord(s)
         """
         task = {'shell': cmd}
-        result = nodes.run_task(task)
+        result = nodes.run_task(task, raise_on_error=check)
 
         if check:
             assert_that(
