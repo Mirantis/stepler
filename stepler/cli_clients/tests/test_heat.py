@@ -257,6 +257,28 @@ def test_stack_show_events_list(empty_stack, cli_heat_steps):
     cli_heat_steps.get_stack_events_list(empty_stack)
 
 
+@pytest.mark.idempotent_id('40c2aa1c-4664-4ae0-88bf-f166a985f2d2')
+def test_stack_show_event(empty_stack, cli_heat_steps, stack_steps):
+    """**Scenario:** Show stack's event details with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Call ``heat event-show``
+    #. Check that result table is not empty
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    event = stack_steps.get_events_list(empty_stack)[0]
+    cli_heat_steps.get_stack_event(empty_stack, empty_stack.stack_name,
+                                   event.id)
+
+
 @pytest.mark.idempotent_id('050e4422-5aa4-44da-b5f4-b69bde929037')
 def test_stack_suspend(empty_stack, cli_heat_steps, stack_steps):
     """**Scenario:** Suspend stack with heat CLI.
