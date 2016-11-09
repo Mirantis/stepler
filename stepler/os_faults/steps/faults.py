@@ -329,7 +329,7 @@ class OsFaultsSteps(base.BaseSteps):
             list: AnsibleExecutionRecord(s)
         """
         task = {'shell': cmd}
-        result = nodes.run_task(task)
+        result = nodes.run_task(task, raise_on_error=check)
 
         if check:
             assert_that(
