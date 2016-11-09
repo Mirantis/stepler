@@ -63,6 +63,7 @@ __all__ = sorted([  # sort for documentation
     'empty_stack',
     'read_heat_template',
     'heat_resource_steps',
+    'heat_resource_type_steps',
     'get_template_path',
 
     'api_glance_client_v1',

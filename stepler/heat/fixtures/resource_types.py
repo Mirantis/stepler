@@ -1,7 +1,7 @@
 """
--------------
-Heat fixtures
--------------
+----------------------------
+Heat resource types fixtures
+----------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,24 +17,24 @@ Heat fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .heat import *  # noqa
-from .stacks import *  # noqa
-from .templates import *  # noqa
-from .resource import *  # noqa
-from .resource_types import *  # noqa
+import pytest
 
-__all__ = sorted([  # sort for documentation
-    'heat_client',
+from stepler.heat import steps
 
-    'stack_steps',
-    'create_stack',
-    'stacks_cleanup',
-    'empty_stack',
-
-    'read_heat_template',
-
-    'get_template_path',
-    'heat_resource_steps',
-
+__all__ = [
     'heat_resource_type_steps',
-])
+]
+
+
+@pytest.fixture
+def heat_resource_type_steps(heat_client):
+    """Function fixture to get heat resource types steps.
+
+    Args:
+        heat_client (object): initialized heat client
+
+    Returns:
+        stepler.heat.steps.ResourceTypeSteps: initialized heat resource types
+            steps
+    """
+    return steps.ResourceTypeSteps(heat_client.resource_types)
