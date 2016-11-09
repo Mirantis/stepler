@@ -62,7 +62,7 @@ class BaseCliSteps(base.BaseSteps):
                    source_cmd=source_cmd,
                    env=environ_string,
                    command=cmd)
-        result = self._client(cmd=cmd.encode('utf-8'))
+        result = self._client(cmd=cmd.encode('utf-8'), check=check)
         payload = result[0].payload
         if check:
             assert_that(payload['rc'], is_(0))
