@@ -146,7 +146,7 @@ def test_put_metadata_on_instances_on_single_compute(
     cmd_del_meta = DEL_META_CMD_TEMPLATE.format(host=host_1)
 
     host1_servers = server_steps.create_servers(
-        server_names=utils.generate_ids(count=2),
+        count=2,
         image=ubuntu_image,
         flavor=flavor,
         networks=[network],
@@ -155,7 +155,7 @@ def test_put_metadata_on_instances_on_single_compute(
         availability_zone='nova:{}'.format(host_1))
 
     host2_servers = server_steps.create_servers(
-        server_names=utils.generate_ids(count=2),
+        count=2,
         image=ubuntu_image,
         flavor=flavor,
         networks=[network],

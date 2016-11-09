@@ -75,7 +75,7 @@ def test_host_resources_info(cirros_image,
     usage_data_2 = host_steps.get_usage_data(host_2)
 
     servers_host_1 = server_steps.create_servers(
-        server_names=utils.generate_ids(count=2),
+        count=2,
         image=cirros_image,
         flavor=flavor,
         networks=[network],
@@ -97,7 +97,7 @@ def test_host_resources_info(cirros_image,
     usage_data_2 = host_steps.get_usage_data(host_2)
 
     servers_host_2 = server_steps.create_servers(
-        server_names=utils.generate_ids(count=2),
+        count=2,
         image=cirros_image,
         flavor=flavor,
         networks=[network],
@@ -165,7 +165,7 @@ def test_migrate_instances(cirros_image,
     hypervisor = hypervisor_steps.get_hypervisors()[0]
 
     servers = server_steps.create_servers(
-        server_names=utils.generate_ids(count=3),
+        count=3,
         image=cirros_image,
         flavor=flavor,
         networks=[network],
