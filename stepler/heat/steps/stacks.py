@@ -285,3 +285,22 @@ class StackSteps(base.BaseSteps):
         if check:
             assert_that(events, is_not(empty()))
         return events
+
+    @steps_checker.step
+    def get_stack_template(self, stack, check=True):
+        """Step to get stack's template.
+
+        Args:
+            stack (obj): heat stack
+            check (bool, optional): flag whether check step or not
+
+        Raises:
+            AssertionError: if stack's template is empty
+
+        Returns:
+            dict: stack's template
+        """
+        template = self._client.stacks.template(stack.id)
+        if check:
+            assert_that(template, is_not(empty()))
+        return template
