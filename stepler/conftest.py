@@ -163,9 +163,12 @@ __all__ = sorted([  # sort for documentation
     'nova_api_node',
 ])
 
-pytest_plugins = [
-    'stepler.third_party.reports_cleaner',
-    'stepler.third_party.steps_checker',
-    'stepler.third_party.destructive_dispatcher',
-    'stepler.third_party.idempotent_id',
+_plugins = [
+    'bugs_file',
+    'destructive_dispatcher',
+    'idempotent_id',
+    'reports_cleaner',
+    'steps_checker',
 ]
+
+pytest_plugins = map(lambda plugin: 'stepler.third_party.' + plugin, _plugins)
