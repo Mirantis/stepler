@@ -217,3 +217,15 @@ class CliHeatSteps(base.BaseCliSteps):
         cmd = 'heat action-resume {}'.format(stack.id)
         self.execute_command(cmd, timeout=config.STACK_RESUME_TIMEOUT,
                              check=check)
+
+    @steps_checker.step
+    def stack_resources_check(self, stack, check=True):
+        """Step to check stack resources.
+
+        Args:
+            stack (obj): heat stack
+            check (bool): flag whether to check step or not
+        """
+        cmd = 'heat action-check {}'.format(stack.id)
+        self.execute_command(cmd, timeout=config.STACK_RESUME_TIMEOUT,
+                             check=check)
