@@ -353,3 +353,16 @@ def test_stack_check_resources(empty_stack, cli_heat_steps, stack_steps):
         empty_stack,
         config.STACK_STATUS_CHECK_COMPLETE,
         timeout=config.STACK_CHECK_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('13031bc9-19e5-4ab9-8478-968f8fc925f2')
+def test_resource_type_template(cli_heat_steps, heat_resource_type_steps):
+    """**Scenario:** Show resource type template with heat CLI.
+
+    **Steps:**
+
+    #. Call ``heat resource-type-template {resource_type_name}``
+    #. Check that template to be shown in console
+    """
+    resource_types = heat_resource_type_steps.get_resource_types()
+    cli_heat_steps.get_resource_type_template(resource_types[0])

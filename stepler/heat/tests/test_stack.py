@@ -374,3 +374,23 @@ def test_stack_update_parameter_replace(create_stack,
         config.RESOURCE_NAME, image['id'])
     heat_resource_steps.check_that_resource_id_changed(
         resource_id, stack, config.RESOURCE_NAME)
+
+
+@pytest.mark.idempotent_id('f9ef547a-9934-46f7-b913-5959c03e0eac')
+def test_get_stack_template(empty_stack, stack_steps):
+    """**Scenario:** Show template of created stack.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Get template for stack
+    #. Check that template is not empty
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    stack_steps.get_stack_template(empty_stack)
