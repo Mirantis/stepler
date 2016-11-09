@@ -65,12 +65,11 @@ class SnapshotSteps(base.BaseSteps):
         return snapshots
 
     @steps_checker.step
-    def delete_snapshots(self, snapshots, must_present=True, check=True):
+    def delete_snapshots(self, snapshots, check=True):
         """Step to delete snapshots.
 
         Args:
             snapshots (list): cinder volume snapshots
-            must_present (bool): flag whether snapshot should present
             check (bool): flag whether to check step or not
 
         Raises:
@@ -104,7 +103,7 @@ class SnapshotSteps(base.BaseSteps):
         # Make a dict with desired presence values for each snapshot
         expected_presence = dict.fromkeys(snapshot_ids, must_present)
 
-        def predicate():
+        def _check_snapshots_presence():
             # Make a dict with actual presence values for each snapshot
             actual_presence = dict.fromkeys(snapshot_ids, False)
             for snapshot in self._client.list():
@@ -112,7 +111,7 @@ class SnapshotSteps(base.BaseSteps):
                     actual_presence[snapshot.id] = True
             return expect_that(actual_presence, equal_to(expected_presence))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_snapshots_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_snapshots_status(self, snapshots, status, timeout=0):
