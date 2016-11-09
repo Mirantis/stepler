@@ -266,3 +266,22 @@ class StackSteps(base.BaseSteps):
                 config.STACK_STATUS_SUSPEND_COMPLETE,
                 transit_statuses=[config.STACK_STATUS_CREATE_COMPLETE],
                 timeout=config.STACK_SUSPEND_TIMEOUT)
+
+    @steps_checker.step
+    def get_events_list(self, stack, check=True):
+        """Step to get stack's events list.
+
+        Args:
+            stack (obj): heat stack
+            check (bool, optional): flag whether check step or not
+
+        Raises:
+            AssertionError: if events list is empty
+
+        Returns:
+            list: stack's events list
+        """
+        events = list(self._client.events.list(stack.id))
+        if check:
+            assert_that(events, is_not(empty()))
+        return events

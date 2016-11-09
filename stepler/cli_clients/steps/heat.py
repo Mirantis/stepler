@@ -195,6 +195,33 @@ class CliHeatSteps(base.BaseCliSteps):
         return events
 
     @steps_checker.step
+    def get_stack_event(self, stack, resource, event, check=True):
+        """Step to get stack's events list.
+
+        Args:
+            stack (obj): heat stack
+            resource (str): name of the resource the event belongs to
+            event (str): ID of event to display details for
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if stack event is empty
+
+        Returns:
+            dict: stack event
+        """
+        cmd = 'heat event-show {stack} {resource} {event}'.format(
+            stack=stack.id, resource=resource, event=event)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
+
+        event_table = output_parser.table(stdout)
+        event = {key: value for key, value in event_table['values']}
+        if check:
+            assert_that(event, is_not(empty()))
+        return event
+
+    @steps_checker.step
     def suspend_stack(self, stack, check=True):
         """Step to suspend stack.
 
