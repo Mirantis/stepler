@@ -86,7 +86,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """Step to delete images.
 
         Args:
-            image (object): glance image
+            images (object): glance images
             check (bool): flag whether to check step or not
         """
         for image in images:
@@ -187,20 +187,20 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         Args:
             image (object): glance image to check presence status
-            presented (bool): flag whether image should present or not
+            present (bool): flag whether image should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
+        def _check_image_presence():
             try:
                 self._client.images.get(image.id)
                 return present
             except Exception:
                 return not present
 
-        wait(predicate, timeout_seconds=timeout)
+        wait(_check_image_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_image_status(self, image, status, timeout=0):
@@ -214,11 +214,11 @@ class GlanceStepsV2(BaseGlanceSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
+        def _check_image_status():
             image.update(self._client.images.get(image.id))
             return image.status.lower() == status.lower()
 
-        wait(predicate, timeout_seconds=timeout)
+        wait(_check_image_status, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_image_bind_status(self, image, project, binded=True, timeout=0):
