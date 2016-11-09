@@ -317,22 +317,25 @@ class OsFaultsSteps(base.BaseSteps):
         return backup_path
 
     @steps_checker.step
-    def execute_cmd(self, nodes, cmd, check=True):
+    def execute_cmd(self, nodes, cmd, should_pass=True, check=True):
         """Execute provided bash command on nodes.
 
         Args:
             nodes (obj): nodes to backup file on them
             cmd (str): bash command to execute
+            should_pass (bool): flag whether 'OK' status expected or not
             check (bool): flag whether check step or not
 
         Returns:
             list: AnsibleExecutionRecord(s)
         """
         task = {'shell': cmd}
-        result = nodes.run_task(task)
+        result = nodes.run_task(task, raise_on_error=should_pass)
 
         if check:
             assert_that(
-                result, only_contains(has_properties(status=config.STATUS_OK)))
+                result, only_contains(has_properties(
+                    status=config.STATUS_OK if should_pass
+                    else config.STATUS_FAILED)))
 
         return result
