@@ -30,9 +30,10 @@ class NetworkManager(base.BaseNeutronManager):
         Returns:
             dict: created network
         """
-        return super(NetworkManager, self).create(name=name,
-                                                  admin_state_up=True,
-                                                  tenant_id=project_id)
+        kwargs = dict(name=name, admin_state_up=True)
+        if project_id:
+            kwargs['tenant_id'] = project_id
+        return super(NetworkManager, self).create(**kwargs)
 
     def delete(self, network_id):
         """Delete network."""
