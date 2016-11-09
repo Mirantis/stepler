@@ -17,8 +17,11 @@ Nova CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, equal_to  # noqa
+
 from stepler.cli_clients.steps import base
 from stepler import config
+from stepler.third_party import output_parser
 from stepler.third_party import steps_checker
 
 
@@ -42,3 +45,33 @@ class CliNovaSteps(base.BaseCliSteps):
         result = self.execute_command(
             cmd, timeout=config.SERVER_LIST_TIMEOUT, check=check)
         return result
+
+    @steps_checker.step
+    def live_evacuate(self, source_host, target_host, servers, check=True):
+        """Step to execute host-evacuate-live.
+
+        This step is executed using CLI because there is no API for it.
+
+        Args:
+            source_host (str): source host
+            target_host (str): target host
+            servers (list): list of server objects
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        cmd = ('nova host-evacuate-live --target-host {0} --block-migrate {1}'.
+               format(target_host, source_host))
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.LIVE_EVACUATE_CLI_TIMEOUT, check=check)
+
+        if check:
+            evacuation_table = output_parser.table(stdout)
+            ids = []
+            for id, accepted, err_message in evacuation_table['values']:
+                ids.append(id)
+                assert_that(accepted, equal_to('True'))
+                assert_that(err_message, equal_to(''))
+            server_ids = [server.id for server in servers]
+            assert_that(sorted(ids), equal_to(sorted(server_ids)))

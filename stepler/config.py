@@ -177,6 +177,9 @@ HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-tem
 
 # CLI clients
 SERVER_LIST_TIMEOUT = 60
+MIGRATION_START_TIMEOUT = 15
+LIVE_EVACUATE_CLI_TIMEOUT = 60
+LIVE_EVACUATE_TIMEOUT = 5 * 60
 
 # For DevStack cmd should looks like `source devstack/openrc admin admin`
 OPENRC_ACTIVATE_CMD = os.environ.get('OPENRC_ACTIVATE_CMD', 'source /root/openrc')  # noqa E501
