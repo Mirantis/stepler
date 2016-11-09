@@ -52,6 +52,7 @@ class ServerSteps(base.BaseSteps):
                        image,
                        flavor,
                        server_names=None,
+                       count=1,
                        networks=(),
                        ports=(),
                        keypair=None,
@@ -67,8 +68,9 @@ class ServerSteps(base.BaseSteps):
         Args:
             image (object|None): image or None (to use volume)
             flavor (object): flavor
-            server_names (list): names of created servers, if not specified
-                one server name will be generated
+            server_names (list): names of created servers
+            count (int): count of created servers, it's ignored if server_names
+                is specified; one server is created if both args are missing
             networks (list): networks objects
             ports (list): ports objects
             keypair (object): keypair
@@ -83,7 +85,7 @@ class ServerSteps(base.BaseSteps):
         Returns:
             list: nova servers
         """
-        server_names = server_names or utils.generate_ids()
+        server_names = server_names or utils.generate_ids(count=count)
         sec_groups = [s.id for s in security_groups or []]
         image_id = None if image is None else image.id
         keypair_id = None if keypair is None else keypair.id
