@@ -18,6 +18,7 @@ Heat CLI steps
 # limitations under the License.
 
 from hamcrest import assert_that, is_, is_not, empty, has_entries  # noqa H301
+import yaml
 
 from stepler.cli_clients.steps import base
 from stepler import config
@@ -250,3 +251,21 @@ class CliHeatSteps(base.BaseCliSteps):
         cmd = 'heat action-check {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_RESUME_TIMEOUT, check=check)
+
+    @steps_checker.step
+    def get_resource_type_template(self, resource_type, check=True):
+        """Step to check stack resources.
+
+        Args:
+            resource_type (obj): heat resource type
+            check (bool): flag whether to check step or not
+
+        Returns:
+            dict: resource template
+        """
+        cmd = 'heat resource-type-template {}'.format(
+            resource_type.resource_type)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_RESUME_TIMEOUT, check=check)
+        template = yaml.load(stdout)
+        return template
