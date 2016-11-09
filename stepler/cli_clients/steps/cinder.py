@@ -17,6 +17,9 @@ Cinder CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, is_  # noqa H301
+from six import moves
+
 from stepler.cli_clients.steps import base
 from stepler import config
 from stepler.third_party import output_parser
@@ -25,6 +28,30 @@ from stepler.third_party import steps_checker
 
 class CliCinderSteps(base.BaseCliSteps):
     """CLI cinder client steps."""
+
+    @steps_checker.step
+    def rename_volume(self, volume, name=None, description=None, check=True):
+        """Step to change volume's name or description using CLI.
+
+        Args:
+            volume (object): cinder volume to edit
+            name (str): new volume name
+            description (str): new volume description
+            check (bool): flag whether to check step or not
+        """
+        err_msg = 'One of `name` or `description` should be passed.'
+        assert_that(any([name, description]), is_(True), err_msg)
+
+        cmd = 'cinder rename'
+        if description is not None:
+            cmd += ' --description ' + moves.shlex_quote(description)
+        cmd += ' ' + volume.id
+        if name:
+            cmd += ' ' + name
+
+        self.execute_command(cmd,
+                             timeout=config.VOLUME_AVAILABLE_TIMEOUT,
+                             check=check)
 
     @steps_checker.step
     def create_volume_backup(self, volume, name=None, description=None,
@@ -44,8 +71,8 @@ class CliCinderSteps(base.BaseCliSteps):
         cmd = 'cinder backup-create'
         if name:
             cmd += ' --name ' + name
-        if description:
-            cmd += ' --description ' + description
+        if description is not None:
+            cmd += ' --description ' + moves.shlex_quote(description)
         if container:
             cmd += ' --container ' + container
 
@@ -76,8 +103,8 @@ class CliCinderSteps(base.BaseCliSteps):
         cmd = 'cinder snapshot-create'
         if name:
             cmd += ' --name ' + name
-        if description:
-            cmd += ' --description ' + description
+        if description is not None:
+            cmd += ' --description ' + moves.shlex_quote(description)
 
         cmd += ' ' + volume.id
 
