@@ -20,3 +20,6 @@ Openstack CLI tests
 
 .. automodule:: stepler.cli_clients.tests.test_heat
     :members:
+
+.. automodule:: stepler.cli_clients.tests.test_glance
+    :members:
