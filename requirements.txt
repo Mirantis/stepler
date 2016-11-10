@@ -1,3 +1,5 @@
+pbr>=1.8 # Apache-2.0
+
 # general
 paramiko==2.0.2
 pytest==3.0.2
