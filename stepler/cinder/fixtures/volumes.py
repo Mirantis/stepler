@@ -39,7 +39,7 @@ SKIPPED_VOLUMES = []
 
 
 @pytest.yield_fixture
-def volumes_cleanup():
+def unexpected_volumes_cleanup():
     """Callable function fixture to clear unexpected volumes.
 
     It provides cleanup before and after test.
