@@ -256,6 +256,30 @@ def test_volume_backup_non_unicode_container(volume, backups_cleanup,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
 
 
+@pytest.mark.idempotent_id('815f7bf8-05e7-4556-ac46-8df267c91c75')
+def test_show_backup_non_unicode_container_name(volume,
+                                                create_backup,
+                                                cli_cinder_steps):
+    """**Scenario:** Show volume backup with non unicode container name.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume backup with non unicode container name using API
+    #. Check CLI command ``cinder backup-show <backup id>``
+
+    **Teardown:**
+
+    #. Delete volume backup
+    #. Delete volume
+    """
+    backup = create_backup(volume, container=u"シンダー")
+    cli_cinder_steps.show_volume_backup(backup)
+
+
 @pytest.mark.idempotent_id('ef21745a-6fdc-456b-8e2c-2533f24b5eae')
 def test_volume_transfer_non_unicode_name(volume, transfers_cleanup,
                                           cli_cinder_steps, volume_steps):
@@ -279,3 +303,27 @@ def test_volume_transfer_non_unicode_name(volume, transfers_cleanup,
     volume_steps.check_volume_status(volume,
                                      status=config.STATUS_AWAITING_TRANSFER,
                                      timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('c5ab08cf-6055-4940-9fff-f930bbcb1cbb')
+def test_show_volume_transfer_non_unicode_name(volume,
+                                               create_volume_transfer,
+                                               cli_cinder_steps):
+    """**Scenario:** Show volume transfer with non unicode name.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume transfer with non unicode name using API
+    #. Check CLI command ``cinder transfer-show <backup id>``
+
+    **Teardown:**
+
+    #. Delete volume transfer
+    #. Delete volume
+    """
+    volume_transfer = create_volume_transfer(volume, transfer_name=u"シンダー")
+    cli_cinder_steps.show_volume_transfer(volume_transfer, volume)

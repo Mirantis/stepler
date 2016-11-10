@@ -166,3 +166,29 @@ class CliCinderSteps(base.BaseCliSteps):
         transfer_table = output_parser.table(stdout)
         transfer = {key: value for key, value in transfer_table['values']}
         return transfer
+
+    @steps_checker.step
+    def show_volume_transfer(self, volume_transfer, volume, check=True):
+        """Step to show volume transfer using CLI.
+
+        Args:
+            volume_transfer (object): cinder volume transfer object to show
+            volume (object): related cinder volume
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        cmd = 'cinder transfer-show ' + volume_transfer.id
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.TRANSFER_SHOW_TIMEOUT, check=check)
+
+        transfer_table = output_parser.table(stdout)
+        transfer_dict = {key: value for key, value in transfer_table['values']}
+
+        if check:
+            # TODO(aallakhverdieva): add check
+            # transfer_dict['name'] equals volume_transfer.name
+            assert_that(transfer_dict['id'], is_(volume_transfer.id))
+            assert_that(transfer_dict['volume_id'], is_(volume.id))
