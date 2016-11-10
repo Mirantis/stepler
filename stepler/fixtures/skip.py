@@ -90,18 +90,21 @@ def substitute(node):
         values = node.values
     else:
         values = [node]
+
     new_values = []
-
     for value in values:
-        if isinstance(value, ast.BoolOp):
+
+        if isinstance(value, ast.UnaryOp):
+            value.operand = substitute(value.operand)
+            new_values.append(value)
+
+        elif isinstance(value, ast.BoolOp):
             new_values.append(substitute(value))
-            continue
 
-        if isinstance(value, ast.Name):
+        elif isinstance(value, ast.Name):
             new_values.append(execute(value.id))
-            continue
 
-        if isinstance(value, ast.Call):
+        elif isinstance(value, ast.Call):
             args = []
             for arg in value.args:
                 arg_value = eval(
@@ -109,12 +112,14 @@ def substitute(node):
                 args.append(arg_value)
 
             new_values.append(execute(value.func.id, args))
-            continue
 
-        raise SyntaxError('Unexpected node type {!r}'.format(value.__class__))
+        else:
+            raise SyntaxError(
+                'Unexpected node type {!r}'.format(value.__class__))
 
     if isinstance(node, ast.BoolOp):
         node.values[:] = new_values
     else:
         node = new_values[0]
+
     return node
