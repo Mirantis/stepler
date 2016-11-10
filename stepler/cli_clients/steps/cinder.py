@@ -30,6 +30,35 @@ class CliCinderSteps(base.BaseCliSteps):
     """CLI cinder client steps."""
 
     @steps_checker.step
+    def create_volume(self, size=1, name=None, image=None,
+                      metadata=None, check=True):
+        """Step to create volume using CLI.
+
+        Args:
+            size(int): size of created volume (in GB)
+            name (str): name of created volume
+            image (str): glance image name or ID to create volume from
+            metadata(str): volume metadata
+            check (bool): flag whether to check step or not
+
+        Returns:
+            dict: cinder volume
+        """
+        cmd = 'cinder create ' + str(size)
+        if image:
+            cmd += ' --image ' + image
+        if name:
+            cmd += ' --name ' + moves.shlex_quote(name)
+        if metadata:
+            cmd += ' --metadata ' + metadata
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.VOLUME_AVAILABLE_TIMEOUT, check=check)
+        volume_table = output_parser.table(stdout)
+        volume = {key: value for key, value in volume_table['values']}
+        return volume
+
+    @steps_checker.step
     def rename_volume(self, volume, name=None, description=None, check=True):
         """Step to change volume's name or description using CLI.
 
