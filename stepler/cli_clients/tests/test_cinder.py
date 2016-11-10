@@ -21,6 +21,7 @@ Tests for cinder CLI client
 import pytest
 
 from stepler import config
+from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('79d599b8-4b3c-4fc9-84bd-4b6353816d4d')
@@ -231,3 +232,35 @@ def test_volume_transfer_non_unicode_name(volume, transfers_cleanup,
     volume_steps.check_volume_status(volume,
                                      status=config.STATUS_AWAITING_TRANSFER,
                                      timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('0242150d-d187-46c0-94f8-36259989560d')
+def test_create_volume_using_image_name(ubuntu_image,
+                                        cli_cinder_steps,
+                                        volume_steps):
+    """**Scenario:** Create volume from image using image name.
+
+    **Setup:**
+
+    #. Create image
+
+    **Steps:**
+
+    #. Create volume from image using image name
+
+    **Teardown:**
+
+    #. Delete volume
+    #. Delete image
+    """
+    volume_name = next(utils.generate_ids())
+    cli_cinder_steps.create_volume(size=4, name=volume_name,
+                                   image=ubuntu_image.name)
+    volume = volume_steps.get_volumes(name_prefix=volume_name)[0]
+    volume_steps.check_volume_status(
+        volume,
+        config.STATUS_AVAILABLE,
+        transit_statuses=(config.STATUS_CREATING,
+                          config.STATUS_DOWNLOADING,
+                          config.STATUS_UPLOADING),
+        timeout=config.VOLUME_AVAILABLE_TIMEOUT)
