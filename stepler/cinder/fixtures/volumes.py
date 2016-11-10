@@ -19,7 +19,6 @@ Volume fixtures
 
 import logging
 
-from hamcrest import assert_that, is_not  # noqa
 import pytest
 
 from stepler.cinder import steps
@@ -34,41 +33,29 @@ __all__ = [
 ]
 
 LOGGER = logging.getLogger(__name__)
-# volumes which should be missed, when unexpected volumes will be removed
-SKIPPED_VOLUMES = []
 
 
-@pytest.yield_fixture
-def volumes_cleanup():
-    """Callable function fixture to clear unexpected volumes.
+@pytest.fixture
+def volumes_cleanup(volume_steps):
+    """Function fixture to clear created volumes after test.
 
-    It provides cleanup before and after test.
-    Cleanup before test is callable with injection of volume steps.
-    Should be called before returning of instantiated volume steps.
+    It stores ids of all volumes before test and removes all new
+    volumes after test.
+
+    Args:
+        volume_steps (object): instantiated volume steps
     """
-    _volume_steps = [None]
+    preserve_volume_ids = set(
+        volume.id for volume in volume_steps.get_volumes(check=False))
 
-    def _volumes_cleanup(volume_steps):
-        assert_that(volume_steps, is_not(None))
-        _volume_steps[0] = volume_steps  # inject volume steps for finalizer
-        # check=False because in best case no volumes will be present
-        volumes = volume_steps.get_volumes(name_prefix=config.STEPLER_PREFIX,
-                                           check=False)
-        if SKIPPED_VOLUMES:
-            volume_names = [volume.name for volume in SKIPPED_VOLUMES]
+    yield
 
-            LOGGER.debug(
-                "SKIPPED_VOLUMES contains volumes {!r}. They will not be "
-                "removed in cleanup procedure.".format(volume_names))
+    deleting_volumes = []
+    for volume in volume_steps.get_volumes(check=False):
+        if volume.id not in preserve_volume_ids:
+            deleting_volumes.append(volume)
 
-            volumes = [volume for volume in volumes
-                       if volume not in SKIPPED_VOLUMES]
-        if volumes:
-            volume_steps.delete_volumes(volumes)
-
-    yield _volumes_cleanup
-
-    _volumes_cleanup(_volume_steps[0])
+    volume_steps.delete_volumes(deleting_volumes)
 
 
 @pytest.fixture(scope='session')
