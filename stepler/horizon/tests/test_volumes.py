@@ -52,7 +52,7 @@ class TestAnyOne(object):
         update_settings(items_per_page=1)
         volumes_steps_ui.check_volumes_pagination(volume_names)
 
-    @pytest.mark.idempotent_id('')
+    @pytest.mark.idempotent_id('67ac61fb-63ec-4f83-a88a-553fb3b21a3c')
     def test_view_volume(self, volume, volumes_steps_ui):
         """Verify that user can view volume info."""
         volumes_steps_ui.view_volume(volume.name)

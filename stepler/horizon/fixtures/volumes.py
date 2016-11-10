@@ -128,10 +128,10 @@ def create_snapshots(volume, volumes_steps_ui):
             snapshots.append(snapshot)
             _snapshots.append(snapshot)
 
-        tab_snapshots = volumes_steps_ui.tab_snapshots()
+        tab_snapshots = volumes_steps_ui._tab_snapshots()
         for snapshot_name in snapshot_names:
             tab_snapshots.table_snapshots.row(
-                name=snapshot_name, status='Available').wait_for_presence(30)
+                name=snapshot_name).wait_for_status('Available', 30)
 
         return _snapshots
 

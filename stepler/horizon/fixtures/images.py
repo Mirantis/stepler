@@ -50,7 +50,7 @@ def create_images(images_steps, horizon):
 
         for image_name in image_names:
             images_steps.create_image(image_name, check=False)
-            images_steps.close_notification('info')
+            images_steps.close_notification('success')
 
             image = AttrDict(name=image_name)
             images.append(image)

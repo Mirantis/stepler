@@ -266,8 +266,10 @@ class ImagesSteps(BaseSteps):
 
             form.item_network.click()
             with form.tab_network as tab:
-                tab.table_available_networks.row(
-                    name=network_name).button_add.click()
+                if not tab.table_allocated_networks.row(
+                        name=network_name).is_present:
+                    tab.table_available_networks.row(
+                        name=network_name).button_add.click()
 
             form.submit()
 

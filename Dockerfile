@@ -12,7 +12,10 @@ FROM python:2
 RUN  apt-get update -qq &&  \
 apt-get install -q -y \
     python-dev \
-    libvirt-dev && \
+    libvirt-dev \
+    xvfb \
+    iceweasel \
+    libav-tools && \
 apt-get clean  && \
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -26,5 +29,6 @@ COPY . /opt/app
 
 ENV OS_USERNAME=admin
 ENV OS_PASSWORD=admin
+ENV VIRTUAL_DISPLAY=1
 
 ENTRYPOINT ["py.test", "-v", "--junit-xml=reports/report.xml"]
