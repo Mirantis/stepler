@@ -51,6 +51,7 @@ PERMITTED_CALLS = [
     'range',
     'sorted',
     'set_trace',
+    'generate_ips',
     'time',
     'str',
     'embed',
