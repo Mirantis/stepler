@@ -25,6 +25,7 @@ from .openstack import *  # noqa
 __all__ = [
     'CliCinderSteps',
     'CliHeatSteps',
+    'CliIronicSteps',
     'CliNovaSteps',
     'CliOpenstackSteps',
 ]
