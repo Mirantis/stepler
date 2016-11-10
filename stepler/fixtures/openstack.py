@@ -106,4 +106,6 @@ def uncleanable():
     data.server_ids = set()
     data.snapshot_ids = set()
     data.volume_ids = set()
+    data.backup_ids = set()
+    data.transfer_ids = set()
     return data

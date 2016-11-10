@@ -20,25 +20,46 @@ Backup fixtures
 import pytest
 
 from stepler.cinder import steps
+from stepler import config
+from stepler.third_party import context
 
 __all__ = [
+    'get_backup_steps',
     'backup_steps',
     'create_backup',
     'backups_cleanup',
 ]
 
 
+@pytest.fixture(scope='session')
+def get_backup_steps(get_cinder_client):
+    """Callable session fixture to get volume backup steps.
+
+    Args:
+        get_cinder_client (object): function to get cinder client
+
+    Returns:
+        function: function to get backup steps
+    """
+    def _get_backup_steps(**credentials):
+        return steps.BackupSteps(get_cinder_client(**credentials).backups)
+
+    return _get_backup_steps
+
+
 @pytest.fixture
-def backup_steps(cinder_client):
+def backup_steps(get_backup_steps, backups_cleanup):
     """Function fixture to get volume backup steps.
 
     Args:
-        cinder_client (object): instantiated cinder client
+        get_backup_steps (object): function to get backup steps
 
-    Returns:
+    Yields:
         stepler.cinder.steps.BackupSteps: instantiated backup steps
     """
-    return steps.BackupSteps(cinder_client.backups)
+    _backup_steps = get_backup_steps()
+    with backups_cleanup(_backup_steps):
+        yield _backup_steps
 
 
 @pytest.yield_fixture
@@ -67,21 +88,32 @@ def create_backup(backup_steps):
         backup_steps.delete_backup(backup)
 
 
-@pytest.yield_fixture
-def backups_cleanup(backup_steps):
-    """Function fixture to clear created backups after test.
+@pytest.fixture
+def backups_cleanup(uncleanable):
+    """Callable function fixture to clear created backups after test.
 
     It stores ids of all backups before test and remove all new backups
     after test.
 
     Args:
-        backup_steps (object): instantiated volume backup steps
+        uncleanable (AttrDict): data structure with skipped resources
+
+    Returns:
+        function: function to cleanup backups
     """
-    preserve_backups_ids = set(
-        backup.id for backup in backup_steps.get_backups(check=False))
+    @context.context
+    def _backups_cleanup(backup_steps):
+        def _get_backups():
+            return backup_steps.get_backups(prefix=config.STEPLER_PREFIX,
+                                            check=False)
 
-    yield
+        backups_ids_before = set(backup.id for backup in _get_backups())
 
-    for backup in backup_steps.get_backups(check=False):
-        if backup.id not in preserve_backups_ids:
-            backup_steps.delete_backup(backup)
+        yield
+
+        for backup in _get_backups():
+            if (backup.id not in uncleanable.backup_ids and
+                    backup.id not in backups_ids_before):
+                backup_steps.delete_backup(backup)
+
+    return _backups_cleanup

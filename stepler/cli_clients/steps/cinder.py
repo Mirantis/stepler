@@ -171,6 +171,31 @@ class CliCinderSteps(base.BaseCliSteps):
         return snapshot
 
     @steps_checker.step
+    def show_volume_snapshot(self, snapshot, check=True):
+        """Step to show volume snapshot using CLI.
+
+        Args:
+            snapshot (object): cinder volume snapshot object to show
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        cmd = 'cinder snapshot-show ' + snapshot.id
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.SNAPSHOT_SHOW_TIMEOUT, check=check)
+
+        snapshot_table = output_parser.table(stdout)
+        show_result = {key: value for key, value in snapshot_table['values']}
+
+        if check:
+            # TODO(agromov): add checks when parser can process unicode:
+            # 1) show_result['name'] equals snapshot.name
+            # 2) show_result['description'] equals snapshot.description
+            assert_that(show_result['id'], is_(snapshot.id))
+
+    @steps_checker.step
     def create_volume_transfer(self, volume, name=None, check=True):
         """Step to create volume transfer using CLI.
 

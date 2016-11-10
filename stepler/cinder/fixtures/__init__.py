@@ -52,6 +52,7 @@ __all__ = sorted([  # sort for documentation
     'snapshots_cleanup',
 
     'create_backup',
+    'get_backup_steps',
     'backup_steps',
     'backups_cleanup',
 ])
