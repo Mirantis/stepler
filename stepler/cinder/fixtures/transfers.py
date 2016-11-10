@@ -25,7 +25,7 @@ __all__ = [
     'transfer_steps',
     'create_volume_transfer',
     'get_transfer_steps',
-    'transfers_cleanup',
+    'cleanup_transfers',
 ]
 
 
@@ -47,16 +47,23 @@ def get_transfer_steps(get_cinder_client):
 
 
 @pytest.fixture
-def transfer_steps(get_transfer_steps):
+def transfer_steps(get_transfer_steps, cleanup_transfers):
     """Function fixture to get volume transfer steps.
 
     Args:
         get_transfer_steps (function): function to get transfer steps
+        cleanup_transfers (function): function to cleanup transfers
+            after test
 
-    Returns:
+    Yields:
         VolumeTransferSteps: instantiated transfer steps.
     """
-    return get_transfer_steps()
+    _transfer_steps = get_transfer_steps()
+    transfers = _transfer_steps.get_transfers(all_projects=True, check=False)
+    transfer_ids_before = {transfer.id for transfer in transfers}
+
+    yield _transfer_steps
+    cleanup_transfers(_transfer_steps, uncleanable_ids=transfer_ids_before)
 
 
 @pytest.yield_fixture
@@ -85,16 +92,21 @@ def create_volume_transfer(transfer_steps):
 
 
 @pytest.fixture
-def transfers_cleanup(transfer_steps):
-    """Function fixture to clear created transfers after test.
+def cleanup_transfers(uncleanable):
+    """Callable function fixture to clear created transfers after test.
 
     Args:
-        transfer_steps (object): instantiated volume transfer steps
-    """
-    preserve_transfers_ids = set(
-        transfer.id for transfer in transfer_steps.get_transfers(check=False))
-    yield
+        uncleanable (AttrDict): data structure with skipped resources
 
-    for transfer in transfer_steps.get_transfers(check=False):
-        if transfer.id not in preserve_transfers_ids:
-            transfer_steps.delete_volume_transfer(transfer)
+    Returns:
+        function: function to cleanup transfers
+    """
+    def _cleanup_transfers(_transfer_steps, uncleanable_ids=None):
+        uncleanable_ids = uncleanable_ids or uncleanable.transfer_ids
+
+        for transfer in _transfer_steps.get_transfers(all_projects=True,
+                                                      check=False):
+            if transfer.id not in uncleanable_ids:
+                _transfer_steps.delete_volume_transfer(transfer)
+
+    return _cleanup_transfers
