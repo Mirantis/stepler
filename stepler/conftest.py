@@ -34,6 +34,7 @@ __all__ = sorted([  # sort for documentation
     'ip_by_host',
     'get_session',
     'session',
+    'skip_test',
     'uncleanable',
     'report_log',
     'report_dir',
