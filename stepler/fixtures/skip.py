@@ -17,8 +17,6 @@ Skip autouse fixture
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
-
 import pytest
 
 __all__ = [
@@ -48,13 +46,11 @@ def skip_test(request):
         return
 
     # TODO(schipiga): configure with real env config, when it will be possible
-    Predicates.configure(None)
+    predicates = Predicates(None)
+    predicates = {attr: getattr(predicates, attr) for attr in dir(predicates)
+                  if not attr.startswith('_')}
 
-    expr = ast.parse(requires, '<ast>', 'eval')
-    expr.body = substitute(expr.body)
-    need_skip = not eval(compile(expr, '<ast>', 'eval'))
-
-    if need_skip:
+    if not eval(requires, predicates):
         pytest.skip(
             'Skipped due to a mismatch to condition: {!r}'.format(requires))
 
@@ -65,61 +61,13 @@ class Predicates(object):
 
     _env = None
 
-    @classmethod
-    def configure(cls, env):
-        """Configure."""
+    def __init__(cls, env):
+        """Initialize."""
         cls._env = env
 
-    @classmethod
-    def more_computes_than(cls, count):
+    def more_computes_than(self, count):
         """Define whether computes enough."""
 
-    @classmethod
-    def ceph_enabled(cls):
+    @property
+    def ceph_enabled(self):
         """Define whether CEPH enabled."""
-
-
-def substitute(node):
-    """Substitude predicates with their results."""
-    def execute(name, args=()):
-        boolean = getattr(Predicates, name)(*args)
-        return ast.Name(
-            id=str(boolean), ctx=ast.Load(), lineno=0, col_offset=0)
-
-    if isinstance(node, ast.BoolOp):
-        values = node.values
-    else:
-        values = [node]
-
-    new_values = []
-    for value in values:
-
-        if isinstance(value, ast.UnaryOp):
-            value.operand = substitute(value.operand)
-            new_values.append(value)
-
-        elif isinstance(value, ast.BoolOp):
-            new_values.append(substitute(value))
-
-        elif isinstance(value, ast.Name):
-            new_values.append(execute(value.id))
-
-        elif isinstance(value, ast.Call):
-            args = []
-            for arg in value.args:
-                arg_value = eval(
-                    compile(ast.Expression(body=arg), '<ast>', 'eval'))
-                args.append(arg_value)
-
-            new_values.append(execute(value.func.id, args))
-
-        else:
-            raise SyntaxError(
-                'Unexpected node type {!r}'.format(value.__class__))
-
-    if isinstance(node, ast.BoolOp):
-        node.values[:] = new_values
-    else:
-        node = new_values[0]
-
-    return node

@@ -1,7 +1,7 @@
 """
----------------------------
-Skip substitution unittests
----------------------------
+----------------------------
+Requires execution unittests
+----------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,39 +17,36 @@ Skip substitution unittests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
 from collections import namedtuple
 
 import pytest
-
-from stepler.fixtures import skip
 
 
 class Predicates(object):
     """Mock predicates."""
 
-    @classmethod
-    def ceph_enabled(cls):
+    @property
+    def ceph_enabled(self):
         """Define whether ceph enabled."""
         return True
 
-    @classmethod
-    def is_ha(cls):
+    @property
+    def is_ha(self):
         """Define whether HA cluster."""
         return False
 
-    @classmethod
-    def more_nodes_than(cls, count):
+    def more_nodes_than(self, count):
         """Define nodes limit."""
         return 3 > count
 
-    @classmethod
-    def more_computes_than(cls, count):
+    def more_computes_than(self, count):
         """Define computes limit."""
         return 2 > count
 
 
-skip.Predicates = Predicates
+predicates = Predicates()
+predicates = {attr: getattr(predicates, attr) for attr in dir(predicates)
+              if not attr.startswith('_')}
 
 Case = namedtuple('Case', ('requires', 'expected'))
 
@@ -81,8 +78,6 @@ cases = [
 
 
 @pytest.mark.parametrize('case', cases)
-def test_skip_substitute(case):
+def test_requires_execution(case):
     """Test skip value is defined correctly."""
-    expr = ast.parse(case.requires, '<ast>', 'eval')
-    expr.body = skip.substitute(expr.body)
-    assert eval(compile(expr, '<ast>', 'eval')) == case.expected
+    assert eval(case.requires, predicates) == case.expected
