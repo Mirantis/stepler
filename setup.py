@@ -17,10 +17,16 @@ Setup stepler
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup, find_packages  # noqa
+import sys
+
+import pip
+from setuptools import setup  # noqa
 
 setup(
-    name='stepler',
-    packages=find_packages(),
-    url='https://github.com/Mirantis/stepler'
+    setup_requires=['pbr==1.8'],
+    pbr=True
 )
+
+# TODO (schipiga): workaround to install requirements from additional file.
+# Due to weird logic pbr allows to use only one requirements file.
+sys.exit(pip.main(['install', '-r', 'c-requirements.txt']))
