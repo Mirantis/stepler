@@ -221,12 +221,12 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired|AssertionError: if check failed after timeout
         """
-        def predicate():
+        def _check_volume_status():
             volume.get()
             return expect_that(volume.status.lower(),
                                is_not(is_in(transit_statuses)))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_volume_status, timeout_seconds=timeout)
         assert_that(volume.status.lower(), equal_to(status.lower()))
 
     @steps_checker.step
@@ -295,11 +295,11 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
+        def _check_volume_size():
             volume.get()
             return expect_that(volume.size, equal_to(size))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_volume_size, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_servers_attached_to_volume(self, volume):
@@ -326,11 +326,11 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
+        def _check_volume_type():
             volume.get()
             return expect_that(volume.volume_type, equal_to(volume_type.name))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_volume_type, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_volume_attachments(self, volume, server_ids=None, timeout=0):
@@ -346,11 +346,11 @@ class VolumeSteps(base.BaseSteps):
         """
         server_ids = server_ids or []
 
-        def predicate():
+        def _check_volume_attachments():
             attached_ids = self.get_servers_attached_to_volume(volume)
             return expect_that(set(attached_ids), equal_to(set(server_ids)))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_volume_attachments, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_volume_extend_failed_incorrect_size(self, volume, size):
@@ -542,12 +542,12 @@ class VolumeSteps(base.BaseSteps):
                 after timeout
         """
 
-        def predicate():
+        def _check_migration_status():
             volume.get()
             return expect_that(
                 volume.migration_status.lower(), equal_to(status.lower()))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_migration_status, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_volume_host(self, volume, host, timeout=0):
@@ -562,12 +562,12 @@ class VolumeSteps(base.BaseSteps):
             TimeoutExpired: if volume host is not changed after timeout
         """
 
-        def predicate():
+        def _check_volume_host():
             volume.get()
             volume_host = getattr(volume, config.VOLUME_HOST_ATTR)
             return expect_that(volume_host.lower(), equal_to(host.lower()))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_volume_host, timeout_seconds=timeout)
 
     @steps_checker.step
     def set_volume_bootable(self, volume, bootable, check=True):
