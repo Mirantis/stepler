@@ -11,3 +11,4 @@ test_results
 build
 .tox
 report.xml
+.eggs

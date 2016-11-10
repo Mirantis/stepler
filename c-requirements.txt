@@ -1,3 +1,0 @@
-# Separate packages with C-extensions to additional requirements.
-# readthedocs.io can't install such packages. We skip them to docs generating.
-os-faults[libvirt]>=0.1.7,<0.2.0
