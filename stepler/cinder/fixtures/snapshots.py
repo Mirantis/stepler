@@ -20,32 +20,51 @@ Snapshot fixtures
 import pytest
 
 from stepler.cinder import steps
-from stepler import config
-from stepler.third_party import context
 from stepler.third_party import utils
 
 __all__ = [
+    'get_snapshot_steps',
     'snapshot_steps',
-    'snapshots_cleanup',
+    'cleanup_snapshots',
     'volume_snapshot',
 ]
 
 
+@pytest.fixture(scope='session')
+def get_snapshot_steps(get_cinder_client):
+    """Callable session fixture to get snapshot steps.
+
+    Args:
+        get_cinder_client (function): function to get cinder client
+
+    Returns:
+        function: function to get snapshot steps
+    """
+    def _get_snapshot_steps(**credentials):
+        return steps.SnapshotSteps(
+            get_cinder_client(**credentials).volume_snapshots)
+
+    return _get_snapshot_steps
+
+
 @pytest.fixture
-def snapshot_steps(cinder_client, snapshots_cleanup):
+def snapshot_steps(get_snapshot_steps, cleanup_snapshots):
     """Function fixture to get snapshot steps.
 
     Args:
         cinder_client (object): instantiated cinder client
-        snapshots_cleanup (function): function fixture to cleanup snapshots
+        cleanup_snapshots (function): function fixture to cleanup snapshots
 
     Yields:
          stepler.cinder.steps.SnapshotSteps: instantiated snapshot steps
     """
-    _snapshot_steps = steps.SnapshotSteps(cinder_client.volume_snapshots)
+    _snapshot_steps = get_snapshot_steps()
 
-    with snapshots_cleanup(_snapshot_steps):
-        yield _snapshot_steps
+    snapshots = _snapshot_steps.get_snapshots(all_projects=True, check=False)
+    snapshot_ids_before = {snapshot.id for snapshot in snapshots}
+
+    yield _snapshot_steps
+    cleanup_snapshots(_snapshot_steps, uncleanable_ids=snapshot_ids_before)
 
 
 @pytest.fixture
@@ -63,8 +82,8 @@ def volume_snapshot(volume, snapshot_steps):
         volume, names=utils.generate_ids())[0]
 
 
-@pytest.fixture
-def snapshots_cleanup(uncleanable):
+@pytest.fixture(scope='session')
+def cleanup_snapshots(uncleanable):
     """Callable function fixture to cleanup snapshots after test.
 
     Args:
@@ -73,24 +92,15 @@ def snapshots_cleanup(uncleanable):
     Returns:
         function: function to cleanup snapshots
     """
-    @context.context
-    def _snapshots_cleanup(snapshot_steps):
-
-        def _get_snapshots():
-            return snapshot_steps.get_snapshots(
-                name_prefix=config.STEPLER_PREFIX,
-                check=False)
-
-        snapshots_ids_before = [snapshot.id for snapshot in _get_snapshots()]
-
-        yield
-
+    def _cleanup_snapshots(_snapshot_steps, uncleanable_ids=None):
+        uncleanable_ids = uncleanable_ids or uncleanable.snapshot_ids
         deleting_snapshots = []
-        for snapshot in _get_snapshots():
-            if ((snapshot.id not in uncleanable.snapshot_ids) and
-                    (snapshot.id not in snapshots_ids_before)):
+
+        for snapshot in _snapshot_steps.get_snapshots(all_projects=True,
+                                                      check=False):
+            if snapshot.id not in uncleanable_ids:
                 deleting_snapshots.append(snapshot)
 
-        snapshot_steps.delete_snapshots(deleting_snapshots)
+        _snapshot_steps.delete_snapshots(deleting_snapshots)
 
-    return _snapshots_cleanup
+    return _cleanup_snapshots

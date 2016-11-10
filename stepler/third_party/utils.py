@@ -67,31 +67,54 @@ def generate_mac_addresses(count=1):
         yield mac_address
 
 
-def generate_ids(prefix=None, postfix=None, count=1, length=None):
+def generate_ids(prefix=None, postfix=None, count=1, length=50,
+                 use_unicode=False):
     """Generate unique identificators, based on UUID.
 
     Arguments:
-        prefix (str|None): prefix of unique ids.
-        postfix (str|None): postfix of unique ids.
-        count (int): count of unique ids.
-        length (int|None): length of unique ids.
+        prefix (str|None): prefix of unique ids
+        postfix (str|None): postfix of unique ids
+        count (int): count of unique ids
+        length (int): length of unique ids
+        use_unicode (boolean|False): generate str with unicode or not
 
     Returns:
-        generator: unique ids.
+        generator: unique ids
     """
+    min_uid_length = 7
+
+    const_length = len(config.STEPLER_PREFIX + '-' +
+                       (prefix + '-' if postfix else '') +
+                       # uid will be here
+                       ('-' + postfix if postfix else ''))
+
+    uid_length = length - const_length
+
+    if uid_length < min_uid_length:
+        raise ValueError(
+            "According to passed prefix and postfix minimal length to "
+            "generate unique id must be equal or greater "
+            "than {0}.".format(const_length + min_uid_length))
+
     for _ in range(count):
-        uid = str(uuid.uuid4())
+        # mix constant stepler prefix to separate tested objects
+        uid = config.STEPLER_PREFIX
 
         if prefix:
-            uid = '{}-{}'.format(prefix, uid)
+            uid += '-' + prefix
 
-        # mix constant stepler prefix to separate tested objects
-        uid = '{}-{}'.format(config.STEPLER_PREFIX, uid)
+        if use_unicode:
+            uid += '-' + u"".join(
+                six.unichr(random.choice(range(0x0400, 0x045F)))
+                for _ in range(uid_length))
+        else:
+            uid_val = str(uuid.uuid4())
+            uid_val = (uid_val * (uid_length / len(uid_val) + 1))[:uid_length]
+            uid += '-' + uid_val
 
         if postfix:
-            uid = '{}-{}'.format(uid, postfix)
-        if length:
-            uid = (uid * (length / len(uid) + 1))[:length]
+            uid += '-' + postfix
+
         yield uid
 
 
