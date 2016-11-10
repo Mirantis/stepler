@@ -190,4 +190,4 @@ class RouterSteps(base.BaseSteps):
         Raises:
             LookupError: if zero or more than one routers found
         """
-        return self._client.get_router(**kwargs)
+        return self._client.find(**kwargs)
