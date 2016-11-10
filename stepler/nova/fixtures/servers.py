@@ -34,7 +34,8 @@ __all__ = [
     'server',
     'server_steps',
     'live_migration_server',
-    'servers_cleanup'
+    'servers_cleanup',
+    'unexpected_servers_cleanup',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ SKIPPED_SERVERS = []
 
 
 @pytest.yield_fixture
-def servers_cleanup():
+def unexpected_servers_cleanup():
     """Callable function fixture to clear unexpected servers.
 
     It provides cleanup before and after test. Cleanup before test is callable
@@ -92,33 +93,54 @@ def get_server_steps(request, get_nova_client):
 
 
 @pytest.fixture
-def server_steps(get_server_steps, uncleanable):
-    """Function fixture to get nova steps.
+def server_steps(get_server_steps, servers_cleanup):
+    """Function fixture to get server steps.
 
     Args:
         get_server_steps (function): function to get server steps
-        uncleanable (AttrDict): data structure with skipped resources
+        servers_cleanup (function): function to cleanup servers after test
 
     Yields:
         ServerSteps: instantiated server steps
     """
-    def _get_servers():
-        # check=False because in best case no servers will be
-        return _server_steps.get_servers(
-            name_prefix=config.STEPLER_PREFIX, check=False)
-
     _server_steps = get_server_steps()
-    server_ids_before = [server.id for server in _get_servers()]
+    with servers_cleanup(_server_steps):
+        yield _server_steps
 
-    yield _server_steps
 
-    deleting_servers = []
-    for server in _get_servers():
-        if server.id not in uncleanable.server_ids:
-            if server.id not in server_ids_before:
-                deleting_servers.append(server)
+@pytest.fixture
+def servers_cleanup(uncleanable):
+    """Callable function fixture to cleanup servers after test.
 
-    _server_steps.delete_servers(deleting_servers)
+    Args:
+        uncleanable (AttrDict): data structure with skipped resources
+
+    Returns:
+        function: function to cleanup servers
+    """
+    @context.context
+    def _servers_cleanup(server_steps):
+
+        def _get_servers():
+            # check=False because in best case no servers will be retrieved
+            return server_steps.get_servers(
+                name_prefix=config.STEPLER_PREFIX, check=False)
+
+        server_ids_before = [server.id for server in _get_servers()]
+
+        yield
+
+        deleting_servers = []
+        for server in _get_servers():
+
+            if server.id not in uncleanable.server_ids:
+                if server.id not in server_ids_before:
+
+                    deleting_servers.append(server)
+
+        server_steps.delete_servers(deleting_servers)
+
+    return _servers_cleanup
 
 
 @pytest.fixture
