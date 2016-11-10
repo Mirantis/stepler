@@ -41,8 +41,14 @@ def pytest_configure(config):
     """Pytest hook to remove test reports before tests launching."""
     if not hasattr(config, 'slaveinput'):  # if it is not xdist slave node
         if os.path.isdir(stepler_config.TEST_REPORTS_DIR):
-            shutil.rmtree(stepler_config.TEST_REPORTS_DIR)
-        os.mkdir(stepler_config.TEST_REPORTS_DIR)
+            for name in os.listdir(stepler_config.TEST_REPORTS_DIR):
+                path = os.path.join(stepler_config.TEST_REPORTS_DIR, name)
+                if os.path.isfile(path):
+                    os.unlink(path)
+                elif os.path.isdir(path):
+                    shutil.rmtree(path)
+        else:
+            os.mkdir(stepler_config.TEST_REPORTS_DIR)
 
 
 @pytest.mark.hookwrapper

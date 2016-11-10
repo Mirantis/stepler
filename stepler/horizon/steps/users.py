@@ -18,7 +18,7 @@ Users steps
 # limitations under the License.
 
 import pom
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, equal_to  # noqa H301
 from waiting import wait
 
 from stepler.third_party import steps_checker
@@ -212,8 +212,9 @@ class UsersSteps(BaseSteps):
             assert_that(cell.value, equal_to(enable_value))
 
     @steps_checker.step
-    def check_empty_users_list(self):
-        """Step to check users list is empty."""
-        page_users = self._page_users()
-        self.close_notification('info')
-        assert_that(page_users.table_users.rows, equal_to(False))
+    def check_no_users_page_in_menu(self):
+        """Step to check users items is absent in menu."""
+        page_users = self.app.page_users
+        assert_that(
+            page_users.navigate_menu.has_item(page_users.navigate_items),
+            equal_to(False))
