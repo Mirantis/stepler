@@ -92,7 +92,7 @@ class IronicNodeSteps(BaseSteps):
         Raises:
             TimeoutExpired: if check was triggered to False after timeout
         """
-        def predicate():
+        def _check_ironic_node_presence():
             try:
                 self._client.node.get(node.uuid)
                 is_present = True
@@ -101,7 +101,7 @@ class IronicNodeSteps(BaseSteps):
 
             return expect_that(is_present, equal_to(must_present))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_ironic_node_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def set_ironic_node_maintenance(self,
@@ -147,8 +147,8 @@ class IronicNodeSteps(BaseSteps):
         Raises:
             TimeoutExpired: if check was triggered to to an error after timeout
         """
-        def predicate():
+        def _check_ironic_node_maintenance():
             node.get()
             return expect_that(node.maintenance, equal_to(state))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)

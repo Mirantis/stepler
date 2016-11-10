@@ -21,6 +21,7 @@ Ironic port steps
 from ironicclient import exceptions
 from hamcrest import assert_that, is_not, empty, equal_to  # noqa
 from stepler import base
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from waiting import wait
 
@@ -67,25 +68,27 @@ class IronicPortSteps(base.BaseSteps):
         return port
 
     @steps_checker.step
-    def check_port_presence(self, port, present=True, timeout=0):
+    def check_port_presence(self, port, must_present=True, timeout=0):
         """Verify step to check port is present.
 
         Args:
             port (object): ironic port
-            present (bool): flag whether port should present or not
+            must_present (bool): flag whether port should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
+        def _check_port_presence():
             try:
                 self._client.port.get(port.uuid)
-                return present
+                is_present = True
             except exceptions.NotFound:
-                return not present
+                is_present = False
 
-        wait(predicate, timeout_seconds=timeout)
+            return expect_that(is_present, equal_to(must_present))
+
+        wait(_check_port_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def delete_port(self, port, check=True):
@@ -100,7 +103,7 @@ class IronicPortSteps(base.BaseSteps):
         """
         self._client.port.delete(port.uuid)
         if check:
-            self.check_port_presence(port, present=False)
+            self.check_port_presence(port, must_present=False)
 
     @steps_checker.step
     def get_ports(self, check=True):
