@@ -17,6 +17,7 @@ CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .baremetal import *  # noqa
 from .cinder import *  # noqa
 from .heat import *  # noqa
 from .nova import *  # noqa
@@ -25,6 +26,7 @@ from .openstack import *  # noqa
 __all__ = [
     'CliCinderSteps',
     'CliHeatSteps',
+    'CliIronicSteps',
     'CliNovaSteps',
     'CliOpenstackSteps',
 ]
