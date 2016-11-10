@@ -69,6 +69,7 @@ def tables(output_lines):
 
 
 # TODO(gdyuldin): refactor after coping from tempest
+# TODO(agromov): fix parsing table with unicode symbols
 def table(output_lines):
     """Parse single table from cli output.
     Return dict with list of column names in 'headers' key and

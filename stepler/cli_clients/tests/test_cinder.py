@@ -97,6 +97,54 @@ def test_volume_backup_non_unicode_name(volume, backups_cleanup,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
 
 
+@pytest.mark.idempotent_id('c64aa74b-990b-43df-8030-4657556e72ee')
+def test_show_backup_non_unicode_name(volume, create_backup, cli_cinder_steps):
+    """**Scenario:** Show volume backup with non unicode name.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume backup with non unicode name using API
+    #. Check CLI command ``cinder backup-show <backup id>``
+
+    **Teardown:**
+
+    #. Delete volume backup
+    #. Delete volume
+    """
+    backup_name = u"シンダー"
+    backup = create_backup(volume, name=backup_name)
+    cli_cinder_steps.show_volume_backup(backup)
+
+
+@pytest.mark.idempotent_id('3b6eea01-cd4e-4a6c-bb68-a260650c6dae')
+def test_show_backup_non_unicode_description(volume,
+                                             create_backup,
+                                             cli_cinder_steps):
+    """**Scenario:** Show volume backup with non unicode description.
+
+    **Setup:**
+
+    #. Create volume
+
+    **Steps:**
+
+    #. Create volume backup with non unicode description using API
+    #. Check CLI command ``cinder backup-show <backup id>``
+
+    **Teardown:**
+
+    #. Delete volume backup
+    #. Delete volume
+    """
+    backup_description = u"シンダー"
+    backup = create_backup(volume, description=backup_description)
+    cli_cinder_steps.show_volume_backup(backup)
+
+
 @pytest.mark.idempotent_id('07eb81c1-ca1f-4c65-93c4-f3378e62adfd')
 def test_volume_backup_non_unicode_description(volume, backups_cleanup,
                                                cli_cinder_steps, backup_steps):

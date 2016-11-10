@@ -17,7 +17,7 @@ Cinder CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_  # noqa H301
+from hamcrest import assert_that, equal_to, is_  # noqa H301
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -85,6 +85,29 @@ class CliCinderSteps(base.BaseCliSteps):
         backup = {key: value for key, value in backup_table['values']}
 
         return backup
+
+    @steps_checker.step
+    def show_volume_backup(self, backup, check=True):
+        """Step to show volume backup using CLI.
+
+        Args:
+            backup (object): cinder volume backup object to show
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        cmd = 'cinder backup-show ' + backup.id
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.BACKUP_SHOW_TIMEOUT, check=check)
+
+        backup_table = output_parser.table(stdout)
+        show_result = {key: value for key, value in backup_table['values']}
+
+        if check:
+            # TODO(agromov): add checks when parser can process unicode
+            assert_that(show_result['id'], equal_to(backup.id))
 
     @steps_checker.step
     def create_volume_snapshot(self, volume, name=None, description=None,
