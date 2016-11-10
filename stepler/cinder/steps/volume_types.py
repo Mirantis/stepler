@@ -107,7 +107,7 @@ class VolumeTypeSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
 
-        def predicate():
+        def _check_volume_type_presence():
             try:
                 self._client.get(volume_type.id)
                 is_present = True
@@ -115,4 +115,7 @@ class VolumeTypeSteps(base.BaseSteps):
                 is_present = False
             return expect_that(is_present, equal_to(must_present))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(
+            _check_volume_type_presence, timeout_seconds=timeout,
+            waiting_for="Waiting for volume type {0} presence"
+            .format(volume_type))
