@@ -138,10 +138,11 @@ class SnapshotSteps(base.BaseSteps):
             waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_snapshots(self, check=True):
+    def get_snapshots(self, name_prefix=None, check=True):
         """Step to get snapshots.
 
         Args:
+            name_prefix (str): name prefix to filter snapshots
             check (bool): flag whether to check step or not
 
         Returns:
@@ -151,6 +152,10 @@ class SnapshotSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         snapshots = list(self._client.list())
+
+        if name_prefix:
+            snapshots = [snapshot for snapshot in snapshots
+                         if (snapshot.name or '').startswith(name_prefix)]
 
         if check:
             assert_that(snapshots, is_not(empty()))
