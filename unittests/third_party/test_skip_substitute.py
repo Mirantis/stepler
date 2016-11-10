@@ -55,8 +55,11 @@ Case = namedtuple('Case', ('requires', 'expected'))
 
 cases = [
     Case(requires='ceph_enabled', expected=True),
+    Case(requires='not ceph_enabled', expected=False),
     Case(requires='is_ha', expected=False),
+    Case(requires='not is_ha', expected=True),
     Case(requires='ceph_enabled and is_ha', expected=False),
+    Case(requires='ceph_enabled and not is_ha', expected=True),
     Case(requires='more_nodes_than(2)', expected=True),
     Case(requires='more_computes_than(5)', expected=False),
     Case(requires='more_nodes_than(2) and ceph_enabled', expected=True),
@@ -65,6 +68,14 @@ cases = [
     Case(requires='more_nodes_than(1) and (ceph_enabled and is_ha)',
          expected=False),
     Case(requires='more_nodes_than(1) and ceph_enabled and is_ha',
+         expected=False),
+    Case(requires='more_nodes_than(1) and (ceph_enabled and not is_ha)',
+         expected=True),
+    Case(requires='more_nodes_than(1) and not (ceph_enabled and is_ha)',
+         expected=True),
+    Case(requires='more_nodes_than(1) and not (ceph_enabled or is_ha)',
+         expected=False),
+    Case(requires='not more_nodes_than(1) and not (ceph_enabled and is_ha)',
          expected=False),
 ]
 
