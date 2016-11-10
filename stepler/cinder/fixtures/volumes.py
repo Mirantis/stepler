@@ -30,7 +30,7 @@ __all__ = [
     'volume_steps',
     'upload_volume_to_image',
     'volume',
-    'volumes_cleanup',
+    'unexpected_volumes_cleanup',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ SKIPPED_VOLUMES = []
 
 
 @pytest.yield_fixture
-def volumes_cleanup():
+def unexpected_volumes_cleanup():
     """Callable function fixture to clear unexpected volumes.
 
     It provides cleanup before and after test.
