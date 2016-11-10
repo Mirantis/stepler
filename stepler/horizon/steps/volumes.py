@@ -294,8 +294,10 @@ class VolumesSteps(BaseSteps):
 
             form.item_network.click()
             with form.tab_network as tab:
-                tab.table_available_networks.row(
-                    name=network_name).button_add.click()
+                if not tab.table_allocated_networks.row(
+                        name=network_name).is_present:
+                    tab.table_available_networks.row(
+                        name=network_name).button_add.click()
 
             form.submit()
 
@@ -467,7 +469,8 @@ class VolumesSteps(BaseSteps):
         if check:
             self.close_notification('info')
             row = self._tab_snapshots().table_snapshots.row(name=snapshot_name)
-            row.wait_for_status('Available')
+            row.wait_for_status('Available',
+                                timeout=config.EVENT_TIMEOUT * 2)
             if description is not None:
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
@@ -604,7 +607,7 @@ class VolumesSteps(BaseSteps):
     @steps_checker.step
     def check_volume_present(self, volume_name, timeout=None):
         """Check volume is present."""
-        self.tab_volumes().table_volumes.row(
+        self._tab_volumes().table_volumes.row(
             name=volume_name, status='Available').wait_for_presence(timeout)
 
     @steps_checker.step

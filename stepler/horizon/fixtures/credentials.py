@@ -30,7 +30,7 @@ __all__ = [
 ]
 
 
-@pytest.fixture(params=('admin', 'user'))
+@pytest.fixture(params=('admin', 'user'), scope="session")
 def any_one(request):
     """Define user to log in account."""
     if request.param == 'admin':

@@ -97,4 +97,4 @@ class TestUserOnly(object):
     @pytest.mark.idempotent_id('ea9e9ac5-381d-40cc-b5e0-0393b07c6c5d')
     def test_unavailable_users_list_for_unprivileged_user(self, users_steps):
         """Verify that demo user can't see users list."""
-        users_steps.check_empty_users_list()
+        users_steps.check_no_users_page_in_menu()

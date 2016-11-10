@@ -23,6 +23,8 @@ from stepler.third_party import utils
 
 from stepler.config import *  # noqa
 
+BROWSER_WINDOW_SIZE = map(int, (os.environ.get('BROWSER_WINDOW_SIZE', ('1920,1080'))).split(','))  # noqa E501
+
 UI_TIMEOUT = 30
 ACTION_TIMEOUT = 60
 EVENT_TIMEOUT = 180

@@ -40,9 +40,9 @@ class TestAdminOnly(object):
     """Tests for admin only."""
 
     @pytest.mark.idempotent_id('dabd9a5c-87de-462f-9f8c-e387d8ba39b7')
-    def test_dashboard_help_url(self, new_user_account):
+    def test_dashboard_help_url(self, new_user_account, settings_steps):
         """Verify that user can open dashboard help url."""
-        self.check_dashboard_help_url("docs.openstack.org")
+        settings_steps.check_dashboard_help_url("docs.openstack.org")
 
     @pytest.mark.idempotent_id('94194097-802b-485c-9c5a-143d30e95dd6')
     def test_change_own_password(self, user, new_user_account, auth_steps,

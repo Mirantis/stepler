@@ -53,7 +53,7 @@ BAREMETAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/dib-user-image-dkms
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa E501
 
 TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                'test_reports'))
+                                                '../test_reports'))
 
 STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
 
