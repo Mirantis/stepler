@@ -78,14 +78,14 @@ class IronicPortSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
+        def _check_port_presence():
             try:
                 self._client.port.get(port.uuid)
                 return present
             except exceptions.NotFound:
                 return not present
 
-        wait(predicate, timeout_seconds=timeout)
+        wait(_check_port_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def delete_port(self, port, check=True):
