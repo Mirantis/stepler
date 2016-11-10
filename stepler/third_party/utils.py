@@ -41,6 +41,7 @@ __all__ = [
     'generate_ids',
     'generate_files',
     'generate_file_context',
+    'generate_ips',
     'get_file_path',
     'get_volume_migrate_host',
     'get_unwrapped_func',
