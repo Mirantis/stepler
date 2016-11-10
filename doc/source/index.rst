@@ -45,7 +45,7 @@ Make following commands in terminal::
    virtualenv .venv
    . .venv/bin/activate
    pip install -U pip
-   pip install -r requirements.txt -r c-requirements.txt
+   pip install -e .
 
 ----------------
 How to run tests
