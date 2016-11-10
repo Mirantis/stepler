@@ -19,12 +19,14 @@ CLI client steps
 
 from .cinder import *  # noqa
 from .heat import *  # noqa
+from .baremetal import *  # noqa
 from .nova import *  # noqa
 from .openstack import *  # noqa
 
 __all__ = [
     'CliCinderSteps',
     'CliHeatSteps',
+    'CliIronicSteps',
     'CliNovaSteps',
     'CliOpenstackSteps',
 ]
