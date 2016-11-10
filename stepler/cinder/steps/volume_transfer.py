@@ -88,7 +88,7 @@ class VolumeTransferSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
 
-        def predicate():
+        def _check_volume_transfer_presence():
             try:
                 self._client.get(transfer.id)
                 is_present = True
@@ -96,7 +96,9 @@ class VolumeTransferSteps(base.BaseSteps):
                 is_present = False
             return expect_that(is_present, equal_to(must_present))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(
+            _check_volume_transfer_presence, timeout_seconds=timeout,
+            waiting_for="Waiting for volume transfer {0}".format(transfer))
 
     @steps_checker.step
     def delete_volume_transfer(self, transfer, check=True):

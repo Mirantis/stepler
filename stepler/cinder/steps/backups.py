@@ -139,11 +139,14 @@ class BackupSteps(base.BaseSteps):
         if not hasattr(backup, 'id'):
             backup = self.get_backup_by_id(backup)
 
-        def predicate():
+        def _check_backup_status():
             backup.get()
             return expect_that(backup.status.lower(), equal_to(status.lower()))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(
+            _check_backup_status, timeout_seconds=timeout,
+            waiting_for="Waiting for backup {0} status {1}"
+            .format(backup, status))
 
     @steps_checker.step
     def check_backup_not_created_with_long_container_name(self, volume,
@@ -194,7 +197,7 @@ class BackupSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
 
-        def predicate():
+        def _check_backup_presence():
             try:
                 self._client.get(backup.id)
                 is_present = True
@@ -202,4 +205,6 @@ class BackupSteps(base.BaseSteps):
                 is_present = False
             return expect_that(is_present, equal_to(must_present))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(
+            _check_backup_presence, timeout_seconds=timeout,
+            waiting_for="Waiting for backup {0} presence".format(backup))
