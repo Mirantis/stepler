@@ -127,7 +127,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         self._client.image_members.delete(image.id, project.id)
         if check:
-            self.check_image_bind_status(image, project, binded=False)
+            self.check_image_bind_status(image, project, bound=False)
 
     @steps_checker.step
     def get_images(self, name_prefix=None, check=True, **kwargs):
@@ -225,14 +225,14 @@ class GlanceStepsV2(BaseGlanceSteps):
         wait(_check_image_status, timeout_seconds=timeout)
 
     @steps_checker.step
-    def check_image_bind_status(self, image, project, binded=True, timeout=0):
+    def check_image_bind_status(self, image, project, bound=True, timeout=0):
         """Check step image binding status.
 
         Args:
-            image (object): image binded/unbinded with project
-            project (object): project binded/unbinded with image
-            binded (bool): flag whether project and image should be binded or
-                           unbinded
+            image (object): image bound/unbound with project
+            project (object): project bound/unbound with image
+            bound (bool): flag whether project and image should be bound or
+                unbound
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -242,7 +242,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             members = self._client.image_members.list(image.id)
             member_ids = [member['member_id'] for member in members]
 
-            if binded:
+            if bound:
                 return project.id in member_ids
             else:
                 return project.id not in member_ids
@@ -257,7 +257,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """Check image container format and disk format.
 
         Args:
-            image (object): image binded/unbinded with project
+            image_name (object): image bound/unbound with project
             image_container (str): type of image container
             disk_format (str): type of disk format
 
@@ -273,7 +273,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """Step to check that after updating heat stack image_id was changed
 
         Args:
-            image_id (str): befor updating
+            image_id (str): before updating
             image_name (str): image name that was replaced
 
         Raises:
