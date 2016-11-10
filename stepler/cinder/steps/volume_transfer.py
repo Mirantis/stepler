@@ -33,10 +33,11 @@ class VolumeTransferSteps(base.BaseSteps):
     """Cinder volume transfer steps."""
 
     @steps_checker.step
-    def get_transfers(self, check=True):
+    def get_transfers(self, prefix=None, check=True):
         """Step to retrieve volume transfers.
 
         Args:
+            prefix (str): name or description prefix to filter transfers
             check (bool|True): flag whether to check step or not
 
         Returns:
@@ -46,6 +47,10 @@ class VolumeTransferSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         transfers = self._client.list()
+
+        if prefix:
+            transfers = [transfer for transfer in transfers
+                         if (transfer.name or '').startswith(prefix)]
 
         if check:
             assert_that(transfers, is_not(empty()))

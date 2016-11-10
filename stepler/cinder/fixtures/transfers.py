@@ -20,6 +20,8 @@ Volume transfer fixtures
 import pytest
 
 from stepler.cinder import steps
+from stepler import config
+from stepler.third_party import context
 
 __all__ = [
     'transfer_steps',
@@ -47,16 +49,18 @@ def get_transfer_steps(get_cinder_client):
 
 
 @pytest.fixture
-def transfer_steps(get_transfer_steps):
+def transfer_steps(get_transfer_steps, transfers_cleanup):
     """Function fixture to get volume transfer steps.
 
     Args:
         get_transfer_steps (function): function to get transfer steps
 
-    Returns:
+    Yields:
         VolumeTransferSteps: instantiated transfer steps.
     """
-    return get_transfer_steps()
+    _transfer_steps = get_transfer_steps()
+    with transfers_cleanup(_transfer_steps):
+        yield _transfer_steps
 
 
 @pytest.yield_fixture
@@ -85,16 +89,28 @@ def create_volume_transfer(transfer_steps):
 
 
 @pytest.fixture
-def transfers_cleanup(transfer_steps):
-    """Function fixture to clear created transfers after test.
+def transfers_cleanup(uncleanable):
+    """Callable function fixture to clear created transfers after test.
 
     Args:
-        transfer_steps (object): instantiated volume transfer steps
-    """
-    preserve_transfers_ids = set(
-        transfer.id for transfer in transfer_steps.get_transfers(check=False))
-    yield
+        uncleanable (AttrDict): data structure with skipped resources
 
-    for transfer in transfer_steps.get_transfers(check=False):
-        if transfer.id not in preserve_transfers_ids:
-            transfer_steps.delete_volume_transfer(transfer)
+    Returns:
+        function: function to cleanup transfers
+    """
+    @context.context
+    def _transfers_cleanup(transfer_steps):
+        def _get_transfers():
+            return transfer_steps.get_transfers(prefix=config.STEPLER_PREFIX,
+                                                check=False)
+
+        transfers_ids_before = set(transfer.id for transfer in _get_transfers())
+
+        yield
+
+        for transfer in _get_transfers():
+            if (transfer.id not in uncleanable.transfer_ids and
+                    transfer.id not in transfers_ids_before):
+                transfer_steps.delete_volume_transfer(transfer)
+
+    return _transfers_cleanup

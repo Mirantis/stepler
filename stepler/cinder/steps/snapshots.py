@@ -23,6 +23,7 @@ from stepler import base
 from stepler import config
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = ['SnapshotSteps']
@@ -34,13 +35,16 @@ class SnapshotSteps(base.BaseSteps):
     @steps_checker.step
     def create_snapshots(self,
                          volume,
-                         names,
+                         names=None,
+                         description=None,
                          check=True):
         """Step to create snapshots.
 
         Args:
             volume (object): volume of the snapshots
-            names (str): name of created snapshots
+            names (list): name of created snapshots, if not specified
+                one snapshot name will be generated
+            description (str): snapshot description
             check (bool): flag whether to check step or not
 
         Returns:
@@ -49,9 +53,12 @@ class SnapshotSteps(base.BaseSteps):
         Raises:
             TimeoutExpired|AssertionError: if check failed after timeout
         """
+        names = names or utils.generate_ids()
         snapshots = []
         for name in names:
-            snapshot = self._client.create(name=name, volume_id=volume.id)
+            snapshot = self._client.create(name=name,
+                                           description=description,
+                                           volume_id=volume.id)
             snapshots.append(snapshot)
 
         if check:
@@ -138,11 +145,11 @@ class SnapshotSteps(base.BaseSteps):
             waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_snapshots(self, name_prefix=None, check=True):
+    def get_snapshots(self, prefix=None, check=True):
         """Step to get snapshots.
 
         Args:
-            name_prefix (str): name prefix to filter snapshots
+            prefix (str): name or description prefix to filter snapshots
             check (bool): flag whether to check step or not
 
         Returns:
@@ -153,9 +160,14 @@ class SnapshotSteps(base.BaseSteps):
         """
         snapshots = list(self._client.list())
 
-        if name_prefix:
-            snapshots = [snapshot for snapshot in snapshots
-                         if (snapshot.name or '').startswith(name_prefix)]
+        if prefix:
+            all_snapshots = snapshots
+            snapshots = []
+            for snapshot in all_snapshots:
+                for x in ['name', 'description']:
+                    if (getattr(snapshot, x) or '').startswith(prefix):
+                        snapshots.append(snapshot)
+                        break
 
         if check:
             assert_that(snapshots, is_not(empty()))

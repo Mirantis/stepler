@@ -82,10 +82,12 @@ class BackupSteps(base.BaseSteps):
         return backup
 
     @steps_checker.step
-    def get_backups(self, check=True):
+    def get_backups(self, prefix=None, check=True):
         """Step to retrieve all backups from cinder.
 
         Args:
+            prefix (str): name, description or container prefix to
+                filter backups
             check (bool): flag whether to check step or not
 
         Returns:
@@ -95,6 +97,15 @@ class BackupSteps(base.BaseSteps):
             AssertionError: if check was failed
         """
         backups = list(self._client.list())
+
+        if prefix:
+            all_backups = backups
+            backups = []
+            for backup in all_backups:
+                for x in ['name', 'description', 'container']:
+                    if (getattr(backup, x) or '').startswith(prefix):
+                        backups.append(backup)
+                        break
 
         if check:
             assert_that(backups, is_not(empty()))

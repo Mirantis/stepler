@@ -77,9 +77,8 @@ def snapshots_cleanup(uncleanable):
     def _snapshots_cleanup(snapshot_steps):
 
         def _get_snapshots():
-            return snapshot_steps.get_snapshots(
-                name_prefix=config.STEPLER_PREFIX,
-                check=False)
+            return snapshot_steps.get_snapshots(prefix=config.STEPLER_PREFIX,
+                                                check=False)
 
         snapshots_ids_before = [snapshot.id for snapshot in _get_snapshots()]
 
