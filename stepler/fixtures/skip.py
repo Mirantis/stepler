@@ -35,7 +35,7 @@ def skip_test(request):
            @pytest.mark.requires("more_computes_than(4)")
            @pytest.mark.requires("more_computes_than(2) and ceph_enabled")
 
-        Supported logical operations ``and``, ``or``, ``not`` and their
+        It supports any logical and arithmetical operations and their
         combinations.
 
     Args:
@@ -44,6 +44,12 @@ def skip_test(request):
     requires = request.node.get_marker('requires')
     if not requires:
         return
+
+    if len(requires.args) == 1:
+        requires = requires.args[0]
+    else:
+        requires = map(lambda req: '({})'.format(req), requires.args)
+        requires = ' and '.join(requires)
 
     # TODO(schipiga): configure with real env config, when it will be possible
     predicates = Predicates(None)
@@ -58,8 +64,6 @@ def skip_test(request):
 # TODO(schipiga): populate predicates when it will be possible
 class Predicates(object):
     """Namespace for predicates to skip a test."""
-
-    _env = None
 
     def __init__(cls, env):
         """Initialize."""
