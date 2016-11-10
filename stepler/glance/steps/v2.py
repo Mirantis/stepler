@@ -225,14 +225,14 @@ class GlanceStepsV2(BaseGlanceSteps):
         wait(_check_image_status, timeout_seconds=timeout)
 
     @steps_checker.step
-    def check_image_bind_status(self, image, project, binded=True, timeout=0):
+    def check_image_bind_status(self, image, project, bound=True, timeout=0):
         """Check step image binding status.
 
         Args:
-            image (object): image binded/unbinded with project
-            project (object): project binded/unbinded with image
-            binded (bool): flag whether project and image should be binded or
-                           unbinded
+            image (object): image bound/unbound with project
+            project (object): project bound/unbound with image
+            bound (bool): flag whether project and image should be bound or
+                           unbound
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -242,7 +242,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             members = self._client.image_members.list(image.id)
             member_ids = [member['member_id'] for member in members]
 
-            if binded:
+            if bound:
                 return project.id in member_ids
             else:
                 return project.id not in member_ids
@@ -251,20 +251,20 @@ class GlanceStepsV2(BaseGlanceSteps):
 
     @steps_checker.step
     def check_image_container_and_disk_format(self,
-                                              image_name,
+                                              image,
                                               image_container,
                                               disk_format):
         """Check image container format and disk format.
 
         Args:
-            image (object): image binded/unbinded with project
+            image (object): image bound/unbound with project
             image_container (str): type of image container
             disk_format (str): type of disk format
 
         Raises:
             AssertionError: if check failed
         """
-        image = self.get_image(name=image_name)
+        image = self.get_image(name=image)
         assert_that(image['container_format'], equal_to(image_container))
         assert_that(image['disk_format'], equal_to(disk_format))
 
@@ -273,7 +273,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """Step to check that after updating heat stack image_id was changed
 
         Args:
-            image_id (str): befor updating
+            image_id (str): before updating
             image_name (str): image name that was replaced
 
         Raises:
