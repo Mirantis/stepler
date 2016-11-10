@@ -101,9 +101,11 @@ def uncleanable():
     data structure contains such resources.
     """
     data = attrdict.AttrDict()
+    data.backup_ids = set()
     data.image_ids = set()
     data.keypair_ids = set()
     data.server_ids = set()
     data.snapshot_ids = set()
+    data.transfer_ids = set()
     data.volume_ids = set()
     return data

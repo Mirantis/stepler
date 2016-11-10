@@ -134,11 +134,14 @@ class CliCinderSteps(base.BaseCliSteps):
         show_result = {key: value for key, value in backup_table['values']}
 
         if check:
-            # TODO(agromov): add checks when parser can process unicode:
-            # 1) show_result['name'] equals backup.name
-            # 2) show_result['description'] equals backup.description
-            # 3) show_result['container'] equals backup.container
             assert_that(show_result['id'], is_(backup.id))
+            if backup.name:
+                assert_that(show_result['name'], is_(backup.name))
+            if backup.description:
+                assert_that(show_result['description'],
+                            is_(backup.description))
+            if backup.container:
+                assert_that(show_result['container'], is_(backup.container))
 
     @steps_checker.step
     def create_volume_snapshot(self, volume, name=None, description=None,
@@ -169,6 +172,33 @@ class CliCinderSteps(base.BaseCliSteps):
         snapshot = {key: value for key, value in snapshot_table['values']}
 
         return snapshot
+
+    @steps_checker.step
+    def show_volume_snapshot(self, snapshot, check=True):
+        """Step to show volume snapshot using CLI.
+
+        Args:
+            snapshot (object): cinder volume snapshot object to show
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        cmd = 'cinder snapshot-show ' + snapshot.id
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.SNAPSHOT_SHOW_TIMEOUT, check=check)
+
+        snapshot_table = output_parser.table(stdout)
+        show_result = {key: value for key, value in snapshot_table['values']}
+
+        if check:
+            assert_that(show_result['id'], is_(snapshot.id))
+            if snapshot.name:
+                assert_that(show_result['name'], is_(snapshot.name))
+            if snapshot.description:
+                assert_that(show_result['description'],
+                            is_(snapshot.description))
 
     @steps_checker.step
     def create_volume_transfer(self, volume, name=None, check=True):
@@ -215,6 +245,6 @@ class CliCinderSteps(base.BaseCliSteps):
         transfer_dict = {key: value for key, value in transfer_table['values']}
 
         if check:
-            # TODO(aallakhverdieva): add check
-            # transfer_dict['name'] equals volume_transfer.name
             assert_that(transfer_dict['id'], is_(volume_transfer.id))
+            if volume_transfer.name:
+                assert_that(transfer_dict['name'], is_(volume_transfer.name))
