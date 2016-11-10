@@ -17,10 +17,9 @@ Setup stepler
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup, find_packages  # noqa
+from setuptools import setup  # noqa
 
 setup(
-    name='stepler',
-    packages=find_packages(),
-    url='https://github.com/Mirantis/stepler'
+    setup_requires=['pbr>=1.8'],
+    pbr=True
 )
