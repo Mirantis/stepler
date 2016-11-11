@@ -129,8 +129,6 @@ BAREMETAL_DISK_INFO = [{"name": "sda",
                                      "file_system": "ext4",
                                      "size": 10000}]}]
 
-# Neutron
-ADMIN_INTERNAL_NETWORK_NAME = 'admin_internal_net'
 
 # Nova
 CREDENTIALS_PREFIX = 'stepler_credentials_'

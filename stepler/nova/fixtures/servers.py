@@ -147,7 +147,8 @@ def create_servers_context(server_steps):
     """
     @context.context
     def _create_servers_context(server_names, *args, **kwgs):
-        servers = server_steps.create_servers(server_names, *args, **kwgs)
+        servers = server_steps.create_servers(server_names=server_names,
+                                              *args, **kwgs)
         yield servers
         server_steps.delete_servers(servers)
 
@@ -186,21 +187,27 @@ def create_server_context(create_servers_context):
 
 
 @pytest.fixture
-def server(cirros_image, flavor, internal_network, server_steps):
+def server(cirros_image,
+           flavor,
+           net_subnet_router,
+           add_router_interfaces,
+           server_steps):
     """Function fixture to create server with default options before test.
 
     Args:
         cirros_image (object): cirros image from glance
         flavor (object): nova flavor
-        internal_network (object): neutron internal network
+        net_subnet_router (tuple): neutron network, subnet, router
+        add_router_interfaces (TYPE): Description
         server_steps (ServerSteps): instantiated server steps
 
     Returns:
         object: nova server
     """
+    network, _, _ = net_subnet_router
     return server_steps.create_servers(image=cirros_image,
                                        flavor=flavor,
-                                       networks=[internal_network])[0]
+                                       networks=[network])[0]
 
 
 # TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.
