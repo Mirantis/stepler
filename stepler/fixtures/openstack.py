@@ -102,7 +102,8 @@ def uncleanable():
     """
     data = attrdict.AttrDict()
     data.image_ids = set()
+    data.keypair_ids = set()
     data.server_ids = set()
-    data.volume_ids = set()
     data.snapshot_ids = set()
+    data.volume_ids = set()
     return data

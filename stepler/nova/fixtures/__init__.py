@@ -50,9 +50,9 @@ __all__ = sorted([  # sort for documentation
 
     'hypervisor_steps',
 
-    'create_keypair',
     'keypair',
     'keypair_steps',
+    'keypairs_cleanup',
 
     'get_nova_client',
     'nova_client',

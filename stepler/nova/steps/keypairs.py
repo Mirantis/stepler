@@ -17,76 +17,136 @@ Keypair steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to  # noqa
-from waiting import wait
+from hamcrest import assert_that, empty, equal_to, is_not  # noqa
+from novaclient import exceptions as nova_exceptions
 
-from stepler.base import BaseSteps
+from stepler import base
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
+from stepler.third_party import waiter
 
 __all__ = [
     'KeypairSteps'
 ]
 
 
-class KeypairSteps(BaseSteps):
+class KeypairSteps(base.BaseSteps):
     """Keypair steps."""
 
     @steps_checker.step
-    def create_keypair(self, keypair_name, public_key=None, check=True):
-        """Step to create keypair.
+    def create_keypairs(self,
+                        names=None,
+                        count=1,
+                        public_key=None,
+                        check=True):
+        """Step to create keypairs.
 
         Args:
-            keypair_name (str): name for the keypair to create
-            public_key (str): existing public key to import
+            names (list, optional): Names of creating keypairs.
+            count (int, optional): Count of creating keypairs, omitted
+                if ``names`` is specified.
+            public_key (str, optional): Existing public key to import.
+            check (bool, optional): Flag whether to check step or not.
 
         Returns:
-            keypair (object): keypair
+            list: Keypairs collection.
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            TimeoutExpired | AssertionError: If check failed.
         """
-        keypair = self._client.create(keypair_name, public_key=public_key)
+        names = names or utils.generate_ids(count=count)
+
+        keypairs = []
+        for name in names:
+            keypair = self._client.create(name, public_key=public_key)
+            keypairs.append(keypair)
 
         if check:
-            self.check_keypair_presence(keypair)
-            if public_key is not None:
-                assert_that(keypair.public_key, equal_to(public_key))
+            self.check_keypairs_presence(keypairs)
 
-        return keypair
+            for keypair in keypairs:
+                if public_key is not None:
+                    assert_that(keypair.public_key, equal_to(public_key))
+
+        return keypairs
 
     @steps_checker.step
-    def delete_keypair(self, keypair, check=True):
-        """Step to delete keypair.
+    def delete_keypairs(self,
+                        keypairs,
+                        check=True):
+        """Step to delete keypairs.
 
         Args:
-            keypair (object): key to delete.
-            check (bool): flag whether to check step or not
+            keypairs (list): Keypairs to delete.
+            check (bool, optional): Flag whether to check step or not.
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            TimeoutExpired: If check failed.
         """
-        self._client.delete(keypair.id)
+        for keypair in keypairs:
+            self._client.delete(keypair.id)
 
         if check:
-            self.check_keypair_presence(keypair, present=False)
+            self.check_keypairs_presence(keypairs, must_present=False)
 
     @steps_checker.step
-    def check_keypair_presence(self, keypair, present=True, timeout=0):
-        """Verify step to check keypair is present.
+    def get_keypairs(self,
+                     name_prefix=None,
+                     check=True):
+        """Step to get keypairs.
 
         Args:
-            keypair (class or its ID): key to check.
-            present (bool): flag whether image should present or not
-            timeout (int): seconds to wait a result of check
+            name_prefix (str, optional): Name prefix to filter keypairs.
+            check (bool, optional): Flag whether to check step or not.
+
+        Returns:
+            list: Keypairs collection.
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            AssertionError: If check failed.
         """
-        def predicate():
-            try:
-                self._client.get(keypair.id)
-                return present
-            except Exception:
-                return not present
+        keypairs = list(self._client.list())
 
-        wait(predicate, timeout_seconds=timeout)
+        if name_prefix:
+            keypairs = [keypair for keypair in keypairs
+                        if (keypair.name or '').startswith(name_prefix)]
+
+        if check:
+            assert_that(keypairs, is_not(empty()))
+
+        return keypairs
+
+    @steps_checker.step
+    def check_keypairs_presence(self,
+                                keypairs,
+                                must_present=True,
+                                keypair_timeout=0):
+        """Step to check keypairs presence status.
+
+        Args:
+            keypairs (list): Keypairs to check.
+            must_present (bool, optional): Flag whether keypairs must present
+                or not.
+            timeout (int, optional): Seconds to wait check result.
+
+        Raises:
+            TimeoutExpired: If check failed after timeout.
+        """
+        expected_presence = {keypair.id: must_present for keypair in keypairs}
+
+        def _check_keypairs_presence():
+            actual_presence = {}
+            for keypair in keypairs:
+
+                try:
+                    keypair.get()
+                    actual_presence[keypair.id] = True
+
+                except nova_exceptions.NotFound:
+                    actual_presence[keypair.id] = False
+
+            return expect_that(actual_presence, equal_to(expected_presence))
+
+        timeout = len(keypairs) * keypair_timeout
+        waiter.wait(_check_keypairs_presence, timeout_seconds=timeout)

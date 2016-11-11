@@ -136,7 +136,6 @@ __all__ = sorted([  # sort for documentation
     'nova_floating_ip_steps',
     'host_steps',
     'hypervisor_steps',
-    'create_keypair',
     'keypair',
     'keypair_steps',
     'nova_client',
