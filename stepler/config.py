@@ -20,6 +20,8 @@ Config
 import os
 import uuid
 
+DEBUG = bool(os.environ.get('DEBUG', False))
+
 PROJECT_DOMAIN_NAME = os.environ.get('OS_PROJECT_DOMAIN_NAME', 'default')
 USER_DOMAIN_NAME = os.environ.get('OS_USER_DOMAIN_NAME', 'default')
 PROJECT_NAME = os.environ.get('OS_PROJECT_NAME', 'admin')
