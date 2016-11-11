@@ -46,8 +46,7 @@ def test_negative_create_volume_transfer_long_name(volume, transfer_steps):
 
 
 @pytest.mark.idempotent_id('a2441208-2c59-4bd0-a2bf-97663ad59084')
-@pytest.mark.parametrize('transfer_name', ["シンダ", None])
-def test_create_volume_transfer(volume, create_volume_transfer, transfer_name):
+def test_create_volume_transfer(volume, create_volume_transfer):
     """**Scenario:** Verify creation of volume transfer.
 
     **Setup:**
@@ -56,14 +55,14 @@ def test_create_volume_transfer(volume, create_volume_transfer, transfer_name):
 
     **Steps:**
 
-    #. Create volume transfer with non-unicode name
+    #. Create volume transfer
 
     **Teardown:**
 
     #. Delete volume transfer
     #. Delete cinder volume
     """
-    create_volume_transfer(volume, transfer_name)
+    create_volume_transfer(volume, next(utils.generate_ids('transfer')))
 
 
 @pytest.mark.idempotent_id('aafc52a5-4525-4158-a07f-eb944100fdc8')
