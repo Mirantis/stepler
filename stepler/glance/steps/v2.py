@@ -41,6 +41,7 @@ class GlanceStepsV2(BaseGlanceSteps):
                       disk_format='qcow2',
                       container_format='bare',
                       visibility='private',
+                      upload=True,
                       check=True,
                       **kwargs):
         """Step to create images.
@@ -53,6 +54,8 @@ class GlanceStepsV2(BaseGlanceSteps):
             container_format (str): format of image container
             visibility (str): image visibility (private or public). Default is
                 private.
+            upload (bool): flag whether to upload image after creation or not
+                (upload=False is used in some negative tests)
             check (bool): flag whether to check step or not
             **kwargs: Optional. A dictionary containing the attributes
                         of the resource
@@ -73,15 +76,22 @@ class GlanceStepsV2(BaseGlanceSteps):
                 visibility=visibility,
                 **kwargs)
 
-            self._client.images.upload(image.id, open(image_path, 'rb'))
+            if upload:
+                self._client.images.upload(image.id, open(image_path, 'rb'))
             images.append(image)
 
         if check:
             for image in images:
-                self.check_image_status(
-                    image,
-                    config.STATUS_ACTIVE,
-                    timeout=config.IMAGE_AVAILABLE_TIMEOUT)
+                if upload:
+                    self.check_image_status(
+                        image,
+                        config.STATUS_ACTIVE,
+                        timeout=config.IMAGE_AVAILABLE_TIMEOUT)
+                else:
+                    self.check_image_status(
+                        image,
+                        config.STATUS_QUEUED,
+                        timeout=config.IMAGE_QUEUED_TIMEOUT)
 
         return images
 
