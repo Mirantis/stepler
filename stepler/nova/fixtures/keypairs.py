@@ -19,18 +19,19 @@ Keypair fixtures
 
 import pytest
 
-from stepler.nova.steps import KeypairSteps
-from stepler.third_party.utils import generate_ids
+from stepler import config
+from stepler.nova import steps
+from stepler.third_party import context
 
 __all__ = [
-    'create_keypair',
     'keypair',
-    'keypair_steps'
+    'keypair_steps',
+    'keypairs_cleanup',
 ]
 
 
 @pytest.fixture
-def keypair_steps(nova_client):
+def keypair_steps(nova_client, keypairs_cleanup):
     """Function fixture to get keypair steps.
 
     Can be called several times during test.
@@ -40,40 +41,49 @@ def keypair_steps(nova_client):
         nova_client (object): instantiated nova client
 
     Returns:
-        stepler.nova.steps.KeypairSteps: instantiated keypair steps
-
+        KeypairSteps: instantiated keypair steps
     """
-    return KeypairSteps(nova_client.keypairs)
-
-
-@pytest.yield_fixture
-def create_keypair(keypair_steps):
-    """Callable function fixture to create keypair with options.
-
-    Can be called several times during test.
-    After the test it destroys all created security groups
-
-    Args:
-        keypair_steps (object): instantiated keypair steps
-
-    Returns:
-        function: function to create keypair
-    """
-    keypairs = []
-
-    def _create_keypair(keypair_name):
-        keypair = keypair_steps.create_keypair(keypair_name)
-        keypairs.append(keypair)
-        return keypair
-
-    yield _create_keypair
-
-    for keypair in keypairs:
-        keypair_steps.delete_keypair(keypair)
+    _keypair_steps = steps.KeypairSteps(nova_client.keypairs)
+    with keypairs_cleanup(_keypair_steps):
+        yield _keypair_steps
 
 
 @pytest.fixture
-def keypair(create_keypair):
+def keypairs_cleanup(uncleanable):
+    """Callable function fixture to cleanup keypairs after test.
+
+    Args:
+        uncleanable (AttrDict): data structure with skipped resources
+
+    Returns:
+        function: function to cleanup keypairs
+    """
+    @context.context
+    def _keypairs_cleanup(keypair_steps):
+
+        def _get_keypairs():
+            # check=False because in best case no keypairs will be
+            return keypair_steps.get_keypairs(
+                name_prefix=config.STEPLER_PREFIX, check=False)
+
+        keypair_ids_before = [keypair.id for keypair in _get_keypairs()]
+
+        yield
+
+        deleting_keypairs = []
+        for keypair in _get_keypairs():
+
+            if keypair.id not in uncleanable.keypair_ids:
+                if keypair.id not in keypair_ids_before:
+                    deleting_keypairs.append(keypair)
+
+        keypair_steps.delete_keypairs(deleting_keypairs)
+
+    return _keypairs_cleanup
+
+
+@pytest.fixture
+def keypair(keypair_steps):
     """Function fixture to create keypair with options.
 
     Can be called several times during test.
@@ -85,5 +95,4 @@ def keypair(create_keypair):
     Returns:
         object: keypair
     """
-    keypair_name = next(generate_ids('keypair'))
-    return create_keypair(keypair_name)
+    return keypair_steps.create_keypairs()[0]
