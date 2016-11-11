@@ -28,7 +28,6 @@ __all__ = sorted([  # sort for documentation
     'create_network',
     'network',
     'public_network',
-    'internal_network',
     'baremetal_network',
     'create_port',
     'port',
@@ -47,5 +46,5 @@ __all__ = sorted([  # sort for documentation
     'get_router_steps',
     'subnet_steps',
     'get_subnet_steps',
-    'admin_internal_network',
+    'net_subnet_router',
 ])

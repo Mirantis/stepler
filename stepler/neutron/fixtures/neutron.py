@@ -25,6 +25,7 @@ from stepler.neutron.client import client
 __all__ = [
     'neutron_client',
     'get_neutron_client',
+    'net_subnet_router',
 ]
 
 
@@ -55,3 +56,13 @@ def neutron_client(get_neutron_client):
             client wrapper
     """
     return get_neutron_client()
+
+
+@pytest.fixture
+def net_subnet_router(network, subnet, router, add_router_interfaces):
+    """Function fixture to create net, subnet, router and link them.
+
+    It deletes all created resources after test.
+    """
+    add_router_interfaces(router, [subnet])
+    return network, subnet, router
