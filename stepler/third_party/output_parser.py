@@ -17,6 +17,8 @@ Collection of utilities for parsing CLI clients output
 
 import re
 
+import prettytable
+
 delimiter_line = re.compile('^\+\-[\+\-]+\-\+$')
 
 
@@ -69,7 +71,6 @@ def tables(output_lines):
 
 
 # TODO(gdyuldin): refactor after coping from tempest
-# TODO(agromov): fix parsing table with unicode symbols
 def table(output_lines):
     """Parse single table from cli output.
     Return dict with list of column names in 'headers' key and
@@ -85,6 +86,7 @@ def table(output_lines):
         # skip last line if empty (just newline at the end)
         output_lines = output_lines[:-1]
 
+    rows = []
     for line in output_lines:
         if delimiter_line.match(line):
             columns = _table_columns(line)
@@ -93,13 +95,45 @@ def table(output_lines):
             continue
         row = []
         for col in columns:
-            row.append(line[col[0]:col[1]].strip())
-        if table_['headers']:
-            table_['values'].append(row)
-        else:
-            table_['headers'] = row
+            row.append(_get_cell(line, *col).strip())
+        rows.append(row)
+
+    # Combine multiline cells
+    if len(rows[0]) == 2:
+        for i in reversed(range(len(rows))):
+            if not rows[i][0]:
+                rows[i - 1][1] += rows[i][1]
+                rows.pop(i)
+
+    table_['headers'] = rows[0]
+    table_['values'] = rows[1:]
 
     return table_
+
+
+def _get_cell(line, start, end):
+    """Returns part of line from `start` to `end` considering char block width.
+
+    Args:
+        line (str): unicode line
+        start (int): start of desired part of line
+        end (int): end of desired part of line
+
+    Returns:
+        str: part of string
+    """
+    pos = 0
+    output = []
+
+    for char in line:
+        char_width = prettytable._char_block_width(ord(char))
+        if pos >= end:
+            break
+        if pos >= start:
+            output.append(char)
+        pos += char_width
+
+    return u''.join(output)
 
 
 # TODO(gdyuldin): refactor after coping from tempest
