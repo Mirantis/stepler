@@ -75,4 +75,5 @@ __all__ = sorted([  # sort for documentation
     'live_migration_server',
     'servers_cleanup',
     'generate_traffic',
+    'unexpected_servers_cleanup',
 ])
