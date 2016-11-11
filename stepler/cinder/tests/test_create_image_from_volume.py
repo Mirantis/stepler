@@ -18,21 +18,17 @@ Volume tests
 
 import pytest
 
-from stepler.third_party import utils
-
 
 @pytest.mark.parametrize('disk_format', ['raw', 'qcow2', 'vdi', 'vmdk'])
 @pytest.mark.idempotent_id('7a8f8745-0348-458c-8cf6-143b4627276a')
 def test_create_image_from_volume(upload_volume_to_image, disk_format):
-    """**Scenario:** Verify that raw/qcow2/vdi/vmdk image is created from
-    volume.
+    """**Scenario:** raw/qcow2/vdi/vmdk image is created from volume.
 
     **Steps:**
 
     #. Create cinder volume
-    #. Create raw|qcow2 image from volume
-    #. Delete raw|qcow2 image
+    #. Create image from volume
+    #. Delete image
     #. Delete cinder volume
     """
-    upload_volume_to_image(image_name=next(utils.generate_ids('image')),
-                           disk_format=disk_format)
+    upload_volume_to_image(disk_format=disk_format)
