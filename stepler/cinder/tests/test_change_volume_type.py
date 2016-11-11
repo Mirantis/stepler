@@ -55,8 +55,8 @@ def test_change_volume_type(create_volume_type, volume_steps):
     #. Delete volume
     #. Delete volume types
     """
-    volume_type_1 = create_volume_type(utils.generate_ids('volume_type'))
-    volume_type_2 = create_volume_type(utils.generate_ids('volume_type'))
+    volume_type_1 = create_volume_type(next(utils.generate_ids()))
+    volume_type_2 = create_volume_type(next(utils.generate_ids()))
 
     volume = volume_steps.create_volumes(volume_type=volume_type_1.name)[0]
     volume_steps.change_volume_type(volume, volume_type_2, config.POLICY_NEVER)
