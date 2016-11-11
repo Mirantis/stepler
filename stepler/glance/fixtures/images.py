@@ -54,7 +54,7 @@ def unexpected_images_cleanup():
     """Callable function fixture to clear unexpected images.
 
     It provides cleanup before and after test. Cleanup before test is callable
-    with injecton of glance steps. Should be called before returning of
+    with injection of glance steps. Should be called before returning of
     instantiated glance steps.
     """
     _glance_steps = [None]
