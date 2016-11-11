@@ -39,3 +39,104 @@ def test_upload_image_without_properties(cli_glance_steps, api_version):
     """
     cli_glance_steps.check_negative_image_create_without_properties(
         filename=next(utils.generate_ids()), api_version=api_version)
+
+
+@pytest.mark.idempotent_id('54bdc370-45f6-4085-977c-07996fb81943',
+                           api_version=1)
+@pytest.mark.idempotent_id('30537390-e1ba-47bc-aca0-db94a740f728',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_project_in_image_member_list(cirros_image,
+                                      project,
+                                      cli_glance_steps,
+                                      glance_steps,
+                                      api_version):
+    """**Scenario:** Verify 'glance member-list' command.
+
+    Test checks that 'glance member-list --image_id <id>' shows binded project
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create non-admin project
+
+    **Steps:**
+
+    #. Bind project to image via API
+    #. Check cli command 'glance member-list --image_id <id>' shows binded
+        project
+
+    **Teardown:**
+
+    #. Delete project
+    #. Delete cirros image
+    """
+    glance_steps.bind_project(cirros_image, project, check=False)
+    cli_glance_steps.check_project_in_image_member_list(
+        cirros_image, project, api_version=api_version)
+
+
+@pytest.mark.idempotent_id('885ce1ec-ad7d-4401-b67d-14b5f2451674',
+                           api_version=1)
+@pytest.mark.idempotent_id('3adc71e3-2362-4a95-aac6-93a14da65487',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_create_image_member(cirros_image,
+                             project,
+                             cli_glance_steps,
+                             glance_steps,
+                             api_version):
+    """**Scenario:** Verify 'glance member-create' command.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create non-admin project
+
+    **Steps:**
+
+    #. Run cli command 'glance member-create <image_id> <project_id>'
+    #. Check that project is in image member-list via API
+
+    **Teardown:**
+
+    #. Delete project
+    #. Delete cirros image
+    """
+    cli_glance_steps.create_image_member(cirros_image, project,
+                                         api_version=api_version)
+    glance_steps.check_image_bind_status(cirros_image, project)
+
+
+@pytest.mark.idempotent_id('41594846-bf76-4132-9d80-3cb679b12516',
+                           api_version=1)
+@pytest.mark.idempotent_id('e2393652-ae09-42ae-87fd-7b16adeaa6f7',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_delete_image_member(cirros_image,
+                             project,
+                             cli_glance_steps,
+                             glance_steps,
+                             api_version):
+    """**Scenario:** Verify 'glance member-delete' command.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create non-admin project
+
+    **Steps:**
+
+    #. Bind project to image via API
+    #. Run cli command 'glance member-delete <image_id> <project_id>'
+    #. Check that project not in image member-list via API
+
+    **Teardown:**
+
+    #. Delete project
+    #. Delete cirros image
+    """
+    glance_steps.bind_project(cirros_image, project)
+    cli_glance_steps.delete_image_member(cirros_image, project,
+                                         api_version=api_version)
+    glance_steps.check_image_bind_status(cirros_image, project, bound=False)
