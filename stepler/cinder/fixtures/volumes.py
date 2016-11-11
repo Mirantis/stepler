@@ -24,12 +24,14 @@ import pytest
 
 from stepler.cinder import steps
 from stepler import config
+from stepler.third_party import context
 
 __all__ = [
     'get_volume_steps',
     'volume_steps',
     'upload_volume_to_image',
     'volume',
+    'volumes_cleanup',
     'unexpected_volumes_cleanup',
 ]
 
@@ -88,34 +90,53 @@ def get_volume_steps(get_cinder_client):
 
 
 @pytest.fixture
-def volume_steps(get_volume_steps, uncleanable):
+def volume_steps(get_volume_steps, volumes_cleanup):
     """Function fixture to get volume steps.
 
     Args:
         get_volume_steps (function): function to get volume steps
-        uncleanable (AttrDict): data structure with skipped resources
+        volumes_cleanup (function): function to cleanup volumes after test
 
     Yields:
-        stepler.cinder.steps.VolumeSteps: instantiated volume steps
+        VolumeSteps: instantiated volume steps
     """
-    def _get_volumes():
-        # check=False because in best case no volumes will be
-        return _volume_steps.get_volumes(
-            metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
-            check=False)
-
     _volume_steps = get_volume_steps()
-    volume_ids_before = [volume.id for volume in _get_volumes()]
+    with volumes_cleanup(_volume_steps):
+        yield _volume_steps
 
-    yield _volume_steps
 
-    deleting_volumes = []
-    for volume in _get_volumes():
-        if volume.id not in uncleanable.volume_ids:
-            if volume.id not in volume_ids_before:
-                deleting_volumes.append(volume)
+@pytest.fixture
+def volumes_cleanup(uncleanable):
+    """Callable function fixture to cleanup volumes after test.
 
-    _volume_steps.delete_volumes(deleting_volumes)
+    Args:
+        uncleanable (AttrDict): data structure with skipped resources
+
+    Returns:
+        function: function to cleanup volumes
+    """
+    @context.context
+    def _volumes_cleanup(volume_steps):
+
+        def _get_volumes():
+            # check=False because in best case no volumes will be
+            return volume_steps.get_volumes(
+                metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
+                check=False)
+
+        volume_ids_before = [volume.id for volume in _get_volumes()]
+
+        yield
+
+        deleting_volumes = []
+        for volume in _get_volumes():
+            if volume.id not in uncleanable.volume_ids:
+                if volume.id not in volume_ids_before:
+                    deleting_volumes.append(volume)
+
+        volume_steps.delete_volumes(deleting_volumes, cascade=True)
+
+    return _volumes_cleanup
 
 
 @pytest.yield_fixture
