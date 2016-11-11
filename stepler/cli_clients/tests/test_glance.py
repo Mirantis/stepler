@@ -41,6 +41,41 @@ def test_upload_image_without_properties(cli_glance_steps, api_version):
         filename=next(utils.generate_ids()), api_version=api_version)
 
 
+@pytest.mark.idempotent_id('7d0916e7-9bc8-449c-a307-f29eedf6dba8',
+                           api_version=1)
+@pytest.mark.idempotent_id('fb88e71a-1595-4b65-914e-eea200998b22',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_download_zero_size_image(glance_steps, cli_glance_steps, api_version):
+    """**Scenario:** Verify that zero-size image cannot be downloaded.
+
+    **Steps:**
+
+    #. Create a zero-size image
+    #. Run cli command 'glance image-download <image_id>'
+    #. Check that command is failed with error 'Image is not active'
+        (api_version=1) or 'Image has no data' (api_version=2)
+    #. Run cli command 'glance image-download <image_id> --progress'
+    #. Check that command is failed with error 'Image is not active'
+        (api_version=1) or 'Image has no data' (api_version=2)
+
+    **Teardown:**
+
+    #. Delete image
+    """
+    image = glance_steps.create_images(image_path=None,
+                                       disk_format=None,
+                                       container_format=None,
+                                       upload=False,
+                                       check=False)[0]
+
+    cli_glance_steps.check_negative_download_zero_size_image(
+        image_id=image['id'], progress=False, api_version=api_version)
+
+    cli_glance_steps.check_negative_download_zero_size_image(
+        image_id=image['id'], progress=True, api_version=api_version)
+
+
 @pytest.mark.idempotent_id('54bdc370-45f6-4085-977c-07996fb81943',
                            api_version=1)
 @pytest.mark.idempotent_id('30537390-e1ba-47bc-aca0-db94a740f728',
