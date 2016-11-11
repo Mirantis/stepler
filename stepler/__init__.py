@@ -24,3 +24,5 @@ tool for creation tests to check advanced end-user scenarios.
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import stepler.logging_config  # noqa F401
