@@ -19,10 +19,11 @@ Includes fixtures available in global scope among all tests.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from stepler.fixtures import *  # noqa
+from stepler.baremetal.conftest import *  # noqa
 from stepler.cinder.conftest import *  # noqa
-from stepler.heat.conftest import *  # noqa
+from stepler.fixtures import *  # noqa
 from stepler.glance.conftest import *  # noqa
+from stepler.heat.conftest import *  # noqa
 from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
 from stepler.nova.conftest import *  # noqa
@@ -165,6 +166,12 @@ __all__ = sorted([  # sort for documentation
     'patch_ini_file_and_restart_services',
     'execute_command_with_rollback',
     'nova_api_node',
+
+    'create_ironic_node',
+    'ironic_node',
+    'ironic_node_steps',
+    'ironic_port',
+    'ironic_port_steps',
 ])
 
 _plugins = [
