@@ -23,13 +23,16 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('43b96116-a0ba-45cc-b584-af9ee838ba49')
-def test_change_volume_type_from_empty(volume, volume_type, volume_steps):
+def test_change_volume_type_from_empty(volume_type, volume, volume_steps):
     """**Scenario:** Verify change volume type from empty value.
+
+    **Setup:**:
+
+    #. Create volume type
+    #. Create volume without volume type
 
     **Steps:**
 
-    #. Create cinder volume without volume type
-    #. Create new volume type
     #. Change volume type to newly created type
 
     **Teardown:**
@@ -55,8 +58,8 @@ def test_change_volume_type(create_volume_type, volume_steps):
     #. Delete volume
     #. Delete volume types
     """
-    volume_type_1 = create_volume_type(utils.generate_ids('volume_type'))
-    volume_type_2 = create_volume_type(utils.generate_ids('volume_type'))
+    volume_type_1 = create_volume_type(next(utils.generate_ids()))
+    volume_type_2 = create_volume_type(next(utils.generate_ids()))
 
     volume = volume_steps.create_volumes(volume_type=volume_type_1.name)[0]
     volume_steps.change_volume_type(volume, volume_type_2, config.POLICY_NEVER)
