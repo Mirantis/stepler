@@ -17,7 +17,7 @@ Glance CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, contains_string, equal_to  # noqa
+from hamcrest import assert_that, contains_string, equal_to, is_in  # noqa
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -91,3 +91,61 @@ class CliGlanceSteps(base.BaseCliSteps):
             check=False)
         assert_that(exit_code, equal_to(1))
         assert_that(stderr, contains_string(error_message))
+
+    @steps_checker.step
+    def check_project_in_image_member_list(self, image, project,
+                                           api_version=2):
+        """Step to check image member-list.
+
+        Args:
+            image (obj): glance image
+            project (obj): keystone project
+            api_version (int): glance api version (1 or 2). Default is 2
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            AssertionError: if project is not in image member list
+        """
+        cmd = 'glance member-list --image-id {0}'.format(image.id)
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version})
+        member_table = output_parser.listing(stdout)
+        project_ids = [member['Member ID'] for member in member_table]
+
+        assert_that(project.id, is_in(project_ids))
+
+    @steps_checker.step
+    def create_image_member(self, image, project, api_version=2, check=True):
+        """Step to create member for glance image.
+
+        Args:
+            image (obj): glance image
+            project (obj): keystone project
+            api_version (int): glance api version (1 or 2). Default is 2
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance member-create {0} {1}'.format(image.id, project.id)
+        self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
+
+    @steps_checker.step
+    def delete_image_member(self, image, project, api_version=2, check=True):
+        """Step to delete member from glance image.
+
+        Args:
+            image (obj): glance image
+            project (obj): keystone project
+            api_version (int): glance api version (1 or 2). Default is 2
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance member-delete {0} {1}'.format(image.id, project.id)
+        self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
