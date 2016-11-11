@@ -139,7 +139,7 @@ def volumes_cleanup(uncleanable):
     return _volumes_cleanup
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def upload_volume_to_image(volume_steps, glance_steps):
     """Callable function fixture to upload volume to image.
 
@@ -153,8 +153,6 @@ def upload_volume_to_image(volume_steps, glance_steps):
     Returns:
         function: function to upload volume to image
     """
-    images = []
-
     def _upload_volume_to_image(disk_format):
         volume = volume_steps.create_volumes()[0]
         image_info = volume_steps.volume_upload_to_image(
@@ -162,15 +160,11 @@ def upload_volume_to_image(volume_steps, glance_steps):
 
         image = glance_steps.get_image(
             id=image_info['os-volume_upload_image']['image_id'])
-        images.append(image)
         glance_steps.check_image_status(image, status='active',
                                         timeout=config.IMAGE_AVAILABLE_TIMEOUT)
         return image
 
     yield _upload_volume_to_image
-
-    if images:
-        glance_steps.delete_images(images)
 
 
 @pytest.fixture
