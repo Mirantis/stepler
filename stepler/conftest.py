@@ -50,7 +50,7 @@ __all__ = sorted([  # sort for documentation
     'create_volume_type',
     'cinder_quota_steps',
     'snapshot_steps',
-    'snapshot',
+    'volume_snapshot',
     'snapshots_cleanup',
     'transfer_steps',
     'big_snapshot_quota',
