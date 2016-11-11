@@ -25,7 +25,7 @@ from stepler.third_party import utils
 @pytest.mark.idempotent_id('e9ab1a51-9204-4760-8c3f-a7fdd8e2f185')
 def test_launch_server_from_image_using_all_flavors(
         security_group,
-        internal_network,
+        net_subnet_router,
         cirros_image,
         keypair,
         create_server_context,
@@ -40,6 +40,7 @@ def test_launch_server_from_image_using_all_flavors(
     #. Upload cirros image
     #. Create security group with allow ping rule
     #. Create keypair
+    #. Create network with subnet and router
 
     **Steps:**
 
@@ -50,10 +51,12 @@ def test_launch_server_from_image_using_all_flavors(
     **Teardown:**
 
     #. Delete servers
+    #. Delete network, subnet, router
     #. Delete security group
     #. Delete keypair
     #. Delete cirros image
     """
+    network, _, _ = net_subnet_router
     flavors = flavor_steps.get_flavors()
 
     for flavor in flavors:
@@ -64,7 +67,7 @@ def test_launch_server_from_image_using_all_flavors(
                 server_name=server_name,
                 image=cirros_image,
                 flavor=flavor,
-                networks=[internal_network],
+                networks=[network],
                 keypair=keypair,
                 security_groups=[security_group]):
             # check for server state is inside 'create_server_context'
@@ -74,7 +77,7 @@ def test_launch_server_from_image_using_all_flavors(
 @pytest.mark.idempotent_id('904d3614-d98a-4dbf-8fe4-211d025e4de2')
 def test_launch_vm_from_volume_using_all_flavors(
         security_group,
-        internal_network,
+        net_subnet_router,
         cirros_image,
         keypair,
         nova_floating_ip,
@@ -92,6 +95,7 @@ def test_launch_vm_from_volume_using_all_flavors(
     #. Create security group with allow ping rule
     #. Create keypair
     #. Create volume from cirros image
+    #. Create network with subnet and router
 
     **Steps:**
 
@@ -104,12 +108,14 @@ def test_launch_vm_from_volume_using_all_flavors(
     **Teardown:**
 
     #. Delete servers
+    #. Delete network, subnet, router
     #. Delete security group
     #. Delete keypair
     #. Delete cirros image
     #. Delete volume
     #. Delete floating IP
     """
+    network, _, _ = net_subnet_router
     flavors = flavor_steps.get_flavors()
 
     volume = volume_steps.create_volumes(image=cirros_image)[0]
@@ -120,7 +126,7 @@ def test_launch_vm_from_volume_using_all_flavors(
                 image=None,
                 block_device_mapping={'vda': volume.id},
                 flavor=flavor,
-                networks=[internal_network],
+                networks=[network],
                 keypair=keypair,
                 security_groups=[security_group]) as server:
 

@@ -56,7 +56,7 @@ def test_keystone_permission_lose(admin,
 def test_restart_all_services(cirros_image,
                               tiny_flavor,
                               keypair,
-                              admin_internal_network,
+                              net_subnet_router,
                               security_group,
                               create_user,
                               user_steps,
@@ -69,6 +69,7 @@ def test_restart_all_services(cirros_image,
     #. Create cirros image
     #. Create tiny flavor
     #. Create key pair
+    #. Create network with subnet and router
 
     **Steps:**
 
@@ -84,6 +85,7 @@ def test_restart_all_services(cirros_image,
     **Teardown:**
 
     #. Delete VM
+    #. Delete network, subnet, router
     #. Delete users 1 and 2
     #. Delete key pair
     #. Delete tiny flavor
@@ -98,9 +100,10 @@ def test_restart_all_services(cirros_image,
     user_name = next(utils.generate_ids('user'))
     create_user(user_name=user_name, password=user_name)
 
+    network, _, _ = net_subnet_router
     server_steps.create_servers(image=cirros_image,
                                 flavor=tiny_flavor,
-                                networks=[admin_internal_network],
+                                networks=[network],
                                 keypair=keypair,
                                 security_groups=[security_group])
 

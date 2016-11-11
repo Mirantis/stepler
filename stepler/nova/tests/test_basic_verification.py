@@ -18,7 +18,6 @@ Nova basic verification tests
 
 import pytest
 
-from stepler import config
 from stepler.third_party import utils
 
 
@@ -129,12 +128,8 @@ def test_delete_server_with_precreated_port(
 
 @pytest.mark.idempotent_id('d8a8d247-3150-491a-b9e5-2f20cb0f384d')
 def test_remove_incorrect_fixed_ip_from_server(
-        flavor,
-        security_group,
-        keypair,
-        cirros_image,
+        server,
         nova_floating_ip,
-        admin_internal_network,
         server_steps):
     """**Scenario:** [negative] Remove incorrect fixed IP from an instance.
 
@@ -148,10 +143,10 @@ def test_remove_incorrect_fixed_ip_from_server(
     #. Create keypair
     #. Upload cirros image
     #. Create nova floating ip
+    #. Boot server from cirros image
 
     **Steps:**
 
-    #. Boot server from cirros image
     #. Attach floating IP to server
     #. Generate fake IP
     #. Try to detach non-present fixed IP from server
@@ -162,19 +157,13 @@ def test_remove_incorrect_fixed_ip_from_server(
 
     **Teardown:**
 
+    #. Delete server
     #. Delete flavor
     #. Delete security group
     #. Delete keypair
     #. Delete cirros image
     #. Delete nova floating ip
     """
-    server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
-                                         networks=[admin_internal_network],
-                                         keypair=keypair,
-                                         security_groups=[security_group],
-                                         username=config.CIRROS_USERNAME)[0]
-
     server_steps.attach_floating_ip(server, nova_floating_ip)
     ip_fake = next(utils.generate_ips())
 
