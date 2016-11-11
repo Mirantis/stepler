@@ -26,8 +26,8 @@ from stepler.third_party import utils
 
 __all__ = [
     'snapshot_steps',
-    'snapshot',
     'snapshots_cleanup',
+    'volume_snapshot',
 ]
 
 
@@ -49,7 +49,7 @@ def snapshot_steps(cinder_client, snapshots_cleanup):
 
 
 @pytest.fixture
-def snapshot(volume, snapshot_steps):
+def volume_snapshot(volume, snapshot_steps):
     """Function fixture to create snapshot with default options before test.
 
     Args:
@@ -59,8 +59,8 @@ def snapshot(volume, snapshot_steps):
     Returns:
         object: cinder volume snapshot
     """
-    snapshot_name = next(utils.generate_ids('snapshot'))
-    return snapshot_steps.create_snapshot(volume, snapshot_name)
+    return snapshot_steps.create_snapshots(
+        volume, names=utils.generate_ids())[0]
 
 
 @pytest.fixture
