@@ -63,6 +63,14 @@ class RowAvailable(_ui.Row):
     cell_cls = CellAvailable
 
 
+@ui.register_ui(
+    button_remove=ui.Button(By.CSS_SELECTOR, 'button.btn.btn-default'))
+class RowAllocated(_ui.Row):
+    """Row with allocated item."""
+
+    cell_cls = CellAvailable
+
+
 class TableAvailableSources(_ui.Table):
     """Available sources table."""
 
@@ -103,9 +111,18 @@ class TableAvailableNetworks(_ui.Table):
     row_cls = RowAvailable
 
 
+class TableAllocatedNetworks(_ui.Table):
+    """Allocated networks table."""
+
+    columns = {'name': 3}
+    row_cls = RowAllocated
+
+
 @ui.register_ui(
     table_available_networks=TableAvailableNetworks(
-        By.CSS_SELECTOR, 'available table'))
+        By.CSS_SELECTOR, 'available table'),
+    table_allocated_networks=TableAllocatedNetworks(
+        By.CSS_SELECTOR, 'allocated table'))
 class TabNetwork(ui.Block):
     """Network tab."""
 
