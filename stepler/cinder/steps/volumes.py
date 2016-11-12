@@ -120,12 +120,6 @@ class VolumeSteps(base.BaseSteps):
         names = names or utils.generate_ids()
         image_id = None if image is None else image.id
         volumes = []
-
-        metadata = metadata or {}
-        # Volume can have no name. Mark it as stepler-created via metadata.
-        # Metadata should contain only string values.
-        metadata[config.STEPLER_PREFIX] = config.STEPLER_PREFIX
-
         _volume_names = {}
 
         for name in names:
@@ -230,21 +224,35 @@ class VolumeSteps(base.BaseSteps):
         assert_that(volume.status.lower(), equal_to(status.lower()))
 
     @steps_checker.step
-    def get_volumes(self, name_prefix=None, metadata=None, check=True):
+    def get_volumes(self,
+                    name_prefix=None,
+                    metadata=None,
+                    all_projects=False,
+                    search_opts=None,
+                    check=True):
         """Step to retrieve volumes.
 
         Args:
-            name_prefix (str): prefix to filter volumes by name
-            metadata (dict): data to filter volume by metadata key-value
-            check (bool): flag whether to check step or not
+            name_prefix (str, optional): Prefix to filter volumes by name.
+            metadata (dict, optional): Data to filter volume by metadata
+                ``key: value``.
+            all_projects (bool, optional): Flag whether to retrieve volumes
+                from all available projects or not.
+            search_opts (dict: optional): API filter options to retrieve
+                volumes.
+            check (bool, optional): Flag whether to check step or not.
 
         Returns:
-            list: volume list
+            list: Volumes collection.
 
         Raises:
-            TimeoutExpired|AssertionError: if check failed after timeout
+            AssertionError: If volumes collection is empty.
         """
-        volumes = self._client.volumes.list()
+        if all_projects:
+            search_opts = search_opts or {}
+            search_opts['all_tenants'] = 1
+
+        volumes = self._client.volumes.list(search_opts=search_opts)
 
         if name_prefix:
             volumes = [volume for volume in volumes
@@ -263,6 +271,7 @@ class VolumeSteps(base.BaseSteps):
 
         if check:
             assert_that(volumes, is_not(empty()))
+
         return volumes
 
     @steps_checker.step
