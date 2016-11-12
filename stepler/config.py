@@ -206,3 +206,13 @@ LIVE_EVACUATE_TIMEOUT = 5 * 60
 
 # For DevStack cmd should looks like `source devstack/openrc admin admin`
 OPENRC_ACTIVATE_CMD = os.environ.get('OPENRC_ACTIVATE_CMD', 'source /root/openrc')  # noqa E501
+
+
+CLEANUP_UNEXPECTED_BEFORE = bool(
+    os.environ.get('CLEANUP_UNEXPECTED_BEFORE', False))
+
+CLEANUP_UNEXPECTED_AFTER = bool(
+    os.environ.get('CLEANUP_UNEXPECTED_AFTER', False))
+
+UNEXPECTED_VOLUMES_LIMIT = int(
+    os.environ.get('UNEXPECTED_VOLUMES_LIMIT', 0))
