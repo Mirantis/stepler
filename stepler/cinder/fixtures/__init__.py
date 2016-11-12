@@ -22,36 +22,39 @@ from .cinder import *  # noqa
 from .quota import *  # noqa
 from .snapshots import *  # noqa
 from .transfers import *  # noqa
-from .volumes import *  # noqa
 from .volume_types import *  # noqa
+from .volumes import *  # noqa
 
 __all__ = sorted([  # sort for documentation
+    'backup_steps',
+    'create_backup',
+    'backups_cleanup',
+
     'cinder_client',
     'get_cinder_client',
-    'get_transfer_steps',
-    'get_volume_steps',
-    'volume_steps',
-    'volume_type_steps',
-    'volume_type',
-    'create_volume_type',
-    'upload_volume_to_image',
-    'volume',
-    'volumes_cleanup',
-    'unexpected_volumes_cleanup',
 
     'cinder_quota_steps',
     'big_snapshot_quota',
     'volume_size_quota',
 
+    'snapshot_steps',
+    'snapshots_cleanup',
+    'volume_snapshot',
+
     'transfer_steps',
     'create_volume_transfer',
+    'get_transfer_steps',
     'transfers_cleanup',
 
-    'snapshot_steps',
-    'volume_snapshot',
-    'snapshots_cleanup',
+    'volume_type_steps',
+    'create_volume_type',
+    'volume_type',
 
-    'create_backup',
-    'backup_steps',
-    'backups_cleanup',
+    'get_volume_steps',
+    'primary_volumes',
+    'volume',
+    'volume_steps',
+    'volumes_cleanup',
+    'unexpected_volumes_cleanup',
+    'upload_volume_to_image',
 ])
