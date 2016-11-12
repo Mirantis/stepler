@@ -17,60 +17,21 @@ Volume fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
 from hamcrest import assert_that, is_not  # noqa
 import pytest
 
 from stepler.cinder import steps
 from stepler import config
-from stepler.third_party import context
 
 __all__ = [
+    'cleanup_volumes',
     'get_volume_steps',
-    'volume_steps',
-    'upload_volume_to_image',
+    'primary_volumes',
     'volume',
-    'volumes_cleanup',
+    'volume_steps',
     'unexpected_volumes_cleanup',
+    'upload_volume_to_image',
 ]
-
-LOGGER = logging.getLogger(__name__)
-# volumes which should be missed, when unexpected volumes will be removed
-SKIPPED_VOLUMES = []
-
-
-@pytest.yield_fixture
-def unexpected_volumes_cleanup():
-    """Callable function fixture to clear unexpected volumes.
-
-    It provides cleanup before and after test.
-    Cleanup before test is callable with injection of volume steps.
-    Should be called before returning of instantiated volume steps.
-    """
-    _volume_steps = [None]
-
-    def _volumes_cleanup(volume_steps):
-        assert_that(volume_steps, is_not(None))
-        _volume_steps[0] = volume_steps  # inject volume steps for finalizer
-        # check=False because in best case no volumes will be present
-        volumes = volume_steps.get_volumes(name_prefix=config.STEPLER_PREFIX,
-                                           check=False)
-        if SKIPPED_VOLUMES:
-            volume_names = [volume.name for volume in SKIPPED_VOLUMES]
-
-            LOGGER.debug(
-                "SKIPPED_VOLUMES contains volumes {!r}. They will not be "
-                "removed in cleanup procedure.".format(volume_names))
-
-            volumes = [volume for volume in volumes
-                       if volume not in SKIPPED_VOLUMES]
-        if volumes:
-            volume_steps.delete_volumes(volumes)
-
-    yield _volumes_cleanup
-
-    _volumes_cleanup(_volume_steps[0])
 
 
 @pytest.fixture(scope='session')
@@ -90,7 +51,26 @@ def get_volume_steps(get_cinder_client):
 
 
 @pytest.fixture
-def volume_steps(get_volume_steps, volumes_cleanup):
+def unexpected_volumes_cleanup(primary_volumes,
+                               get_volume_steps,
+                               cleanup_volumes):
+    """Callable function fixture to clear unexpected volumes.
+
+    It provides cleanup before and after test.
+    """
+    if config.CLEANUP_UNEXPECTED_BEFORE:
+        cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
+
+    yield
+
+    if config.CLEANUP_UNEXPECTED_AFTER:
+        cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
+
+
+@pytest.fixture
+def volume_steps(unexpected_volumes_cleanup,
+                 get_volume_steps,
+                 cleanup_volumes):
     """Function fixture to get volume steps.
 
     Args:
@@ -101,42 +81,57 @@ def volume_steps(get_volume_steps, volumes_cleanup):
         VolumeSteps: instantiated volume steps
     """
     _volume_steps = get_volume_steps()
-    with volumes_cleanup(_volume_steps):
-        yield _volume_steps
+    volumes = _volume_steps.get_volumes(all_projects=True, check=False)
+    volume_ids_before = {volume.id for volume in volumes}
+
+    yield _volume_steps
+    cleanup_volumes(_volume_steps, uncleanable_ids=volume_ids_before)
 
 
-@pytest.fixture
-def volumes_cleanup(uncleanable):
-    """Callable function fixture to cleanup volumes after test.
+@pytest.fixture(scope='session')
+def primary_volumes(get_volume_steps,
+                    cleanup_volumes,
+                    uncleanable):
+    """Session fixture to remember primary volumes before tests.
+
+    Also in finalization it deletes all unexpected volumes which are remained
+    after tests.
 
     Args:
-        uncleanable (AttrDict): data structure with skipped resources
-
-    Returns:
-        function: function to cleanup volumes
+        get_volume_steps (function): Function to get volume steps.
+        cleanup_volumes (function): Function to cleanup volumes.
+        uncleanable (AttrDict): Data structure with skipped resources.
     """
-    @context.context
-    def _volumes_cleanup(volume_steps):
+    volume_ids_before = set()
+    for volume in get_volume_steps().get_volumes(all_projects=True,
+                                                 check=False):
+        uncleanable.volume_ids.add(volume.id)
+        volume_ids_before.add(volume.id)
 
-        def _get_volumes():
-            # check=False because in best case no volumes will be
-            return volume_steps.get_volumes(
-                metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
-                check=False)
+    yield
+    cleanup_volumes(get_volume_steps(), uncleanable_ids=volume_ids_before)
 
-        volume_ids_before = [volume.id for volume in _get_volumes()]
 
-        yield
+@pytest.fixture(scope='session')
+def cleanup_volumes(uncleanable):
+    """Callable session fixture to cleanup volumes.
 
+    Args:
+        uncleanable (AttrDict): Data structure with skipped resources.
+    """
+    def _cleanup_volumes(_volume_steps, limit=0, uncleanable_ids=None):
+        uncleanable_ids = uncleanable_ids or uncleanable.volume_ids
         deleting_volumes = []
-        for volume in _get_volumes():
-            if volume.id not in uncleanable.volume_ids:
-                if volume.id not in volume_ids_before:
-                    deleting_volumes.append(volume)
 
-        volume_steps.delete_volumes(deleting_volumes, cascade=True)
+        for volume in _volume_steps.get_volumes(all_projects=True,
+                                                check=False):
+            if volume.id not in uncleanable_ids:
+                deleting_volumes.append(volume)
 
-    return _volumes_cleanup
+        if len(deleting_volumes) > limit:
+            _volume_steps.delete_volumes(deleting_volumes, cascade=True)
+
+    return _cleanup_volumes
 
 
 @pytest.fixture
