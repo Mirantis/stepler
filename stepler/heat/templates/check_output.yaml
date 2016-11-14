@@ -1,0 +1,24 @@
+heat_template_version: 2014-10-16
+parameters:
+resources:
+  test_resource_a:
+    type: OS::Heat::TestResource
+    properties:
+      value: 'a'
+      fail: False
+      update_replace: False
+      wait_secs: 0
+  test_resource_b:
+    type: OS::Heat::TestResource
+    properties:
+      value: 'b'
+      fail: False
+      update_replace: False
+      wait_secs: 0
+outputs:
+  resource_id_a:
+    description: 'ID of resource a'
+    value: { get_attr: [test_resource_a, output] }
+  resource_id_b:
+    description: 'ID of resource b'
+    value: { get_attr: [test_resource_b, output] }
