@@ -18,10 +18,12 @@ Domain steps
 # limitations under the License.
 
 from hamcrest import assert_that, is_not, empty, equal_to  # noqa
-from waiting import wait
+from keystoneclient import exceptions
 
 from stepler.base import BaseSteps
 from stepler.third_party import steps_checker
+from stepler.third_party.matchers import expect_that
+from stepler.third_party import waiter
 
 __all__ = [
     'DomainSteps'
@@ -98,25 +100,27 @@ class DomainSteps(BaseSteps):
         self._client.delete(domain.id)
 
         if check:
-            self.check_domain_presence(domain, present=False)
+            self.check_domain_presence(domain, must_present=False)
 
     @steps_checker.step
-    def check_domain_presence(self, domain, present=True, timeout=0):
+    def check_domain_presence(self, domain, must_present=True, timeout=0):
         """Step to check domain presence.
 
         Args:
             domain (object): domain
-            present (bool): flag whether domain should present or not
+            must_present (bool): flag whether domain should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
+        def _check_domain_presence():
             try:
                 self._client.get(domain.id)
-                return present
-            except Exception:
-                return not present
+                is_present = True
+            except exceptions.NotFound:
+                is_present = False
 
-        wait(predicate, timeout_seconds=timeout)
+            return expect_that(is_present, equal_to(must_present))
+
+        waiter.wait(_check_domain_presence, timeout_seconds=timeout)
