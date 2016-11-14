@@ -20,19 +20,22 @@ import pytest
 
 
 @pytest.mark.idempotent_id('4bd3e2ac-be73-423e-8026-39a151592076')
-def test_ironic_list(cli_ironic_steps):
+def test_ironic_node_list(cli_ironic_steps):
     """**Scenario:** Ironic node-list works via shell.
-
-    **Setup:**
-
-    #. Create Ironic node
 
     **Steps:**
 
     #. Execute in shell ``ironic node-list``
-
-    **Teardown:**
-
-    #. Remove Ironic node
     """
     cli_ironic_steps.ironic_node_list()
+
+
+@pytest.mark.idempotent_id('efdc39ca-27c3-49c1-9f76-1196d02bd3fe')
+def test_ironic_port_list(cli_ironic_steps):
+    """**Scenario:** Ironic port-list works via shell.
+
+    **Steps:**
+
+    #. Execute in shell ``ironic port-list``
+    """
+    cli_ironic_steps.ironic_port_list()
