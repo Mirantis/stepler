@@ -24,14 +24,17 @@ import pytest
 from stepler import config
 from stepler.third_party.utils import generate_ids
 
-pytestmark = pytest.mark.usefixtures('disable_nova_config_drive')
+pytestmark = pytest.mark.usefixtures('skip_live_migration_tests',
+                                     'disable_nova_config_drive')
 
 
 @pytest.mark.idempotent_id('12c72e88-ca87-400b-9fbb-a35c1d07cbda')
+@pytest.mark.parametrize('block_migration', [True])
 def test_network_connectivity_to_vm_during_live_migration(
         nova_floating_ip,
         live_migration_server,
-        server_steps):
+        server_steps,
+        block_migration):
     """**Scenario:** Verify network connectivity to the VM during live
     migration.
 
@@ -67,7 +70,8 @@ def test_network_connectivity_to_vm_during_live_migration(
     """
     with server_steps.check_ping_loss_context(
             nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
-        server_steps.live_migrate(live_migration_server, block_migration=True)
+        server_steps.live_migrate(live_migration_server,
+                                  block_migration=block_migration)
 
 
 @pytest.mark.idempotent_id('f472898f-7b50-4388-94a4-294b4db5ad7a',
@@ -293,6 +297,7 @@ def test_server_migration_with_network_workload(
 
 
 @pytest.mark.idempotent_id('1fb54c78-20f5-459b-9515-3d7caf73ed64')
+@pytest.mark.parametrize('block_migration', [True])
 def test_migration_with_ephemeral_disk(
         keypair,
         security_group,
@@ -303,7 +308,8 @@ def test_migration_with_ephemeral_disk(
         router,
         add_router_interfaces,
         create_flavor,
-        server_steps):
+        server_steps,
+        block_migration):
     """**Scenario:** LM of VM with data on root and ephemeral disk.
 
     **Setup:**
@@ -358,7 +364,7 @@ def test_migration_with_ephemeral_disk(
             server_ssh, timestamp=timestamp)
     with server_steps.check_ping_loss_context(
             nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
-        server_steps.live_migrate(server, block_migration=True)
+        server_steps.live_migrate(server, block_migration=block_migration)
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.check_timestamps_on_root_and_ephemeral_disks(
