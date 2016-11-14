@@ -40,19 +40,21 @@ def test_negative_extend_volume(volume_steps, size):
 
 
 @pytest.mark.idempotent_id('50baaa82-82de-4698-96fc-aa58f91f3ee2')
-def test_positive_extend_volume(volume, create_volume, volume_steps):
+def test_positive_extend_volume(volume, volume_steps):
     """**Scenario:** Verify nominal volume extend.
+
+    **Setup:**
+
+    #. Create cinder volume
 
     **Steps:**
 
-    #. Create cinder volume
     #. Extend volume to correct size
     #. Check that volume extending was performed
 
     **Teardown:**
 
     #. Delete cinder volume
-
     """
     volume_steps.volume_extend(volume, size=2)
 
