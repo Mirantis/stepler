@@ -36,3 +36,14 @@ def test_server_list(server, cli_openstack_steps):
     #. Remove nova server
     """
     cli_openstack_steps.server_list()
+
+
+@pytest.mark.idempotent_id('07aa946f-46a0-40f3-9cbc-5d11f35e7fc0')
+def test_server_list(cli_openstack_steps):
+    """**Scenario:** nova list works via shell.
+
+    **Steps:**:
+
+    #. Execute in shell ``openstack baremetal list``
+    """
+    cli_openstack_steps.baremetal_list()
