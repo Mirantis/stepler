@@ -18,7 +18,10 @@ Config
 # limitations under the License.
 
 import os
+import socket
 import uuid
+
+socket.setdefaulttimeout(60)
 
 DEBUG = bool(os.environ.get('DEBUG', False))
 
