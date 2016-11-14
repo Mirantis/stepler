@@ -130,12 +130,12 @@ class SnapshotSteps(base.BaseSteps):
             if not hasattr(snapshot, 'id'):
                 snapshot = self.get_snapshot_by_id(snapshot)
 
-            def predicate():
+            def _check_snapshot_status():
                 snapshot.get()
                 return expect_that(snapshot.status.lower(),
                                    equal_to(status.lower()))
 
-            waiter.wait(predicate, timeout_seconds=timeout)
+            waiter.wait(_check_snapshot_status, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_snapshots(self, name_prefix=None, check=True):
