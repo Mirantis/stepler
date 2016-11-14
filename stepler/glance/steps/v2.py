@@ -17,12 +17,14 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, is_not, equal_to  # noqa
-from waiting import wait
+from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa
+from glanceclient import exc
 
 from stepler import config
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
+from stepler.third_party import waiter
 
 from .base import BaseGlanceSteps
 
@@ -100,7 +102,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             for image in images:
                 self.check_image_presence(
                     image,
-                    present=False,
+                    must_present=False,
                     timeout=config.IMAGE_AVAILABLE_TIMEOUT)
 
     @steps_checker.step
@@ -127,7 +129,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         self._client.image_members.delete(image.id, project.id)
         if check:
-            self.check_image_bind_status(image, project, bound=False)
+            self.check_image_bind_status(image, project, must_bound=False)
 
     @steps_checker.step
     def get_images(self, name_prefix=None, check=True, **kwargs):
@@ -186,12 +188,12 @@ class GlanceStepsV2(BaseGlanceSteps):
         return images[0]
 
     @steps_checker.step
-    def check_image_presence(self, image, present=True, timeout=0):
+    def check_image_presence(self, image, must_present=True, timeout=0):
         """Check step image presence status.
 
         Args:
             image (object): glance image to check presence status
-            present (bool): flag whether image should present or not
+            must_present (bool): flag whether image should present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -200,11 +202,13 @@ class GlanceStepsV2(BaseGlanceSteps):
         def _check_image_presence():
             try:
                 self._client.images.get(image.id)
-                return present
-            except Exception:
-                return not present
+                is_present = True
+            except exc.NotFound:
+                is_present = False
 
-        wait(_check_image_presence, timeout_seconds=timeout)
+            return expect_that(is_present, equal_to(must_present))
+
+        waiter.wait(_check_image_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_image_status(self, image, status, timeout=0):
@@ -220,19 +224,23 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         def _check_image_status():
             image.update(self._client.images.get(image.id))
-            return image.status.lower() == status.lower()
+            return expect_that(image.status.lower(), equal_to(status.lower()))
 
-        wait(_check_image_status, timeout_seconds=timeout)
+        waiter.wait(_check_image_status, timeout_seconds=timeout)
 
     @steps_checker.step
-    def check_image_bind_status(self, image, project, bound=True, timeout=0):
+    def check_image_bind_status(self,
+                                image,
+                                project,
+                                must_bound=True,
+                                timeout=0):
         """Check step image binding status.
 
         Args:
             image (object): image bound/unbound with project
             project (object): project bound/unbound with image
-            bound (bool): flag whether project and image should be bound or
-                unbound
+            must_bound (bool): flag whether project and image should be bound
+                or unbound
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -241,13 +249,15 @@ class GlanceStepsV2(BaseGlanceSteps):
         def _check_image_bind_status():
             members = self._client.image_members.list(image.id)
             member_ids = [member['member_id'] for member in members]
-
-            if bound:
-                return project.id in member_ids
+            if must_bound:
+                assert_that(project.id, is_in(member_ids))
+                is_bound = True
             else:
-                return project.id not in member_ids
+                is_bound = False
 
-        wait(_check_image_bind_status, timeout_seconds=timeout)
+            return expect_that(is_bound, equal_to(must_bound))
+
+        waiter.wait(_check_image_bind_status, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_image_container_and_disk_format(self,
