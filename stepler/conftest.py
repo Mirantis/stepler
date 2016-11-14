@@ -106,7 +106,6 @@ __all__ = sorted([  # sort for documentation
     'create_network',
     'network',
     'public_network',
-    'internal_network',
     'create_port',
     'port',
     'create_subnet',
@@ -124,8 +123,8 @@ __all__ = sorted([  # sort for documentation
     'get_network_steps',
     'get_router_steps',
     'get_subnet_steps',
-    'admin_internal_network',
     'baremetal_network',
+    'net_subnet_router',
 
     'create_flavor',
     'flavor',
