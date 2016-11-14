@@ -330,13 +330,20 @@ class StackSteps(base.BaseSteps):
         return output_show
 
     @steps_checker.step
-    def check_output_show(self, output_show):
+    def check_output_show(self, output_show, expected_attr_values=None):
         """Step to check stack attributes.
 
         Args:
             output_show (dict): stack output
+            expected_attr_values (list|None): list of expected attribute
+                values, every element is tuple (attr, value). If None,
+                only check that elements of output_show are not empty.
 
         Raises:
             AssertionError: if check failed
         """
-        assert_that(output_show['output'], only_contains(is_not(empty())))
+        if expected_attr_values:
+            for attr, value in expected_attr_values:
+                assert_that(output_show['output'][attr], equal_to(value))
+        else:
+            assert_that(output_show['output'], only_contains(is_not(empty())))
