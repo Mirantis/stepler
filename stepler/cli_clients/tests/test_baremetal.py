@@ -39,3 +39,14 @@ def test_ironic_port_list(cli_ironic_steps):
     #. Execute in shell ``ironic port-list``
     """
     cli_ironic_steps.ironic_port_list()
+
+
+@pytest.mark.idempotent_id('dbec9c3f-fa7d-4823-8b6f-b3f54f1235ad')
+def test_ironic_chassis_list(cli_ironic_steps):
+    """**Scenario:** Ironic chassis-list works via shell.
+
+    **Steps:**
+
+    #. Execute in shell ``ironic chassis-list``
+    """
+    cli_ironic_steps.ironic_chassis_list()
