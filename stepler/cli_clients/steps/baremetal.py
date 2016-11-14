@@ -41,3 +41,21 @@ class CliIronicSteps(base.BaseCliSteps):
         cmd = 'ironic node-list'
         result = self.execute_command(cmd, timeout=0, check=check)
         return result
+
+    @steps_checker.step
+    def ironic_port_list(self, check=True):
+        """Step to get Ironic port list.
+
+        Args:
+            check (bool, optional): flag whether to check result or not
+
+        Returns:
+            tuple: (exit_code, stdout, stderr) - result of command shell
+                execution
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        cmd = 'ironic port-list'
+        result = self.execute_command(cmd, timeout=0, check=check)
+        return result
