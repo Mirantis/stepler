@@ -1,5 +1,10 @@
 heat_template_version: 2014-10-16
+description: Template for check output
 parameters:
+  wait_secs:
+    description: waiting seconds for resources
+    type: number
+    default: 0
 resources:
   test_resource_a:
     type: OS::Heat::TestResource
@@ -7,14 +12,14 @@ resources:
       value: 'a'
       fail: False
       update_replace: False
-      wait_secs: 0
+      wait_secs: { get_param: wait_secs }
   test_resource_b:
     type: OS::Heat::TestResource
     properties:
       value: 'b'
       fail: False
       update_replace: False
-      wait_secs: 0
+      wait_secs: { get_param: wait_secs }
 outputs:
   resource_id_a:
     description: 'ID of resource a'
