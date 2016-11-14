@@ -121,8 +121,13 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             for server in servers:
-                self.check_server_status(server, config.STATUS_ACTIVE,
-                                         timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+                self.check_server_status(
+                    server,
+                    expected_statuses=[config.STATUS_ACTIVE],
+                    transit_statuses=[config.STATUS_BUILD],
+                    timeout=config.SERVER_ACTIVE_TIMEOUT)
+
         return servers
 
     @steps_checker.step
@@ -205,27 +210,27 @@ class ServerSteps(base.BaseSteps):
     @steps_checker.step
     def check_server_status(self,
                             server,
-                            status,
-                            transit_statuses=[config.STATUS_BUILD],
+                            expected_statuses,
+                            transit_statuses=(),
                             timeout=0):
         """Verify step to check server status.
 
         Args:
             server (object): nova instance to ping its floating ip
-            status (str): expected server status
+            expected_statuses (list): expected server statuses
             transit_statuses (iterable): allowed transit statuses
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-
-        def predicate():
+        def _check_server_status():
             server.get()
-            return server.status.lower() not in transit_statuses
+            return expect_that(server.status.lower(),
+                               is_not(is_in(transit_statuses)))
 
-        wait(predicate, timeout_seconds=timeout)
-        assert_that(server.status.lower(), equal_to(status.lower()))
+        waiter.wait(_check_server_status, timeout_seconds=timeout)
+        assert_that(server.status.lower(), is_in(expected_statuses))
 
     @steps_checker.step
     def get_server_credentials(self, server):
@@ -528,7 +533,7 @@ class ServerSteps(base.BaseSteps):
         if check:
             self.check_server_status(
                 server,
-                config.STATUS_ACTIVE,
+                expected_statuses=[config.STATUS_ACTIVE],
                 transit_statuses=[config.STATUS_MIGRATING],
                 timeout=config.LIVE_MIGRATE_TIMEOUT)
             if host is not None:
@@ -553,12 +558,16 @@ class ServerSteps(base.BaseSteps):
             server.get()
             old_hosts[server.id] = getattr(server, 'OS-EXT-SRV-ATTR:host')
             server.migrate()
+
         if check:
             for server in servers:
+
                 self.check_server_status(
-                    server, config.STATUS_VERIFY_RESIZE,
+                    server,
+                    expected_statuses=[config.STATUS_VERIFY_RESIZE],
                     transit_statuses=[config.STATUS_RESIZE],
                     timeout=config.VERIFY_RESIZE_TIMEOUT)
+
                 self.check_instance_hypervisor_hostname(
                     server,
                     old_hosts[server.id],
@@ -578,10 +587,13 @@ class ServerSteps(base.BaseSteps):
         """
         for server in servers:
             server.confirm_resize()
+
         if check:
             for server in servers:
+
                 self.check_server_status(
-                    server, config.STATUS_ACTIVE,
+                    server,
+                    expected_statuses=[config.STATUS_ACTIVE],
                     transit_statuses=[config.STATUS_VERIFY_RESIZE],
                     timeout=config.SERVER_ACTIVE_TIMEOUT)
 
@@ -828,7 +840,8 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             self.check_server_status(
-                server, config.STATUS_PAUSED,
+                server,
+                expected_statuses=[config.STATUS_PAUSED],
                 transit_statuses=[config.STATUS_ACTIVE,
                                   config.STATUS_PAUSING],
                 timeout=config.SERVER_UPDATE_TIMEOUT)
@@ -849,7 +862,8 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             self.check_server_status(
-                server, config.STATUS_ACTIVE,
+                server,
+                expected_statuses=[config.STATUS_ACTIVE],
                 transit_statuses=[config.STATUS_REBUILDING,
                                   config.STATUS_REBUILD_SPAWNING],
                 timeout=config.SERVER_UPDATE_TIMEOUT)
@@ -869,7 +883,8 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             self.check_server_status(
-                server, config.STATUS_RESCUE,
+                server,
+                expected_statuses=[config.STATUS_RESCUE],
                 transit_statuses=[config.STATUS_ACTIVE,
                                   config.STATUS_RESCUING],
                 timeout=config.SERVER_UPDATE_TIMEOUT)
@@ -921,7 +936,8 @@ class ServerSteps(base.BaseSteps):
                 self.check_server_presence(
                     server, present=False, by_name=True,
                     timeout=config.SOFT_DELETED_TIMEOUT)
-                self.check_server_status(server, config.STATUS_SOFT_DELETED)
+                self.check_server_status(
+                    server, expected_statuses=[config.STATUS_SOFT_DELETED])
 
     def _hard_delete_servers(self, servers, check):
         for server in servers:

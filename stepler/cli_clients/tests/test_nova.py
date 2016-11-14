@@ -110,12 +110,12 @@ def test_live_evacuation(cirros_image,
     for server in servers:
         server_steps.check_server_status(
             server,
-            config.STATUS_MIGRATING,
+            expected_statuses=[config.STATUS_MIGRATING],
             timeout=config.MIGRATION_START_TIMEOUT)
     for server in servers:
         server_steps.check_server_status(
             server,
-            config.STATUS_ACTIVE,
+            expected_statuses=[config.STATUS_ACTIVE],
             transit_statuses=[config.STATUS_MIGRATING],
             timeout=config.LIVE_EVACUATE_TIMEOUT)
 
