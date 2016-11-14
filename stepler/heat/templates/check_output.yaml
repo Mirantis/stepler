@@ -1,4 +1,5 @@
 heat_template_version: 2014-10-16
+description: Template for check output
 parameters:
 resources:
   test_resource_a:
@@ -7,14 +8,14 @@ resources:
       value: 'a'
       fail: False
       update_replace: False
-      wait_secs: 0
+      wait_secs: 15
   test_resource_b:
     type: OS::Heat::TestResource
     properties:
       value: 'b'
       fail: False
       update_replace: False
-      wait_secs: 0
+      wait_secs: 15
 outputs:
   resource_id_a:
     description: 'ID of resource a'

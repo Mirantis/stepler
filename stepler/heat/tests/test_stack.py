@@ -15,9 +15,8 @@ Heat stack tests
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import pytest
 
-from hamcrest import assert_that, is_not, empty, equal_to  # noqa
+import pytest
 
 from stepler import config
 from stepler.third_party import utils
@@ -44,6 +43,33 @@ def test_stack_output_show(create_stack,
     stack = create_stack(next(utils.generate_ids()), template)
     output_show = stack_steps.get_stack_output_show(stack, 'random_str1')
     stack_steps.check_output_show(output_show)
+
+
+@pytest.mark.idempotent_id('675eab7b-cad1-4557-9706-7c8338208322')
+def test_check_output_show_during_stack_creation(create_stack,
+                                                 read_heat_template,
+                                                 stack_steps):
+    """**Scenario:** Check stack output show during stack creation.
+
+    **Steps:**
+
+    #. Read template from file
+    #. Launch creation stack with template
+    #. Get output show
+    #. Check that output contains expected attribute values
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    output_param = 'resource_id_a'
+    attr_values = [('output_value', 'a'), ('description', 'ID of resource a')]
+
+    template = read_heat_template('check_output')
+    stack = create_stack(next(utils.generate_ids()), template, check=False)
+    stack_steps.check_status(stack, config.HEAT_IN_PROGRESS_STATUS)
+    output_show = stack_steps.get_stack_output_show(stack, output_param)
+    stack_steps.check_output_show(output_show, attr_values)
 
 
 @pytest.mark.idempotent_id('2c0122e4-c39f-4384-a144-56f656b9792c')
