@@ -1,6 +1,6 @@
 # general
 paramiko==2.0.2
-pytest==3.0.2
+pytest==3.0.4
 pytest-xdist==1.15.0
 python-cinderclient==1.9.0
 python-glanceclient==2.5.0
