@@ -18,6 +18,7 @@ Nova basic verification tests
 
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 
