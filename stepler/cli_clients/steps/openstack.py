@@ -42,3 +42,18 @@ class CliOpenstackSteps(base.BaseCliSteps):
         result = self.execute_command(
             cmd, timeout=config.SERVER_LIST_TIMEOUT, check=check)
         return result
+
+    @steps_checker.step
+    def baremetal_node_list(self, check=True):
+        """Step to get baremetal node list.
+
+        Args:
+            check (bool): flag whether to check result or not
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        cmd = 'openstack baremetal list'
+        self.execute_command(cmd,
+                             timeout=config.SERVER_LIST_TIMEOUT,
+                             check=check)
