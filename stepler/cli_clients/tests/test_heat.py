@@ -366,3 +366,28 @@ def test_resource_type_template(cli_heat_steps, heat_resource_type_steps):
     """
     resource_types = heat_resource_type_steps.get_resource_types()
     cli_heat_steps.get_resource_type_template(resource_types[0])
+
+
+@pytest.mark.idempotent_id('78137331-a2c6-4c0d-8079-52840a9db1df')
+def test_stack_show_particular_output(read_heat_template,
+                                      cli_heat_steps,
+                                      stack_steps):
+    """**Scenario:** Show only particular stack output with heat CLI.
+
+    **Setup:**
+
+    #. Create stack
+
+    **Steps:**
+
+    #. Call ``heat output-show``
+    #. Check that result has only particular output
+
+    **Teardown:**
+
+    #. Delete stack
+    """
+    name = next(utils.generate_ids())
+    template = read_heat_template('check_output')
+    stack = stack_steps.create(name, template)
+    cli_heat_steps.show_stack_output(stack, 'resource_id_a', 'a')
