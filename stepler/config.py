@@ -21,6 +21,8 @@ import os
 import socket
 import uuid
 
+import stepler.hacking  # noqa F401
+
 socket.setdefaulttimeout(60)
 
 DEBUG = bool(os.environ.get('DEBUG', False))
