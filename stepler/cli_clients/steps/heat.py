@@ -17,7 +17,8 @@ Heat CLI steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_, is_not, empty, has_entries  # noqa H301
+from hamcrest import (assert_that, equal_to, is_,
+                      is_not, empty, has_entries)  # noqa H301
 import yaml
 
 from stepler.cli_clients.steps import base
@@ -275,3 +276,24 @@ class CliHeatSteps(base.BaseCliSteps):
             cmd, timeout=config.STACK_CLI_TIMEOUT, check=check)
         template = yaml.load(stdout)
         return template
+
+    @steps_checker.step
+    def show_stack_output(self, stack, output, output_result, check=True):
+        """Step to show a specific stack output.
+
+        Args:
+            stack (obj): heat stack
+            output (str): name of output to show
+            output_result (str): expected output result
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if output contains unexpected result
+        """
+        cmd = 'heat output-show {0} {1}'.format(stack.id, output)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.STACK_SHOW_TIMEOUT, check=check)
+        result = yaml.load(stdout)
+
+        if check:
+            assert_that(result, equal_to(output_result))
