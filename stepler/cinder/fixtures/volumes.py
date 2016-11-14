@@ -58,12 +58,12 @@ def unexpected_volumes_cleanup(primary_volumes,
 
     It provides cleanup before and after test.
     """
-    if config.CLEANUP_UNEXPECTED_BEFORE:
+    if config.CLEANUP_UNEXPECTED_BEFORE_TEST:
         cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
 
     yield
 
-    if config.CLEANUP_UNEXPECTED_AFTER:
+    if config.CLEANUP_UNEXPECTED_AFTER_TEST:
         cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
 
 
@@ -94,8 +94,8 @@ def primary_volumes(get_volume_steps,
                     uncleanable):
     """Session fixture to remember primary volumes before tests.
 
-    Also in finalization it deletes all unexpected volumes which are remained
-    after tests.
+    Also optionally in finalization it deletes all unexpected volumes which
+    are remained after tests.
 
     Args:
         get_volume_steps (function): Function to get volume steps.
@@ -109,7 +109,9 @@ def primary_volumes(get_volume_steps,
         volume_ids_before.add(volume.id)
 
     yield
-    cleanup_volumes(get_volume_steps(), uncleanable_ids=volume_ids_before)
+
+    if config.CLEANUP_UNEXPECTED_AFTER_ALL:
+        cleanup_volumes(get_volume_steps(), uncleanable_ids=volume_ids_before)
 
 
 @pytest.fixture(scope='session')
