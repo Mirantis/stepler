@@ -98,5 +98,5 @@ def test_accept_volume_transfer(volume,
 
     user_volume_steps = get_volume_steps(**new_user_with_project)
     user_volume_steps.check_volume_presence(
-        volume, present=True, timeout=config.VOLUME_DELETE_TIMEOUT)
+        volume, timeout=config.VOLUME_DELETE_TIMEOUT)
     transfer_steps.check_volume_transfer_presence(transfer, must_present=False)
