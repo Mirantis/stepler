@@ -21,11 +21,11 @@ rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
 
-COPY requirements.txt /opt/app
-COPY c-requirements.txt /opt/app
+COPY requirements.txt /opt/app/
+COPY c-requirements.txt /opt/app/
 RUN pip install -r requirements.txt -r c-requirements.txt
 
-COPY . /opt/app
+COPY . /opt/app/
 
 ENV OS_USERNAME=admin
 ENV OS_PASSWORD=admin
