@@ -68,12 +68,12 @@ class StackSteps(base.BaseSteps):
     def _get_property(self, stack, property_name, transit_values=(),
                       timeout=0):
 
-        def predicate():
+        def _get_prop():
             stack.get()
             return expect_that(getattr(stack, property_name).lower(),
                                is_not(is_in(transit_values)))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_get_prop, timeout_seconds=timeout)
         return getattr(stack, property_name)
 
     @steps_checker.step
@@ -171,7 +171,7 @@ class StackSteps(base.BaseSteps):
         else:
             get_stack = lambda: self._client.stacks.get(stack)
 
-        def predicate():
+        def _check_presence():
             try:
                 get_stack()
                 is_present = True
@@ -180,7 +180,7 @@ class StackSteps(base.BaseSteps):
 
             return expect_that(is_present, equal_to(must_present))
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_output(self, stack, output_key, check=True):
