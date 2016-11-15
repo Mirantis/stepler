@@ -301,3 +301,52 @@ def test_attach_detach_fixed_ip_to_server(
         server_steps.check_ping_for_ip(
             new_fixed_ip, server_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('f46d5093-d2d6-4fc3-b9a1-9d9c9a2064db')
+@pytest.mark.parametrize('volumes_count', [10])
+def test_create_many_servers_boot_from_cinder(cirros_image,
+                                              flavor,
+                                              network,
+                                              subnet,
+                                              security_group,
+                                              volume_steps,
+                                              server_steps,
+                                              volumes_count):
+    """**Scenario:** Boot many servers from volumes.
+
+    **Setup:**
+
+    #. Upload cirros image
+    #. Create flavor
+    #. Create network
+    #. Create subnet
+    #. Create security group with allow ping rule
+
+    **Steps:**
+
+    #. Create 10 cinder volumes from cirros image
+    #. Boot 10 servers from volumes
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete volumes
+    #. Delete security group
+    #. Delete subnet
+    #. Delete network
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    volumes = volume_steps.create_volumes(
+        names=utils.generate_ids(count=volumes_count),
+        image=cirros_image)
+
+    for volume in volumes:
+        block_device_mapping = {'vda': volume.id}
+        server_steps.create_servers(
+            image=None,
+            flavor=flavor,
+            networks=[network],
+            security_groups=[security_group],
+            block_device_mapping=block_device_mapping)
