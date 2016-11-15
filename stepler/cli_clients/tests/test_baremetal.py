@@ -50,3 +50,14 @@ def test_ironic_chassis_list(cli_ironic_steps):
     #. Execute in shell ``ironic chassis-list``
     """
     cli_ironic_steps.ironic_chassis_list()
+
+
+@pytest.mark.idempotent_id('2d93c9c6-7f23-485d-a36b-41924ae0e393')
+def test_ironic_driver_list(cli_ironic_steps):
+    """**Scenario:** Ironic driver-list works via shell.
+
+    **Steps:**
+
+    #. Execute in shell ``ironic driver-list``
+    """
+    cli_ironic_steps.ironic_driver_list()
