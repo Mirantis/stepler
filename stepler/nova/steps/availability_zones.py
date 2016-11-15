@@ -20,11 +20,11 @@ Availability zone steps
 from dateutil import parser
 from hamcrest import assert_that, empty, has_entries, is_not, only_contains  # noqa
 from novaclient import exceptions as nova_exceptions
-import waiting
 
 from stepler import base
 from stepler import config
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ['AvailabilityZoneSteps']
 
@@ -49,10 +49,10 @@ class AvailabilityZoneSteps(base.BaseSteps):
         """
 
         def _get_hosts():
-            zone = waiting.wait(
+            zone = waiter.wait(
                 lambda: self._client.find(zoneName=zone_name),
                 timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT,
-                expected_exceptions=nova_exceptions.ClientException)
+                expected_exceptions=(nova_exceptions.ClientException,))
             for hosts_dict in zone.hosts.values():
                 for host in hosts_dict.values():
                     host['updated_at'] = parser.parse(host['updated_at'])
@@ -63,7 +63,7 @@ class AvailabilityZoneSteps(base.BaseSteps):
         def _predicate():
             return all([x['updated_at'] > last_updated for x in _get_hosts()])
 
-        waiting.wait(
+        waiter.wait(
             _predicate,
             timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT)
 
