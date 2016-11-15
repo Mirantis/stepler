@@ -31,6 +31,7 @@ import inspect
 import pkgutil
 
 import hamcrest
+import pytest
 
 import stepler
 from stepler.third_party import logger
@@ -123,8 +124,8 @@ def pytest_collection_modifyitems(config, items):
                 errors.append(error)
 
     if errors:
-        raise SystemError("Only steps and fixtures must be called in test!\n" +
-                          '\n'.join(errors))
+        pytest.exit("Only steps and fixtures must be called in test!\n" +
+                    '\n'.join(errors))
 
 
 def pytest_configure(config):
