@@ -17,7 +17,7 @@ Nova CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, empty, equal_to, is_not  # noqa H301
 
 from stepler.cli_clients.steps import base
 from stepler import config
@@ -29,22 +29,27 @@ class CliNovaSteps(base.BaseCliSteps):
     """CLI nova client steps."""
 
     @steps_checker.step
-    def nova_list(self, check=True):
+    def nova_list(self, api_version=None, check=True):
         """Step to get nova list.
 
         Args:
+            api_version (str|None): micro version for nova list command
             check (bool): flag whether to check result or not
-
-        Returns:
-            str: result of command shell execution
 
         Raises:
             TimeoutExpired|AssertionError: if check failed after timeout
         """
-        cmd = 'nova list'
-        result = self.execute_command(
+        cmd = 'nova'
+        if api_version:
+            cmd += ' --os-compute-api-version ' + api_version
+        cmd += ' list'
+
+        exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.SERVER_LIST_TIMEOUT, check=check)
-        return result
+
+        if check:
+            list_result = output_parser.listing(stdout)
+            assert_that(list_result, is_not(empty()))
 
     @steps_checker.step
     def live_evacuate(self, source_host, target_host, servers, check=True):
