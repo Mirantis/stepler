@@ -26,6 +26,7 @@ __all__ = [
     'get_nova_client',
     'nova_client',
     'disable_nova_config_drive',
+    'unlimited_live_migrations',
 ]
 
 
@@ -79,6 +80,31 @@ def disable_nova_config_drive(patch_ini_file_and_restart_services,
             file_path=config.NOVA_CONFIG_PATH,
             option='force_config_drive',
             value=False):
+        zone_steps = get_availability_zone_steps()
+        zone_steps.check_all_active_hosts_available()
+
+        yield
+
+    zone_steps = get_availability_zone_steps()
+    zone_steps.check_all_active_hosts_available()
+
+
+@pytest.yield_fixture(scope='module')
+def unlimited_live_migrations(patch_ini_file_and_restart_services,
+                              get_availability_zone_steps):
+    """Module fixture to allow unlimited live migration.
+
+    Args:
+        patch_ini_file_and_restart_services (function): callable fixture to
+            patch ini file and restart services
+        get_availability_zone_steps (function): callable fixture to get
+            availability zone steps
+    """
+    with patch_ini_file_and_restart_services(
+            [config.NOVA_API, config.NOVA_COMPUTE],
+            file_path=config.NOVA_CONFIG_PATH,
+            option='max_concurrent_live_migrations',
+            value=0):
         zone_steps = get_availability_zone_steps()
         zone_steps.check_all_active_hosts_available()
 

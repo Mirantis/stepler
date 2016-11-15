@@ -522,12 +522,12 @@ class ServerSteps(base.BaseSteps):
                                                timeout=timeout)
 
     @steps_checker.step
-    def live_migrate(self, server, host=None, block_migration=True,
+    def live_migrate(self, servers, host=None, block_migration=True,
                      check=True):
-        """Step to live migrate nova server.
+        """Step to live migrate nova servers.
 
         Args:
-            server (object): nova instance to migrate
+            servers (list|object): nova instances to migrate
             host (str): hypervisor's hostname to migrate to
             block_migration (bool): should nova use block or true live
                 migration
@@ -536,20 +536,27 @@ class ServerSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        server.get()
-        current_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
-        server.live_migrate(host=host, block_migration=block_migration)
+        if not (isinstance(servers, (list, tuple))):
+            servers = [servers]
+
+        old_hosts = []
+        for server in servers:
+            server.get()
+            old_hosts.append(getattr(server, 'OS-EXT-SRV-ATTR:host'))
+            server.live_migrate(host=host, block_migration=block_migration)
+
         if check:
-            self.check_server_status(
-                server,
-                expected_statuses=[config.STATUS_ACTIVE],
-                transit_statuses=[config.STATUS_MIGRATING],
-                timeout=config.LIVE_MIGRATE_TIMEOUT)
-            if host is not None:
-                self.check_instance_hypervisor_hostname(server, host)
-            else:
-                self.check_instance_hypervisor_hostname(
-                    server, current_host, equal=False)
+            for server, old_host in zip(servers, old_hosts):
+                self.check_server_status(
+                    server,
+                    expected_statuses=[config.STATUS_ACTIVE],
+                    transit_statuses=[config.STATUS_MIGRATING],
+                    timeout=config.LIVE_MIGRATE_TIMEOUT)
+                if host is not None:
+                    self.check_instance_hypervisor_hostname(server, host)
+                else:
+                    self.check_instance_hypervisor_hostname(
+                        server, old_hosts, equal=False)
 
     @steps_checker.step
     def migrate_servers(self, servers, check=True):
