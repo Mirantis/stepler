@@ -18,11 +18,11 @@ Heat stack steps
 # limitations under the License.
 
 from hamcrest import assert_that, equal_to, is_not, empty, only_contains  # noqa
-import waiting
 
 from stepler import base
 from stepler import config
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ['StackSteps']
 
@@ -65,11 +65,11 @@ class StackSteps(base.BaseSteps):
 
     def _get_property(self, stack, property_name, transit_values=(),
                       timeout=0):
-        def predicate():
+        def _get_prop():
             stack.get()
             return getattr(stack, property_name).lower() not in transit_values
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_get_prop, timeout_seconds=timeout)
         return getattr(stack, property_name)
 
     @steps_checker.step
@@ -164,14 +164,14 @@ class StackSteps(base.BaseSteps):
 
         stack_id = getattr(stack, 'id', stack)
 
-        def predicate():
+        def _check_presence():
             try:
                 next(self._client.stacks.list(id=stack_id))
                 return present
             except StopIteration:
                 return not present
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_output(self, stack, output_key):
