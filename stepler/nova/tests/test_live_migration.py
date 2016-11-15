@@ -24,7 +24,10 @@ import pytest
 from stepler import config
 from stepler.third_party.utils import generate_ids
 
-pytestmark = pytest.mark.usefixtures('disable_nova_config_drive')
+pytestmark = [
+    pytest.mark.usefixtures('disable_nova_config_drive'),
+    pytest.mark.requires("computes_count_gte(2)")
+]
 
 
 @pytest.mark.idempotent_id('12c72e88-ca87-400b-9fbb-a35c1d07cbda')
