@@ -49,3 +49,26 @@ class HypervisorSteps(base.BaseSteps):
         if check:
             assert_that(hypervisors, is_not(empty()))
         return hypervisors
+
+    def get_hypervisor_capacity(self, hypervisor, flavor):
+        """Step to get hypervisor capacity.
+
+        This method calculates max available count of instances, which can be
+        booted on hypervisor with choosed flavor.
+
+        :returns: possible instances count
+
+        Args:
+            hypervisor (obj): nova hypervisor
+            flavor (obj): nova flavor
+
+        Returns:
+            int: possible instances count
+        """
+        if hypervisor.vcpus < flavor.vcpus:
+            return 0
+        if flavor.disk > 0:
+            return min(hypervisor.disk_available_least // flavor.disk,
+                       hypervisor.free_ram_mb // flavor.ram)
+        else:
+            return hypervisor.free_ram_mb // flavor.ram
