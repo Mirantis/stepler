@@ -26,9 +26,10 @@ from .volume_types import *  # noqa
 from .volumes import *  # noqa
 
 __all__ = sorted([  # sort for documentation
+    'get_backup_steps',
     'backup_steps',
     'create_backup',
-    'backups_cleanup',
+    'cleanup_backups',
 
     'cinder_client',
     'get_cinder_client',
@@ -37,14 +38,15 @@ __all__ = sorted([  # sort for documentation
     'big_snapshot_quota',
     'volume_size_quota',
 
+    'get_snapshot_steps',
     'snapshot_steps',
-    'snapshots_cleanup',
+    'cleanup_snapshots',
     'volume_snapshot',
 
     'transfer_steps',
     'create_volume_transfer',
     'get_transfer_steps',
-    'transfers_cleanup',
+    'cleanup_transfers',
 
     'volume_type_steps',
     'create_volume_type',
