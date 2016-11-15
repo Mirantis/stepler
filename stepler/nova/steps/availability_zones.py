@@ -18,13 +18,14 @@ Availability zone steps
 # limitations under the License.
 
 from dateutil import parser
-from hamcrest import assert_that, empty, has_entries, is_not, only_contains  # noqa
+from hamcrest import assert_that, empty, has_entries, is_, is_not, only_contains  # noqa
 from novaclient import exceptions as nova_exceptions
-import waiting
 
 from stepler import base
 from stepler import config
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ['AvailabilityZoneSteps']
 
@@ -49,10 +50,10 @@ class AvailabilityZoneSteps(base.BaseSteps):
         """
 
         def _get_hosts():
-            zone = waiting.wait(
+            zone = waiter.wait(
                 lambda: self._client.find(zoneName=zone_name),
                 timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT,
-                expected_exceptions=nova_exceptions.ClientException)
+                expected_exceptions=(nova_exceptions.ClientException,))
             for hosts_dict in zone.hosts.values():
                 for host in hosts_dict.values():
                     host['updated_at'] = parser.parse(host['updated_at'])
@@ -60,11 +61,13 @@ class AvailabilityZoneSteps(base.BaseSteps):
 
         last_updated = max([x['updated_at'] for x in _get_hosts()])
 
-        def _predicate():
-            return all([x['updated_at'] > last_updated for x in _get_hosts()])
+        def _check_hosts_updated():
+            return expect_that(
+                is_(True),
+                all([x['updated_at'] > last_updated for x in _get_hosts()]))
 
-        waiting.wait(
-            _predicate,
+        waiter.wait(
+            _check_hosts_updated,
             timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT)
 
         active_hosts = [x for x in _get_hosts() if x['active']]
