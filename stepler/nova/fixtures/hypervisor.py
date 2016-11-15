@@ -23,7 +23,8 @@ from stepler.nova import steps
 
 
 __all__ = [
-    'hypervisor_steps'
+    'hypervisor_steps',
+    'sorted_hypervisors',
 ]
 
 
@@ -38,3 +39,23 @@ def hypervisor_steps(nova_client):
         stepler.nova.steps.HypervisorSteps: instantiated hypervisor steps
     """
     return steps.HypervisorSteps(nova_client.hypervisors)
+
+
+@pytest.fixture
+def sorted_hypervisors(hypervisor_steps, flavor):
+    """Function fixture to get hypervisors sorted by their capacity.
+
+    Args:
+        hypervisor_steps (obj): instantiated hypervisor steps
+        flavor (obj): nova flavor
+
+    Returns:
+        list: sorted hypervisors (from biggest to smallest)
+    """
+    hypervisors = hypervisor_steps.get_hypervisors()
+    suitable_hypervisors = []
+    for hypervisor in hypervisors:
+        cap = hypervisor_steps.get_hypervisor_capacity(hypervisor, flavor)
+        suitable_hypervisors.append((cap, hypervisor))
+    hypervisors = [hyp for _, hyp in reversed(sorted(suitable_hypervisors))]
+    return hypervisors
