@@ -49,6 +49,7 @@ __all__ = sorted([  # sort for documentation
     'host_steps',
 
     'hypervisor_steps',
+    'sorted_hypervisors',
 
     'keypair',
     'keypair_steps',
@@ -58,6 +59,7 @@ __all__ = sorted([  # sort for documentation
     'nova_client',
     'disable_nova_config_drive',
     'skip_live_migration_tests',
+    'unlimited_live_migrations',
     'nova_ceph_enabled',
 
     'create_security_group',
@@ -75,6 +77,7 @@ __all__ = sorted([  # sort for documentation
     'server',
     'server_steps',
     'live_migration_server',
+    'live_migration_servers',
     'servers_cleanup',
     'generate_traffic',
     'unexpected_servers_cleanup',
