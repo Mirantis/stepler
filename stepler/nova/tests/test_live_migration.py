@@ -3,19 +3,18 @@
 Nova live migration tests
 -------------------------
 """
-#    Copyright 2016 Mirantis, Inc.
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 import time
 
@@ -24,8 +23,11 @@ import pytest
 from stepler import config
 from stepler.third_party.utils import generate_ids
 
-pytestmark = pytest.mark.usefixtures('skip_live_migration_tests',
-                                     'disable_nova_config_drive')
+pytestmark = [
+    pytest.mark.usefixtures('skip_live_migration_tests',
+                            'disable_nova_config_drive'),
+    pytest.mark.requires("computes_count_gte(2)")
+]
 
 
 @pytest.mark.idempotent_id('12c72e88-ca87-400b-9fbb-a35c1d07cbda')
@@ -70,7 +72,7 @@ def test_network_connectivity_to_vm_during_live_migration(
     """
     with server_steps.check_ping_loss_context(
             nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
-        server_steps.live_migrate(live_migration_server,
+        server_steps.live_migrate([live_migration_server],
                                   block_migration=block_migration)
 
 
@@ -122,7 +124,7 @@ def test_server_migration_with_cpu_workload(live_migration_server,
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.generate_server_cpu_workload(server_ssh)
-    server_steps.live_migrate(server, block_migration=block_migration)
+    server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
@@ -176,7 +178,7 @@ def test_server_migration_with_memory_workload(live_migration_server,
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.generate_server_memory_workload(server_ssh)
-    server_steps.live_migrate(server, block_migration=block_migration)
+    server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
@@ -229,7 +231,7 @@ def test_server_migration_with_disk_workload(live_migration_server,
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.generate_server_disk_workload(server_ssh)
-    server_steps.live_migrate(server, block_migration=block_migration)
+    server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
@@ -290,7 +292,7 @@ def test_server_migration_with_network_workload(
         }])
         server_steps.server_network_listen(server_ssh, port=port)
         generate_traffic(nova_floating_ip.ip, port)
-    server_steps.live_migrate(server, block_migration=block_migration)
+    server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
@@ -363,7 +365,7 @@ def test_migration_with_ephemeral_disk(
             server_ssh, timestamp=timestamp)
     with server_steps.check_ping_loss_context(
             nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
-        server_steps.live_migrate(server, block_migration=block_migration)
+        server_steps.live_migrate([server], block_migration=block_migration)
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.check_timestamps_on_root_and_ephemeral_disks(
