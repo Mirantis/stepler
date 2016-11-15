@@ -100,6 +100,7 @@ STATUS_PAUSED = 'paused'
 STATUS_PAUSING = 'pausing'
 STATUS_RESCUE = 'rescue'
 STATUS_RESCUING = 'rescuing'
+STATUS_QUEUED = 'queued'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
@@ -126,6 +127,7 @@ TRANSFER_SHOW_TIMEOUT = 60
 
 # Glance
 IMAGE_AVAILABLE_TIMEOUT = 5 * 60
+IMAGE_QUEUED_TIMEOUT = 30
 BAREMETAL_DISK_INFO = [{"name": "sda",
                         "extra": [],
                         "free_space": 11000,
@@ -207,6 +209,7 @@ SERVER_LIST_TIMEOUT = 60
 MIGRATION_START_TIMEOUT = 15
 LIVE_EVACUATE_CLI_TIMEOUT = 60
 LIVE_EVACUATE_TIMEOUT = 5 * 60
+IMAGE_CREATION_TIMEOUT = 60
 
 # For DevStack cmd should looks like `source devstack/openrc admin admin`
 OPENRC_ACTIVATE_CMD = os.environ.get('OPENRC_ACTIVATE_CMD', 'source /root/openrc')  # noqa E501
