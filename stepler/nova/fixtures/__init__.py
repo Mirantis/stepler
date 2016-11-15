@@ -57,6 +57,8 @@ __all__ = sorted([  # sort for documentation
     'get_nova_client',
     'nova_client',
     'disable_nova_config_drive',
+    'skip_live_migration_tests',
+    'nova_ceph_enabled',
 
     'create_security_group',
     'security_group',

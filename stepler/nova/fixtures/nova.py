@@ -26,6 +26,8 @@ __all__ = [
     'get_nova_client',
     'nova_client',
     'disable_nova_config_drive',
+    'skip_live_migration_tests',
+    'nova_ceph_enabled',
 ]
 
 
@@ -86,3 +88,41 @@ def disable_nova_config_drive(patch_ini_file_and_restart_services,
 
     zone_steps = get_availability_zone_steps()
     zone_steps.check_all_active_hosts_available()
+
+
+@pytest.fixture
+def nova_ceph_enabled(os_faults_steps):
+    """Function fixture to retrieve is Ceph is used by Nova.
+
+    Args:
+        os_faults_steps (obj): instantiated os-faults steps
+
+    Returns:
+        bool: is Ceph used by Nova or not
+    """
+    cmd = "grep -P '^images_type\s*=\s*rbd' {}".format(config.NOVA_CONFIG_PATH)
+    computes = os_faults_steps.get_nodes(service_names=[config.NOVA_COMPUTE])
+    result = os_faults_steps.execute_cmd(computes, cmd, check=False)
+    return all(node_result.status == config.STATUS_OK
+               for node_result in result)
+
+
+@pytest.fixture
+def skip_live_migration_tests(request, nova_ceph_enabled):
+    """Skip tests with wrong `block_migration` parameter.
+
+    Block migration requires Nova Ceph RBD to be disabled. This fixture skips
+    parametrized with `block_migration` tests with wrong `block_migration`
+    value (not suitable for current cloud).
+
+    Args:
+        request (obj): py.test SubRequest instance
+        nova_ceph_enabled (bool): is Ceph used by Nova or not
+    """
+    if not hasattr(request.node, 'callspec'):
+        return
+    block_migration = request.node.callspec.params.get('block_migration')
+    if block_migration is None:
+        return
+    if block_migration and nova_ceph_enabled:
+        pytest.skip("Block migration requires Nova Ceph RBD to be disabled")
