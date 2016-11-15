@@ -25,6 +25,7 @@ import pytest
 from stepler import config
 from stepler.nova import steps
 from stepler.third_party import context
+from stepler.third_party import utils
 
 __all__ = [
     'create_server_context',
@@ -34,6 +35,7 @@ __all__ = [
     'server',
     'server_steps',
     'live_migration_server',
+    'live_migration_servers',
     'servers_cleanup',
     'unexpected_servers_cleanup',
 ]
@@ -266,16 +268,115 @@ def get_ssh_proxy_cmd(admin_ssh_key_path,
 
 
 @pytest.fixture
+def live_migration_servers(request,
+                           keypair,
+                           flavor,
+                           security_group,
+                           ubuntu_image,
+                           net_subnet_router,
+                           sorted_hypervisors,
+                           current_project,
+                           nova_create_floating_ip,
+                           cinder_quota_steps,
+                           hypervisor_steps,
+                           volume_steps,
+                           server_steps):
+    """Fixture to create servers for live migration tests.
+
+    This fixture creates max allowed count of servers and adds floating ip to
+    each. It can boot servers from ubuntu image or volume with parametrization.
+    Default is boot from image.
+
+    All created resources will be deleted after test.
+
+    Example:
+        @pytest.mark.parametrized('live_migration_servers', [
+                {'boot_from_volume': True},
+                {'boot_from_volume': False}
+            ], indirect=True)
+        def test_foo(live_migration_servers):
+            pass
+
+    Args:
+        request (obj): pytest SubRequest instance
+        keypair (obj): keypair
+        flavor (obj): flavor
+        security_group (obj): security group
+        ubuntu_image (obj): ubuntu image
+        net_subnet_router (tuple): neutron network, subnet and router
+        sorted_hypervisors (list): nova hypervisors list
+        current_project (obj): current project
+        nova_create_floating_ip (function): function to create floating IP
+        cinder_quota_steps (obj): instantiated cinder quota steps
+        hypervisor_steps (obj): instantiated hypervisor steps
+        volume_steps (obj): instantiated volume steps
+        server_steps (obj): instantiated server steps
+
+    Returns:
+        list: nova servers
+    """
+    params = getattr(request, "param", {})
+    boot_from_volume = params.get('boot_from_volume', False)
+
+    network, _, _ = net_subnet_router
+
+    hypervisor = sorted_hypervisors[1]
+    servers_count = hypervisor_steps.get_hypervisor_capacity(hypervisor,
+                                                             flavor)
+
+    kwargs_list = []
+    if boot_from_volume:
+        volumes_quota = cinder_quota_steps.get_volumes_quota(current_project)
+        servers_count = min(servers_count, volumes_quota)
+        volume_names = utils.generate_ids(count=servers_count)
+        volumes = volume_steps.create_volumes(size=5,
+                                              image=ubuntu_image,
+                                              names=volume_names)
+        for volume in volumes:
+            block_device_mapping = {'vda': volume.id}
+            kwargs_list.append(
+                dict(
+                    image=None, block_device_mapping=block_device_mapping))
+    else:
+        kwargs_list = [dict(image=ubuntu_image)] * servers_count
+
+    servers = []
+    for kwargs in kwargs_list:
+        server = server_steps.create_servers(
+            flavor=flavor,
+            keypair=keypair,
+            networks=[network],
+            security_groups=[security_group],
+            userdata=config.INSTALL_LM_WORKLOAD_USERDATA,
+            username=config.UBUNTU_USERNAME,
+            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            check=False,
+            **kwargs)[0]
+        servers.append(server)
+
+    for server in servers:
+        server_steps.check_server_status(
+            server,
+            expected_statuses=[config.STATUS_ACTIVE],
+            transit_statuses=[config.STATUS_BUILD],
+            timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+        server_steps.check_server_log_contains_record(
+            server,
+            config.USERDATA_DONE_MARKER,
+            timeout=config.USERDATA_EXECUTING_TIMEOUT)
+        server_steps.attach_floating_ip(server, nova_create_floating_ip())
+    return servers
+
+
+@pytest.fixture
 def live_migration_server(request,
                           keypair,
                           flavor,
                           security_group,
                           nova_floating_ip,
                           ubuntu_image,
-                          network,
-                          subnet,
-                          router,
-                          add_router_interfaces,
+                          net_subnet_router,
                           volume_steps,
                           server_steps):
     """Fixture to create server for live migration tests.
@@ -299,24 +400,20 @@ def live_migration_server(request,
         security_group (obj): security group
         nova_floating_ip (obj): nova floating ip
         ubuntu_image (obj): ubuntu image
-        network (obj): network
-        subnet (obj): subnet
-        router (obj): router
-        add_router_interfaces (function): callable fixture to add interface to
-            router
-        create_volume (function): callable fixture to create volume
+        net_subnet_router (tuple): neutron network, subnet and router
+        volume_steps (TYPE): instantiated volume steps
         server_steps (obj): instance of ServerSteps
 
     Returns:
         object: nova server instance
     """
-    add_router_interfaces(router, [subnet])
+    network, _, _ = net_subnet_router
 
     params = getattr(request, "param", {})
     boot_from_volume = params.get('boot_from_volume', False)
 
     if boot_from_volume:
-        volume = volume_steps.create_volumes(size=20, image=ubuntu_image)[0]
+        volume = volume_steps.create_volumes(size=5, image=ubuntu_image)[0]
 
         block_device_mapping = {'vda': volume.id}
         kwargs = dict(image=None, block_device_mapping=block_device_mapping)

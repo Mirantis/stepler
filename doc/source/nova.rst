@@ -24,6 +24,9 @@ Nova tests
 .. automodule:: stepler.nova.tests.test_live_migration
    :members:
 
+.. automodule:: stepler.nova.tests.test_live_migration_multi_instances
+   :members:
+
 .. automodule:: stepler.nova.tests.test_metadata
    :members:
 
