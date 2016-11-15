@@ -17,12 +17,14 @@ Project steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, equal_to, calling, raises  # noqa
+from hamcrest import (assert_that, empty, equal_to, calling,
+                      raises, is_not)  # noqa
 from keystoneclient import exceptions
-from waiting import wait
 
 from stepler.base import BaseSteps
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = [
     'ProjectSteps'
@@ -59,30 +61,60 @@ class ProjectSteps(BaseSteps):
 
     @steps_checker.step
     def delete_project(self, project, check=True):
-        """Step to delete project."""
+        """Step to delete project.
+
+        Args:
+            project (object): keystone project
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
         self._client.delete(project.id)
 
         if check:
-            self.check_project_presence(project, present=False)
+            self.check_project_presence(project, must_present=False)
 
     @steps_checker.step
-    def check_project_presence(self, project, present=True, timeout=0):
-        """Check step that project is present."""
-        def predicate():
+    def check_project_presence(self, project, must_present=True, timeout=0):
+        """Check step that project is present.
+
+        Args:
+            project (object): keystone project to check presence status
+            must_present (bool): flag whether image should present or not
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_project_presence():
             try:
                 self._client.get(project.id)
-                return present
-            except Exception:
-                return not present
+                is_present = True
+            except exceptions.NotFound:
+                is_present = False
 
-        wait(predicate, timeout_seconds=timeout)
+            return expect_that(is_present, equal_to(must_present))
+
+        waiter.wait(_check_project_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_projects(self, check=True):
-        """Step to get projects."""
+        """Step to get projects.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            projects (list): list of projects
+
+        Raises:
+            AssertionError: if no projects found
+        """
         projects = list(self._client.list())
         if check:
-            assert projects
+            assert_that(projects, is_not(empty()))
+
         return projects
 
     @steps_checker.step
@@ -90,7 +122,7 @@ class ProjectSteps(BaseSteps):
         """Step to get current project.
 
         Args:
-            session (obj): session object
+            session (object): session object
             check (bool): flag whether to check step or not
 
         Raises:
@@ -111,7 +143,7 @@ class ProjectSteps(BaseSteps):
         """Step to check unauthorized request returns (HTTP 401)
 
         Raises:
-            AssertionError: if check was triggered to an error
+            AssertionError: if check failed
         """
         exception_message = "The request you have made requires authentication"
         assert_that(calling(self.get_projects),
