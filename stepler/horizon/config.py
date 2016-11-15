@@ -56,3 +56,5 @@ XVFB_LOCK = '/tmp/xvfb.lock'
 # Volume creating constants
 IMAGE_SOURCE = 'Image'
 VOLUME_SOURCE = 'Volume'
+
+STATUS_ACTIVE = 'Active'
