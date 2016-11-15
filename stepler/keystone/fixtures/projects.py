@@ -26,7 +26,8 @@ __all__ = [
     'create_project',
     'get_project_steps',
     'project_steps',
-    'project'
+    'project',
+    'current_project',
 ]
 
 
@@ -83,3 +84,17 @@ def project(create_project):
     """Fixture to create project with default options before test."""
     project_name = next(generate_ids('project'))
     return create_project(project_name)
+
+
+@pytest.fixture
+def current_project(session, project_steps):
+    """Function fixture to get current project.
+
+    Args:
+        session (obj): instantiated keystone session
+        project_steps (obj): instantiated project steps
+
+    Returns:
+        obj: current project
+    """
+    return project_steps.get_current_project(session)

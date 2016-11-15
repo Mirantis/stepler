@@ -93,6 +93,7 @@ __all__ = sorted([  # sort for documentation
     'create_project',
     'project_steps',
     'project',
+    'current_project',
     'admin_role',
     'create_role',
     'role_steps',

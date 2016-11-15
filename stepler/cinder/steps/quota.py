@@ -99,3 +99,22 @@ class CinderQuotaSteps(base.BaseSteps):
         if check:
             new_quota = self.get_snapshots_quota(project)
             assert_that(value, equal_to(new_quota))
+
+    @steps_checker.step
+    def get_volumes_quota(self, project, check=True):
+        """Step to retrieve quota for volumes count.
+
+        Args:
+            project (obj): project object
+            check (bool|True): flag whether to check step or not
+
+        Returns:
+            int: current quota value
+
+        Raises:
+            AssertionError: if check failed
+        """
+        quota = self._client.get(project.id).volumes
+        if check:
+            assert_that(quota, greater_than(0))
+        return quota
