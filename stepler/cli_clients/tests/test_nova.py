@@ -21,8 +21,16 @@ import pytest
 from stepler import config
 
 
-@pytest.mark.idempotent_id('c6c11d30-f0b0-4574-b501-e111c3c631f1')
-def test_nova_list(server, cli_nova_steps):
+@pytest.mark.idempotent_id('c6c11d30-f0b0-4574-b501-e111c3c631f1',
+                           api_version=None)
+@pytest.mark.idempotent_id('baaaf7f5-b491-4a48-a287-8a637e112483',
+                           api_version=2)
+@pytest.mark.idempotent_id('0c696d77-7c81-4c70-9589-651a11ea61b9',
+                           api_version=2.1)
+@pytest.mark.idempotent_id('ba603c26-4f0c-4838-b5d8-110249e43484',
+                           api_version=2.25)
+@pytest.mark.parametrize('api_version', [None, 2, 2.1, 2.25])
+def test_nova_list(server, cli_nova_steps, api_version):
     """**Scenario:** nova list works via shell.
 
     **Setup:**:
@@ -31,13 +39,14 @@ def test_nova_list(server, cli_nova_steps):
 
     **Steps:**:
 
-    #. Execute in shell ``nova list``
+    #. Execute in shell ``nova list`` or
+        ``nova --os-compute-api-version <api_version> list``
 
     **Teardown:**
 
     #. Remove nova server
     """
-    cli_nova_steps.nova_list()
+    cli_nova_steps.nova_list(api_version=api_version)
 
 
 # TODO(ssokolov) add check of condition 'two or more nodes'
