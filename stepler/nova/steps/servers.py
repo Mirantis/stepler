@@ -242,11 +242,27 @@ class ServerSteps(base.BaseSteps):
         assert_that(server.status.lower(), is_in(expected_statuses))
 
     @steps_checker.step
+    def get_attr_value(self, server, attr_name):
+        """Step to get value of OS-EXT-SRV-ATTR attribute.
+
+        Args:
+            server (object): nova server object
+            attr_name (str): attribute value
+
+        Returns:
+            str: attribute value
+        """
+        server.get()
+        attr_value = getattr(server, 'OS-EXT-SRV-ATTR:{}'.format(attr_name))
+        return attr_value
+
+    @steps_checker.step
     def get_server_credentials(self, server):
         """Step to retrieve server credentials.
 
         Args:
             server (object): nova server object
+
         Returns:
             dict: dict with username, password and (optionally) private_key
         """

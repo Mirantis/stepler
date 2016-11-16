@@ -21,7 +21,7 @@ import os
 import tempfile
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains)  # noqa
+                      only_contains, is_in)  # noqa
 
 from stepler import base
 from stepler import config
@@ -317,12 +317,15 @@ class OsFaultsSteps(base.BaseSteps):
         return backup_path
 
     @steps_checker.step
-    def execute_cmd(self, nodes, cmd, check=True):
+    def execute_cmd(self, nodes, cmd, expected_strings=None,
+                    check=True):
         """Execute provided bash command on nodes.
 
         Args:
-            nodes (obj): nodes to backup file on them
+            nodes (obj): nodes to execute command on them
             cmd (str): bash command to execute
+            expected_strings (list|None): list of strings expected in stdout,
+                taken into account only for check=True
             check (bool): flag whether check step or not
 
         Raises:
@@ -338,6 +341,11 @@ class OsFaultsSteps(base.BaseSteps):
         if check:
             assert_that(
                 result, only_contains(has_properties(status=config.STATUS_OK)))
+
+            if expected_strings:
+                stdout = result[0].payload['stdout']
+                for expected_string in expected_strings:
+                    assert_that(expected_string, is_in(stdout))
 
         return result
 
