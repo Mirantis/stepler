@@ -169,3 +169,68 @@ def test_server_migration_with_disk_workload(live_migration_servers,
     for server in live_migration_servers:
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('b1152b92-5021-4115-9b89-c423fd61abad',
+                           block_migration=True)
+@pytest.mark.idempotent_id('233c1cf6-de63-4a90-b151-c94f1faa276f',
+                           block_migration=False)
+@pytest.mark.parametrize(
+    'live_migration_servers, block_migration', [
+        ({'boot_from_volume': False}, True),
+        ({'boot_from_volume': True}, False)],
+    ids=['boot_from_image', 'boot_from_volume'],
+    indirect=['live_migration_servers'])
+def test_server_migration_with_network_workload(
+        live_migration_servers,
+        security_group,
+        generate_traffic,
+        security_group_steps,
+        server_steps,
+        block_migration):
+    """**Scenario:** LM of instance under network workload.
+
+    **Setup:**
+
+    #. Upload ubuntu image
+    #. Create network with subnet and router
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Boot maximum allowed number of servers from image
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Allow servers to listen TCP port
+    #. Start network workload on servers
+    #. Initiate LM of servers to another compute node
+    #. Check that ping to servers' floating ips is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete flavor
+    #. Delete security group
+    #. Delete network, subnet, router
+    #. Delete ubuntu image
+    """
+
+    port = 5010
+    security_group_steps.add_group_rules(security_group, [{
+        'ip_protocol': 'tcp',
+        'from_port': port,
+        'to_port': port,
+        'cidr': '0.0.0.0/0',
+    }])
+
+    for server in live_migration_servers:
+        with server_steps.get_server_ssh(server) as server_ssh:
+            server_steps.server_network_listen(server_ssh, port=port)
+            floating_ip = next(iter(server_steps.get_ips(config.FLOATING_IP)))
+            generate_traffic(floating_ip, port)
+
+    server_steps.live_migrate(live_migration_servers,
+                              block_migration=block_migration)
+    for server in live_migration_servers:
+        server_steps.check_ping_to_server_floating(
+            server, timeout=config.PING_CALL_TIMEOUT)

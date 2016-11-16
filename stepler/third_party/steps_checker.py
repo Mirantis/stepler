@@ -48,6 +48,7 @@ __all__ = [
 PERMITTED_CALLS = [
     'list',
     'next',
+    'iter',
     'put',  # TODO(schipiga): update attrdict method
     'range',
     'sorted',
