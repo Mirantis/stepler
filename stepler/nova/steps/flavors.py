@@ -178,3 +178,20 @@ class FlavorSteps(BaseSteps):
             for flavor in flavors:
                 assert_that(flavor.to_dict(), has_entries(kwgs))
         return flavors
+
+    @steps_checker.step
+    def set_metadata(self, flavor, metadata, check=True):
+        """Step to set metadata on a flavor.
+
+        Args:
+            flavor (object): nova flavor
+            metadata (dict): key/value pairs to be set
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        flavor.set_keys(metadata)
+
+        if check:
+            assert_that(flavor.get_keys(), has_entries(metadata))
