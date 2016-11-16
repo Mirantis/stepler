@@ -17,12 +17,14 @@ Heat stack steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, is_not, empty, only_contains  # noqa
-import waiting
+from hamcrest import assert_that, equal_to, is_in, is_not, empty, only_contains  # noqa
+from heatclient import exc
 
 from stepler import base
 from stepler import config
+from stepler.third_party.hamcrest import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ['StackSteps']
 
@@ -65,11 +67,13 @@ class StackSteps(base.BaseSteps):
 
     def _get_property(self, stack, property_name, transit_values=(),
                       timeout=0):
+
         def predicate():
             stack.get()
-            return getattr(stack, property_name).lower() not in transit_values
+            return expect_that(getattr(stack, property_name).lower(),
+                               is_not(is_in(transit_values)))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
         return getattr(stack, property_name)
 
     @steps_checker.step
@@ -150,42 +154,58 @@ class StackSteps(base.BaseSteps):
                 stack, present=False, timeout=config.STACK_DELETING_TIMEOUT)
 
     @steps_checker.step
-    def check_presence(self, stack, present=True, timeout=0):
+    def check_presence(self, stack, must_present=True, timeout=0):
         """Check-step to check heat stack presence.
 
         Args:
             stack (obj|str): heat stack object or id
-            present (bool): flag to check is stack present or absent
+            must_present (bool): flag to check is stack present or absent
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
 
-        stack_id = getattr(stack, 'id', stack)
+        if hasattr(stack, 'id'):
+            def get_stack():
+                stack.get()
+        else:
+            def get_stack():
+                self._client.stacks.get(stack)
 
         def predicate():
             try:
-                next(self._client.stacks.list(id=stack_id))
-                return present
-            except StopIteration:
-                return not present
+                get_stack()
+                is_present = True
+            except exc.NotFound:
+                is_present = False
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+            return expect_that(is_present, equal_to(must_present))
+
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_output(self, stack, output_key):
+    def get_output(self, stack, output_key, check=True):
         """Step to get stack output by `output_key`.
 
         Args:
             stack (obj): stack object
             output_key (str): output key
+            check (bool): flag whether check step or not
 
         Returns:
             dict: stack output
+
+        Raises:
+            AssertionError: if output is none or empty
         """
-        stack.get()
-        return stack.output_show(output_key)['output']
+        output = stack.output_show(output_key)['output']
+
+        if check:
+            assert_that(output, is_not(None))
+            assert_that(output, is_not(empty()))
+
+        return output
 
     @steps_checker.step
     def update_stack(self, stack, template=None, parameters=None, check=True):
