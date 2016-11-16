@@ -111,7 +111,14 @@ def baremetal_flavor(create_flavor):
     Returns:
         object: baremetal flavor
     """
+    if config.BAREMETAL_NODE:
+        ram = config.BAREMETAL_RAM
+        vcpus = config.BAREMETAL_VCPUS
+    else:
+        ram = config.BAREMETAL_RAM_FOR_VIRTUAL_NODE
+        vcpus = config.BAREMETAL_VCPUS_FOR_VIRTUAL_NODE
+
     return create_flavor(next(generate_ids('bm_flavor')),
-                         ram=config.BAREMETAL_RAM,
-                         vcpus=config.BAREMETAL_VCPUS,
+                         ram=ram,
+                         vcpus=vcpus,
                          disk=config.BAREMETAL_DISK)
