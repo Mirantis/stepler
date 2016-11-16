@@ -17,7 +17,7 @@ Ironic node steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import equal_to  # noqa
 from ironicclient import exceptions
 
 from stepler.base import BaseSteps
@@ -40,7 +40,7 @@ class IronicNodeSteps(BaseSteps):
         Args:
             driver (str): The name or UUID of the driver.
             check (str): For checking node presence
-            kwargs: Optional. A dictionary containing the attributes
+            **kwargs (optional): A dictionary containing the attributes
             of the resource that will be created:
                 chassis_uuid - The uuid of the chassis
                 driver_info - The driver info
@@ -52,7 +52,7 @@ class IronicNodeSteps(BaseSteps):
                 resource_class - The resource class of the node
 
         Raises:
-             TimeoutExpired: if check was triggered to False after timeout
+             TimeoutExpired: if check failed after timeout
 
         Returns:
             object: ironic node
@@ -90,7 +90,7 @@ class IronicNodeSteps(BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was triggered to False after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def _check_ironic_node_presence():
             try:
@@ -145,7 +145,7 @@ class IronicNodeSteps(BaseSteps):
             timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check was triggered to to an error after timeout
+            TimeoutExpired: if check failed after timeout
         """
         def _check_ironic_node_maintenance():
             node.get()
