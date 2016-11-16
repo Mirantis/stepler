@@ -18,6 +18,9 @@ Image tests
 
 import pytest
 
+from stepler import config
+from stepler.third_party import utils
+
 
 @pytest.mark.idempotent_id('1b1a0953-a772-4cfe-a7da-2f6de950eede')
 def test_share_glance_image(ubuntu_image, project, glance_steps):
@@ -40,3 +43,35 @@ def test_share_glance_image(ubuntu_image, project, glance_steps):
     """
     glance_steps.bind_project(ubuntu_image, project)
     glance_steps.unbind_project(ubuntu_image, project)
+
+
+@pytest.mark.idempotent_id('1b1a0953-a772-4cfe-a7da-2f6de950eede')
+def test_change_image_status_directly(glance_steps, api_glance_steps_v1):
+    """**Scenario:** Verify that user can't change image status directly.
+
+    This test verify that user can't change image status directly with v1 API.
+
+    Note:
+        This test verify bug #1496798.
+
+    **Setup:**
+
+    #. Create cirros image
+
+    **Steps:**
+
+    #. Get token
+    #. Send PUT request to glance image endpoint with
+        {'x-image-meta-status': 'queued'} headers
+    #. Check that image's status is still active
+
+    **Teardown:**
+
+    #. Delete cirros image
+    """
+    images = glance_steps.create_images(
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
+    api_glance_steps_v1.update_images(images,
+                                      status=config.STATUS_QUEUED,
+                                      check=False)
+    glance_steps.check_image_status(images[0], config.STATUS_ACTIVE)

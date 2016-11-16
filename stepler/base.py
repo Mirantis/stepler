@@ -264,7 +264,8 @@ class BaseApiClient(object):
             dict: authentication headers.
         """
         # TODO(schipiga): may be need to use native API
-        return self._session.get_auth_headers()
+        return {  # catch only token to avoid side effects
+            'X-Auth-Token': self._session.get_auth_headers()['X-Auth-Token']}
 
     @property
     def _endpoint(self):
@@ -274,8 +275,7 @@ class BaseApiClient(object):
           str: endpoint URL.
         """
         # TODO(schipiga): may be need to use native API
-        endpoint = self._session.get_endpoint()
-        return endpoint.rsplit('/')
+        raise NotImplemented
 
     def _get(self, url, headers=None, params=None, **kwgs):
         """GET request to API."""
