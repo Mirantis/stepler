@@ -24,7 +24,7 @@ import time
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
                       only_contains, has_items, has_length, is_, equal_to,
-                      contains_inanyorder)  # noqa H301
+                      contains_inanyorder, is_in)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -665,3 +665,44 @@ class OsFaultsSteps(base.BaseSteps):
         """
         actual_tags = self.get_ovs_vsctl_tags()
         assert_that(actual_tags, equal_to(expected_tags))
+
+    @steps_checker.step
+    def check_io_limits_in_virsh_dumpxml(self, node, instance_name, limit):
+        """Step to check I/O limit in results of 'virsh dumpxml'.
+
+        Args:
+            node (NodeCollection): node
+            instance_name (str): instance name
+            limit (int): I/O limit value
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed or result of 'virsh dumpxml' doesn't contain expected
+                data
+        """
+        cmd = "virsh dumpxml {}".format(instance_name)
+        stdout = self.execute_cmd(node, cmd)[0].payload['stdout']
+        expected_strings = [
+            "<read_bytes_sec>{}</read_bytes_sec>".format(limit),
+            "<write_bytes_sec>{}</write_bytes_sec>".format(limit)]
+        for expected_string in expected_strings:
+            assert_that(expected_string, is_in(stdout))
+
+    @steps_checker.step
+    def check_io_limits_in_ps(self, node, limit):
+        """Step to check I/O limit in results of 'ps'.
+
+        Args:
+            node (NodeCollection): node
+            limit (int): I/O limit value
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed or result of 'ps' doesn't contain expected data
+        """
+        cmd = "ps aux | grep qemu | grep 'drive file=rbd'"
+        stdout = self.execute_cmd(node, cmd)[0].payload['stdout']
+        expected_strings = ["bps_rd={}".format(limit),
+                            "bps_wr={}".format(limit)]
+        for expected_string in expected_strings:
+            assert_that(expected_string, is_in(stdout))
