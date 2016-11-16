@@ -21,3 +21,10 @@ Ironic node tests
 .. automodule:: stepler.baremetal.tests.test_baremetal_node
    :members:
 
+--------------------
+Ironic chassis tests
+--------------------
+
+.. automodule:: stepler.baremetal.tests.test_chassis_create
+   :members:
+
