@@ -127,3 +127,45 @@ def test_server_migration_with_cpu_workload(live_migration_servers,
     for server in live_migration_servers:
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('77dcf03f-20d3-4d71-96f5-8fb1343f906a')
+@pytest.mark.parametrize('block_migration', [True])
+def test_server_migration_with_disk_workload(live_migration_servers,
+                                             server_steps,
+                                             block_migration):
+    """**Scenario:** LM of instance under disk workload.
+
+    **Setup:**
+
+    #. Upload ubuntu image
+    #. Create network with subnet and router
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Boot maximum allowed number of servers from image
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Start disk workload on servers
+    #. Initiate LM of servers to another compute node
+    #. Check that ping to servers' floating ips is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete flavor
+    #. Delete security group
+    #. Delete network, subnet, router
+    #. Delete ubuntu image
+    """
+
+    for server in live_migration_servers:
+        with server_steps.get_server_ssh(server) as server_ssh:
+            server_steps.generate_server_disk_workload(server_ssh)
+
+    server_steps.live_migrate(live_migration_servers,
+                              block_migration=block_migration)
+    for server in live_migration_servers:
+        server_steps.check_ping_to_server_floating(
+            server, timeout=config.PING_CALL_TIMEOUT)
