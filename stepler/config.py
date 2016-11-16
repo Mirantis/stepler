@@ -164,6 +164,8 @@ ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
 EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
 NOVA_API_LOG_FILE = '/var/log/nova/nova-api.log'
 NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
+EPHEMERAL_MNT_FS_PATH = '/mnt'
+EPHEMERAL_ROOT_FS_PATH = '/'
 
 FLAVOR_TINY = 'm1.tiny'
 FLAVOR_SMALL = 'm1.small'
@@ -196,6 +198,11 @@ USERDATA_DONE_MARKER = 'userdata-done %s' % uuid.uuid4()
 INSTALL_LM_WORKLOAD_USERDATA = """#!/bin/bash -v
 apt-get install -yq stress cpulimit sysstat iperf
 echo {}""".format(USERDATA_DONE_MARKER)
+
+INSTALL_QEMU_UTILS_USERDATA = """#!/bin/bash -v
+apt-get install -y qemu-utils
+echo {}""".format(USERDATA_DONE_MARKER)
+
 SMALL_RECLAIM_INTERVAL = str(30)
 BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
 SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)

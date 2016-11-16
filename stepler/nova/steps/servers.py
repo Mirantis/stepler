@@ -18,11 +18,12 @@ Server steps
 # limitations under the License.
 
 import contextlib
+import os
 import socket
 import time
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
-                      has_item, has_properties, is_not, is_in,
+                      has_item, has_properties, is_, is_in, is_not,
                       less_than_or_equal_to, raises)  # noqa H301
 
 from novaclient import exceptions as nova_exceptions
@@ -297,7 +298,7 @@ class ServerSteps(base.BaseSteps):
         """Step to check ssh connect to server.
 
         Args:
-            server_ssh (ssh.SshClient): ssh client to server ip
+            server_ssh (ssh.SshClient): ssh connection to nova server
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -771,7 +772,7 @@ class ServerSteps(base.BaseSteps):
         """Step to create timestamp on root and ephemeral disks
 
         Args:
-            server_ssh (object): instance of stepler.third_party.ssh.SshClient
+            server_ssh (ssh.SshClient): ssh connection to nova server
             timestamp (str): timestamp to store on files
             check (bool): flag whether to check step or not
 
@@ -795,7 +796,7 @@ class ServerSteps(base.BaseSteps):
         """Verify step to check timestamp on root and ephemeral disks
 
         Args:
-            server_ssh (object): instance of stepler.third_party.ssh.SshClient
+            server_ssh (ssh.SshClient): ssh connection to nova server
             timestamp (str): timestamp to check
 
         Raises:
@@ -811,6 +812,139 @@ class ServerSteps(base.BaseSteps):
 
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
         assert_that(timestamp, equal_to(root_result.stdout))
+
+    @steps_checker.step
+    def create_empty_file_on_server(self, server_ssh, file_dir, check=True):
+        """Step to create empty file on the server.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh connection to nova server
+            file_dir (str): directory to create file
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        file_path = os.path.join(file_dir, next(utils.generate_ids()))
+        with server_ssh.sudo():
+            server_ssh.check_call('touch ' + file_path)
+
+        if check:
+            self.check_files_presence_for_fs(server_ssh, file_dir)
+
+    @steps_checker.step
+    def get_block_device_by_mount(self, server_ssh, fs_path, check=True):
+        """Step to retrieve block device which is mounted to the path.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh connection to nova server
+            fs_path (str): fs path to find block device
+            check (bool): flag whether to check step or not
+
+        Returns:
+            str: device for fs_path
+
+        Raises:
+            AssertionError: if check failed
+        """
+        with server_ssh.sudo():
+            cmd_result = server_ssh.check_call('cat /proc/mounts')
+
+        fs_dev = None
+        for row in cmd_result.stdout.split('\n'):
+            cells = row.split()
+            dev, mount_point = cells[:2]
+            if mount_point == fs_path and dev.startswith('/dev'):
+                fs_dev = dev
+                break
+
+        if check:
+            assert_that(fs_dev, is_not(None))
+
+        return fs_dev
+
+    @steps_checker.step
+    def unmount_fs_for_server(self, server_ssh, fs_path, check=True):
+        """Step to unmount fs for server.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh connection to nova server
+            fs_path (str): fs path to unmount
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        fs_dev = self.get_block_device_by_mount(server_ssh, fs_path)
+        with server_ssh.sudo():
+            cmd = 'umount ' + fs_dev
+            server_ssh.check_call(cmd)
+
+        if check:
+            device = self.get_block_device_by_mount(server_ssh, fs_path,
+                                                    check=False)
+            assert_that(device, is_(None))
+
+    @steps_checker.step
+    def create_qcow_image_for_server(self, server_ssh, eph_dev,
+                                     root_dev, check=True):
+        """Step to create qcow image for server.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh connection to nova server
+            eph_dev (str): ephemeral device
+            root_dev (str): root device
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        with server_ssh.sudo():
+            cmd = ('qemu-img create -f qcow2'
+                   ' -o backing_file={host_dev},backing_fmt=raw '
+                   '{eph_dev} 20G').format(eph_dev=eph_dev, host_dev=root_dev)
+            server_ssh.check_call(cmd)
+
+        if check:
+            self.check_qcow_image_for_server(server_ssh, eph_dev)
+
+    @steps_checker.step
+    def check_qcow_image_for_server(self, server_ssh, filename):
+        """Step to check that qcow image exists.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh connection to nova server
+            filename (str): name of image to check
+
+        Raises:
+            AssertionError: if check failed
+        """
+        with server_ssh.sudo():
+            cmd = 'qemu-img info -f qcow2 {0}'.format(filename)
+            cmd_result = server_ssh.check_call(cmd)
+
+        assert_that('image: ' + filename, is_in(cmd_result.stdout))
+
+    @steps_checker.step
+    def check_files_presence_for_fs(self, server_ssh, fs_path,
+                                    must_present=True):
+        """Verify step to check that fs doesn't contain any files.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh connection to nova server
+            fs_path (str): fs path to check
+            must_present (bool): flag whether fs should have any files or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        with server_ssh.sudo():
+            cmd_result = server_ssh.check_call('ls ' + fs_path)
+
+        if must_present:
+            assert_that(cmd_result.stdout, is_not(empty()))
+        else:
+            assert_that(cmd_result.stdout, is_(empty()))
 
     @steps_checker.step
     def restore_server(self, server, check=True):
