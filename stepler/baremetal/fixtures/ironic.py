@@ -17,16 +17,36 @@ Ironic fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ironicclient import client as Client
+from ironicclient import client
 import pytest
 
+from stepler import config
+
 __all__ = [
+    'get_ironic_client',
     'ironic_client'
 ]
 
 
+@pytest.fixture(scope="session")
+def get_ironic_client(get_session):
+    """Callable session fixture to get ironic client.
+
+    Args:
+        get_session (function): function to get authenticated ironic
+            session
+
+    Returns:
+        function: function to get ironic client
+    """
+    def _get_client(**credentials):
+        return client.get_client(config.CURRENT_IRONIC_VERSION,
+                                 session=get_session(**credentials))
+    return _get_client
+
+
 @pytest.fixture
-def ironic_client(session):
+def ironic_client(get_ironic_client):
     """Callable function fixture to get ironic client.
 
     Args:
@@ -35,4 +55,4 @@ def ironic_client(session):
     Returns:
         ironicclient.v1.client.: instantiated ironic client
     """
-    return Client.get_client('1', session=session)
+    return get_ironic_client()
