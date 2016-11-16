@@ -55,6 +55,7 @@ FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases
 CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'  # noqa E501
 UBUNTU_ISO_URL = 'http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-amd64/current/images/netboot/mini.iso'  # noqa E501
 BAREMETAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/dib-user-image-dkms-grub.raw'  # noqa E501
+BAREMETAL_UBUNTU_FOR_VIRTUAL_NODE = 'http://mos-ironic.vm.mirantis.net/ipukha/trusty-server-cloudimg-amd64.img'  # noqa E501
 
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa E501
@@ -139,6 +140,16 @@ BAREMETAL_DISK_INFO = [{"name": "sda",
                                      "type": "partition",
                                      "file_system": "ext4",
                                      "size": 10000}]}]
+BAREMETAL_DISK_INFO_FOR_VIRTUAL_NODE = [{"name": "vda",
+                                         "extra": [],
+                                         "free_space": 11000,
+                                         "type": "disk",
+                                         "id": "sda",
+                                         "size": 11000,
+                                         "volumes": [{"mount": "/",
+                                                      "type": "partition",
+                                                      "file_system": "ext4",
+                                                      "size": 10000}]}]
 
 
 # Nova
@@ -154,6 +165,9 @@ BAREMETAL_RAM = "16384"
 BAREMETAL_VCPUS = "4"
 BAREMETAL_DISK = "150"
 
+BAREMETAL_RAM_FOR_VIRTUAL_NODE = '3072'
+BAREMETAL_VCPUS_FOR_VIRTUAL_NODE = '1'
+
 ROLE_MEMBER = '_member_'
 
 PING_CALL_TIMEOUT = 5 * 60
@@ -166,7 +180,7 @@ LIVE_MIGRATION_PING_MAX_LOSS = 20
 VERIFY_RESIZE_TIMEOUT = 3 * 60
 SOFT_DELETED_TIMEOUT = 30
 SERVER_DELETE_TIMEOUT = 3 * 60
-SERVER_ACTIVE_TIMEOUT = 10 * 60
+SERVER_ACTIVE_TIMEOUT = 14 * 60
 SERVER_UPDATE_TIMEOUT = 2 * 60
 
 NOVA_AVAILABILITY_TIMEOUT = 2 * 60
@@ -204,6 +218,7 @@ HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-tem
 
 # Ironic
 BAREMETAL_NETWORK = 'baremetal'
+BAREMETAL_NODE = bool(os.environ.get('BAREMETAL_NODE', False))
 
 # CLI clients
 SERVER_LIST_TIMEOUT = 60
