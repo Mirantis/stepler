@@ -25,7 +25,6 @@ def test_create_server_on_baremetal_node(keypair,
                                          baremetal_ubuntu_image,
                                          baremetal_network,
                                          nova_floating_ip,
-                                         network_steps,
                                          server_steps):
     """**Scenario:** Launch server on baremetal node.
 
