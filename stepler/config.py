@@ -196,6 +196,11 @@ USERDATA_DONE_MARKER = 'userdata-done %s' % uuid.uuid4()
 INSTALL_LM_WORKLOAD_USERDATA = """#!/bin/bash -v
 apt-get install -yq stress cpulimit sysstat iperf
 echo {}""".format(USERDATA_DONE_MARKER)
+
+INSTALL_QEMU_UTILS_USERDATA = """#!/bin/bash -v
+apt-get install -y qemu-utils
+echo {}""".format(USERDATA_DONE_MARKER)
+
 SMALL_RECLAIM_INTERVAL = str(30)
 BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
 SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
