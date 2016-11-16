@@ -19,10 +19,12 @@ Logging config
 
 import logging
 import logging.config
+import os
 
 from stepler import config
 
 level = logging.DEBUG if config.DEBUG else logging.INFO
+
 
 config = {
     'version': 1,
@@ -43,7 +45,7 @@ config = {
         'file': {
             'level': logging.DEBUG,
             'class': 'logging.FileHandler',
-            'filename': 'test.log',
+            'filename': os.path.join(config.TEST_REPORTS_DIR, 'test.log'),
             'formatter': 'simple',
         },
     },
