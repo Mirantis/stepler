@@ -17,6 +17,7 @@ Ironic fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .chassis import *  # noqa
 from .node import *  # noqa
 from .port import *  # noqa
 from .ironic import *  # noqa
@@ -30,4 +31,10 @@ __all__ = sorted([  # sort for documentation
     'ironic_node_steps',
     'create_ironic_node',
     'ironic_node',
+
+    'ironic_chassis_steps',
+    'get_ironic_chassis_steps',
+    'cleanup_chassis',
+    'primary_chassis',
+    'unexpected_chassis_cleanup',
 ])
