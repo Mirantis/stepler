@@ -33,7 +33,7 @@ def ironic_node_steps(ironic_client):
     """Callable session fixture to get ironic steps.
 
     Args:
-        ironic_client (function): function to get glance client
+        ironic_client (function): function to get ironic client
 
     Returns:
         function: function to instantiated ironic steps
