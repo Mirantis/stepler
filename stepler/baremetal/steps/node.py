@@ -148,7 +148,7 @@ class IronicNodeSteps(BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         def _check_ironic_node_maintenance():
-            node.get()
-            return expect_that(node.maintenance, equal_to(state))
+            updated_node = self._client.node.get(node.uuid)
+            return expect_that(updated_node.maintenance, equal_to(state))
 
         waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)
