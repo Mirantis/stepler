@@ -310,8 +310,7 @@ def test_migrate_volume(volume, volume_steps, os_faults_steps):
 
     #. Delete volume
     """
-    source_host = getattr(volume, config.VOLUME_HOST_ATTR)
     cinder_nodes = os_faults_steps.get_nodes(
         service_names=[config.CINDER_VOLUME])
-    target_host = utils.get_volume_migrate_host(cinder_nodes, source_host)
-    volume_steps.migrate_volume(volume, target_host)
+    migration_host = volume_steps.get_volume_migrate_host(volume, cinder_nodes)
+    volume_steps.migrate_volume(volume, migration_host)
