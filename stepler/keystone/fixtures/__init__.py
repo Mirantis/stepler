@@ -41,6 +41,7 @@ __all__ = sorted([  # sort for documentation
     'get_project_steps',
     'project_steps',
     'project',
+    'current_project',
 
     'admin_role',
     'create_role',

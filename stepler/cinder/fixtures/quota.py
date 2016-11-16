@@ -43,17 +43,15 @@ def cinder_quota_steps(cinder_client):
 
 
 @pytest.yield_fixture
-def big_snapshot_quota(session, cinder_quota_steps, project_steps):
+def big_snapshot_quota(current_project, cinder_quota_steps):
     """Function fixture to increase cinder snapshots count quota up.
 
     This fixture restore original quota value after test.
 
     Args:
-        session (object): keystone session
+        current_project (obj): current project
         cinder_quota_steps (obj): initialized cinder quota steps
-        project_steps (obj): initialized project quota steps
     """
-    current_project = project_steps.get_current_project(session)
     original_quota = cinder_quota_steps.get_snapshots_quota(current_project)
     cinder_quota_steps.set_snapshots_quota(
         current_project, config.CINDER_SNAPSHOTS_QUOTA_BIG_VALUE)
@@ -62,7 +60,7 @@ def big_snapshot_quota(session, cinder_quota_steps, project_steps):
 
 
 @pytest.yield_fixture
-def volume_size_quota(session, cinder_quota_steps, project_steps):
+def volume_size_quota(current_project, cinder_quota_steps):
     """Function fixture to get cinder volume size quota.
 
     Default value for volume size quota can be too large for some tests.
@@ -71,14 +69,12 @@ def volume_size_quota(session, cinder_quota_steps, project_steps):
     The fixture restores original quota value after test.
 
     Args:
-        session (object): keystone session
+        current_project (obj): current project
         cinder_quota_steps (obj): initialized cinder quota steps
-        project_steps (obj): initialized project steps
 
     Yields:
         int: volume size quota value
     """
-    current_project = project_steps.get_current_project(session)
     original_quota = cinder_quota_steps.get_volume_size_quota(current_project)
 
     cinder_quota_steps.set_volume_size_quota(
