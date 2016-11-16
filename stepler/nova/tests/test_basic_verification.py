@@ -36,7 +36,7 @@ def test_boot_instance_from_volume_bigger_than_flavor(
         server_steps):
     """**Scenario:** Boot instance from volume bigger than flavor size.
 
-    This test verify bug #1517671
+    This test verifies bug #1517671
 
     **Setup:**
 
@@ -96,7 +96,7 @@ def test_delete_server_with_precreated_port(
         server_steps):
     """**Scenario:** Delete instance with pre-created port.
 
-    This test verify bug #1486727
+    This test verifies bug #1486727
 
     **Setup:**
 
@@ -463,3 +463,66 @@ def test_image_access_host_device_when_resizing(
                                          nova_floating_ip.ip) as server_ssh:
             server_steps.check_files_presence_for_fs(server_ssh, eph_fs,
                                                      must_present=False)
+
+
+# TODO(ssokolov) add check of condition 'is_ephemeral_ceph_enabled'
+@pytest.mark.idempotent_id('98c0f75f-9e59-44c3-bd74-56760e3648bf')
+def test_disk_io_qos_settings_for_rbd_backend(cirros_image,
+                                              flavor,
+                                              network,
+                                              subnet,
+                                              security_group,
+                                              server_steps,
+                                              flavor_steps,
+                                              os_faults_steps):
+    """**Scenario:** Verify that disk I/O QOS settings are set correctly
+        in case of RBD backend.
+
+    This test verifies bug #1507504
+
+    **Setup:**
+
+    #. Upload cirros image
+    #. Create flavor
+    #. Create network
+    #. Create subnet
+    #. Create security group with allow ping rule
+
+    **Steps:**
+
+    #. Set I/O limits to flavor (disk_read_bytes_sec=10240000 and
+       disk_write_bytes_sec=10240000)
+    #. Create server
+    #. Execute 'virsh dumpxml <inst_name>' on node where instance is hosted
+    #. Check that its output contains read_bytes_sec and write_bytes_sec with
+       expected values 10240000
+    #. Execute 'ps axu | grep qemu | grep 'drive file=rbd' on node
+    #. Check that its output contains 'bps_rd=10240000' and 'bps_wr=10240000'
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete security group
+    #. Delete subnet
+    #. Delete network
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    limit = config.IO_SPEC_LIMIT
+    metadata = config.IO_SPEC_LIMIT_METADATA
+    flavor_steps.set_metadata(flavor, metadata)
+
+    server = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        security_groups=[security_group])[0]
+
+    host_name = getattr(server, config.SERVER_ATTR_HOST)
+    node = os_faults_steps.get_nodes(fqdns=[host_name])
+
+    instance_name = getattr(server, config.SERVER_ATTR_INSTANCE_NAME)
+    os_faults_steps.check_io_limits_in_virsh_dumpxml(node, instance_name,
+                                                     limit)
+
+    os_faults_steps.check_io_limits_in_ps(node, limit)
