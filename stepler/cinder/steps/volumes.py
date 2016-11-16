@@ -123,14 +123,14 @@ class VolumeSteps(base.BaseSteps):
         _volume_names = {}
 
         for name in names:
-            volume = self._client.volumes.create(size,
-                                                 name=name,
-                                                 imageRef=image_id,
-                                                 volume_type=volume_type,
-                                                 description=description,
-                                                 source_volid=source_volid,
-                                                 snapshot_id=snapshot_id,
-                                                 metadata=metadata)
+            volume = self._client.create(size,
+                                         name=name,
+                                         imageRef=image_id,
+                                         volume_type=volume_type,
+                                         description=description,
+                                         source_volid=source_volid,
+                                         snapshot_id=snapshot_id,
+                                         metadata=metadata)
             _volume_names[volume.id] = name
             volumes.append(volume)
 
@@ -170,7 +170,7 @@ class VolumeSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
         """
         for volume in volumes:
-            self._client.volumes.delete(volume.id, cascade=cascade)
+            self._client.delete(volume.id, cascade=cascade)
 
         if check:
             for volume in volumes:
@@ -193,7 +193,7 @@ class VolumeSteps(base.BaseSteps):
         """
         def _check_volume_presence():
             try:
-                self._client.volumes.get(volume.id)
+                self._client.get(volume.id)
                 is_present = True
             except exceptions.NotFound:
                 is_present = False
@@ -252,7 +252,7 @@ class VolumeSteps(base.BaseSteps):
             search_opts = search_opts or {}
             search_opts['all_tenants'] = 1
 
-        volumes = self._client.volumes.list(search_opts=search_opts)
+        volumes = self._client.list(search_opts=search_opts)
 
         if name_prefix:
             volumes = [volume for volume in volumes
@@ -455,7 +455,7 @@ class VolumeSteps(base.BaseSteps):
         """
         image_name = image_name or next(utils.generate_ids())
 
-        response, image = self._client.volumes.upload_to_image(
+        response, image = self._client.upload_to_image(
             volume=volume,
             force=force,
             image_name=image_name,
@@ -486,7 +486,7 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        self._client.volumes.extend(volume, size)
+        self._client.extend(volume, size)
 
         if check:
             self.check_volume_size(volume, size,
@@ -511,7 +511,7 @@ class VolumeSteps(base.BaseSteps):
             update_data['name'] = new_name
         if new_description:
             update_data['description'] = new_description
-        self._client.volumes.update(volume, **update_data)
+        self._client.update(volume, **update_data)
 
         if check:
             volume.get()
@@ -594,7 +594,7 @@ class VolumeSteps(base.BaseSteps):
             bootable = 'true'
         else:
             bootable = 'false'
-        self._client.volumes.set_bootable(volume, bootable)
+        self._client.set_bootable(volume, bootable)
 
         if check:
             volume.get()
@@ -613,7 +613,7 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        self._client.volumes.retype(volume, volume_type.name, policy)
+        self._client.retype(volume, volume_type.name, policy)
 
         if check:
             self.check_volume_type(volume, volume_type,
@@ -661,11 +661,38 @@ class VolumeSteps(base.BaseSteps):
             TimeoutExpired: if migration status is not 'success' or
                 volume host is not changed after timeout
         """
-        self._client.volumes.migrate_volume(volume, host,
-                                            force_host_copy=force_host_copy,
-                                            lock_volume=lock_volume)
+        self._client.migrate_volume(volume,
+                                    host,
+                                    force_host_copy=force_host_copy,
+                                    lock_volume=lock_volume)
         if check:
             self.check_migration_status(
                 volume, status=config.STATUS_SUCCESS,
                 timeout=config.VOLUME_AVAILABLE_TIMEOUT)
             self.check_volume_host(volume, host)
+
+    @steps_checker.step
+    def get_volume_migrate_host(volume, nodes, check=True):
+        """Step to get cinder host to migrate volume.
+
+        Arguments:
+            volume (str): migrating volume
+            nodes (iterable): cinder nodes
+            check (bool): flag whether to check step or not
+
+        Returns:
+            str: host to volume migrate
+
+        Raises:
+            LookupError: if no available hosts to migrate
+        """
+        current_host = getattr(volume, config.VOLUME_HOST_ATTR)
+
+        for node in nodes:
+            if not current_host.startswith(node.fqdn):
+                return node.fqdn + config.VOLUME_HOST_POSTFIX
+
+        else:
+            if check:
+                raise LookupError("No available hosts to migrate volume from "
+                                  "host {!r}".format(current_host))
