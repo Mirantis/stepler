@@ -77,3 +77,21 @@ class CliIronicSteps(base.BaseCliSteps):
         cmd = 'ironic chassis-list'
         result = self.execute_command(cmd, timeout=0, check=check)
         return result
+
+    @steps_checker.step
+    def ironic_driver_list(self, check=True):
+        """Step to get Ironic driver list.
+
+        Args:
+            check (bool, optional): flag whether to check result or not
+
+        Returns:
+            tuple: (exit_code, stdout, stderr) - result of command shell
+                execution
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        cmd = 'ironic driver-list'
+        result = self.execute_command(cmd, timeout=0, check=check)
+        return result
