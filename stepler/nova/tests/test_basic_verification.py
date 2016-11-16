@@ -350,3 +350,113 @@ def test_create_many_servers_boot_from_cinder(cirros_image,
             networks=[network],
             security_groups=[security_group],
             block_device_mapping=block_device_mapping)
+
+
+@pytest.mark.idempotent_id('4151cf32-9ffe-4cb2-bccb-a71aa8d993dc')
+def test_image_access_host_device_when_resizing(
+        ubuntu_image,
+        net_subnet_router,
+        security_group,
+        keypair,
+        nova_floating_ip,
+        patch_ini_file_and_restart_services,
+        create_flavor,
+        server_steps):
+    """**Scenario:** Resize server after unmounting fs.
+
+    Test on host data leak during resize/migrate for raw-backed
+    instances bug validation.
+    This test verifies bugs #1552683 and #1548450 (CVE-2016-2140).
+
+    **Setup:**
+
+    #. Upload cirros image
+    #. Create network with subnet and router
+    #. Set router default gateway to public network
+    #. Create security_group
+    #. Create keypair
+    #. Create nova floating ip
+
+    **Steps:**
+
+    #. Set use_cow_images=0 value in nova config on all computes
+    #. Create 2 flavors with ephemeral disk
+    #. Boot instance with the first flavor
+    #. Create empty file in /mnt directory
+    #. Unmount /mnt fs on the instance
+    #. Create qcow2 image with backing_file linked to
+        target host device in ephemeral block device on instance
+        using the following command:
+        ``qemu-img create -f qcow2
+        -o backing_file=/dev/sda3,backing_fmt=raw /dev/vdb 20G``
+    #. Resize flavor for the server
+    #. Check that /mnt fs doesn't have files
+
+    **Teardown:**
+
+    #. Set use_cow_images param to its initial value on all computes
+    #. Delete server
+    #. Delete flavors
+    #. Delete nova floating ip
+    #. Delete keypair
+    #. Delete security group
+    #. Delete network
+    #. Delete cirros image
+    """
+    eph_fs = config.EPHEMERAL_MNT_FS_PATH
+    root_fs = config.EPHEMERAL_ROOT_FS_PATH
+    network, _, _ = net_subnet_router
+
+    with patch_ini_file_and_restart_services(
+            [config.NOVA_COMPUTE],
+            file_path=config.NOVA_CONFIG_PATH,
+            option='use_cow_images',
+            value=0):
+        flavor_old = create_flavor(next(utils.generate_ids('flavor')),
+                                   ram=1024,
+                                   disk=5,
+                                   vcpus=1,
+                                   ephemeral=1)
+        flavor_new = create_flavor(next(utils.generate_ids('flavor')),
+                                   ram=2048,
+                                   disk=5,
+                                   vcpus=1,
+                                   ephemeral=1)
+
+        server = server_steps.create_servers(
+            image=ubuntu_image,
+            flavor=flavor_old,
+            keypair=keypair,
+            networks=[network],
+            security_groups=[security_group],
+            username=config.UBUNTU_USERNAME,
+            userdata=config.INSTALL_QEMU_UTILS_USERDATA)[0]
+        # wait for userdata being installed
+        server_steps.check_server_log_contains_record(
+            server,
+            config.USERDATA_DONE_MARKER,
+            timeout=config.USERDATA_EXECUTING_TIMEOUT)
+
+        server_steps.attach_floating_ip(server, nova_floating_ip)
+
+        with server_steps.get_server_ssh(server,
+                                         nova_floating_ip.ip) as server_ssh:
+            # save names of devices before unmounting
+            eph_dev = server_steps.get_block_device_by_mount(server_ssh,
+                                                             eph_fs)
+            root_dev = server_steps.get_block_device_by_mount(server_ssh,
+                                                              root_fs)
+
+            server_steps.create_empty_file_on_server(server_ssh, eph_fs)
+            server_steps.unmount_fs_for_server(server_ssh, eph_fs)
+            server_steps.create_qcow_image_for_server(server_ssh,
+                                                      eph_dev,
+                                                      root_dev)
+
+        server_steps.resize(server, flavor_new)
+        server_steps.confirm_resize_servers([server])
+
+        with server_steps.get_server_ssh(server,
+                                         nova_floating_ip.ip) as server_ssh:
+            server_steps.check_files_presence_for_fs(server_ssh, eph_fs,
+                                                     must_present=False)
