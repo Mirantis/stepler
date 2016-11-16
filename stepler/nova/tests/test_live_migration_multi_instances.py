@@ -78,3 +78,52 @@ def test_server_migration_with_memory_workload(live_migration_servers,
     for server in live_migration_servers:
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('b0b0baa4-60af-4429-98f2-eb137eae8219',
+                           block_migration=True)
+@pytest.mark.idempotent_id('70ed751c-abe6-48f0-a785-f756b04a4ca7',
+                           block_migration=False)
+@pytest.mark.parametrize(
+    'live_migration_servers, block_migration', [
+        ({'boot_from_volume': False}, True),
+        ({'boot_from_volume': True}, False)],
+    ids=['boot_from_image', 'boot_from_volume'],
+    indirect=['live_migration_servers'])
+def test_server_migration_with_cpu_workload(live_migration_servers,
+                                            server_steps,
+                                            block_migration):
+    """**Scenario:** LM of servers under CPU workload.
+
+    **Setup:**
+
+    #. Upload ubuntu image
+    #. Create network with subnet and router
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Boot maximum allowed number of servers from image or volume
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Start CPU workload on servers
+    #. Initiate LM of servers to another compute node
+    #. Check that ping to servers' floating ips is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete flavor
+    #. Delete security group
+    #. Delete network, subnet, router
+    #. Delete ubuntu image
+    """
+    for server in live_migration_servers:
+        with server_steps.get_server_ssh(server) as server_ssh:
+            server_steps.generate_server_cpu_workload(server_ssh)
+
+    server_steps.live_migrate(live_migration_servers,
+                              block_migration=block_migration)
+    for server in live_migration_servers:
+        server_steps.check_ping_to_server_floating(
+            server, timeout=config.PING_CALL_TIMEOUT)
