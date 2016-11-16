@@ -56,8 +56,11 @@ CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-d
 UBUNTU_ISO_URL = 'http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-amd64/current/images/netboot/mini.iso'  # noqa E501
 BAREMETAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/dib-user-image-dkms-grub.raw'  # noqa E501
 
+FORCE_API = bool(os.environ.get('FORCE_API_USAGE'))
+
 # TODO(schipiga): copied from mos-integration-tests, need refactor.
-TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH", os.path.expanduser('~/images'))  # noqa E501
+TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH",
+                                 os.path.expanduser('~/images'))
 
 TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '../test_reports'))

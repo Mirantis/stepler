@@ -17,7 +17,6 @@ Volume fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_not  # noqa
 import pytest
 
 from stepler.cinder import steps
@@ -44,8 +43,9 @@ def get_volume_steps(get_cinder_client):
     Returns:
         function: function to get volume steps
     """
-    def _get_volume_steps(**credentials):
-        return steps.VolumeSteps(get_cinder_client(**credentials))
+    def _get_volume_steps(version, is_api, **credentials):
+        return steps.VolumeSteps(
+            get_cinder_client(version, is_api, **credentials))
 
     return _get_volume_steps
 
@@ -80,7 +80,8 @@ def volume_steps(unexpected_volumes_cleanup,
     Yields:
         VolumeSteps: instantiated volume steps
     """
-    _volume_steps = get_volume_steps()
+    _volume_steps = get_volume_steps(
+        config.CURRENT_CINDER_VERSION, is_api=False)
     volumes = _volume_steps.get_volumes(all_projects=True, check=False)
     volume_ids_before = {volume.id for volume in volumes}
 
