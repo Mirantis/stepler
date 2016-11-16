@@ -318,9 +318,15 @@ def baremetal_ubuntu_image(create_images_context):
     Returns:
         object: ubuntu image
     """
-    disk_info = json.dumps(config.BAREMETAL_DISK_INFO)
+    if config.BAREMETAL_NODE:
+        image_url = config.BAREMETAL_UBUNTU
+        disk_info = json.dumps(config.BAREMETAL_DISK_INFO)
+    else:
+        image_url = config.BAREMETAL_UBUNTU_FOR_VIRTUAL_NODE
+        disk_info = json.dumps(config.BAREMETAL_DISK_INFO_FOR_VIRTUAL_NODE)
+
     with create_images_context(utils.generate_ids('baremetal-ubuntu'),
-                               config.BAREMETAL_UBUNTU,
+                               image_url,
                                disk_format='raw',
                                container_format='bare',
                                cpu_arch="x86_64",
