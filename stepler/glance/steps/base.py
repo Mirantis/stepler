@@ -17,7 +17,10 @@ Glance base steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, equal_to  # noqa
+
 from stepler import base
+from stepler.third_party import steps_checker
 
 __all__ = [
     'BaseGlanceSteps',
@@ -26,3 +29,19 @@ __all__ = [
 
 class BaseGlanceSteps(base.BaseSteps):
     """Glance base steps."""
+
+    @steps_checker.step
+    def update_images(self, images, status=None, check=True):
+        """Step to update images."""
+        kwgs = {}
+        if status:
+            kwgs['status'] = status
+
+        for image in images:
+            self._client.images.update(image.id, **kwgs)
+
+        if check:
+            for image in images:
+                image.get()
+                if status:
+                    assert_that(image.status, equal_to(status))

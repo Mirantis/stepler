@@ -22,3 +22,7 @@ from stepler import base
 
 class BaseApiClient(base.BaseApiClient):
     """Glance base API client."""
+
+    @property
+    def _endpoint(self):
+        return self._session.get_endpoint(service_type='image').rstrip('/')

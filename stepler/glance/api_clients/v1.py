@@ -22,3 +22,12 @@ from .base import BaseApiClient
 
 class ApiClientV1(BaseApiClient):
     """Glance API client v1."""
+
+    def images_update(self, image_id, status=None):
+        """Update image via API call."""
+        headers = self._auth_headers
+        if status:
+            headers['x-image-meta-status'] = status
+
+        url = self._endpoint + '/v1/images/' + image_id
+        self._put(url, headers)
