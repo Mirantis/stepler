@@ -17,7 +17,7 @@ Hypervisor steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_not, empty  # noqa
+from hamcrest import assert_that, empty, greater_than, is_not  # noqa
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -35,7 +35,7 @@ class HypervisorSteps(base.BaseSteps):
         """Step to get hypervisors.
 
         Args:
-            check (bool): flag whether check step or not
+            check (bool): flag whether to check step or not
 
 
         Returns:
@@ -51,7 +51,7 @@ class HypervisorSteps(base.BaseSteps):
         return hypervisors
 
     @steps_checker.step
-    def get_hypervisor_capacity(self, hypervisor, flavor):
+    def get_hypervisor_capacity(self, hypervisor, flavor, check=True):
         """Step to get hypervisor capacity.
 
         This method calculates max available count of instances, which can be
@@ -60,14 +60,24 @@ class HypervisorSteps(base.BaseSteps):
         Args:
             hypervisor (obj): nova hypervisor
             flavor (obj): nova flavor
+            check (bool): flag whether to check step or not
 
         Returns:
             int: possible instances count
+
+        Raises:
+            AssertionError: if capacity equal or less zero.
         """
         if hypervisor.vcpus < flavor.vcpus:
-            return 0
+            capacity = 0
         if flavor.disk > 0:
-            return min(hypervisor.disk_available_least // flavor.disk,
-                       hypervisor.free_ram_mb // flavor.ram)
+            capacity = min(
+                hypervisor.disk_available_least // flavor.disk,
+                hypervisor.free_ram_mb // flavor.ram)
         else:
-            return hypervisor.free_ram_mb // flavor.ram
+            capacity = hypervisor.free_ram_mb // flavor.ram
+
+        if check:
+            assert_that(capacity, greater_than(0))
+
+        return capacity

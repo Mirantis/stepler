@@ -84,12 +84,12 @@ def test_stack_delete(empty_stack, cli_heat_steps, stack_steps):
 
     **Steps:**
 
-    #. Delete stack
+    #. Delete stack via cli command
     #. Check that stack is not exist
     """
     cli_heat_steps.delete_stack(empty_stack)
     stack_steps.check_presence(
-        empty_stack, present=False, timeout=config.STACK_DELETING_TIMEOUT)
+        empty_stack, must_present=False, timeout=config.STACK_DELETING_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('bf105cea-1ada-47b5-aae1-7a59cfa4617e')

@@ -335,7 +335,7 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             server.get()
-            floating_ips = self.get_ips(server, 'floating').keys()
+            floating_ips = self.get_ips(server, 'floating', check=False).keys()
             assert_that(floating_ips,
                         is_not(has_item(floating_ip.ip)),
                         "Floating IP still in a list of server's IPs.")
@@ -356,7 +356,7 @@ class ServerSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        ips_before_attach = self.get_ips(server, 'fixed').keys()
+        ips_before_attach = self.get_ips(server, 'fixed', check=False).keys()
         server.add_fixed_ip(network_id)
 
         if check:
@@ -423,9 +423,20 @@ class ServerSteps(base.BaseSteps):
             raises(Exception, exception_message))
 
     @steps_checker.step
-    def get_ips(self, server, ip_type=None):
-        # TODO(schipiga): expand documentation
-        """Step to get server IPs."""
+    def get_ips(self, server, ip_type=None, check=True):
+        """Step to get server IPs.
+
+        Args:
+            server (object): Instance of nova server.
+            ip_type (str, optional): Type of IP to filter IPs.
+            check (bool, optional): Flag whether to check step or not.
+
+        Returns:
+            dict: Retrieved IPs.
+
+        Raises:
+            AssertionError: If no retrieved IPs.
+        """
         ips = {}
         for net_name, net_info in server.addresses.items():
             for net in net_info:
@@ -440,6 +451,10 @@ class ServerSteps(base.BaseSteps):
                 key: val
                 for key, val in ips.items() if val['type'] == ip_type
             }
+
+        if check:
+            assert_that(ips, is_not(empty()))
+
         return ips
 
     @steps_checker.step
