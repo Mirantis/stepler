@@ -219,6 +219,13 @@ NOVA_INSTANCES_PATH = "/var/lib/nova/instances/"
 FIXED_IP = 'fixed'
 FLOATING_IP = 'floating'
 
+SERVER_ATTR_HOST = 'OS-EXT-SRV-ATTR:host'
+SERVER_ATTR_INSTANCE_NAME = 'OS-EXT-SRV-ATTR:instance_name'
+
+IO_SPEC_LIMIT = 10240000
+IO_SPEC_LIMIT_METADATA = {'quota:disk_read_bytes_sec': str(IO_SPEC_LIMIT),
+                          'quota:disk_write_bytes_sec': str(IO_SPEC_LIMIT)}
+
 # Heat
 HEAT_VERSION = 1
 HEAT_IN_PROGRESS_STATUS = 'in_progress'
