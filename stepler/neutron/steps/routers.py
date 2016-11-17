@@ -17,10 +17,12 @@ Router steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import waiting
+from hamcrest import equal_to
 
 from stepler import base
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ["RouterSteps"]
 
@@ -60,26 +62,25 @@ class RouterSteps(base.BaseSteps):
         self._client.delete(router['id'])
 
         if check:
-            self.check_presence(router, present=False)
+            self.check_presence(router, must_present=False)
 
     @steps_checker.step
-    def check_presence(self, router, present=True, timeout=0):
+    def check_presence(self, router, must_present=True, timeout=0):
         """Verify step to check router is present.
 
         Args:
             router (dict): router to check presence status
-            presented (bool): flag whether router should present or not
+            must_present (bool): flag whether router must present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
+        def _check_router_presence():
+            is_present = bool(self._client.find_all(id=router['id']))
+            return expect_that(is_present, equal_to(must_present))
 
-        def predicate():
-            exists = bool(self._client.find_all(id=router['id']))
-            return exists == present
-
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_router_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def set_gateway(self, router, network, check=True):
@@ -103,28 +104,28 @@ class RouterSteps(base.BaseSteps):
         """
         self._client.clear_gateway(router_id=router['id'])
         if check:
-            self.check_gateway_presence(router, present=False)
+            self.check_gateway_presence(router, must_present=False)
 
     @steps_checker.step
-    def check_gateway_presence(self, router, present=True, timeout=0):
+    def check_gateway_presence(self, router, must_present=True, timeout=0):
         """Verify step to check router gateway is present.
 
         Args:
             router (dict): router to check gateway presence status
-            presented (bool): flag whether router should present or not
+            must_present (bool): flag whether router must present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-
         router_id = router['id']
 
-        def predicate():
+        def _check_gateway_presence():
             router = self._client.get(router_id)
-            return present == (router['external_gateway_info'] is not None)
+            is_present = router['external_gateway_info'] is not None
+            return expect_that(is_present, equal_to(must_present))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_gateway_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def add_subnet_interface(self, router, subnet, check=True):
@@ -150,32 +151,33 @@ class RouterSteps(base.BaseSteps):
         self._client.remove_subnet_interface(router_id=router['id'],
                                              subnet_id=subnet['id'])
         if check:
-            self.check_interface_subnet_presence(router, subnet, present=False)
+            self.check_interface_subnet_presence(
+                router, subnet, must_present=False)
 
     @steps_checker.step
     def check_interface_subnet_presence(self,
                                         router,
                                         subnet,
-                                        present=True,
+                                        must_present=True,
                                         timeout=0):
         """Verify step to check subnet is in router interfaces.
 
         Args:
             router (dict): router to check
             subnet (dict): subnet to find in router interfaces
-            present (bool): flag whether router should contains interface
+            must_present (bool): flag whether router should contains interface
                 to subnet or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-
-        def predicate():
+        def _check_interface_subnet_presence():
             subnet_ids = self._client.get_interfaces_subnets_ids(router['id'])
-            return present == (subnet['id'] in subnet_ids)
+            is_present = subnet['id'] in subnet_ids
+            return expect_that(is_present, equal_to(must_present))
 
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_interface_subnet_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_router(self, **kwargs):

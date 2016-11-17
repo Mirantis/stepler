@@ -17,10 +17,12 @@ Port steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import waiting
+from hamcrest import equal_to
 
 from stepler import base
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = ["PortSteps"]
 
@@ -54,23 +56,22 @@ class PortSteps(base.BaseSteps):
         """
         self._client.delete(port['id'])
         if check:
-            self.check_presence(port, present=False)
+            self.check_presence(port, must_present=False)
 
     @steps_checker.step
-    def check_presence(self, port, present=True, timeout=0):
+    def check_presence(self, port, must_present=True, timeout=0):
         """Verify step to check port is present.
 
         Args:
             port (dict): neutron port to check presence status
-            present (bool): flag whether port should present or not
+            must_present (bool): flag whether port must present or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
+        def _check_port_presence():
+            is_present = bool(self._client.find_all(id=port['id']))
+            return expect_that(is_present, equal_to(must_present))
 
-        def predicate():
-            exists = bool(self._client.find_all(id=port['id']))
-            return exists == present
-
-        waiting.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(_check_port_presence, timeout_seconds=timeout)
