@@ -20,6 +20,7 @@ Snapshot fixtures
 import pytest
 
 from stepler.cinder import steps
+from stepler import config
 from stepler.third_party import utils
 
 __all__ = [
@@ -40,9 +41,9 @@ def get_snapshot_steps(get_cinder_client):
     Returns:
         function: function to get snapshot steps
     """
-    def _get_snapshot_steps(**credentials):
+    def _get_snapshot_steps(version, is_api, **credentials):
         return steps.SnapshotSteps(
-            get_cinder_client(**credentials).volume_snapshots)
+            get_cinder_client(version, is_api, **credentials).volume_snapshots)
 
     return _get_snapshot_steps
 
@@ -58,7 +59,8 @@ def snapshot_steps(get_snapshot_steps, cleanup_snapshots):
     Yields:
          stepler.cinder.steps.SnapshotSteps: instantiated snapshot steps
     """
-    _snapshot_steps = get_snapshot_steps()
+    _snapshot_steps = get_snapshot_steps(
+        config.CURRENT_CINDER_VERSION, is_api=False)
 
     snapshots = _snapshot_steps.get_snapshots(all_projects=True, check=False)
     snapshot_ids_before = {snapshot.id for snapshot in snapshots}
