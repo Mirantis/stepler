@@ -25,14 +25,17 @@ class RouterManager(base.BaseNeutronManager):
         Args:
             name (str): name of router
             distributed (bool): flag whatever router should be distributed or
-                not
+                not; flag will be passed only if it is True,
+                it is False by default in neutronclient
             project_id (str|None): project id to create router on it. If None
                 - router will create on current project
 
         Returns:
             dict: created router
         """
-        query = {'name': name, 'distributed': distributed}
+        query = {'name': name}
+        if distributed:
+            query['distributed'] = True
         if project_id is not None:
             query['tenant_id'] = project_id
         return super(RouterManager, self).create(**query)
