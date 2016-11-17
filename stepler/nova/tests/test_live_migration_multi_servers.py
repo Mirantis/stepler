@@ -276,3 +276,62 @@ def test_migration_with_attached_volume(live_migration_servers_with_volumes,
     for server in live_migration_servers_with_volumes:
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('f2ac5153-21ee-4a99-869a-d0a78af124c8',
+                           flavor=dict(ram=16 * 1024, vcpus=8, disk=160),
+                           block_migration=True)
+@pytest.mark.idempotent_id('923cf57b-bcd2-4b1b-a6f4-9656036e11e4',
+                           flavor=dict(ram=16 * 1024, vcpus=8, disk=160),
+                           block_migration=False)
+@pytest.mark.idempotent_id('8e588cf2-a2db-4ad5-a7e5-6dc8f5612d31',
+                           flavor=dict(ram=8 * 1024, vcpus=4, disk=80),
+                           block_migration=True)
+@pytest.mark.idempotent_id('7abf7397-d2de-4b8e-a4cb-52e238842c14',
+                           flavor=dict(ram=8 * 1024, vcpus=4, disk=80),
+                           block_migration=False)
+@pytest.mark.parametrize(
+    'flavor', [
+        dict(ram=16 * 1024, vcpus=8, disk=160),
+        dict(ram=8 * 1024, vcpus=4, disk=80),
+    ],
+    indirect=True)
+@pytest.mark.parametrize(
+    'live_migration_servers, block_migration',
+    [(dict(boot_from_volume=True), False),
+     (dict(boot_from_volume=False), True)],
+    indirect=['live_migration_servers'])
+def test_migration_with_large_flavors(live_migration_servers,
+                                      server_steps,
+                                      block_migration):
+    """**Scenario:** LM of servers with attached volumes.
+
+    **Setup:**
+
+    #. Upload ubuntu image
+    #. Create network with subnet and router
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Boot maximum allowed number of servers from volume
+    #. Attach volume to each server
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Initiate LM of servers to another compute node
+    #. Check that ping to servers' floating ips is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete volumes
+    #. Delete flavor
+    #. Delete security group
+    #. Delete network, subnet, router
+    #. Delete ubuntu image
+    """
+    server_steps.live_migrate(
+        live_migration_servers, block_migration=block_migration)
+    for server in live_migration_servers:
+        server_steps.check_ping_to_server_floating(
+            server, timeout=config.PING_CALL_TIMEOUT)

@@ -72,20 +72,34 @@ def create_flavor(flavor_steps):
 
 
 @pytest.fixture
-def flavor(create_flavor):
+def flavor(request, create_flavor):
     """Callable function fixture to create single ova flavor with options.
 
     Can be called several times during a test.
     After the test it destroys all created nodes.
 
+    Can be parametrized with dict of create_flavor arguments.
+
+
+    Example:
+        @pytest.mark.parametrize('flavor', [
+            dict(ram=2048, vcpus=2),
+            dict(ram=512, disk=1),
+        ], indirect=['flavor'])
+        def test_foo(instance):
+            # Instance will created with different flavors
+
     Args:
+        request (obj): py.test SubRequest
         create_flavor (function): function to create flavor with options
 
     Returns:
         function: function to create single flavor with options
     """
+    flavor_params = dict(ram=1024, vcpus=1, disk=5)
+    flavor_params.update(getattr(request, 'param', {}))
     flavor_name = next(generate_ids('flavor'))
-    return create_flavor(flavor_name, ram=1024, vcpus=1, disk=5)
+    return create_flavor(flavor_name, **flavor_params)
 
 
 @pytest.fixture
