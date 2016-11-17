@@ -45,7 +45,7 @@ def get_volume_steps(get_cinder_client):
     """
     def _get_volume_steps(version, is_api, **credentials):
         return steps.VolumeSteps(
-            get_cinder_client(version, is_api, **credentials))
+            get_cinder_client(version, is_api, **credentials).volumes)
 
     return _get_volume_steps
 

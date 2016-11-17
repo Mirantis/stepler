@@ -43,7 +43,6 @@ __all__ = [
     'generate_file_context',
     'generate_ips',
     'get_file_path',
-    'get_volume_migrate_host',
     'get_unwrapped_func',
     'is_iterable',
 ]
@@ -303,19 +302,3 @@ def slugify(string):
         str: replace string
     """
     return ''.join(s if s.isalnum() else '_' for s in string).strip('_')
-
-
-def get_volume_migrate_host(nodes, host):
-    """Get cinder host to migrate volume.
-
-    Arguments:
-        nodes (FuelNodes): cinder nodes
-        host (str): initial volume host
-
-    Returns:
-        str: host to volume migrate
-        None: if no host found
-    """
-    for node in nodes:
-        if not host.startswith(node.fqdn):
-            return node.fqdn + config.VOLUME_HOST_POSTFIX
