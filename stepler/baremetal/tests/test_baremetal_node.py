@@ -17,6 +17,7 @@ Ironic baremetal node tests
 # under the License.
 
 import pytest
+from stepler import config
 
 
 @pytest.mark.idempotent_id('fce98286-30c1-420d-8d35-7660907ec1ff')
@@ -53,6 +54,7 @@ def test_create_server_on_baremetal_node(keypair,
     server = server_steps.create_servers(image=baremetal_ubuntu_image,
                                          flavor=baremetal_flavor,
                                          networks=[baremetal_network],
-                                         keypair=keypair)[0]
+                                         keypair=keypair,
+                                         username=config.UBUNTU_USERNAME)[0]
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.get_server_ssh(server)
