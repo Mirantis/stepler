@@ -235,7 +235,6 @@ def create_images_context(get_glance_steps, uncleanable):
     Returns:
         object: ubuntu glance image
     """
-
     @context.context
     def _create_images_context(image_names, image_url, **kwargs):
         images = get_glance_steps(
