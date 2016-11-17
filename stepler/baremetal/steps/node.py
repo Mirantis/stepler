@@ -137,7 +137,7 @@ class IronicNodeSteps(BaseSteps):
         """Check ironic node maintenance was changed.
 
         Args:
-            node (str): The ironic node.
+            node (object): The ironic node.
             state (Bool): the maintenance mode; either a Boolean or a string
                 representation of a Boolean (eg, 'true', 'on', 'false',
                 'off'). True to put the node in maintenance mode; False
@@ -148,7 +148,11 @@ class IronicNodeSteps(BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         def _check_ironic_node_maintenance():
-            node.get()
+            self._get_node(node)
             return expect_that(node.maintenance, equal_to(state))
 
         waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)
+
+    def _get_node(self, node):
+        node._info.update(self._client.node.get(node.uuid)._info)
+        node.__dict__.update(node._info)
