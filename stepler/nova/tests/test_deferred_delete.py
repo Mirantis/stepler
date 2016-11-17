@@ -79,7 +79,7 @@ def test_restore_soft_deleted_server(
     """
     with patch_ini_file_and_restart_services(
             NOVA_SERVICES,
-            path=config.NOVA_CONFIG_PATH,
+            file_path=config.NOVA_CONFIG_PATH,
             option='reclaim_instance_interval',
             value=config.BIG_RECLAIM_INTERVAL):
 
@@ -188,7 +188,7 @@ def test_server_deleted_after_reclaim_timeout(
     """
     with patch_ini_file_and_restart_services(
             NOVA_SERVICES,
-            path=config.NOVA_CONFIG_PATH,
+            file_path=config.NOVA_CONFIG_PATH,
             option='reclaim_instance_interval',
             value=config.SMALL_RECLAIM_INTERVAL):
 
@@ -284,7 +284,7 @@ def test_force_delete_server_before_deferred_cleanup(
     """
     with patch_ini_file_and_restart_services(
             NOVA_SERVICES,
-            path=config.NOVA_CONFIG_PATH,
+            file_path=config.NOVA_CONFIG_PATH,
             option='reclaim_instance_interval',
             value=config.BIG_RECLAIM_INTERVAL):
 
