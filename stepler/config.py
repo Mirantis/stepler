@@ -202,6 +202,7 @@ SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
 NOVA_INSTANCES_PATH = "/var/lib/nova/instances/"
 
 FIXED_IP = 'fixed'
+FLOATING_IP = 'floating'
 
 # Heat
 HEAT_VERSION = 1
