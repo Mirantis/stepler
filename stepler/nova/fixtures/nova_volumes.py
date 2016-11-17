@@ -55,12 +55,16 @@ def attach_volume_to_server(nova_volume_steps, volume_steps):
     Returns:
         function: function to attach volume to server
     """
+
     def _attach_volume_to_server(server, volume, *args, **kwgs):
         attached_ids = [a['server_id'] for a in volume.attachments]
         nova_volume_steps.attach_volume_to_server(server, volume,
                                                   *args, **kwgs)
-        volume_steps.check_volume_status(volume, config.STATUS_INUSE,
-                                         timeout=config.VOLUME_IN_USE_TIMEOUT)
+        volume_steps.check_volume_status(
+            volume,
+            config.STATUS_INUSE,
+            transit_statuses=[config.STATUS_ATTACHING],
+            timeout=config.VOLUME_IN_USE_TIMEOUT)
         attached_ids.append(server.id)
         volume_steps.check_volume_attachments(volume, attached_ids)
 
@@ -86,6 +90,7 @@ def detach_volume_from_server(nova_volume_steps, volume_steps):
                                                     *args, **kwgs)
         volume_steps.check_volume_status(
             volume, config.STATUS_AVAILABLE,
+            transit_statuses=[config.STATUS_DETACHING],
             timeout=config.VOLUME_AVAILABLE_TIMEOUT)
         attached_ids.remove(server.id)
         volume_steps.check_volume_attachments(volume, attached_ids)

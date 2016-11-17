@@ -104,15 +104,19 @@ def primary_volumes(get_volume_steps,
         uncleanable (AttrDict): Data structure with skipped resources.
     """
     volume_ids_before = set()
-    for volume in get_volume_steps().get_volumes(all_projects=True,
-                                                 check=False):
+    for volume in get_volume_steps(
+            config.CURRENT_CINDER_VERSION, is_api=False).get_volumes(
+                all_projects=True, check=False):
         uncleanable.volume_ids.add(volume.id)
         volume_ids_before.add(volume.id)
 
     yield
 
     if config.CLEANUP_UNEXPECTED_AFTER_ALL:
-        cleanup_volumes(get_volume_steps(), uncleanable_ids=volume_ids_before)
+        cleanup_volumes(
+            get_volume_steps(
+                config.CURRENT_CINDER_VERSION, is_api=False),
+            uncleanable_ids=volume_ids_before)
 
 
 @pytest.fixture(scope='session')

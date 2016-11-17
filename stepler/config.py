@@ -84,10 +84,12 @@ NOVA_COMPUTE = 'nova-compute'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
+STATUS_ATTACHING = 'attaching'
 STATUS_AVAILABLE = 'available'
 STATUS_AWAITING_TRANSFER = 'awaiting-transfer'
 STATUS_BUILD = 'build'
 STATUS_CREATING = 'creating'
+STATUS_DETACHING = 'detaching'
 STATUS_DOWNLOADING = 'downloading'
 STATUS_INUSE = 'in-use'
 STATUS_MIGRATING = 'migrating'
