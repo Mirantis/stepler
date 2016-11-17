@@ -36,6 +36,7 @@ __all__ = [
     'server_steps',
     'live_migration_server',
     'live_migration_servers',
+    'live_migration_servers_with_volumes',
     'servers_cleanup',
     'unexpected_servers_cleanup',
 ]
@@ -317,17 +318,21 @@ def live_migration_servers(request,
     """
     params = getattr(request, "param", {})
     boot_from_volume = params.get('boot_from_volume', False)
+    attach_volume = params.get('attach_volume', False)
 
     network, _, _ = net_subnet_router
 
     hypervisor = sorted_hypervisors[1]
     servers_count = hypervisor_steps.get_hypervisor_capacity(hypervisor,
                                                              flavor)
+    volumes_quota = cinder_quota_steps.get_volumes_quota(current_project)
+    if attach_volume or boot_from_volume:
+        servers_count = min(servers_count, volumes_quota)
+    if attach_volume and boot_from_volume:
+        servers_count //= 2
 
     kwargs_list = []
     if boot_from_volume:
-        volumes_quota = cinder_quota_steps.get_volumes_quota(current_project)
-        servers_count = min(servers_count, volumes_quota)
         volume_names = utils.generate_ids(count=servers_count)
         volumes = volume_steps.create_volumes(size=5,
                                               image=ubuntu_image,
@@ -367,6 +372,35 @@ def live_migration_servers(request,
             timeout=config.USERDATA_EXECUTING_TIMEOUT)
         server_steps.attach_floating_ip(server, nova_create_floating_ip())
     return servers
+
+
+@pytest.fixture
+def live_migration_servers_with_volumes(
+        live_migration_servers,
+        attach_volume_to_server,
+        detach_volume_from_server,
+        volume_steps):
+    """Function fixture to create servers with volumes for LM tests.
+
+    Args:
+        live_migration_servers (ilst): list of nova servers
+        attach_volume_to_server (function): function to attach volume to server
+        detach_volume_from_server (function): function to detach volume from
+            server
+        volume_steps (obj): instantiated volume steps
+
+    Yields:
+        list: nova servers
+    """
+    volume_names = utils.generate_ids(count=len(live_migration_servers))
+    volumes = volume_steps.create_volumes(size=1, names=volume_names)
+    for server, volume in zip(live_migration_servers, volumes):
+        attach_volume_to_server(server, volume)
+
+    yield live_migration_servers
+
+    for server, volume in zip(live_migration_servers, volumes):
+        detach_volume_from_server(server, volume)
 
 
 @pytest.fixture

@@ -78,6 +78,7 @@ __all__ = sorted([  # sort for documentation
     'server_steps',
     'live_migration_server',
     'live_migration_servers',
+    'live_migration_servers_with_volumes',
     'servers_cleanup',
     'generate_traffic',
     'unexpected_servers_cleanup',

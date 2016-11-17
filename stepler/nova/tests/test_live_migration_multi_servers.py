@@ -234,3 +234,45 @@ def test_migration_with_network_workload(
     for server in live_migration_servers:
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('fdcec5a2-75d8-4f76-ae28-aba865c6e778')
+@pytest.mark.parametrize(
+    'live_migration_servers, block_migration', [
+        (dict(boot_from_volume=True, attach_volume=True), False)],
+    ids=['boot_from_image', 'boot_from_volume'],
+    indirect=['live_migration_servers'])
+def test_migration_with_attached_volume(live_migration_servers_with_volumes,
+                                        server_steps,
+                                        block_migration):
+    """**Scenario:** LM of servers with attached volumes.
+
+    **Setup:**
+
+    #. Upload ubuntu image
+    #. Create network with subnet and router
+    #. Create security group with allow ping rule
+    #. Create flavor
+    #. Boot maximum allowed number of servers from volume
+    #. Attach volume to each server
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Initiate LM of servers to another compute node
+    #. Check that ping to servers' floating ips is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete volumes
+    #. Delete flavor
+    #. Delete security group
+    #. Delete network, subnet, router
+    #. Delete ubuntu image
+    """
+    server_steps.live_migrate(
+        live_migration_servers_with_volumes, block_migration=block_migration)
+    for server in live_migration_servers_with_volumes:
+        server_steps.check_ping_to_server_floating(
+            server, timeout=config.PING_CALL_TIMEOUT)
