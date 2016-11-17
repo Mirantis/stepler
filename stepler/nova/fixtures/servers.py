@@ -331,6 +331,9 @@ def live_migration_servers(request,
     if attach_volume and boot_from_volume:
         servers_count //= 2
 
+    if servers_count == 0:
+        pytest.skip('No valid hosts found for flavor {}'.format(flavor))
+
     kwargs_list = []
     if boot_from_volume:
         volume_names = utils.generate_ids(count=servers_count)
