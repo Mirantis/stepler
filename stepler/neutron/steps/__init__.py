@@ -27,7 +27,7 @@ from .subnets import *  # noqa
 __all__ = [
     "AgentSteps",
     "NetworkSteps",
-    "SubnetSteps",
-    "RouterSteps",
     "PortSteps",
+    "RouterSteps",
+    "SubnetSteps",
 ]

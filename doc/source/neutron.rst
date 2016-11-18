@@ -8,7 +8,6 @@ Neutron
 .. automodule:: stepler.neutron.steps
    :members:
 
-
 -------------
 Neutron tests
 -------------
@@ -17,4 +16,7 @@ Neutron tests
    :members:
 
 .. automodule:: stepler.neutron.tests.test_dvr
+   :members:
+
+.. automodule:: stepler.neutron.tests.test_sighup
    :members:

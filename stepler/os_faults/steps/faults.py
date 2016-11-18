@@ -19,9 +19,10 @@ os_faults steps
 
 import os
 import tempfile
+import time
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains, has_items)  # noqa H301
+                      only_contains, has_items, is_)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -388,7 +389,7 @@ class OsFaultsSteps(base.BaseSteps):
         """Execute provided bash command on nodes.
 
         Args:
-            nodes (obj): nodes to backup file on them
+            nodes (NodeCollection): nodes to execute command on them
             cmd (str): bash command to execute
             check (bool): flag whether check step or not
 
@@ -424,3 +425,142 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(compute, cmd, check=False)
         assert_that(
             result, only_contains(has_properties(status=config.STATUS_FAILED)))
+
+    @steps_checker.step
+    def get_file_line_count(self, node, file_name, check=True):
+        """Step to get line count in a textual file on a single node.
+
+        Args:
+            node (NodeCollection): node
+            file_name (str): name of textual file
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True
+
+        Returns:
+            int: line count
+        """
+        cmd = "cat {} | wc -l".format(file_name)
+        result = self.execute_cmd(node, cmd, check=check)
+        return int(result[0].payload['stdout'])
+
+    @steps_checker.step
+    def get_process_pid(self, node, process_name, get_parent=True,
+                        check=True):
+        """Step to get process pid on a single node.
+
+        It returns pid of a parent or child process with specified name.
+        It's supposed that several processes can be found - one main process
+        (ppid=1) and one or more child processes.
+
+        Args:
+            node (NodeCollection): node
+            process_name (str): partial name of process
+            get_parent (bool): flag which pid should be returned -
+                parent's or child's one. For parent_process=False and
+                several children, minimal pid is returned.
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True or list of pids is empty
+
+        Returns:
+            int: process pid
+        """
+        cmd = "ps -ef | grep {} | grep -v grep".format(process_name)
+        cmd += " | awk '{print $2, $3}'"
+        result = self.execute_cmd(node, cmd, check=check)
+        stdout = result[0].payload['stdout']
+        # ex: 3468 1
+        #     3672 3468
+        #     3673 3468
+        # or: 1234 1
+        pids = map(int, stdout.split())
+        pids.remove(1)
+        main_pids = [pid for pid in pids if pids.count(pid) > 1]
+        if len(main_pids) == 0:
+            # no children
+            main_pids = pids
+            children_pids = []
+        else:
+            children_pids = [pid for pid in pids if pids.count(pid) == 1]
+        assert_that(main_pids, is_not(empty()))
+        if get_parent:
+            return main_pids[0]
+        else:
+            assert_that(children_pids, is_not(empty()))
+            return min(children_pids)
+
+    @steps_checker.step
+    def check_process_pid(self, node, process_name, expected_pid,
+                          check_parent=True):
+        """Step to check the process pid on a single node.
+
+        Args:
+            node (NodeCollection): node
+            process_name (str): partial name of process
+            expected_pid (int): expected pid
+            check_parent (bool): flag which pid should be checked -
+                parent's or child's one.
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed or pid is not equal to expected one
+        """
+        pid = self.get_process_pid(node, process_name, get_parent=check_parent)
+        assert_that(pid, is_(expected_pid))
+
+    @steps_checker.step
+    def send_signal_to_process(self, node, pid, signal, delay=None,
+                               check=True):
+        """Step to send a signal to a process on a single node.
+
+        Args:
+            node (NodeCollection): node
+            pid (int): process pid
+            signal (int): signal id
+            delay (int): delay after signal sending, in seconds
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True
+        """
+        cmd = "kill -{0} {1}".format(signal, pid)
+        self.execute_cmd(node, cmd, check=check)
+        if delay:
+            time.sleep(delay)
+
+    @steps_checker.step
+    def check_string_in_file(self, node, file_name, keyword, expected_count,
+                             start_line_number=None):
+        """Step to check number of keywords in a textual file on a single node.
+
+        Args:
+            node (NodeCollection): node
+            file_name (str): name of textual file
+            keyword (str): string to search
+            expected_count (int): expected count of lines containing keyword
+            start_line_number (int|None): number of first line for searching
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True or real count of lines with
+                keyword is not equal to expected one
+        """
+        if start_line_number:
+            cmd = "tail -n +{0} {1}".format(start_line_number, file_name)
+        else:
+            cmd = "cat {}".format(file_name)
+        if expected_count == 0:
+            cmd += " | grep -q '{}'; echo $?".format(keyword)
+            expected_value = 1
+        else:
+            cmd += " | grep '{}' | wc -l".format(keyword)
+            expected_value = expected_count
+        result = self.execute_cmd(node, cmd)
+        value = int(result[0].payload['stdout'])
+        assert_that(value, is_(expected_value))
