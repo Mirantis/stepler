@@ -19,6 +19,7 @@ Neutron fixtures
 
 from .networks import *  # noqa
 from .neutron import *  # noqa
+from .ovs import *  # noqa
 from .ports import *  # noqa
 from .routers import *  # noqa
 from .subnets import *  # noqa
@@ -47,4 +48,5 @@ __all__ = sorted([  # sort for documentation
     'subnet_steps',
     'get_subnet_steps',
     'net_subnet_router',
+    'ovs_restart_resources',
 ])

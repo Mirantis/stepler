@@ -214,6 +214,7 @@ def create_server_context(create_servers_context):
 @pytest.fixture
 def server(cirros_image,
            flavor,
+           security_group,
            net_subnet_router,
            server_steps):
     """Function fixture to create server with default options before test.
@@ -221,6 +222,7 @@ def server(cirros_image,
     Args:
         cirros_image (object): cirros image from glance
         flavor (object): nova flavor
+        security_group (obj): nova security group
         net_subnet_router (tuple): neutron network, subnet, router
         server_steps (ServerSteps): instantiated server steps
 
@@ -230,7 +232,10 @@ def server(cirros_image,
     network, _, _ = net_subnet_router
     return server_steps.create_servers(image=cirros_image,
                                        flavor=flavor,
-                                       networks=[network])[0]
+                                       networks=[network],
+                                       security_groups=[security_group],
+                                       username=config.CIRROS_USERNAME,
+                                       password=config.CIRROS_PASSWORD)[0]
 
 
 # TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.

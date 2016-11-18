@@ -70,6 +70,7 @@ STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
 
 # IMAGE / SERVER CREDENTIALS
 CIRROS_USERNAME = 'cirros'
+CIRROS_PASSWORD = 'cubswin:)'
 UBUNTU_USERNAME = 'ubuntu'
 
 # CURRENT API VERSIONS
@@ -252,3 +253,7 @@ CLEANUP_UNEXPECTED_AFTER_ALL = bool(
 
 UNEXPECTED_VOLUMES_LIMIT = int(
     os.environ.get('UNEXPECTED_VOLUMES_LIMIT', 0))
+
+
+# Neutron
+NEUTRON_OVS_SERVICE = 'neutron-openvswitch-agent'
