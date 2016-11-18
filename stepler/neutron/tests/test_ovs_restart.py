@@ -75,3 +75,59 @@ def test_restart_with_pcs_disable_enable(
         server_steps.check_ping_for_ip(
             server_2_fixed_ip, server_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('310c630d-38f0-402b-9423-ffb14fb766b2')
+def test_restart_with_pcs_ban_clear(
+        ovs_restart_resources,
+        nova_floating_ip,
+        server_steps,
+        os_faults_steps):
+    """**Scenario:** Restart OVS-agents with pcs ban/clear on controllers.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router
+    #. Create server
+    #. Create floating ip
+    #. Create network_2 with subnet_2
+    #. Add network_2 interface to router
+    #. Create server_2 on another compute and connect it to network_2
+
+    **Steps:**
+
+    #. Attach floating IP to server
+    #. Check ping from server_1 to server_2
+    #. Restart ovs-agents with pcs ban/clear on controllers
+    #. Check ping from server_1 to server_2
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete networks, subnets, router
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    server_1, server_2 = ovs_restart_resources.servers
+
+    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_2_fixed_ip = next(iter(server_steps.get_ips(server_2,
+                                                       config.FIXED_IP)))
+
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        server_steps.check_ping_for_ip(
+            server_2_fixed_ip, server_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    os_faults_steps.terminate_services([config.NEUTRON_OVS_SERVICE])
+    os_faults_steps.start_services([config.NEUTRON_OVS_SERVICE])
+
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        server_steps.check_ping_for_ip(
+            server_2_fixed_ip, server_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
