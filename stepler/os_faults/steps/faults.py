@@ -19,9 +19,10 @@ os_faults steps
 
 import os
 import tempfile
+import time
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains)  # noqa
+                      only_contains, is_)  # noqa
 
 from stepler import base
 from stepler import config
@@ -353,7 +354,7 @@ class OsFaultsSteps(base.BaseSteps):
         """Execute provided bash command on nodes.
 
         Args:
-            nodes (obj): nodes to backup file on them
+            nodes (NodeCollection): nodes to execute command on them
             cmd (str): bash command to execute
             check (bool): flag whether check step or not
 
@@ -389,3 +390,100 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(compute, cmd, check=False)
         assert_that(
             result, only_contains(has_properties(status=config.STATUS_FAILED)))
+
+    @steps_checker.step
+    def get_file_line_count(self, node, file_name, check=True):
+        """Step to get line count in a textual file on a single node.
+
+        Args:
+            node (NodeCollection): node
+            file_name (str): name of textual file
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True
+
+        Returns:
+            int: line number
+        """
+        cmd = "cat {} | wc -l".format(file_name)
+        result = self.execute_cmd(node, cmd, check=check)
+        return int(result[0].payload['stdout'])
+
+    @steps_checker.step
+    def get_process_pid(self, node, process_name, expected_pid=None,
+                        check=True):
+        """Step to get process pid on a single node.
+
+        Args:
+            node (NodeCollection): node
+            process_name (str): partial name of process
+            expected_pid (int|None): expected pid (taken into account only
+                with check=True)
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True or
+                pid is not equal to expected one
+
+        Returns:
+            int: process pid
+        """
+        cmd = "ps aux | grep -v root | grep {}".format(process_name)
+        cmd += " | awk '{print $2}'"
+        result = self.execute_cmd(node, cmd, check=check)
+        pid = int(result[0].payload['stdout'])
+        if check and expected_pid:
+            assert_that(pid, is_(expected_pid))
+        return pid
+
+    @steps_checker.step
+    def send_signal_to_process(self, node, pid, signal, delay=None,
+                               check=True):
+        """Step to send a signal to a process on a single node.
+
+        Args:
+            node (NodeCollection): node
+            pid (int): process pid
+            signal (str): signal, ex: HUP
+            delay (int): delay after signal sending, in seconds
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True
+        """
+        cmd = "kill -{0} {1}".format(signal, pid)
+        self.execute_cmd(node, cmd, check=check)
+        if delay:
+            time.sleep(delay)
+
+    @steps_checker.step
+    def check_keyword_in_file(self, node, file_name, keyword, expected_count,
+                              start_line_number=None):
+        """Step to check number of keywords in a textual file on a single node.
+
+        Args:
+            node (NodeCollection): node
+            file_name (str): name of textual file
+            keyword (str): word to search
+            expected_count (int): expected count of lines containing keyword
+            start_line_number (int|None): number of first line for searching
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True or real count of lines with
+                keyword is not equal to expected one
+        """
+        if start_line_number:
+            cmd = "tail -n +{0} {1}".format(start_line_number, file_name)
+        else:
+            cmd = "cat {}".format(file_name)
+        if expected_count == 0:
+            cmd += " | grep -q '{}' | wc -l".format(keyword)
+        else:
+            cmd += " | grep '{}' | wc -l".format(keyword)
+        result = self.execute_cmd(node, cmd)
+        count = int(result[0].payload['stdout'])
+        assert_that(count, is_(expected_count))
