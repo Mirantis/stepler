@@ -180,6 +180,11 @@ __all__ = sorted([  # sort for documentation
     'ironic_node_steps',
     'ironic_port',
     'ironic_port_steps',
+    'ironic_chassis_steps',
+    'get_ironic_chassis_steps',
+    'cleanup_chassis',
+    'primary_chassis',
+    'unexpected_chassis_cleanup',
 ])
 
 _plugins = [

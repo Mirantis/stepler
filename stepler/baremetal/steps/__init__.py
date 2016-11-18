@@ -17,10 +17,12 @@ Ironic steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .chassis import *  # noqa
 from .node import *  # noqa
 from .port import *  # noqa
 
 __all__ = [
     'IronicNodeSteps',
-    'IronicPortSteps'
+    'IronicPortSteps',
+    'IronicChassisSteps',
 ]
