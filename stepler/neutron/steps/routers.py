@@ -31,7 +31,7 @@ class RouterSteps(base.BaseSteps):
     """Router steps."""
 
     @steps_checker.step
-    def create(self, router_name, distributed=False, check=True, **kwargs):
+    def create(self, router_name, distributed=None, check=True, **kwargs):
         """Step to create router.
 
         Args:
