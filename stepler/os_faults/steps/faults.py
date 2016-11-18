@@ -98,26 +98,58 @@ class OsFaultsSteps(base.BaseSteps):
 
         return service
 
+    def _perform_services_action(self, names, action):
+        services = []
+        for name in names:
+            service = self._client.get_service(name=name)
+            services.append(service)
+            getattr(service, action)()
+        return services
+
     @steps_checker.step
     def restart_services(self, names, check=True):
-        """Step to restart a services.
+        """Step to restart services.
 
         Args:
-            name (str): service name
+            names (list): service names
             check (bool): flag whether to check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors
         """
-        for name in names:
-            # TODO(ssokolov) add check of service names
-            service = self._client.get_service(name=name)
-            # TODO(ssokolov) add check of exceptions
-            service.restart()
+        services = self._perform_services_action(names, 'restart')
+        if check:
+            assert_that(services, is_not(empty()))
 
-            if check:
-                # TODO(ssokolov) replace by real check
-                assert_that([service], is_not(empty()))
+    @steps_checker.step
+    def terminate_services(self, names, check=True):
+        """Step to terminate services.
+
+        Args:
+            names (list): service names
+            check (bool): flag whether to check step or not
+
+        Raises:
+            ServiceError: if wrong service name or other errors
+        """
+        services = self._perform_services_action(names, 'terminate')
+        if check:
+            assert_that(services, is_not(empty()))
+
+    @steps_checker.step
+    def start_services(self, names, check=True):
+        """Step to start services.
+
+        Args:
+            names (list): service names
+            check (bool): flag whether to check step or not
+
+        Raises:
+            ServiceError: if wrong service name or other errors
+        """
+        services = self._perform_services_action(names, 'start')
+        if check:
+            assert_that(services, is_not(empty()))
 
     @steps_checker.step
     def download_file(self, node, file_path, check=True):
