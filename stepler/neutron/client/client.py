@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.neutron.client import agent
 from stepler.neutron.client import network
 from stepler.neutron.client import port
 from stepler.neutron.client import router
@@ -21,6 +22,10 @@ class NeutronClient(object):
     """Wrapper for python-neutronclient."""
     def __init__(self, client):
         self._rest_client = client
+
+    @property
+    def agents(self):
+        return agent.AgentManager(self)
 
     @property
     def networks(self):
