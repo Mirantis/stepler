@@ -19,14 +19,14 @@ class RouterManager(base.BaseNeutronManager):
 
     NAME = 'router'
 
-    def create(self, name, distributed=False, project_id=None):
+    def create(self, name, distributed=None, project_id=None):
         """Create router.
 
         Args:
             name (str): name of router
-            distributed (bool): flag whatever router should be distributed or
-                not; flag will be passed only if it is True,
-                it is False by default in neutronclient
+            distributed (bool, optional): flag whatever router should be
+                distributed or not. By default flag is not passed and type
+                of router depends on neutron configuration.
             project_id (str|None): project id to create router on it. If None
                 - router will create on current project
 
@@ -34,8 +34,8 @@ class RouterManager(base.BaseNeutronManager):
             dict: created router
         """
         query = {'name': name}
-        if distributed:
-            query['distributed'] = True
+        if distributed is not None:
+            query['distributed'] = distributed
         if project_id is not None:
             query['tenant_id'] = project_id
         return super(RouterManager, self).create(**query)
