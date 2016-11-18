@@ -90,10 +90,11 @@ def create_router(router_steps):
 
 
 @pytest.yield_fixture
-def router(router_steps, create_router, public_network):
+def router(request, router_steps, create_router, public_network):
     """Fixture to create router with default options before test.
 
     Args:
+        request (obj): py.test SubRequest
         router_steps (object): instantiated neutron steps
         create_router (function): function to create router with options
         public_network (dict): public network
@@ -101,8 +102,10 @@ def router(router_steps, create_router, public_network):
     Returns:
         dict: router
     """
+    router_params = dict()
+    router_params.update(getattr(request, 'param', {}))
     router_name = next(generate_ids('router'))
-    router = create_router(router_name)
+    router = create_router(router_name, **router_params)
     router_steps.set_gateway(router, public_network)
     yield router
     router_steps.clear_gateway(router)
