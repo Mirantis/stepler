@@ -17,6 +17,7 @@ Neutron fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .agents import *  # noqa
 from .networks import *  # noqa
 from .neutron import *  # noqa
 from .ports import *  # noqa
@@ -47,4 +48,5 @@ __all__ = sorted([  # sort for documentation
     'subnet_steps',
     'get_subnet_steps',
     'net_subnet_router',
+    'agent_steps',
 ])

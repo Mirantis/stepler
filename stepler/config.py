@@ -187,6 +187,9 @@ NOVA_INSTANCES_PATH = "/var/lib/nova/instances/"
 
 FIXED_IP = 'fixed'
 
+# Neutron
+NEUTRON_LOG_DIR = '/var/log/neutron'
+
 # Heat
 HEAT_VERSION = 1
 HEAT_IN_PROGRESS_STATUS = 'in_progress'

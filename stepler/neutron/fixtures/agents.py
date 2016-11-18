@@ -1,7 +1,7 @@
 """
--------------
-Neutron steps
--------------
+--------------
+Agent fixtures
+--------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +17,16 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .agents import *  # noqa
-from .networks import *  # noqa
-from .ports import *  # noqa
-from .routers import *  # noqa
-from .subnets import *  # noqa
+import pytest
 
+from stepler.neutron import steps
 
 __all__ = [
-    "AgentSteps",
-    "NetworkSteps",
-    "PortSteps",
-    "RouterSteps",
-    "SubnetSteps",
+    'agent_steps'
 ]
+
+
+@pytest.fixture
+def agent_steps(neutron_client):
+    """Fixture to get agent steps."""
+    return steps.AgentSteps(neutron_client.agents)

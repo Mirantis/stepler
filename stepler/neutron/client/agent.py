@@ -1,9 +1,3 @@
-"""
--------------
-Neutron steps
--------------
-"""
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,17 +11,24 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .agents import *  # noqa
-from .networks import *  # noqa
-from .ports import *  # noqa
-from .routers import *  # noqa
-from .subnets import *  # noqa
+from stepler.neutron.client import base
 
 
-__all__ = [
-    "AgentSteps",
-    "NetworkSteps",
-    "PortSteps",
-    "RouterSteps",
-    "SubnetSteps",
-]
+class AgentManager(base.BaseNeutronManager):
+    """Agent (neutron) manager."""
+
+    NAME = 'agent'
+
+    def list_agents(self, name):
+        """Get neutron agents.
+
+        Args:
+            name (str|None): agent name, ex: neutron-l3-agent
+
+        Returns:
+            list: list of agents data (dict - binary, host, alive etc.)
+        """
+        kwargs = {}
+        if name:
+            kwargs['binary'] = name
+        return self._rest_client.list_agents(**kwargs)['agents']
