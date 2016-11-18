@@ -21,15 +21,37 @@ Destructive scenarios are marked via decorator ``@pytest.mark.destructive``.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
+import pytest
+
 __all__ = [
     'pytest_runtest_teardown',
     'revert_environment',
 ]
 
+LOG = logging.getLogger(__name__)
 
+
+def pytest_addoption(parser):
+    parser.addoption("--snapshot-name", '-S', action="store",
+                     help="Libvirt snapshot name")
+
+
+@pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_teardown(item, nextitem):
     """Pytest hook to dispatch destructive scenarios."""
+
+    destructor = item._request.getfixturevalue('os_faults_client')
+
+    # Revert only destructive tests
     if not item.get_marker('destructive'):
+        return
+
+    snapshot_name = item.session.config.option.snapshot_name
+
+    # Prevent reverting if no snapshot_name passed
+    if snapshot_name is None:
         return
 
     # reject finalizers of all fixture scopes
@@ -40,16 +62,30 @@ def pytest_runtest_teardown(item, nextitem):
             # That looks as internal pytest specifics. We should skip them.
             fixture_def = getattr(finalizer, 'im_self', None)
             if fixture_def and not hasattr(fixture_def.func, 'indestructible'):
+                LOG.debug('Clear {} finalizers'.format(fixture_def))
                 fixture_def._finalizer[:] = []
 
                 # Clear fixture cached result to force fixture with any scope
                 # to restart in next test.
                 if hasattr(fixture_def, "cached_result"):
+                    LOG.debug('Clear {} cache'.format(fixture_def))
                     del fixture_def.cached_result
 
-    revert_environment()
+    outcome = yield
+
+    # Prevent reverting after last test
+    if nextitem is None or item.session.shouldstop:
+        return
+
+    # Prevent reverting after KeyboardInterrupt
+    if outcome.excinfo is not None and outcome.excinfo[0] is KeyboardInterrupt:
+        return
+
+    revert_environment(destructor, snapshot_name)
 
 
-def revert_environment():
+def revert_environment(destructor, snapshot_name):
     """Revert environment to original state."""
-    pass  # TODO(schipiga): should implement revert mechanism
+    nodes = destructor.get_nodes()
+    nodes.revert(snapshot_name)
+    nodes.run_task({'command': 'hwclock --hctosys'})
