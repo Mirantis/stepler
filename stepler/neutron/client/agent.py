@@ -24,3 +24,17 @@ class AgentManager(base.BaseNeutronManager):
     """Agent (neutron) manager."""
 
     NAME = 'agent'
+
+    def list_agents(self, name=None):
+        """Get neutron agents.
+
+        Args:
+            name (str|None): agent name, ex: neutron-l3-agent
+
+        Returns:
+            list: list of agents data (dict - binary, host, alive etc.)
+        """
+        kwargs = {}
+        if name:
+            kwargs['binary'] = name
+        return self._rest_client.list_agents(**kwargs)['agents']
