@@ -21,15 +21,56 @@ Destructive scenarios are marked via decorator ``@pytest.mark.destructive``.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
+import pytest
+
 __all__ = [
     'pytest_runtest_teardown',
     'revert_environment',
 ]
 
+LOG = logging.getLogger(__name__)
+DESTRUCTIVE = 'destructive'
 
+
+def pytest_addoption(parser):
+    parser.addoption("--snapshot-name", '-S', action="store",
+                     help="Libvirt snapshot name")
+    parser.addoption("--force-destructive", '-F', action="store_true",
+                     default=False,
+                     help="Force run destructive tests even no "
+                          "`--snapshot-name` passed")
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_collection_modifyitems(config, items):
+    """Hook to prevent run destructive tests without snapshot_name."""
+    stop_destructive = (config.option.snapshot_name is None and
+                        not config.option.force_destructive)
+    for item in items:
+        if item.get_marker(DESTRUCTIVE) and stop_destructive:
+            pytest.exit("You try to start destructive tests without passing "
+                        "--snapshot-name for cloud reverting. Such tests can "
+                        "break your cloud. To run destructive tests without "
+                        "--snapshot-name you should pass --force-destructive "
+                        "argument.")
+
+
+@pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_teardown(item, nextitem):
     """Pytest hook to dispatch destructive scenarios."""
-    if not item.get_marker('destructive'):
+
+    destructor = item._request.getfixturevalue('os_faults_client')
+
+    # Revert only destructive tests
+    if not item.get_marker(DESTRUCTIVE):
+        return
+
+    snapshot_name = item.session.config.option.snapshot_name
+
+    # Prevent reverting if no snapshot_name passed
+    if snapshot_name is None:
         return
 
     # reject finalizers of all fixture scopes
@@ -40,16 +81,30 @@ def pytest_runtest_teardown(item, nextitem):
             # That looks as internal pytest specifics. We should skip them.
             fixture_def = getattr(finalizer, 'im_self', None)
             if fixture_def and not hasattr(fixture_def.func, 'indestructible'):
+                LOG.debug('Clear {} finalizers'.format(fixture_def))
                 fixture_def._finalizer[:] = []
 
                 # Clear fixture cached result to force fixture with any scope
                 # to restart in next test.
                 if hasattr(fixture_def, "cached_result"):
+                    LOG.debug('Clear {} cache'.format(fixture_def))
                     del fixture_def.cached_result
 
-    revert_environment()
+    outcome = yield
+
+    # Prevent reverting after last test
+    if nextitem is None or item.session.shouldstop:
+        return
+
+    # Prevent reverting after KeyboardInterrupt
+    if outcome.excinfo is not None and outcome.excinfo[0] is KeyboardInterrupt:
+        return
+
+    revert_environment(destructor, snapshot_name)
 
 
-def revert_environment():
+def revert_environment(destructor, snapshot_name):
     """Revert environment to original state."""
-    pass  # TODO(schipiga): should implement revert mechanism
+    nodes = destructor.get_nodes()
+    nodes.revert(snapshot_name)
+    nodes.run_task({'command': 'hwclock --hctosys'})
