@@ -19,65 +19,123 @@ Ironic node fixtures
 
 import pytest
 
-from stepler.baremetal.steps import IronicNodeSteps
+from stepler.baremetal import steps
+from stepler import config
 
 __all__ = [
-    'create_ironic_node',
-    'ironic_node',
+    'get_ironic_node_steps',
+    'unexpected_node_cleanup',
     'ironic_node_steps',
+    'cleanup_nodes',
+    'primary_nodes',
 ]
 
 
-@pytest.fixture
-def ironic_node_steps(ironic_client):
+@pytest.fixture(scope='session')
+def get_ironic_node_steps(get_ironic_client):
     """Callable session fixture to get ironic steps.
 
     Args:
-        ironic_client (function): function to get ironic client
+        get_ironic_client (function): function to get ironic client
 
     Returns:
         function: function to instantiated ironic steps
     """
-    return IronicNodeSteps(ironic_client)
+    def _get_ironic_node_steps(**credentials):
+        return steps.IronicNodeSteps(
+            get_ironic_client(**credentials))
 
-
-@pytest.yield_fixture
-def create_ironic_node(ironic_node_steps):
-    """Callable function fixture to create ironic node with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created nodes.
-
-    Args:
-        ironic_node_steps (object): instantiated ironic steps
-
-    Returns:
-        function: function to create nodes as batch with options
-    """
-    nodes = []
-
-    def _create_ironic_node():
-        node = ironic_node_steps.create_ironic_node()
-        nodes.append(node)
-        return node
-
-    yield _create_ironic_node
-
-    for node in nodes:
-        ironic_node_steps.delete_ironic_node(node)
+    return _get_ironic_node_steps
 
 
 @pytest.fixture
-def ironic_node(create_ironic_node):
-    """Callable function fixture to create single ironic node with options.
+def unexpected_node_cleanup(primary_nodes,
+                            get_ironic_node_steps,
+                            cleanup_nodes):
+    """Function fixture to clear unexpected volumes.
+
+    It provides cleanup before and after test.
+    """
+    if config.CLEANUP_UNEXPECTED_BEFORE_TEST:
+        cleanup_nodes(get_ironic_node_steps())
+
+    yield
+
+    if config.CLEANUP_UNEXPECTED_AFTER_TEST:
+        cleanup_nodes(get_ironic_node_steps())
+
+
+@pytest.fixture
+def ironic_node_steps(unexpected_node_cleanup,
+                      get_ironic_node_steps,
+                      cleanup_nodes):
+    """Callable function fixture to get ironic steps.
 
     Can be called several times during a test.
     After the test it destroys all created nodes.
 
     Args:
-        create_ironic_node (function): function to create nodes with options
+        get_ironic_node_steps (function): function to get ironic steps
+        cleanup_nodes (function): function to cleanup nodes after test
 
-    Returns:
-        function: function to create single node with options
+    Yields:
+        IronicNodeSteps: instantiated ironic node steps
     """
-    return create_ironic_node()
+    _node_steps = get_ironic_node_steps()
+
+    nodes_before = _node_steps.get_ironic_nodes(check=False)
+    nodes_uuids_before = {node.uuid for node in nodes_before}
+
+    yield _node_steps
+    cleanup_nodes(_node_steps,
+                  uncleanable_nodes_uuids=nodes_uuids_before)
+
+
+@pytest.fixture(scope='session')
+def cleanup_nodes(uncleanable):
+    """Callable session fixture to cleanup nodes.
+
+    Args:
+        uncleanable (AttrDict): Data structure with skipped resources
+    """
+
+    def _cleanup_nodes(_nodes_steps,
+                       limit=0,
+                       uncleanable_nodes_uuids=None):
+        uncleanable_nodes_uuids = (uncleanable_nodes_uuids or
+                                   uncleanable.nodes_ids)
+        deleting_nodes = []
+
+        for node in _nodes_steps.get_ironic_nodes(check=False):
+            if node.uuid not in uncleanable_nodes_uuids:
+                deleting_nodes.append(node)
+
+        if len(deleting_nodes) > limit:
+            _nodes_steps.delete_ironic_nodes(deleting_nodes)
+
+    return _cleanup_nodes
+
+
+@pytest.fixture(scope='session')
+def primary_nodes(get_ironic_node_steps,
+                  cleanup_nodes,
+                  uncleanable):
+    """Session fixture to remember primary nodes before tests.
+
+    Also optionally in finalization it deletes all unexpected nodes which
+    are remained after tests.
+
+    Args:
+        get_ironic_node_steps (function): Function to get ironic steps.
+        cleanup_nodes (function): Function to cleanup volumes.
+        uncleanable (AttrDict): Data structure with skipped resources.
+    """
+    nodes_before = set()
+    for node in get_ironic_node_steps().get_ironic_nodes(check=False):
+        nodes_before.add(node)
+        uncleanable.nodes_ids.add(node.uuid)
+
+    yield
+    if config.CLEANUP_UNEXPECTED_AFTER_ALL:
+        cleanup_nodes(get_ironic_node_steps(),
+                      uncleanable_nodes_uuids=nodes_before)

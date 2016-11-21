@@ -29,9 +29,11 @@ __all__ = sorted([  # sort for documentation
     'ironic_port_steps',
     'ironic_port',
 
+    'get_ironic_node_steps',
+    'unexpected_node_cleanup',
     'ironic_node_steps',
-    'create_ironic_node',
-    'ironic_node',
+    'cleanup_nodes',
+    'primary_nodes',
 
     'ironic_chassis_steps',
     'get_ironic_chassis_steps',
