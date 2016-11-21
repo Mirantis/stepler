@@ -15,3 +15,6 @@ Neutron tests
 
 .. automodule:: stepler.neutron.tests.test_ovs_restart
    :members:
+
+.. automodule:: stepler.neutron.tests.test_dvr
+   :members:
