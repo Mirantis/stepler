@@ -40,4 +40,9 @@ __all__ = sorted([  # sort for documentation
     'cleanup_chassis',
     'primary_chassis',
     'unexpected_chassis_cleanup',
+
+    'get_ironic_steps',
+    'ironic_steps_v1',
+    'api_ironic_steps_v1',
+    'api_ironic_steps',
 ])
