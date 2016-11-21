@@ -21,12 +21,14 @@ import os
 import tempfile
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains)  # noqa
+                      only_contains, has_items)  # noqa H301
 
 from stepler import base
 from stepler import config
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
+from stepler.third_party import waiter
 
 __all__ = ['OsFaultsSteps']
 
@@ -98,13 +100,29 @@ class OsFaultsSteps(base.BaseSteps):
 
         return service
 
-    def _perform_services_action(self, names, action):
-        services = []
-        for name in names:
-            service = self._client.get_service(name=name)
-            services.append(service)
-            getattr(service, action)()
-        return services
+    @steps_checker.step
+    def check_service_state(self, service_name, nodes, must_run=True,
+                            timeout=0):
+        """Verify step to check that service is running or not on nodes.
+
+        Args:
+            service_name (str): name of service
+            nodes (obj): NodeCollection instance to check service state on it
+            must_run (bool): flag whether service should be run on nodes or not
+            timeout (int, optional): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if service state is wrong after timeout
+        """
+        service = self._client.get_service(service_name)
+
+        def _check_service_state():
+            matcher = has_items(*nodes)
+            if not must_run:
+                matcher = is_not(matcher)
+            return expect_that(service.get_nodes(), matcher)
+
+        waiter.wait(_check_service_state, timeout_seconds=timeout)
 
     @steps_checker.step
     def restart_services(self, names, check=True):
@@ -117,39 +135,55 @@ class OsFaultsSteps(base.BaseSteps):
         Raises:
             ServiceError: if wrong service name or other errors
         """
-        services = self._perform_services_action(names, 'restart')
+        services = []
+        for name in names:
+            service = self._client.get_service(name=name)
+            services.append(service)
+            service.restart()
         if check:
             assert_that(services, is_not(empty()))
 
     @steps_checker.step
-    def terminate_services(self, names, check=True):
-        """Step to terminate services.
+    def terminate_service(self, service_name, nodes, check=True):
+        """Step to terminate service.
 
         Args:
-            names (list): service names
+            service_name (str): service name
+            nodes (obj): NodeCollection instance to terminate service on it
             check (bool): flag whether to check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors
         """
-        services = self._perform_services_action(names, 'terminate')
+        service = self._client.get_service(service_name)
+        service.terminate(nodes)
         if check:
-            assert_that(services, is_not(empty()))
+            self.check_service_state(
+                service_name,
+                nodes,
+                must_run=False,
+                timeout=config.SERVICE_TERMINATE_TIMEOUT)
 
     @steps_checker.step
-    def start_services(self, names, check=True):
-        """Step to start services.
+    def start_service(self, service_name, nodes, check=True):
+        """Step to start service.
 
         Args:
-            names (list): service names
+            service_name (str): service name
+            nodes (obj): NodeCollection instance to start service on it
             check (bool): flag whether to check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors
         """
-        services = self._perform_services_action(names, 'start')
+        service = self._client.get_service(service_name)
+        service.start(nodes)
         if check:
-            assert_that(services, is_not(empty()))
+            self.check_service_state(
+                service_name,
+                nodes,
+                must_run=True,
+                timeout=config.SERVICE_START_TIMEOUT)
 
     @steps_checker.step
     def download_file(self, node, file_path, check=True):
