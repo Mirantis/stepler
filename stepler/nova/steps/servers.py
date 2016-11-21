@@ -1013,3 +1013,41 @@ class ServerSteps(base.BaseSteps):
                 expected_statuses=[config.STATUS_ACTIVE],
                 transit_statuses=[config.STATUS_REBOOT],
                 timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+    @steps_checker.step
+    def stop_server(self, server, check=True):
+        """Step to stop server.
+
+        Args:
+            server (obj): nova server
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        server.stop()
+
+        if check:
+            self.check_server_status(server,
+                                     expected_statuses=[config.STATUS_SHUTOFF],
+                                     transit_statuses=[config.STATUS_ACTIVE],
+                                     timeout=config.SERVER_SHUTOFF_TIMEOUT)
+
+    @steps_checker.step
+    def start_server(self, server, check=True):
+        """Step to start server.
+
+        Args:
+            server (obj): nova server
+            check (bool): flag whether to check step or not
+
+        Raises:
+             TimeoutExpired: if check failed after timeout
+        """
+        server.start()
+
+        if check:
+            self.check_server_status(server,
+                                     expected_statuses=[config.STATUS_ACTIVE],
+                                     transit_statuses=[config.STATUS_SHUTOFF],
+                                     timeout=config.SERVER_ACTIVE_TIMEOUT)

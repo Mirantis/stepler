@@ -110,6 +110,7 @@ STATUS_RESCUE = 'rescue'
 STATUS_RESCUING = 'rescuing'
 STATUS_QUEUED = 'queued'
 STATUS_REBOOT = 'reboot'
+STATUS_SHUTOFF = 'shutoff'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
@@ -190,6 +191,7 @@ SOFT_DELETED_TIMEOUT = 30
 SERVER_DELETE_TIMEOUT = 3 * 60
 SERVER_ACTIVE_TIMEOUT = 14 * 60
 SERVER_UPDATE_TIMEOUT = 2 * 60
+SERVER_SHUTOFF_TIMEOUT = 3 * 60
 
 NOVA_AVAILABILITY_TIMEOUT = 2 * 60
 
