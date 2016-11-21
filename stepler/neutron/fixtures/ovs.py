@@ -23,12 +23,13 @@ import pytest
 from stepler.third_party import utils
 
 __all__ = [
-    'ovs_restart_resources',
+    'ovs_restart_resources_different_networks',
+    'ovs_restart_resources_same_networks',
 ]
 
 
 @pytest.fixture
-def ovs_restart_resources(
+def ovs_restart_resources_different_networks(
         cirros_image,
         flavor,
         security_group,
@@ -85,4 +86,51 @@ def ovs_restart_resources(
     return attrdict.AttrDict(
         servers=(server, server_2),
         networks=(network, network_2),
+        router=router)
+
+
+@pytest.fixture
+def ovs_restart_resources_same_networks(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        hypervisor_steps,
+        server_steps):
+    """Function fixture to prepare environment for OVS restart tests.
+
+    This fixture creates router, network and subnet, connects network
+    to router, boot 2 nova server on different computes.
+
+    All created resources are to be deleted after test.
+
+    Args:
+        cirros_image (obj): cirros image
+        flavor (obj): nova flavor
+        security_group (obj): nova security group
+        net_subnet_router (tuple): network, subnet, router
+        server (obj): nova server
+        hypervisor_steps (obj): instantiated nova hypervisor steps
+        server_steps (obj): instantiated nova server steps
+
+    Returns:
+        attrdict.AttrDict: created resources
+    """
+
+    network, subnet, router = net_subnet_router
+
+    server_2_hypervisor = hypervisor_steps.get_another_hypervisor(server)
+
+    server_2 = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        availability_zone='nova:{}'.format(
+            server_2_hypervisor.hypervisor_hostname),
+        security_groups=[security_group])[0]
+
+    return attrdict.AttrDict(
+        servers=(server, server_2),
+        network=network,
         router=router)

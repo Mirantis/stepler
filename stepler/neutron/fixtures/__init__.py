@@ -49,7 +49,8 @@ __all__ = sorted([  # sort for documentation
     'subnet_steps',
     'get_subnet_steps',
     'net_subnet_router',
-    'ovs_restart_resources',
+    'ovs_restart_resources_different_networks',
+    'ovs_restart_resources_same_networks',
     'get_agent_steps',
     'agent_steps',
 ])
