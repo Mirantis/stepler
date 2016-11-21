@@ -26,7 +26,7 @@ pytestmark = pytest.mark.requires("computes_count_gte(2)")
 
 @pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5')
 def test_restart_with_pcs_disable_enable(
-        ovs_restart_resources,
+        ovs_restart_resources_different_networks,
         nova_floating_ip,
         server_steps,
         os_faults_steps):
@@ -60,7 +60,7 @@ def test_restart_with_pcs_disable_enable(
     #. Delete cirros image
     #. Delete flavor
     """
-    server_1, server_2 = ovs_restart_resources.servers
+    server_1, server_2 = ovs_restart_resources_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
     server_2_fixed_ip = next(iter(server_steps.get_ips(server_2,
@@ -81,7 +81,7 @@ def test_restart_with_pcs_disable_enable(
 
 @pytest.mark.idempotent_id('310c630d-38f0-402b-9423-ffb14fb766b2')
 def test_restart_with_pcs_ban_clear(
-        ovs_restart_resources,
+        ovs_restart_resources_different_networks,
         nova_floating_ip,
         server_steps,
         os_faults_steps):
@@ -115,7 +115,7 @@ def test_restart_with_pcs_ban_clear(
     #. Delete cirros image
     #. Delete flavor
     """
-    server_1, server_2 = ovs_restart_resources.servers
+    server_1, server_2 = ovs_restart_resources_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
     server_2_fixed_ip = next(iter(server_steps.get_ips(server_2,
@@ -140,7 +140,7 @@ def test_restart_with_pcs_ban_clear(
 
 @pytest.mark.idempotent_id('ab973d26-55e0-478c-b5fd-35a3ea47e583')
 def test_restart_many_times(
-        ovs_restart_resources,
+        ovs_restart_resources_different_networks,
         nova_floating_ip,
         server_steps,
         os_faults_steps,
@@ -176,7 +176,7 @@ def test_restart_many_times(
     #. Delete cirros image
     #. Delete flavor
     """
-    server_1, server_2 = ovs_restart_resources.servers
+    server_1, server_2 = ovs_restart_resources_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
     server_2_fixed_ip = next(
@@ -194,3 +194,56 @@ def test_restart_many_times(
                     ovs_agents,
                     must_alive=True,
                     timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('6188b10f-c8f1-4d00-9c97-d163503592a5')
+def test_restart_with_broadcast_traffic(
+        ovs_restart_resources_same_networks,
+        nova_floating_ip,
+        server_steps,
+        os_faults_steps,
+        agent_steps):
+    """**Scenario:** Restart OVS-agents with broadcast traffic on background.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create server_1
+    #. Create floating ip
+    #. Create server_2 on another compute and connect it to network
+
+    **Steps:**
+
+    #. Attach floating IP to server_1
+    #. Start arping from server_1 to server_2
+    #. Restart ovs-agents
+    #. Check that ping loss is not more than 50
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete network, subnet, router
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    server_1, server_2 = ovs_restart_resources_same_networks.servers
+
+    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_2_fixed_ip = next(
+        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+
+    ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        with server_steps.check_arping_loss_context(
+                server_ssh,
+                ip=server_2_fixed_ip,
+                max_loss=config.NEUTRON_OVS_RESTART_MAX_ARPING_LOSS):
+            os_faults_steps.restart_services([config.NEUTRON_OVS_SERVICE])
+            agent_steps.check_alive(
+                ovs_agents,
+                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)

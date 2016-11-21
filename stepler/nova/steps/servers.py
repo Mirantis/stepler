@@ -31,6 +31,7 @@ from waiting import wait
 
 from stepler import base
 from stepler import config
+from stepler.third_party import arping
 from stepler.third_party import chunk_serializer
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import ping
@@ -670,6 +671,28 @@ class ServerSteps(base.BaseSteps):
         with ping.Pinger(ip_to_ping, remote=server_ssh) as result:
             yield
         assert_that(result.loss, less_than_or_equal_to(max_loss))
+
+    @steps_checker.step
+    @contextlib.contextmanager
+    def check_arping_loss_context(self, server_ssh, ip, iface='eth0',
+                                  max_loss=0):
+        """Step to check that arping losses inside CM is less than max_loss.
+
+        Args:
+            server_ssh (obj, optional): instance of
+                stepler.third_party.ssh.SshClient. If None - ping will be run
+                from local machine
+            ip (str): ip address to ping
+            iface (str, optional): name of interface to arping
+            max_loss (int): maximum allowed pings loss
+
+        Raises:
+            AssertionError: if ping loss is greater than `max_loss`
+        """
+        with arping.arping(ip, iface=iface, remote=server_ssh) as result:
+            yield
+        assert_that(result['sent'] - result['received'],
+                    less_than_or_equal_to(max_loss))
 
     @steps_checker.step
     def generate_server_memory_workload(self,
