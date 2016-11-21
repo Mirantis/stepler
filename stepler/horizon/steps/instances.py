@@ -18,10 +18,11 @@ Instances steps
 # limitations under the License.
 
 from hamcrest import assert_that, equal_to, is_not  # noqa
-from waiting import wait
 
 from stepler.horizon import config
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 from .base import BaseSteps
 
@@ -161,11 +162,15 @@ class InstancesSteps(BaseSteps):
                 for row in page_instances.table_instances.rows:
                     if not (row.is_present and
                             query in row.link_instance.value):
-                        return False
-                return True
+                        is_present = False
+                        break
+                is_present = True
 
-            wait(check_rows, timeout_seconds=config.UI_TIMEOUT,
-                 sleep_seconds=0.1)
+                return expect_that(is_present, equal_to(True))
+
+            waiter.wait(check_rows,
+                        timeout_seconds=config.UI_TIMEOUT,
+                        sleep_seconds=0.1)
 
     @steps_checker.step
     def reset_instances_filter(self, check=True):
@@ -187,8 +192,11 @@ class InstancesSteps(BaseSteps):
         with page_instances.form_launch_instance as form:
             form.item_flavor.click()
 
-            wait(lambda: form.tab_flavor.table_available_flavors.rows,
-                 timeout_seconds=30, sleep_seconds=0.1)
+            waiter.wait(
+                lambda: (form.tab_flavor.table_available_flavors.rows,
+                         'No available flavors'),
+                timeout_seconds=30,
+                sleep_seconds=0.1)
 
             for row in form.tab_flavor.table_available_flavors.rows:
                 assert_that(row.cell('name').value,

@@ -18,10 +18,11 @@ Volumes steps
 # limitations under the License.
 
 from hamcrest import assert_that, equal_to, starts_with, has_length, any_of  # noqa H301
-from waiting import wait
 
 from stepler.horizon import config
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 from .base import BaseSteps
 
@@ -412,11 +413,13 @@ class VolumesSteps(BaseSteps):
             def is_old_host_volume_absent():
                 page_volumes.refresh()
                 page_volumes.label_volumes.click()
-                return not page_volumes.tab_volumes.table_volumes.row(
-                    name=volume_name, host=old_host).is_present
+                return expect_that(
+                    page_volumes.tab_volumes.table_volumes.row(
+                        name=volume_name, host=old_host).is_present,
+                    equal_to(False))
 
-            wait(is_old_host_volume_absent,
-                 timeout_seconds=config.EVENT_TIMEOUT * 2)
+            waiter.wait(is_old_host_volume_absent,
+                        timeout_seconds=config.EVENT_TIMEOUT * 2)
 
         return old_host, new_host
 

@@ -18,11 +18,11 @@ Images steps
 # limitations under the License.
 
 from hamcrest import assert_that, equal_to  # noqa
-from waiting import wait
 
 from stepler.horizon import config
 from stepler.horizon.utils import get_size
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 from .base import BaseSteps
 
@@ -397,8 +397,11 @@ class ImagesSteps(BaseSteps):
 
             with page.form_launch_instance as form:
                 form.item_flavor.click()
-                wait(lambda: form.tab_flavor.table_available_flavors.rows,
-                     timeout_seconds=30, sleep_seconds=0.1)
+                waiter.wait(
+                    lambda: (form.tab_flavor.table_available_flavors.rows,
+                             "No available flavors"),
+                    timeout_seconds=30,
+                    sleep_seconds=0.1)
 
                 for row in form.tab_flavor.table_available_flavors.rows:
 

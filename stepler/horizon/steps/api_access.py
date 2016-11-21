@@ -20,9 +20,10 @@ Horizon steps for api access
 import os
 
 from hamcrest import assert_that, equal_to, contains_string  # noqa
-from waiting import wait
 
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 from .base import BaseSteps
 
@@ -134,17 +135,20 @@ class ApiAccessSteps(BaseSteps):
 
     def _wait_rc_file_downloaded(self):
 
-        def predicate():
+        def _is_rc_file_downloaded():
             try:
                 if (os.path.basename(self._rc_path) in
                         os.listdir(self.app.download_dir)):
 
                     with open(self._rc_path) as f:
-                        return bool(f.read(1))
+                        is_downloaded = bool(f.read(1))
                 else:
-                    return False
+                    is_downloaded = True
             except IOError:
-                return False
+                is_downloaded = False
 
-        wait(predicate,
-             timeout_seconds=30, sleep_seconds=0.1)
+            return expect_that(is_downloaded, equal_to(True))
+
+        waiter.wait(_is_rc_file_downloaded,
+                    timeout_seconds=30,
+                    sleep_seconds=0.1)

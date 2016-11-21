@@ -20,9 +20,10 @@ Users steps
 import time
 
 from hamcrest import assert_that, equal_to  # noqa H301
-from waiting import wait
 
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 from .base import BaseSteps
 
@@ -124,10 +125,13 @@ class UsersSteps(BaseSteps):
                 for row in page_users.table_users.rows:
                     if not (row.is_present and
                             query in row.link_username.value):
-                        return False
-                return True
+                        is_present = False
+                        break
+                is_present = True
 
-            wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
+                return expect_that(is_present, equal_to(True))
+
+            waiter.wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
 
     @steps_checker.step
     def sort_users(self, reverse=False, check=True):
@@ -148,9 +152,9 @@ class UsersSteps(BaseSteps):
                     if reverse:
                         expected_usernames = list(reversed(expected_usernames))
 
-                    return usernames == expected_usernames
+                    return expect_that(usernames, equal_to(expected_usernames))
 
-                wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
+                waiter.wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
 
     @steps_checker.step
     def toggle_user(self, username, enable, check=True):

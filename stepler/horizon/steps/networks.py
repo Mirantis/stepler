@@ -20,9 +20,10 @@ Networks steps
 import time
 
 from hamcrest import assert_that, equal_to  # noqa
-from waiting import wait
 
+from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 from .base import BaseSteps
 
@@ -188,10 +189,15 @@ class NetworksSteps(BaseSteps):
                 for row in page_networks.table_networks.rows:
                     if not (row.is_present and
                             query in row.link_network.value):
-                        return False
-                return True
+                        is_present = False
+                        break
+                is_present = True
 
-            wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
+                return expect_that(is_present, equal_to(True))
+
+            waiter.wait(check_rows,
+                        timeout_seconds=10,
+                        sleep_seconds=0.1)
 
     @steps_checker.step
     def check_network_present(self, network_name):
