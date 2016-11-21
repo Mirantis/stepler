@@ -181,6 +181,54 @@ class IronicNodeSteps(BaseSteps):
 
         waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)
 
+    @steps_checker.step
+    def set_ironic_node_power_state(self, node, state, check=True):
+        """Set the power state for the node.
+
+        Args:
+            node (str): The ironic node.
+            state (str): the power state mode; `on` to put the node in power
+                state mode on; `off` to put the node in power state mode off;
+                `reboot` to reboot the node
+            check (bool): flag whether to check step or not
+
+        Raises:
+            InvalidAttribute: if state is an invalid string
+        """
+        self._client.node.set_power_state(node_id=node.uuid, state=state)
+
+        if check:
+            self.check_ironic_node_power_state(node=node, state=state)
+
+    @steps_checker.step
+    def check_ironic_node_power_state(self,
+                                      node,
+                                      state,
+                                      timeout=0):
+        """Check ironic node power state was changed.
+
+        Args:
+            node (str): The ironic node.
+            state (str): the power state mode; `on` to put the node in power
+                state mode on; `off` to put the node in power state mode off;
+                `reboot` to reboot the node
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_ironic_node_power_state():
+            self._get_node(node)
+
+            if state == 'reboot':
+                power_state = 'power on'
+            else:
+                power_state = 'power ' + state
+
+            return expect_that(node.power_state, equal_to(power_state))
+
+        waiter.wait(_check_ironic_node_power_state, timeout_seconds=timeout)
+
     def _get_node(self, node):
         node._info.update(self._client.node.get(node.uuid)._info)
         node.__dict__.update(node._info)
