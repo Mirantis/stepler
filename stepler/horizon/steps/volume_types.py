@@ -17,8 +17,6 @@ Volume types steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-
 from stepler.third_party import steps_checker
 
 from .base import BaseSteps
@@ -34,7 +32,6 @@ class VolumeTypesSteps(BaseSteps):
             return page.tab_volume_types
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_volume_type(self, volume_type_name, description=None,
                            check=True):
         """Step to create volume type."""
@@ -53,7 +50,6 @@ class VolumeTypesSteps(BaseSteps):
                 name=volume_type_name).wait_for_presence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_volume_type(self, volume_type_name, check=True):
         """Step to delete volume type."""
         tab = self._tab_volume_types()
@@ -71,7 +67,6 @@ class VolumeTypesSteps(BaseSteps):
                 name=volume_type_name).wait_for_absence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_volume_types(self, volume_type_names, check=True):
         """Step to delete volume types."""
         tab = self._tab_volume_types()
@@ -89,7 +84,6 @@ class VolumeTypesSteps(BaseSteps):
                     name=volume_type_name).wait_for_absence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_qos_spec(self, qos_spec_name, consumer=None, check=True):
         """Step to create qos spec."""
         tab = self._tab_volume_types()
@@ -106,7 +100,6 @@ class VolumeTypesSteps(BaseSteps):
             tab.table_qos_specs.row(name=qos_spec_name).wait_for_presence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_qos_spec(self, qos_spec_name, check=True):
         """Step to delete qos spec."""
         tab = self._tab_volume_types()

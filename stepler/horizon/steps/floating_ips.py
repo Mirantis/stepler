@@ -17,7 +17,6 @@ Floating IPs steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
 from hamcrest import assert_that, equal_to  # noqa
 
 from stepler.third_party import steps_checker
@@ -35,7 +34,6 @@ class FloatingIPsSteps(BaseSteps):
         return page_access.tab_floating_ips
 
     @steps_checker.step
-    @pom.timeit('Step')
     def allocate_floating_ip(self, check=True):
         """Step to allocate floating IP."""
         tab_floating_ips = self._tab_floating_ips()
@@ -56,7 +54,6 @@ class FloatingIPsSteps(BaseSteps):
         return allocated_ip.pop()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def release_floating_ip(self, ip, check=True):
         """Step to release floating IP."""
         tab_floating_ips = self._tab_floating_ips()
@@ -74,7 +71,6 @@ class FloatingIPsSteps(BaseSteps):
                 ip_address=ip).wait_for_absence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def associate_floating_ip(self, ip, instance_name, check=True):
         """Step to associate floating IP."""
         tab_floating_ips = self._tab_floating_ips()

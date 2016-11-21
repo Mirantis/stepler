@@ -17,8 +17,6 @@ Keypairs steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-
 from stepler.third_party import steps_checker
 
 from .base import BaseSteps
@@ -34,7 +32,6 @@ class KeypairsSteps(BaseSteps):
             return page.tab_keypairs
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_keypair(self, keypair_name, check=True):
         """Step to create keypair."""
         tab_keypairs = self._tab_keypairs()
@@ -49,7 +46,6 @@ class KeypairsSteps(BaseSteps):
                 name=keypair_name).wait_for_presence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_keypair(self, keypair_name, check=True):
         """Step to delete keypair."""
         tab_keypairs = self._tab_keypairs()
@@ -64,7 +60,6 @@ class KeypairsSteps(BaseSteps):
                 name=keypair_name).wait_for_absence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def import_keypair(self, keypair_name, public_key, check=True):
         """Step to import keypair."""
         tab_keypairs = self._tab_keypairs()
@@ -81,7 +76,6 @@ class KeypairsSteps(BaseSteps):
                 name=keypair_name).wait_for_presence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_keypairs(self, keypair_names, check=True):
         """Step to delete keypairs."""
         tab_keypairs = self._tab_keypairs()

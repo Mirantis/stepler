@@ -17,7 +17,8 @@ Users steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
+import time
+
 from hamcrest import assert_that, equal_to  # noqa H301
 from waiting import wait
 
@@ -115,7 +116,7 @@ class UsersSteps(BaseSteps):
 
         page_users.field_filter_users.value = query
         page_users.button_filter_users.click()
-        pom.sleep(1, 'Wait table will be refreshed')
+        time.sleep(1)
 
         if check:
 
@@ -136,7 +137,7 @@ class UsersSteps(BaseSteps):
             table.header.cell('name').click()
             if reverse:
                 table.header.cell('name').click()
-            pom.sleep(1, 'Wait table will be refreshed')
+            time.sleep(1)
 
             if check:
 

@@ -17,7 +17,8 @@ Projects steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
+import time
+
 from waiting import wait
 
 from stepler.third_party import steps_checker
@@ -33,7 +34,6 @@ class ProjectsSteps(BaseSteps):
         return self._open(self.app.page_projects)
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_project(self, project_name, check=True):
         """Step to create project."""
         page_projects = self._page_projects()
@@ -49,7 +49,6 @@ class ProjectsSteps(BaseSteps):
                 name=project_name).wait_for_presence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_project(self, project_name, check=True):
         """Step to delete project."""
         page_projects = self._page_projects()
@@ -67,14 +66,13 @@ class ProjectsSteps(BaseSteps):
                 name=project_name).wait_for_absence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def filter_projects(self, query, check=True):
         """Step to filter projects."""
         page_projects = self._page_projects()
 
         page_projects.field_filter_projects.value = query
         page_projects.button_filter_projects.click()
-        pom.sleep(1, 'Wait table will be refreshed')
+        time.sleep(1)
 
         if check:
 

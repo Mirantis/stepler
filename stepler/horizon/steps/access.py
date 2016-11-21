@@ -17,8 +17,6 @@ Horizon steps for authentication
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-
 from stepler.third_party import steps_checker
 
 from .base import BaseSteps
@@ -38,7 +36,6 @@ class AccessSteps(BaseSteps):
             return page.tab_security_groups
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_security_group(self, group_name, description=None, check=True):
         """Step to create security group."""
         tab_security_groups = self._tab_security_groups()
@@ -58,7 +55,6 @@ class AccessSteps(BaseSteps):
                 name=group_name).wait_for_presence(30)
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_security_group(self, group_name, check=True):
         """Step to delete security group."""
         tab_security_groups = self._tab_security_groups()
