@@ -654,18 +654,21 @@ class ServerSteps(base.BaseSteps):
 
     @steps_checker.step
     @contextlib.contextmanager
-    def check_ping_loss_context(self, ip_to_ping, max_loss=0):
+    def check_ping_loss_context(self, ip_to_ping, max_loss=0, server_ssh=None):
         """Context manager step to check that ping losses inside CM is less
             than max_loss.
 
         Args:
             ip_to_ping (str): ip address to ping
             max_loss (int): maximum allowed pings loss
+            server_ssh (None, optional): instance of
+                stepler.third_party.ssh.SshClient. If None - ping will run
+                from local machine
 
         Raises:
             AssertionError: if ping loss is greater than `max_loss`
         """
-        with ping.Pinger(ip_to_ping) as result:
+        with ping.Pinger(ip_to_ping, remote=server_ssh) as result:
             yield
         assert_that(result.loss, less_than_or_equal_to(max_loss))
 

@@ -122,34 +122,38 @@ class OsFaultsSteps(base.BaseSteps):
             assert_that(services, is_not(empty()))
 
     @steps_checker.step
-    def terminate_services(self, names, check=True):
-        """Step to terminate services.
+    def terminate_service(self, service_name, nodes, check=True):
+        """Step to terminate service.
 
         Args:
-            names (list): service names
+            service_name (str): service name
+            nodes (obj): nodes to terminate service on it
             check (bool): flag whether to check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors
         """
-        services = self._perform_services_action(names, 'terminate')
+        service = self._client.get_service(service_name)
+        service.terminate(nodes)
         if check:
-            assert_that(services, is_not(empty()))
+            assert_that(nodes, is_not(empty()))
 
     @steps_checker.step
-    def start_services(self, names, check=True):
-        """Step to start services.
+    def start_service(self, service_name, nodes, check=True):
+        """Step to start service.
 
         Args:
-            names (list): service names
+            service_name (str): service name
+            nodes (obj): nodes to start service on it
             check (bool): flag whether to check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors
         """
-        services = self._perform_services_action(names, 'start')
+        service = self._client.get_service(service_name)
+        service.start(nodes)
         if check:
-            assert_that(services, is_not(empty()))
+            assert_that(nodes, is_not(empty()))
 
     @steps_checker.step
     def download_file(self, node, file_path, check=True):
