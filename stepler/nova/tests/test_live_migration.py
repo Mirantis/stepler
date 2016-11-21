@@ -325,7 +325,7 @@ def test_migration_with_ephemeral_disk(
     **Steps:**
 
     #. Add router interface to created network
-    #. Create flavor woth ephemeral disk
+    #. Create flavor with ephemeral disk
     #. Boot server from cirros image with created flavor
     #. Assign floating ip to server
     #. Create timestamp on on root and ephemeral disks
