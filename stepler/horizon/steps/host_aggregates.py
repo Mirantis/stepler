@@ -17,8 +17,6 @@ Host aggregates steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-
 from stepler.third_party import steps_checker
 
 from .base import BaseSteps
@@ -32,7 +30,6 @@ class HostAggregatesSteps(BaseSteps):
         return self._open(self.app.page_host_aggregates)
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_host_aggregate(self, host_aggregate_name, check=True):
         """Step to create host aggregate."""
         page_host_aggregates = self._page_host_aggregates()
@@ -48,7 +45,6 @@ class HostAggregatesSteps(BaseSteps):
                 name=host_aggregate_name).wait_for_presence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_host_aggregate(self, host_aggregate_name, check=True):
         """Step to delete host_aggregate."""
         page_host_aggregates = self._page_host_aggregates()
@@ -66,7 +62,6 @@ class HostAggregatesSteps(BaseSteps):
                 name=host_aggregate_name).wait_for_absence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_host_aggregates(self, host_aggregate_names, check=True):
         """Step to delete host aggregates."""
         page_host_aggregates = self._page_host_aggregates()

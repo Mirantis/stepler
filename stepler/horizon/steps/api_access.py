@@ -19,7 +19,6 @@ Horizon steps for api access
 
 import os
 
-import pom
 from hamcrest import assert_that, equal_to, contains_string  # noqa
 from waiting import wait
 
@@ -38,7 +37,6 @@ class ApiAccessSteps(BaseSteps):
         return access_page.tab_api_access
 
     @steps_checker.step
-    @pom.timeit('Step')
     def download_rc_v2(self, check=True):
         """Step to download v2 file."""
         self._remove_rc_file()
@@ -65,7 +63,6 @@ class ApiAccessSteps(BaseSteps):
                 contains_string('OS_TENANT_ID={}'.format(self._project_id)))
 
     @steps_checker.step
-    @pom.timeit('Step')
     def download_rc_v3(self, check=True):
         """Step to download v3 file."""
         self._remove_rc_file()
@@ -92,7 +89,6 @@ class ApiAccessSteps(BaseSteps):
                 contains_string('OS_PROJECT_ID={}'.format(self._project_id)))
 
     @steps_checker.step
-    @pom.timeit('Step')
     def view_credentials(self, check=True):
         """Step to view credentials."""
         tab_api_access = self._tab_api_access()

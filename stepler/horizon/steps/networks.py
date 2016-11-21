@@ -17,8 +17,9 @@ Networks steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
 from hamcrest import assert_that, equal_to  # noqa
-import pom
 from waiting import wait
 
 from stepler.third_party import steps_checker
@@ -179,7 +180,7 @@ class NetworksSteps(BaseSteps):
 
         page_networks.field_filter_networks.value = query
         page_networks.button_filter_networks.click()
-        pom.sleep(1, 'Wait table will be refreshed')
+        time.sleep(1)
 
         if check:
 

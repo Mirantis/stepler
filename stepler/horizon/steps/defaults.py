@@ -17,7 +17,6 @@ Horizon steps for defaults
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
 from hamcrest import assert_that, equal_to  # noqa
 
 from stepler.third_party import steps_checker
@@ -33,7 +32,6 @@ class DefaultsSteps(BaseSteps):
         return self._open(self.app.page_defaults)
 
     @steps_checker.step
-    @pom.timeit('Step')
     def update_defaults(self, defaults, check=True):
         """Step to update defaults."""
         page_defaults = self._page_defaults()
@@ -52,7 +50,6 @@ class DefaultsSteps(BaseSteps):
                     equal_to(str(default_value)))
 
     @steps_checker.step
-    @pom.timeit('Step')
     def get_defaults(self, defaults):
         """Step to get defaults."""
         result = {}

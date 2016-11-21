@@ -17,8 +17,6 @@ Metadata definitions steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-
 from stepler.third_party import steps_checker
 
 from .base import BaseSteps
@@ -54,7 +52,6 @@ class NamespacesSteps(BaseSteps):
         return self._open(self.app.page_metadata_definitions)
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_namespace(self, namespace_name, namespace_source='Direct Input',
                          check=True):
         """Step to create namespace."""
@@ -73,7 +70,6 @@ class NamespacesSteps(BaseSteps):
                 name=namespace_name).wait_for_presence()
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_namespace(self, namespace_name, check=True):
         """Step to delete namespace."""
         page_metadata_definitions = self._page_metadata_definitions()

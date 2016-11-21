@@ -17,8 +17,6 @@ Routers steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
-
 from stepler.third_party import steps_checker
 
 from .base import BaseSteps
@@ -32,7 +30,6 @@ class RoutersSteps(BaseSteps):
         return self._open(self.app.page_routers)
 
     @steps_checker.step
-    @pom.timeit('Step')
     def create_router(self, router_name, admin_state=None,
                       external_network=None, check=True):
         """Step to create router."""
@@ -56,7 +53,6 @@ class RoutersSteps(BaseSteps):
                 name=router_name).wait_for_presence(30)
 
     @steps_checker.step
-    @pom.timeit('Step')
     def delete_router(self, router_name, check=True):
         """Step to delete router."""
         page_routers = self._page_routers()
