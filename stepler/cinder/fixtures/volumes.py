@@ -75,7 +75,7 @@ def volume_steps(unexpected_volumes_cleanup,
 
     Args:
         get_volume_steps (function): function to get volume steps
-        volumes_cleanup (function): function to cleanup volumes after test
+        cleanup_volumes (function): function to cleanup volumes after test
 
     Yields:
         VolumeSteps: instantiated volume steps
