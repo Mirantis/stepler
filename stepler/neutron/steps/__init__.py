@@ -17,6 +17,7 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .agents import *  # noqa
 from .networks import *  # noqa
 from .ports import *  # noqa
 from .routers import *  # noqa
@@ -24,6 +25,7 @@ from .subnets import *  # noqa
 
 
 __all__ = [
+    "AgentSteps",
     "NetworkSteps",
     "SubnetSteps",
     "RouterSteps",
