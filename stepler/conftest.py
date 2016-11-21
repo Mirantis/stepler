@@ -175,9 +175,11 @@ __all__ = sorted([  # sort for documentation
     'execute_command_with_rollback',
     'nova_api_node',
 
-    'create_ironic_node',
-    'ironic_node',
+    'get_ironic_node_steps',
+    'unexpected_node_cleanup',
     'ironic_node_steps',
+    'cleanup_nodes',
+    'primary_nodes',
     'ironic_port',
     'ironic_port_steps',
     'ironic_chassis_steps',

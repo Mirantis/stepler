@@ -17,12 +17,13 @@ Ironic node steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import equal_to  # noqa
+from hamcrest import equal_to, assert_that, is_not, empty  # noqa
 from ironicclient import exceptions
 
 from stepler.base import BaseSteps
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = [
@@ -34,11 +35,21 @@ class IronicNodeSteps(BaseSteps):
     """Node steps."""
 
     @steps_checker.step
-    def create_ironic_node(self, driver='fake', check=True, **kwargs):
+    def create_ironic_nodes(self,
+                            driver='fake',
+                            nodes_names=None,
+                            count=1,
+                            check=True,
+                            **kwargs):
         """Step to create a ironic node.
 
         Args:
             driver (str): The name or UUID of the driver.
+            nodes_names (list): names of created images, if not specified
+                one image name will be generated
+            count (int): count of created chassis, it's ignored if
+                chassis_descriptions are specified; one chassis is created if
+                both args are missing
             check (str): For checking node presence
             **kwargs (optional): A dictionary containing the attributes
             of the resource that will be created:
@@ -57,51 +68,69 @@ class IronicNodeSteps(BaseSteps):
         Returns:
             object: ironic node
         """
-        node = self._client.node.create(driver=driver, **kwargs)
+        nodes_names = nodes_names or utils.generate_ids(count=count)
+        nodes_list = []
+        _nodes_names = {}
+
+        for name in nodes_names:
+            node = self._client.node.create(driver=driver, name=name, **kwargs)
+
+            _nodes_names[node.uuid] = name
+            nodes_list.append(node)
 
         if check:
-            self.check_ironic_node_presence(node)
+            self.check_ironic_nodes_presence(nodes_list)
+            for node in nodes_list:
+                assert_that(_nodes_names[node.uuid], equal_to(name))
 
-        return node
+        return nodes_list
 
     @steps_checker.step
-    def delete_ironic_node(self, node, check=True):
+    def delete_ironic_nodes(self, nodes_list, check=True):
         """Step to delete node.
 
         Args:
-            node (object): ironic node
+            nodes_list (object): list of ironic nodes
             check (bool): flag whether to check step or not
         """
-        self._client.node.delete(node.uuid)
+        for node in nodes_list:
+            self._client.node.delete(node.uuid)
 
         if check:
-            self.check_ironic_node_presence(node, must_present=False)
+            self.check_ironic_nodes_presence(nodes_list, must_present=False)
 
     @steps_checker.step
-    def check_ironic_node_presence(self,
-                                   node,
-                                   must_present=True,
-                                   timeout=0):
+    def check_ironic_nodes_presence(self,
+                                    nodes_list,
+                                    must_present=True,
+                                    nodes_timeout=0):
         """Verify step to check ironic node is present.
 
         Args:
-            node (object): ironic node to check presence status
+            nodes_list (object): list of ironic nodes
             must_present (bool): flag whether node should present or not
-            timeout (int): seconds to wait a result of check
+            nodes_timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def _check_ironic_node_presence():
-            try:
-                self._client.node.get(node.uuid)
-                is_present = True
-            except exceptions.NotFound:
-                is_present = False
+        expected_presence = {node.uuid: must_present
+                             for node in nodes_list}
 
-            return expect_that(is_present, equal_to(must_present))
+        def _check_ironic_nodes_presence():
+            actual_presence = {}
 
-        waiter.wait(_check_ironic_node_presence, timeout_seconds=timeout)
+            for node in nodes_list:
+                try:
+                    self._client.node.get(node.uuid)
+                    actual_presence[node.uuid] = True
+                except exceptions.NotFound:
+                    actual_presence[node.uuid] = False
+
+            return expect_that(actual_presence, equal_to(expected_presence))
+
+        timeout = len(nodes_list) * nodes_timeout
+        waiter.wait(_check_ironic_nodes_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def set_ironic_node_maintenance(self,
@@ -156,3 +185,20 @@ class IronicNodeSteps(BaseSteps):
     def _get_node(self, node):
         node._info.update(self._client.node.get(node.uuid)._info)
         node.__dict__.update(node._info)
+
+    @steps_checker.step
+    def get_ironic_nodes(self, check=True):
+        """Step to retrieve nodes.
+
+        Returns:
+            list of objects: list of nodes.
+
+        Raises:
+            AssertionError: if nodes collection is empty.
+        """
+        nodes_list = self._client.node.list()
+
+        if check:
+            assert_that(nodes_list, is_not(empty()))
+
+        return nodes_list

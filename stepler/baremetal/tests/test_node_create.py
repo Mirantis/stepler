@@ -28,5 +28,4 @@ def test_node_create(ironic_node_steps):
     #. Create ironic node
     #. Delete ironic node
     """
-    node = ironic_node_steps.create_ironic_node()
-    ironic_node_steps.delete_ironic_node(node)
+    ironic_node_steps.create_ironic_nodes()

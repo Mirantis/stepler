@@ -105,6 +105,7 @@ def uncleanable():
     data.image_ids = set()
     data.keypair_ids = set()
     data.server_ids = set()
+    data.nodes_ids = set()
     data.chassis_ids = set()
     data.snapshot_ids = set()
     data.transfer_ids = set()
