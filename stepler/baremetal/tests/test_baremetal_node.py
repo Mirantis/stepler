@@ -20,6 +20,54 @@ import pytest
 from stepler import config
 
 
+@pytest.mark.idempotent_id('9e1ce800-1873-4471-9903-5f2433a412f6')
+def test_stop_start_server_on_baremetal_node(keypair,
+                                             baremetal_flavor,
+                                             baremetal_ubuntu_image,
+                                             baremetal_network,
+                                             nova_floating_ip,
+                                             server_steps):
+    """**Scenario:** Shut off and restart server on baremetal node.
+
+    **Setup:**
+
+    #. Create keypair
+    #. Create baremetal flavor
+    #. Upload baremetal ubuntu image
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Create and boot server
+    #. Check that server status is active
+    #. Attach floating ip to server
+    #. Check ssh access to server
+    #. Stop server
+    #. Check that server status is shutoff
+    #. Start server
+    #. Check that server status is active
+    #. Check ssh access to server
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete image
+    #. Delete flavor
+    #. Delete keypair
+    """
+    server = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                         flavor=baremetal_flavor,
+                                         networks=[baremetal_network],
+                                         keypair=keypair,
+                                         username=config.UBUNTU_USERNAME)[0]
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.get_server_ssh(server)
+    server_steps.stop_server(server)
+    server_steps.start_server(server)
+    server_steps.get_server_ssh(server)
+
+
 @pytest.mark.idempotent_id('fce98286-30c1-420d-8d35-7660907ec1ff')
 def test_create_server_on_baremetal_node(keypair,
                                          baremetal_flavor,
