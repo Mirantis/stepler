@@ -681,7 +681,7 @@ class VolumeSteps(base.BaseSteps):
             self.check_volume_host(volume, host)
 
     @steps_checker.step
-    def get_volume_migrate_host(volume, nodes, check=True):
+    def get_volume_migrate_host(self, volume, nodes, check=True):
         """Step to get cinder host to migrate volume.
 
         Arguments:
