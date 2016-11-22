@@ -247,3 +247,19 @@ def test_restart_with_broadcast_traffic(
             agent_steps.check_alive(
                 ovs_agents,
                 timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('51340e3b-5762-4bb5-b394-3f050263e96b')
+def test_port_tags_immutable_after_restart(port_steps, os_faults_steps):
+    """Check that ports tags are the same after ovs-agents restart.
+
+    **Steps:**
+
+    #. Collect ovs-vsctl tags before restart
+    #. Restart ovs-agents
+    #. Collect ovs-vsctl tags after restart
+    #. Check that values of the tag parameter for every port remain the same
+    """
+    before_restart_tags = os_faults_steps.get_ovs_vsctl_tags()
+    os_faults_steps.restart_services([config.NEUTRON_OVS_SERVICE])
+    os_faults_steps.check_ovs_vsctl_tags(expected_tags=before_restart_tags)
