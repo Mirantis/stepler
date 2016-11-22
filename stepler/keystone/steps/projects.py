@@ -22,7 +22,6 @@ from hamcrest import (assert_that, empty, equal_to, calling,
 from keystoneclient import exceptions
 
 from stepler.base import BaseSteps
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -94,7 +93,7 @@ class ProjectSteps(BaseSteps):
             except exceptions.NotFound:
                 is_present = False
 
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_project_presence, timeout_seconds=timeout)
 

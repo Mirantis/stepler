@@ -24,7 +24,6 @@ from stepler.base import BaseSteps
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
-from stepler.third_party.waiter import expect_that
 
 __all__ = [
     'IronicNodeSteps'
@@ -126,7 +125,8 @@ class IronicNodeSteps(BaseSteps):
                 except exceptions.NotFound:
                     actual_presence[node.uuid] = False
 
-            return expect_that(actual_presence, equal_to(expected_presence))
+            return waiter.expect_that(actual_presence,
+                                      equal_to(expected_presence))
 
         timeout = len(nodes) * node_timeout
         waiter.wait(_check_ironic_nodes_presence, timeout_seconds=timeout)
@@ -188,8 +188,8 @@ class IronicNodeSteps(BaseSteps):
                 except exceptions.NotFound:
                     actual_maintenance[node.maintenance] = False
 
-            return expect_that(actual_maintenance,
-                               equal_to(expected_maintenance))
+            return waiter.expect_that(actual_maintenance,
+                                      equal_to(expected_maintenance))
 
         timeout = len(nodes) * node_timeout
         waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)
@@ -243,8 +243,8 @@ class IronicNodeSteps(BaseSteps):
                 except exceptions.NotFound:
                     actual_power_state[node.uuid] = False
 
-            return expect_that(actual_power_state,
-                               equal_to(expected_power_state))
+            return waiter.expect_that(actual_power_state,
+                                      equal_to(expected_power_state))
 
         timeout = len(nodes) * node_timeout
         waiter.wait(_check_ironic_nodes_power_state, timeout_seconds=timeout)
