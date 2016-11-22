@@ -20,8 +20,7 @@ Fixtures to manipulate with projects
 import pytest
 
 from stepler.horizon.steps import ProjectsSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_project',
@@ -46,7 +45,7 @@ def create_project(projects_steps):
 
     def _create_project(project_name):
         projects_steps.create_project(project_name)
-        project = AttrDict(name=project_name)
+        project = utils.AttrDict(name=project_name)
         projects.append(project)
         return project
 
@@ -59,5 +58,5 @@ def create_project(projects_steps):
 @pytest.fixture
 def project(create_project):
     """Fixture to create project with default options."""
-    project_name = next(generate_ids('project'))
+    project_name = next(utils.generate_ids('project'))
     return create_project(project_name)

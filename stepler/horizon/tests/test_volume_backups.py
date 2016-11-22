@@ -19,7 +19,7 @@ Volume backup tests
 
 import pytest
 
-from stepler.horizon.utils import generate_ids
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('any_one')
@@ -30,7 +30,7 @@ class TestAnyOne(object):
     def test_volume_backups_pagination(self, create_backups, update_settings,
                                        volumes_steps_ui):
         """Verify that volume backups pagination works right and back."""
-        backup_names = list(generate_ids('backup', count=3))
+        backup_names = list(utils.generate_ids('backup', count=3))
         create_backups(backup_names)
         update_settings(items_per_page=1)
         volumes_steps_ui.check_backups_pagination(backup_names)
@@ -53,7 +53,7 @@ class TestAnyOne(object):
         #. Delete backup
         #. Delete volume
         """
-        backup_name = next(generate_ids('backup'))
+        backup_name = next(utils.generate_ids('backup'))
         create_backups([backup_name])
 
     @pytest.mark.idempotent_id('acf12ae6-7b00-4bad-aef4-25ca3e3c3dc0')
@@ -96,14 +96,14 @@ class TestAnyOne(object):
         #. Delete backup
         #. Delete volume
         """
-        backup_name = next(generate_ids('backup'))
-        backup_description = next(generate_ids('backup', length=30))
+        backup_name = next(utils.generate_ids('backup'))
+        backup_description = next(utils.generate_ids('backup', length=30))
         create_backups([backup_name], description=backup_description)
 
     @pytest.mark.idempotent_id('36a02ea4-ce4d-4f45-b461-954ded1ea171')
     def test_create_volume_backup_with_max_length_description(self,
                                                               create_backups):
-        """**Scenario:** Create volume backup with description lenght == max
+        """**Scenario:** Create volume backup with description lenght == max.
 
         **Setup:**
 
@@ -120,6 +120,6 @@ class TestAnyOne(object):
             #. Delete backup
             #. Delete volume
         """
-        backup_name = next(generate_ids('backup'))
-        backup_description = next(generate_ids('backup', length=255))
+        backup_name = next(utils.generate_ids('backup'))
+        backup_description = next(utils.generate_ids('backup', length=255))
         create_backups([backup_name], description=backup_description)

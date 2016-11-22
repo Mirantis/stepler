@@ -20,8 +20,7 @@ Fixtures for floating IPs
 import pytest
 
 from stepler.horizon.steps import FloatingIPsSteps
-
-from stepler.horizon.utils import AttrDict
+from stepler.third_party import utils
 
 __all__ = [
     'allocate_floating_ip',
@@ -46,7 +45,7 @@ def allocate_floating_ip(floating_ips_steps):
 
     def _allocate_floating_ip():
         ip = floating_ips_steps.allocate_floating_ip()
-        floating_ip = AttrDict(ip=ip)
+        floating_ip = utils.AttrDict(ip=ip)
         floating_ips.append(floating_ip)
         return floating_ip
 

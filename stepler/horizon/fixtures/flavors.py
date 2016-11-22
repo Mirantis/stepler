@@ -20,8 +20,7 @@ Fixtures for flavors
 import pytest
 
 from stepler.horizon.steps import FlavorsSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_flavor',
@@ -50,7 +49,7 @@ def create_flavors(flavors_steps, horizon):
 
         for flavor_name in flavor_names:
             flavors_steps.create_flavor(flavor_name)
-            flavor = AttrDict(name=flavor_name)
+            flavor = utils.AttrDict(name=flavor_name)
 
             flavors.append(flavor)
             _flavors.append(flavor)
@@ -73,7 +72,7 @@ def create_flavor(flavors_steps):
 
     def _create_flavor(flavor_name):
         flavors_steps.create_flavor(flavor_name)
-        flavor = AttrDict(name=flavor_name)
+        flavor = utils.AttrDict(name=flavor_name)
         flavors.append(flavor)
         return flavor
 
@@ -86,5 +85,5 @@ def create_flavor(flavors_steps):
 @pytest.fixture
 def flavor(create_flavor):
     """Fixture to create flavor with default options before test."""
-    flavor_name = next(generate_ids('flavor'))
+    flavor_name = next(utils.generate_ids('flavor'))
     return create_flavor(flavor_name)

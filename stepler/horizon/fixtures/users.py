@@ -22,7 +22,7 @@ import pytest
 from stepler.horizon.steps import UsersSteps
 
 from stepler.horizon.config import USER_PROJECT
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_user',
@@ -48,7 +48,7 @@ def create_user(users_steps):
 
     def _create_user(username, password, project):
         users_steps.create_user(username, password, project)
-        user = AttrDict(name=username, password=password)
+        user = utils.AttrDict(name=username, password=password)
 
         users.append(user)
         return user
@@ -72,7 +72,7 @@ def create_users(users_steps):
 
         for username in usernames:
             users_steps.create_user(username, username, USER_PROJECT)
-            user = AttrDict(name=username, password=username)
+            user = utils.AttrDict(name=username, password=username)
 
             users.append(user)
             _users.append(user)
@@ -88,5 +88,5 @@ def create_users(users_steps):
 @pytest.fixture
 def user(create_user):
     """Fixture to create user with default options before test."""
-    username = next(generate_ids('user'))
+    username = next(utils.generate_ids('user'))
     return create_user(username, username, USER_PROJECT)

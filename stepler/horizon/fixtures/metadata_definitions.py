@@ -20,8 +20,7 @@ Fixtures for metadata definitions
 import pytest
 
 from stepler.horizon.steps import NamespacesSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_namespace',
@@ -46,7 +45,7 @@ def create_namespace(namespaces_steps):
 
     def _create_namespace(namespace_name):
         namespaces_steps.create_namespace(namespace_name)
-        namespace = AttrDict(name=namespace_name)
+        namespace = utils.AttrDict(name=namespace_name)
         namespaces.append(namespace)
         return namespace
 
@@ -59,5 +58,5 @@ def create_namespace(namespaces_steps):
 @pytest.fixture
 def namespace(create_namespace):
     """Fixture to create namespace with default options."""
-    namespace_name = next(generate_ids('namespace'))
+    namespace_name = next(utils.generate_ids('namespace'))
     return create_namespace(namespace_name)

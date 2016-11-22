@@ -19,7 +19,7 @@ Network tests
 
 import pytest
 
-from stepler.horizon.utils import generate_ids
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('any_one')
@@ -29,7 +29,7 @@ class TestAnyOne(object):
     @pytest.mark.idempotent_id('6e212b0c-503e-4339-a504-4548344291ee')
     def test_subnet_add(self, network, networks_steps):
         """Verify that user can add subnet."""
-        subnet_name = next(generate_ids('subnet'))
+        subnet_name = next(utils.generate_ids('subnet'))
         networks_steps.add_subnet(network.name, subnet_name)
 
 
@@ -40,7 +40,7 @@ class TestAdminOnly(object):
     @pytest.mark.idempotent_id('ce3c02b9-ecb3-48c9-9ef4-b48172c6c111')
     def test_create_shared_network(self, networks_steps):
         """Verify that admin can create shared network."""
-        network_name = next(generate_ids('network'))
+        network_name = next(utils.generate_ids('network'))
         networks_steps.create_network(network_name, shared=True)
 
         networks_steps.delete_networks([network_name], check=False)
@@ -56,7 +56,7 @@ class TestUserOnly(object):
     @pytest.mark.idempotent_id('81869139-da99-4595-9bee-55862112ae1b')
     def test_not_create_shared_network(self, create_network, networks_steps):
         """Verify that demo can not create shared network."""
-        network_name = next(generate_ids('network'))
+        network_name = next(utils.generate_ids('network'))
         create_network(network_name, shared=True)
         networks_steps.check_network_share_status(network_name,
                                                   is_shared=False)

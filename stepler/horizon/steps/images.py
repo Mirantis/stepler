@@ -20,8 +20,8 @@ Images steps
 from hamcrest import assert_that, equal_to  # noqa
 
 from stepler.horizon import config
-from stepler.horizon.utils import get_size
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 from .base import BaseSteps
@@ -406,7 +406,7 @@ class ImagesSteps(BaseSteps):
                 for row in form.tab_flavor.table_available_flavors.rows:
 
                     ram_cell = row.cell('ram')
-                    if get_size(ram_cell.value, to='mb') < ram_size:
+                    if utils.get_size(ram_cell.value, to='mb') < ram_size:
                         assert_that(ram_cell.label_alert.is_present,
                                     equal_to(True))
                     else:
@@ -414,7 +414,7 @@ class ImagesSteps(BaseSteps):
                                     equal_to(False))
 
                     disk_cell = row.cell('root_disk')
-                    if get_size(disk_cell.value, to='gb') < disk_size:
+                    if utils.get_size(disk_cell.value, to='gb') < disk_size:
                         assert_that(disk_cell.label_alert.is_present,
                                     equal_to(True))
                     else:

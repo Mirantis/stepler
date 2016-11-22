@@ -19,7 +19,7 @@ Instance tests
 
 import pytest
 
-from stepler.horizon.utils import generate_ids
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('any_one')
@@ -30,7 +30,7 @@ class TestAnyOne(object):
     @pytest.mark.idempotent_id('53c038f0-b63c-461c-983b-7db82fd0d626')
     def test_delete_instances(self, instances_count, create_instance):
         """Verify that user can delete instances as batch."""
-        instance_name = generate_ids('instance').next()
+        instance_name = utils.generate_ids('instance').next()
         create_instance(instance_name, count=instances_count)
 
     @pytest.mark.idempotent_id('005870b0-73fd-4c56-a6ec-8c4bad46f058')
@@ -48,7 +48,7 @@ class TestAnyOne(object):
     def test_instances_pagination(self, instances_steps, create_instance,
                                   update_settings):
         """Verify that instances pagination works right and back."""
-        instance_name = next(generate_ids('instance'))
+        instance_name = next(utils.generate_ids('instance'))
         instances = create_instance(instance_name, count=3)
         update_settings(items_per_page=1)
         instances_steps.check_instances_pagination(instances)
@@ -56,7 +56,7 @@ class TestAnyOne(object):
     @pytest.mark.idempotent_id('060136f-d477-4177-a387-8e8d01ec4ecd')
     def test_filter_instances(self, instances_steps, create_instance):
         """Verify that user can filter instances."""
-        instance_name = next(generate_ids('instance'))
+        instance_name = next(utils.generate_ids('instance'))
         instances = create_instance(instance_name, count=2)
 
         instances_steps.filter_instances(query=instances[0].name)

@@ -20,8 +20,7 @@ Fixtures to manipulate with access
 import pytest
 
 from stepler.horizon.steps import AccessSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'access_steps',
@@ -46,7 +45,7 @@ def create_security_group(access_steps):
 
     def _create_security_group(group_name):
         access_steps.create_security_group(group_name)
-        security_group = AttrDict(name=group_name)
+        security_group = utils.AttrDict(name=group_name)
         security_groups.append(security_group)
         return security_group
 
@@ -59,5 +58,5 @@ def create_security_group(access_steps):
 @pytest.fixture
 def security_group(create_security_group):
     """Fixture to create security group with default options."""
-    group_name = next(generate_ids('security-group'))
+    group_name = next(utils.generate_ids('security-group'))
     return create_security_group(group_name)

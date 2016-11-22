@@ -20,8 +20,7 @@ Fixtures for images
 import pytest
 
 from stepler.horizon.steps import ImagesSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_image',
@@ -52,7 +51,7 @@ def create_images(images_steps, horizon):
             images_steps.create_image(image_name, check=False)
             images_steps.close_notification('success')
 
-            image = AttrDict(name=image_name)
+            image = utils.AttrDict(name=image_name)
             images.append(image)
             _images.append(image)
 
@@ -78,7 +77,7 @@ def create_image(images_steps):
 
     def _create_image(image_name, *args, **kwgs):
         images_steps.create_image(image_name, *args, **kwgs)
-        image = AttrDict(name=image_name)
+        image = utils.AttrDict(name=image_name)
         images.append(image)
         return image
 
@@ -91,5 +90,5 @@ def create_image(images_steps):
 @pytest.fixture
 def image(create_image):
     """Fixture to create image with default options before test."""
-    image_name = next(generate_ids('image', length=20))
+    image_name = next(utils.generate_ids('image', length=20))
     return create_image(image_name)

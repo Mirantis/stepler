@@ -20,7 +20,7 @@ Flavor tests
 import pytest
 
 from stepler.horizon import config
-from stepler.horizon.utils import generate_ids
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('admin_only')
@@ -30,11 +30,12 @@ class TestAdminOnly(object):
     @pytest.mark.idempotent_id('ccfeddd8-a21e-4224-9608-88aa700333d5')
     def test_flavor_update_metadata(self, flavor, flavors_steps):
         """Verify that admin can update flavor metadata."""
-        metadata = {
-            next(generate_ids('metadata')): next(generate_ids("value"))
-            for _ in range(2)}
+        metadata = {next(utils.generate_ids('metadata')):
+                    next(utils.generate_ids("value"))
+                    for _ in range(2)}
         flavors_steps.update_metadata(flavor.name, metadata)
         flavor_metadata = flavors_steps.get_metadata(flavor.name)
+        # TODO(schipiga): replace it to step.
         assert metadata == flavor_metadata
 
     @pytest.mark.idempotent_id('e654d077-c645-4eb7-9a7b-763a1cee3a81')
@@ -63,5 +64,5 @@ class TestAdminOnly(object):
     @pytest.mark.idempotent_id('2cdca1ac-c343-47f5-bb4c-ecbb319d98e7')
     def test_delete_flavors(self, flavors_count, create_flavors):
         """Verify that admin can delete flavors as batch."""
-        flavor_names = list(generate_ids('flavor', count=flavors_count))
+        flavor_names = list(utils.generate_ids('flavor', count=flavors_count))
         create_flavors(*flavor_names)

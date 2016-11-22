@@ -20,8 +20,7 @@ Fixtures to manipulate with routers
 import pytest
 
 from stepler.horizon.steps import RoutersSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_router',
@@ -46,7 +45,7 @@ def create_router(routers_steps):
 
     def _create_router(router_name):
         routers_steps.create_router(router_name)
-        router = AttrDict(name=router_name)
+        router = utils.AttrDict(name=router_name)
         routers.append(router)
         return router
 
@@ -59,5 +58,5 @@ def create_router(routers_steps):
 @pytest.fixture
 def router(create_router):
     """Fixture to create router with default options."""
-    router_name = next(generate_ids('router'))
+    router_name = next(utils.generate_ids('router'))
     return create_router(router_name)

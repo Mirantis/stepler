@@ -20,7 +20,7 @@ Users tests
 import pytest
 
 from stepler.horizon import config
-from stepler.horizon.utils import generate_ids
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('admin_only')
@@ -31,7 +31,7 @@ class TestAdminOnly(object):
     @pytest.mark.idempotent_id('1fc6f276-5d0b-46ca-906c-08c8e8f2752f')
     def test_delete_users(self, users_count, create_users):
         """Verify that admin can create users and delete them as batch."""
-        user_names = list(generate_ids('user', count=users_count))
+        user_names = list(utils.generate_ids('user', count=users_count))
         create_users(user_names)
 
     @pytest.mark.idempotent_id('b5116a31-404d-4391-b1d6-e35670dbadb3')

@@ -20,8 +20,7 @@ Fixtures for containers
 import pytest
 
 from stepler.horizon.steps import ContainersSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_container',
@@ -46,7 +45,7 @@ def create_container(containers_steps):
 
     def _create_container(container_name, public=False):
         containers_steps.create_container(container_name, public=public)
-        container = AttrDict(name=container_name)
+        container = utils.AttrDict(name=container_name)
         containers.append(container)
         return container
 
@@ -59,5 +58,5 @@ def create_container(containers_steps):
 @pytest.fixture
 def container(create_container):
     """Fixture to create container with default options before test."""
-    container_name = next(generate_ids('container'))
+    container_name = next(utils.generate_ids('container'))
     return create_container(container_name)
