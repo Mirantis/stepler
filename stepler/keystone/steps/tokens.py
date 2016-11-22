@@ -21,7 +21,6 @@ from hamcrest import assert_that, has_key, has_items, is_not, equal_to  # noqa
 from keystoneclient import exceptions
 
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -71,7 +70,7 @@ class TokenSteps(base.BaseSteps):
             except exceptions.NotFound:
                 is_revoked = False
 
-            return expect_that(is_revoked, equal_to(must_revoked))
+            return waiter.expect_that(is_revoked, equal_to(must_revoked))
 
         waiter.wait(predicate, timeout_seconds=timeout)
 

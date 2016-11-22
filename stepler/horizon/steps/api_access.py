@@ -21,7 +21,6 @@ import os
 
 from hamcrest import assert_that, equal_to, contains_string  # noqa
 
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -147,7 +146,7 @@ class ApiAccessSteps(BaseSteps):
             except IOError:
                 is_downloaded = False
 
-            return expect_that(is_downloaded, equal_to(True))
+            return waiter.expect_that(is_downloaded, equal_to(True))
 
         waiter.wait(_is_rc_file_downloaded,
                     timeout_seconds=30,
