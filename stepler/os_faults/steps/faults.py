@@ -18,11 +18,13 @@ os_faults steps
 # limitations under the License.
 
 import os
+import re
 import tempfile
 import time
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains, has_items, is_)  # noqa H301
+                      only_contains, has_items, has_length, is_,
+                      contains_inanyorder)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -564,3 +566,45 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(node, cmd)
         value = int(result[0].payload['stdout'])
         assert_that(value, is_(expected_value))
+
+    @steps_checker.step
+    def get_ovs_flows_cookies(self, node, check=True):
+        """Step to retrieve ovs flows cookies from node.
+
+        Args:
+            node (obj): NodeCollection to retrieve flows from
+            check (bool, optional): flag whether check step or not
+
+        Returns:
+            set: flows cookies
+
+        Raises:
+            AssertionError: if flows cookies has more than one value
+        """
+        cmd = "ovs-ofctl dump-flows br-int"
+        result = self.execute_cmd(node, cmd)
+        stdout = result[0].payload['stdout']
+        cookies = re.findall(r'cookie=(?P<value>[^,]+)', stdout)
+        uniq_cookies = set(cookies)
+        if check:
+            assert_that(uniq_cookies, has_length(1))
+        return uniq_cookies
+
+    @steps_checker.step
+    def check_ovs_flow_cookies(self, node, not_contain):
+        """Verify step to check ovs flows cookies.
+
+        This step check that ovs actual flows cookies doesn't contain any value
+        from ``not_contain`` set.
+
+        Args:
+            node (obj): NodeCollection instance to get ovs flow cookies from
+            not_contain (set|list|tuple): values which actual cookies should
+                not contain
+
+        Raises:
+            AssertionError: if cookie values contains any of ``not_contain``
+                value
+        """
+        actual_cookies = self.get_ovs_flows_cookies(node, check=False)
+        assert_that(actual_cookies, is_not(contains_inanyorder(not_contain)))

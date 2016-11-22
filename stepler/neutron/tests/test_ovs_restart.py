@@ -17,6 +17,7 @@ Neutron OVS restart tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, is_not, contains_inanyorder  # noqa H301
 import pytest
 
 from stepler import config
@@ -247,3 +248,52 @@ def test_restart_with_broadcast_traffic(
             agent_steps.check_alive(
                 ovs_agents,
                 timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('f92c6488-f87d-46d7-b2a5-13a98e10ab28')
+def test_restart_adds_new_flows(
+        net_subnet_router,
+        server,
+        server_steps,
+        os_faults_steps,
+        agent_steps):
+    """**Scenario:** Check that new flows are added after OVS-agents restart.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create server
+
+    **Steps:**
+
+    #. Get list of flows for br_int on server's compute
+    #. Check that all cookies for flows is same
+    #. Restart ovs-agents
+    #. Get list of flows for br_int on server's compute
+    #. Check that all cookies are changed
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete network, subnet, router
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
+
+    compute_fqdn = getattr(server, config.SERVER_HOST_ATTR)
+    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
+
+    old_cookies = os_faults_steps.get_ovs_flows_cookies(compute_node)
+
+    os_faults_steps.restart_services([config.NEUTRON_OVS_SERVICE])
+    agent_steps.check_alive(ovs_agents,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    os_faults_steps.check_ovs_flow_cookies(compute_node,
+                                           not_contain=old_cookies)
