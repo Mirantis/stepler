@@ -21,6 +21,8 @@ from .chassis import *  # noqa
 from .node import *  # noqa
 from .port import *  # noqa
 from .ironic import *  # noqa
+from .clients import *  # noqa
+from .api_node_steps import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'ironic_client',
@@ -40,4 +42,12 @@ __all__ = sorted([  # sort for documentation
     'cleanup_chassis',
     'primary_chassis',
     'unexpected_chassis_cleanup',
+
+    'api_ironic_client_v1',
+    'get_api_ironic_client',
+    'ironic_client_v1',
+    'get_api_ironic_steps',
+    'ironic_steps_v1',
+    'api_ironic_steps_v1',
+    'api_ironic_steps',
 ])
