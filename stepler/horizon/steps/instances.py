@@ -19,7 +19,7 @@ Instances steps
 
 from hamcrest import assert_that, equal_to, is_not  # noqa
 
-from stepler.horizon import config
+from stepler import config
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
