@@ -83,6 +83,14 @@ class Predicates(object):
         return len(hypervisor_steps.get_hypervisors()) >= count
 
     @property
+    def l3_agent_nodes_count(self):
+        """Get l3 agents nodes count."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(
+            os_faults_steps.get_nodes(
+                service_names=[config.NEUTRON_L3_SERVICE]))
+
+    @property
     def ceph_enabled(self):
         """Define whether CEPH enabled."""
 

@@ -725,3 +725,19 @@ class OsFaultsSteps(base.BaseSteps):
             return config.NETWORK_TYPE_VXLAN
         else:
             return config.NETWORK_TYPE_VLAN
+
+    @steps_checker.step
+    def get_nodes_for_l3_agents(self, l3_agents, check=True):
+        """Step to retrieve nodes for l3 agents.
+
+        Args:
+            l3_agents (list): list of dicts of l3 agents
+            check (bool): flag whether check step or not
+
+        Returns:
+            NodeCollection: nodes for l3 agents
+        """
+        hosts = [agent['host'] for agent in l3_agents]
+        nodes = self.get_nodes(fqdns=hosts, check=check)
+
+        return nodes
