@@ -20,7 +20,6 @@ Network steps
 from hamcrest import assert_that, equal_to, has_entries  # noqa
 
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -76,7 +75,7 @@ class NetworkSteps(base.BaseSteps):
         """
         def _check_network_presence():
             is_present = bool(self._client.find_all(id=network['id']))
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_network_presence, timeout_seconds=timeout)
 

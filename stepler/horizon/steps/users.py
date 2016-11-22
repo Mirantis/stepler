@@ -21,7 +21,6 @@ import time
 
 from hamcrest import assert_that, equal_to  # noqa H301
 
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -129,7 +128,7 @@ class UsersSteps(BaseSteps):
                         break
                 is_present = True
 
-                return expect_that(is_present, equal_to(True))
+                return waiter.expect_that(is_present, equal_to(True))
 
             waiter.wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
 
@@ -152,7 +151,8 @@ class UsersSteps(BaseSteps):
                     if reverse:
                         expected_usernames = list(reversed(expected_usernames))
 
-                    return expect_that(usernames, equal_to(expected_usernames))
+                    return waiter.expect_that(usernames,
+                                              equal_to(expected_usernames))
 
                 waiter.wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
 

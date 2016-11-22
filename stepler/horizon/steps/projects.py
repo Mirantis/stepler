@@ -21,7 +21,6 @@ import time
 
 from hamcrest import equal_to
 
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -86,7 +85,7 @@ class ProjectsSteps(BaseSteps):
                         break
                 is_present = True
 
-                return expect_that(is_present, equal_to(True))
+                return waiter.expect_that(is_present, equal_to(True))
 
             waiter.wait(check_rows,
                         timeout_seconds=10,
