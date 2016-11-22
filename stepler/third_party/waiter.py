@@ -17,39 +17,79 @@ Waiter
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
+import functools
 
-from stepler import config
+from hamcrest import assert_that
+import six
+import waiting
+
 from stepler.third_party import logger
 
 
+@six.python_2_unicode_compatible
+class ExpectionError(Exception):
+    """Expection error class."""
+
+    def __init__(self, base_ex):
+        self.base_ex = base_ex
+
+    def __str__(self):
+        return u"{}".format(self.base_ex)
+
+
+@functools.wraps(assert_that)
+def expect_that(*args, **kwargs):
+    """Wapper for hamcrest's ``assert_that``.
+
+    It raises ExpectionError instead of AssetionError and can be used with
+    wait function below to retrive more verbose messages about predicates
+    failures.
+    """
+    try:
+        assert_that(*args, **kwargs)
+        return True
+    except AssertionError as e:
+        raise ExpectionError(e)
+
+
+@six.python_2_unicode_compatible
 class TimeoutExpired(Exception):
-    """Exception to raise when a timeout expires while waiting for result."""
+    """Timeout expired exception."""
+    def __init__(self, base_ex):
+        self.base_ex = base_ex
+        self.message = ''
+
+    def __str__(self):
+        return u"{}{}".format(self.base_ex, self.message)
 
 
-@logger.log  # step can include several wait calls, and we want to log all
-def wait(predicate, timeout_seconds=0, sleep_seconds=config.POLLING_TIME,
-         multiplier=1, waiting_for=None, expected_exceptions=()):
+@logger.log
+def wait(predicate, args=None, kwargs=None, **wait_kwargs):
     """Wait that predicate execution returns non-falsy result.
 
-    Warning:
-        predicate should return tuple: ``(predicate execution result,
-        "Error message" or None)``
+    It catches all raised ExpectionError and uses last exception to construct
+    TimeoutException. It also can pass arguments to predicate.
 
-    Notes:
-        - It attaches **error message of predicate result** to raised
-          exception.
+    Example:
+        >>> def predicate(foo, bar='baz'):
+        ...    expect_that(foo, equal_to(bar))
+        ...    return bar
+        >>> wait(predicate, args=(1,), kwargs={'bar': 2}, timeout_seconds=1)
 
-        - It makes early exit from waiting cycle if it sees, that polling time
-          is higher than the time to the end of timeout, because it's obvious
-          that next polling will not occur.
+        TimeoutExpired: Timeout of 1 seconds expired waiting for
+        <function predicate at 0x7f7798622c08>
 
-        - It provides to increase polling time by multiplying it to
-          ``multiplier`` in each waiting cycle.
+        Expected: <2>
+             but: was <1>
 
-        - It includes real timeout to error message, but not function defined.
 
-        - It hides own error traceback in output.
+        >>> wait(lambda: False, timeout_seconds=0.5)
+
+        TimeoutExpired: Timeout of 0.5 seconds expired waiting for
+        <function <lambda> at 0x7f2b54360848>
+        No exception raised during predicate executing
+
+
 
     Args:
         predicate (function): predicate to wait execution result
@@ -67,47 +107,26 @@ def wait(predicate, timeout_seconds=0, sleep_seconds=config.POLLING_TIME,
     Raises:
         TimeoutExpired: if predicate execution has falsy value after timeout
     """
+
     __tracebackhide__ = True
+    raised_exceptions = []
+    args = args or ()
+    kwargs = kwargs or {}
 
-    predicate_name = getattr(predicate, '__name__', str(predicate))
-    predicate_result_error = (
-        "{} should return tuple (predicate result, 'Error message' or None)"
-        "".format(predicate_name))
-
-    result = message = None
-    start = time.time()
-    limit = start + timeout_seconds
-    first = True
-
-    while time.time() < limit or first:
-        first = False
-
+    @functools.wraps(predicate)
+    def wrapper():
         try:
-            result = predicate()
+            return predicate(*args, **kwargs)
+        except ExpectionError as e:
+            raised_exceptions.append(e)
+            return False
 
-        except expected_exceptions as e:
-            message = str(e)
-
+    try:
+        return waiting.wait(wrapper, **wait_kwargs)
+    except waiting.TimeoutExpired as e:
+        ex = TimeoutExpired(e)
+        if raised_exceptions:
+            ex.message += "\n" + str(raised_exceptions[-1])
         else:
-            if not isinstance(result, tuple):
-                raise TypeError(predicate_result_error)
-
-            else:
-                result, message = result
-
-            if result:
-                return result
-
-        if sleep_seconds > limit - time.time():
-            break
-
-        time.sleep(sleep_seconds)
-        sleep_seconds *= multiplier
-
-    wait_error = 'Timeout of {:.3f} second(s) expired waiting for {}.'.format(
-        time.time() - start, waiting_for or predicate_name)
-
-    if message:
-        wait_error += ' {} message: {}'.format(predicate_name, message)
-
-    raise TimeoutExpired(wait_error)
+            ex.message += "\nNo exception raised during predicate executing"
+        raise ex
