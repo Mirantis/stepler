@@ -64,44 +64,50 @@ def pytest_runtest_teardown(item, nextitem):
 
     destructor = item._request.getfixturevalue('os_faults_client')
 
+    do_revert = True
+
     # Revert only destructive tests
     if not item.get_marker(DESTRUCTIVE):
-        return
+        do_revert = False
 
     snapshot_name = item.session.config.option.snapshot_name
 
     # Prevent reverting if no snapshot_name passed
     if snapshot_name is None:
-        return
+        do_revert = False
 
-    # reject finalizers of all fixture scopes
-    for finalizers in item.session._setupstate._finalizers.values():
-        for finalizer in finalizers:
+    if do_revert:
+        # reject finalizers of all fixture scopes
+        for finalizers in item.session._setupstate._finalizers.values():
+            for finalizer in finalizers:
 
-            # There are finalizers in the form of lambda function without name.
-            # That looks as internal pytest specifics. We should skip them.
-            fixture_def = getattr(finalizer, 'im_self', None)
-            if fixture_def and not hasattr(fixture_def.func, INDESTRUCTIBLE):
-                LOG.debug('Clear {} finalizers'.format(fixture_def))
-                fixture_def._finalizer[:] = []
+                # There are finalizers in the form of lambda function without
+                # name. That looks as internal pytest specifics. We should skip
+                # them.
+                fixture_def = getattr(finalizer, 'im_self', None)
+                if fixture_def and not hasattr(fixture_def.func,
+                                               INDESTRUCTIBLE):
+                    LOG.debug('Clear {} finalizers'.format(fixture_def))
+                    fixture_def._finalizer[:] = []
 
-                # Clear fixture cached result to force fixture with any scope
-                # to restart in next test.
-                if hasattr(fixture_def, "cached_result"):
-                    LOG.debug('Clear {} cache'.format(fixture_def))
-                    del fixture_def.cached_result
+                    # Clear fixture cached result to force fixture with any
+                    # scope to restart in next test.
+                    if hasattr(fixture_def, "cached_result"):
+                        LOG.debug('Clear {} cache'.format(fixture_def))
+                        del fixture_def.cached_result
 
     outcome = yield
 
     # Prevent reverting after last test
     if nextitem is None or item.session.shouldstop:
-        return
+        do_revert = False
 
     # Prevent reverting after KeyboardInterrupt
     if outcome.excinfo is not None and outcome.excinfo[0] is KeyboardInterrupt:
-        return
+        do_revert = False
 
-    revert_environment(destructor, snapshot_name)
+    if do_revert:
+        revert_environment(destructor, snapshot_name)
 
 
 def revert_environment(destructor, snapshot_name):
