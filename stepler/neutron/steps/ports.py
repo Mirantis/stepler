@@ -75,3 +75,32 @@ class PortSteps(base.BaseSteps):
             return expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_port_presence, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_ports_tags_data(self, lines):
+        """Step to get ovs-vsctl tags.
+
+        Args:
+            lines (list): list of 'ovs-vsctl show' output lines
+
+        Returns:
+            dict: port tags
+        """
+        port_tags = {}
+        last_offset = 0
+        port = None
+        for line in lines[1:]:
+            line = line.rstrip()
+            key, val = line.split(None, 1)
+            offset = len(line) - len(line.lstrip())
+            if port is None:
+                if key.lower() == 'port':
+                    port = val.strip('"')
+                    last_offset = offset
+                    continue
+            elif offset <= last_offset:
+                port = None
+            elif key.lower() == 'tag:':
+                port_tags[port] = val
+                port = None
+        return port_tags

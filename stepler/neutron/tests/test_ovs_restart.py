@@ -17,6 +17,7 @@ Neutron OVS restart tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, equal_to  # noqa
 import pytest
 
 from stepler import config
@@ -194,3 +195,33 @@ def test_restart_many_times(
                     ovs_agents,
                     must_alive=True,
                     timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('51340e3b-5762-4bb5-b394-3f050263e96b')
+def test_port_tags_immutable_after_restart(port_steps, os_faults_steps):
+    """Check that ports tags are the same after ovs-agents restart.
+
+    **Steps:**
+
+    #. Collect ovs-vsctl tags before restart
+    #. Restart ovs-agents
+    #. Collect ovs-vsctl tags after restart
+    #. Check that values of the tag parameter for every port remain the same
+    """
+    tags_before_restart = {}
+    tags_after_restart = {}
+    nodes = os_faults_steps.get_nodes()
+    port_tags = os_faults_steps.execute_cmd(nodes, 'ovs-vsctl show')
+
+    for port_tag in port_tags:
+        tags_before_restart[port_tag.host] = port_steps.get_ports_tags_data(
+            port_tag.payload['stdout_lines'])
+
+    os_faults_steps.restart_services([config.NEUTRON_OVS_SERVICE])
+
+    port_tags = os_faults_steps.execute_cmd(nodes, 'ovs-vsctl show')
+    for port_tag in port_tags:
+        tags_after_restart[port_tag.host] = port_steps.get_ports_tags_data(
+            port_tag.payload['stdout_lines'])
+
+    assert_that(tags_before_restart, equal_to(tags_after_restart))
