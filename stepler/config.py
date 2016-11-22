@@ -277,3 +277,39 @@ NEUTRON_OVS_RESTART_MAX_PING_LOSS = 50
 
 SERVICE_TERMINATE_TIMEOUT = 60
 SERVICE_START_TIMEOUT = 60
+
+
+# Horizon
+BROWSER_WINDOW_SIZE = map(
+    int, (os.environ.get('BROWSER_WINDOW_SIZE', ('1920,1080'))).split(','))
+
+UI_TIMEOUT = 30
+ACTION_TIMEOUT = 60
+EVENT_TIMEOUT = 180
+
+BIG_FILE_SIZE = 1024 * 1024 * 1024 * 100  # 100 Gb
+LONG_ACTION_TIMEOUT = 60 * 60  # 1 hour (timeout for 'Working')
+LONG_EVENT_TIMEOUT = 60 * 60 * 3  # 3 hours (timeout for 'Saving')
+
+OS_DASHBOARD_URL = os.environ.get('OS_DASHBOARD_URL')  # should be defined!
+VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')
+
+DEFAULT_ADMIN_NAME = 'admin'
+DEFAULT_ADMIN_PASSWD = 'admin'
+DEFAULT_ADMIN_PROJECT = 'admin'
+
+ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT = list(
+    utils.generate_ids('admin', count=3))
+USER_NAME, USER_PASSWD, USER_PROJECT = list(
+    utils.generate_ids('user', count=3))
+
+FLOATING_NETWORK_NAME = 'admin_floating_net'
+INTERNAL_NETWORK_NAME = next(utils.generate_ids('internal_net'))
+INTERNAL_SUBNET_NAME = next(utils.generate_ids('internal_subnet'))
+ROUTER_NAME = next(utils.generate_ids('router'))
+
+XVFB_LOCK = '/tmp/xvfb.lock'
+
+# Volume creating constants
+IMAGE_SOURCE = 'Image'
+VOLUME_SOURCE = 'Volume'

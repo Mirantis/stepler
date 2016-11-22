@@ -21,7 +21,7 @@ import os
 
 import pytest
 
-from stepler.horizon import config
+from stepler import config
 
 __all__ = [
     'admin_only',
