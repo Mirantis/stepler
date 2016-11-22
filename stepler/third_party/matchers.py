@@ -17,49 +17,17 @@ Custom hamcrest matchers
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest.core import matcher as _matcher
-from hamcrest.core import string_description as _description
-from hamcrest import equal_to
+# TODO(gdyuldin): remove this file after checking
+
+import functools
+import warnings
+
+from stepler.third_party.waiter import expect_that as base_expect_that
 
 
-def expect_that(actual, matcher, reason=''):
-    """Return boolean matching result with error message if it was false.
-
-    Note:
-        It's especially useful with ``stepler.third_party.waiter``:
-
-        .. code:: python
-
-           def predicate():
-               return expect_that(1, 2):
-
-           waiter.wait(predicate, timeout=2)
-
-           # -->
-           AssertionError: predicate returned false with timeout 1.996 seconds.
-           Expected: <1>
-                but: was <2>
-
-    Arguments:
-        actual (object): actual object
-        matcher (object): matched object
-        reason (str): additional custom message to error message
-
-    Returns:
-        tuple: (True, None) if success and (False 'Error message') if failure
-    """
-    if not isinstance(matcher, _matcher.Matcher):
-        matcher = equal_to(matcher)
-
-    if not matcher.matches(actual):
-        description = _description.StringDescription()
-        description.append_text(reason)             \
-                   .append_text('\nExpected: ')     \
-                   .append_description_of(matcher)  \
-                   .append_text('\n     but: ')
-        matcher.describe_mismatch(actual, description)
-        description.append_text('\n')
-
-        return (False, str(description))
-    else:
-        return (True, None)
+@functools.wraps(base_expect_that)
+def expect_that(*args, **kwargs):
+    warnings.warn("Using `expect_that` from stepler.third_party.matchers is "
+                  "deprecated. You should use expect_that from "
+                  "stepler.third_party.waiting", DeprecationWarning)
+    return base_expect_that(*args, **kwargs)
