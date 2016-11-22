@@ -20,7 +20,6 @@ Port steps
 from hamcrest import equal_to
 
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -72,6 +71,6 @@ class PortSteps(base.BaseSteps):
         """
         def _check_port_presence():
             is_present = bool(self._client.find_all(id=port['id']))
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_port_presence, timeout_seconds=timeout)

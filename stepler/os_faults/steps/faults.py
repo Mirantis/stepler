@@ -25,7 +25,6 @@ from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -120,7 +119,7 @@ class OsFaultsSteps(base.BaseSteps):
             matcher = has_items(*nodes)
             if not must_run:
                 matcher = is_not(matcher)
-            return expect_that(service.get_nodes(), matcher)
+            return waiter.expect_that(service.get_nodes(), matcher)
 
         waiter.wait(_check_service_state, timeout_seconds=timeout)
 
