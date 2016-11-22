@@ -26,6 +26,7 @@ from stepler.third_party import utils
 __all__ = [
     'neutron_2_servers_different_networks',
     'neutron_2_servers_same_network',
+    'neutron_2_servers_iperf_different_networks',
 ]
 
 
@@ -138,4 +139,105 @@ def neutron_2_servers_same_network(
     return attrdict.AttrDict(
         servers=(server, server_2),
         network=network,
+        router=router)
+
+
+@pytest.fixture
+def neutron_2_servers_iperf_different_networks(
+        ubuntu_image,
+        flavor,
+        keypair,
+        security_group,
+        net_subnet_router,
+        create_network,
+        create_subnet,
+        add_router_interfaces,
+        hypervisor_steps,
+        security_group_steps,
+        server_steps):
+    """Function fixture to prepare environment with 2 ubuntu servers.
+
+    This fixture creates router, 2 networks and 2 subnets, connects networks
+    to router, boots nova server with ubuntu on each network on different
+    computes, installs iperf to both servers, starts TCP and UDP iperf servers.
+
+    All created resources are to be deleted after test.
+
+    Args:
+        ubuntu_image (obj): ubuntu image
+        flavor (obj): nova flavor
+        keypair (obj): nova server keypair
+        security_group (obj): nova security group
+        net_subnet_router (tuple): network, subnet, router
+        create_network (function): function to create network
+        create_subnet (function): function to create subnet
+        add_router_interfaces (function): function to add subnet interface to
+            router
+        hypervisor_steps (obj): instantiated nova hypervisor steps
+        security_group_steps (obj): instantiated nova security group steps
+        server_steps (obj): instantiated nova server steps
+
+    Returns:
+        attrdict.AttrDict: created resources
+    """
+
+    network_1, subnet, router = net_subnet_router
+    network_2 = create_network(next(utils.generate_ids()))
+
+    subnet_2 = create_subnet(
+        subnet_name=next(utils.generate_ids()),
+        network=network_2,
+        cidr='192.168.2.0/24')
+    add_router_interfaces(router, [subnet_2])
+
+    rules = [
+        {
+            # iprf tcp
+            'ip_protocol': 'tcp',
+            'from_port': config.IPERF_TCP_PORT,
+            'to_port': config.IPERF_TCP_PORT,
+            'cidr': '0.0.0.0/0',
+        },
+        {
+            # iperf udp
+            'ip_protocol': 'udp',
+            'from_port': config.IPERF_UDP_PORT,
+            'to_port': config.IPERF_UDP_PORT,
+            'cidr': '0.0.0.0/0',
+        }
+    ]
+    security_group_steps.add_group_rules(security_group, rules)
+
+    hypervisors = hypervisor_steps.get_hypervisors()[:2]
+    servers = []
+
+    for hypervisor, network in zip(hypervisors, [network_1, network_2]):
+        server = server_steps.create_servers(
+            image=ubuntu_image,
+            flavor=flavor,
+            keypair=keypair,
+            networks=[network],
+            userdata=config.START_IPERF_USERDATA,
+            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            security_groups=[security_group],
+            username=config.UBUNTU_USERNAME,
+            check=False)[0]
+        servers.append(server)
+
+    for server in servers:
+
+        server_steps.check_server_status(
+            server,
+            expected_statuses=[config.STATUS_ACTIVE],
+            transit_statuses=[config.STATUS_BUILD],
+            timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+        server_steps.check_server_log_contains_record(
+            server,
+            config.USERDATA_DONE_MARKER,
+            timeout=config.USERDATA_EXECUTING_TIMEOUT)
+
+    return attrdict.AttrDict(
+        servers=servers,
+        networks=(network_1, network_2),
         router=router)
