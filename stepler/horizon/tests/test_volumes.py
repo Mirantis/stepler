@@ -20,7 +20,7 @@ Volume tests
 import pytest
 
 from stepler.horizon import config
-from stepler.horizon.utils import generate_ids
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('any_one')
@@ -40,14 +40,14 @@ class TestAnyOne(object):
     def test_delete_volumes(self, volumes_count, volumes_steps_ui,
                             create_volumes):
         """Verify that user can delete volumes as bunch."""
-        volume_names = list(generate_ids('volume', count=volumes_count))
+        volume_names = list(utils.generate_ids('volume', count=volumes_count))
         create_volumes(volume_names)
 
     @pytest.mark.idempotent_id('ff2319a8-5918-4821-ad69-8729a51e3d4e')
     def test_volumes_pagination(self, volumes_steps_ui, create_volumes,
                                 update_settings):
         """Verify that volumes pagination works right and back."""
-        volume_names = list(generate_ids('volume', count=3))
+        volume_names = list(utils.generate_ids('volume', count=3))
         create_volumes(volume_names)
         update_settings(items_per_page=1)
         volumes_steps_ui.check_volumes_pagination(volume_names)
@@ -60,7 +60,7 @@ class TestAnyOne(object):
     @pytest.mark.idempotent_id('b3db692c-a132-4450-ba3b-6ab6c66c3846')
     def test_change_volume_type(self, create_volume, volumes_steps_ui):
         """Verify that user can change volume type."""
-        volume_name = generate_ids('volume').next()
+        volume_name = utils.generate_ids('volume').next()
         create_volume(volume_name, volume_type=None)
         volumes_steps_ui.change_volume_type(volume_name)
 
@@ -68,7 +68,7 @@ class TestAnyOne(object):
     def test_upload_volume_to_image(self, volume, images_steps,
                                     volumes_steps_ui):
         """Verify that user can upload volume to image."""
-        image_name = next(generate_ids('image', length=20))
+        image_name = next(utils.generate_ids('image', length=20))
         volumes_steps_ui.upload_volume_to_image(volume.name, image_name)
         images_steps.check_image_present(image_name, timeout=30)
         images_steps.delete_image(image_name)
@@ -82,7 +82,7 @@ class TestAnyOne(object):
     def test_launch_volume_as_instance(self, volume, instances_steps,
                                        volumes_steps_ui):
         """Verify that admin can launch volume as instance."""
-        instance_name = next(generate_ids('instance'))
+        instance_name = next(utils.generate_ids('instance'))
         volumes_steps_ui.launch_volume_as_instance(
             volume.name, instance_name,
             network_name=config.INTERNAL_NETWORK_NAME)
@@ -103,8 +103,8 @@ class TestAnyOne(object):
 
         #. Delete volume
         """
-        volume_name = next(generate_ids('volume'))
-        volume_description = next(generate_ids('volume_description'))
+        volume_name = next(utils.generate_ids('volume'))
+        volume_description = next(utils.generate_ids('volume_description'))
         create_volume(volume_name, description=volume_description)
 
     @pytest.mark.idempotent_id('4e019917-e519-4fbd-956d-5b5df83a5de1')
@@ -121,8 +121,9 @@ class TestAnyOne(object):
 
         #. Delete volumes
         """
-        volume_name = next(generate_ids('volume'))
-        create_volume(volume_name, source_type=config.VOLUME_SOURCE,
+        volume_name = next(utils.generate_ids('volume'))
+        create_volume(volume_name,
+                      source_type=config.VOLUME_SOURCE,
                       source_name=volume.name,
                       volume_type=None,
                       volume_size=2)
@@ -148,7 +149,7 @@ class TestAdminOnly(object):
     @pytest.mark.idempotent_id('32b295cd-fbd0-44c1-b7b9-175f5ad7434c')
     def test_transfer_volume(self, volume, auth_steps, volumes_steps_ui):
         """Verify that volume can be transfered between users."""
-        transfer_name = next(generate_ids('transfer'))
+        transfer_name = next(utils.generate_ids('transfer'))
         transfer_id, transfer_key = volumes_steps_ui.create_transfer(
             volume.name, transfer_name)
         auth_steps.logout()

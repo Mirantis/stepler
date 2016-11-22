@@ -20,8 +20,7 @@ Fixtures for host aggregates
 import pytest
 
 from stepler.horizon.steps import HostAggregatesSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_host_aggregate',
@@ -51,7 +50,7 @@ def create_host_aggregates(host_aggregates_steps, horizon):
         for host_aggregate_name in host_aggregate_names:
             host_aggregates_steps.create_host_aggregate(host_aggregate_name)
 
-            host_aggregate = AttrDict(name=host_aggregate_name)
+            host_aggregate = utils.AttrDict(name=host_aggregate_name)
             host_aggregates.append(host_aggregate)
             _host_aggregates.append(host_aggregate)
 
@@ -74,7 +73,7 @@ def create_host_aggregate(host_aggregates_steps):
 
     def _create_host_aggregate(host_aggregate_name):
         host_aggregates_steps.create_host_aggregate(host_aggregate_name)
-        host_aggregate = AttrDict(name=host_aggregate_name)
+        host_aggregate = utils.AttrDict(name=host_aggregate_name)
         host_aggregates.append(host_aggregate)
         return host_aggregate
 
@@ -87,5 +86,5 @@ def create_host_aggregate(host_aggregates_steps):
 @pytest.fixture
 def host_aggregate(create_host_aggregate):
     """Fixture to create host aggregate with default options before test."""
-    host_aggregate_name = next(generate_ids('host-aggregate'))
+    host_aggregate_name = next(utils.generate_ids('host-aggregate'))
     return create_host_aggregate(host_aggregate_name)

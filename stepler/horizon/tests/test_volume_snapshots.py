@@ -19,7 +19,7 @@ Volume snapshot tests
 
 import pytest
 
-from stepler.horizon.utils import generate_ids
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('any_one')
@@ -44,7 +44,7 @@ class TestAnyOne(object):
         #. Delete snapshot
         #. Delete volume
         """
-        snapshot_name = next(generate_ids('snapshot'))
+        snapshot_name = next(utils.generate_ids('snapshot'))
         create_snapshot(snapshot_name)
 
     @pytest.mark.idempotent_id('51654e7a-bda4-4a3b-a75a-8788cbff3eae')
@@ -88,8 +88,8 @@ class TestAnyOne(object):
         #. Delete snapshot
         #. Delete volume
         """
-        snapshot_name = next(generate_ids('snapshot'))
-        snapshot_description = next(generate_ids('snapshot_description'))
+        snapshot_name = next(utils.generate_ids('snapshot'))
+        snapshot_description = next(utils.generate_ids('snapshot_description'))
         create_snapshot(snapshot_name, description=snapshot_description)
 
     @pytest.mark.idempotent_id('a1750859-a173-4e1a-9acb-3ad40c6c486a')
@@ -112,8 +112,9 @@ class TestAnyOne(object):
         #. Delete snapshot
         #. Delete volume
         """
-        snapshot_name = next(generate_ids('snapshot'))
-        snapshot_description = next(generate_ids('description', length=255))
+        snapshot_name = next(utils.generate_ids('snapshot'))
+        snapshot_description = next(utils.generate_ids('description',
+                                                       length=255))
         create_snapshot(snapshot_name, description=snapshot_description)
 
     @pytest.mark.idempotent_id('b16ba9bf-7d09-462c-ae99-e1ec4653c40d')
@@ -127,7 +128,7 @@ class TestAnyOne(object):
     def test_volume_snapshots_pagination(self, volumes_steps_ui,
                                          create_snapshots, update_settings):
         """Verify that snapshots pagination works right and back."""
-        snapshot_names = list(generate_ids(prefix='snapshot', count=3))
+        snapshot_names = list(utils.generate_ids(prefix='snapshot', count=3))
         create_snapshots(snapshot_names)
         update_settings(items_per_page=1)
         volumes_steps_ui.check_snapshots_pagination(snapshot_names)

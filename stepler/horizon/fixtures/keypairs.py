@@ -20,7 +20,7 @@ Fixtures for keypairs
 import pytest
 
 from stepler.horizon.steps import KeypairsSteps
-from stepler.horizon.utils import generate_ids, AttrDict  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'import_keypair',
@@ -38,10 +38,10 @@ def keypairs_steps(login, horizon):
 @pytest.yield_fixture
 def keypair(keypairs_steps):
     """Create keypair."""
-    name = next(generate_ids('keypair'))
+    name = next(utils.generate_ids('keypair'))
 
     keypairs_steps.create_keypair(name)
-    _keypair = AttrDict(name=name)
+    _keypair = utils.AttrDict(name=name)
 
     yield _keypair
 
@@ -54,10 +54,10 @@ def import_keypair(keypairs_steps):
     keypairs = []
 
     def _import_keypair(public_key):
-        name = next(generate_ids('keypair'))
+        name = next(utils.generate_ids('keypair'))
 
         keypairs_steps.import_keypair(name, public_key)
-        keypair = AttrDict(name=name)
+        keypair = utils.AttrDict(name=name)
 
         keypairs.append(keypair)
         return keypair

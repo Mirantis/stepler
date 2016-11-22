@@ -20,8 +20,7 @@ Fixtures for networks
 import pytest
 
 from stepler.horizon.steps import NetworksSteps
-
-from stepler.horizon.utils import AttrDict, generate_ids  # noqa
+from stepler.third_party import utils
 
 __all__ = [
     'create_network',
@@ -51,7 +50,7 @@ def create_networks(networks_steps, horizon):
         for network_name in network_names:
             networks_steps.create_network(network_name)
 
-            network = AttrDict(name=network_name)
+            network = utils.AttrDict(name=network_name)
             networks.append(network)
             _networks.append(network)
 
@@ -73,7 +72,7 @@ def create_network(networks_steps):
 
     def _create_network(network_name, shared=False):
         networks_steps.create_network(network_name, shared=shared)
-        network = AttrDict(name=network_name)
+        network = utils.AttrDict(name=network_name)
         networks.append(network)
         return network
 
@@ -86,5 +85,5 @@ def create_network(networks_steps):
 @pytest.fixture
 def network(create_network):
     """Fixture to create network with default options before test."""
-    network_name = next(generate_ids('network'))
+    network_name = next(utils.generate_ids('network'))
     return create_network(network_name)

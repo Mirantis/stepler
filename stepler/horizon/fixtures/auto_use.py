@@ -23,10 +23,10 @@ import os
 import pytest
 import xvfbwrapper
 
-from stepler.horizon.third_party import VideoRecorder, Lock  # noqa
-
 from stepler.horizon import config
-from stepler.horizon.utils import slugify
+from stepler.third_party import process_mutex
+from stepler.third_party import video_recorder
+from stepler.third_party import utils
 
 __all__ = [
     'logger',
@@ -43,7 +43,7 @@ LOGGER = logging.getLogger(__name__)
 def report_dir(request):
     """Create report directory to put test logs."""
     _report_dir = os.path.join(config.TEST_REPORTS_DIR,
-                               slugify(request._pyfuncitem.name))
+                               utils.slugify(request._pyfuncitem.name))
     if not os.path.isdir(_report_dir):
         os.mkdir(_report_dir)
     return _report_dir
@@ -66,7 +66,7 @@ def virtual_display(request):
     else:
         _virtual_display.xvfb_cmd.extend(args)
 
-    with Lock(config.XVFB_LOCK):
+    with process_mutex.Lock(config.XVFB_LOCK):
         LOGGER.info('Start xvfb')
         _virtual_display.start()
 
@@ -127,7 +127,8 @@ def logger(report_dir, test_env):
 @pytest.yield_fixture(autouse=True)
 def video_capture(report_dir, logger):
     """Capture video of test."""
-    recorder = VideoRecorder(os.path.join(report_dir, 'video.mp4'))
+    recorder = video_recorder.VideoRecorder(os.path.join(report_dir,
+                                                         'video.mp4'))
     recorder.start()
     yield recorder
     recorder.stop()

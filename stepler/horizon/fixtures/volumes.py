@@ -21,8 +21,7 @@ import pytest
 
 from stepler.horizon import config
 from stepler.horizon import steps
-
-from stepler.horizon import utils
+from stepler.third_party import utils
 
 __all__ = [
     'create_backups',

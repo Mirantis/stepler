@@ -25,6 +25,7 @@ import random
 import tempfile
 import uuid
 
+import attrdict
 import requests
 import six
 
@@ -38,13 +39,16 @@ if six.PY3:
 LOGGER = logging.getLogger(__name__)
 
 __all__ = [
+    'AttrDict',
     'generate_ids',
     'generate_files',
     'generate_file_context',
     'generate_ips',
     'get_file_path',
+    'get_size',
     'get_unwrapped_func',
     'is_iterable',
+    'slugify',
 ]
 
 
@@ -165,7 +169,6 @@ def generate_file_context(prefix=None, postfix=None, folder=None, size=1024):
     Yields:
         str: file path.
     """
-
     file_path = next(generate_files(prefix=prefix, postfix=postfix,
                                     folder=folder, size=size))
     yield file_path
@@ -174,8 +177,10 @@ def generate_file_context(prefix=None, postfix=None, folder=None, size=1024):
 
 
 def generate_ips(ip_start=1, ip_end=254, count=1):
-    """Generates random IP v4 addresses.
-        Like: 173.217.169.131, 207.105.178.224, 193.121.141.217
+    """Generate random IP v4 addresses.
+
+    Examples:
+        173.217.169.131, 207.105.178.224, 193.121.141.217
 
     Arguments:
         ip_start (int): Start range of the generated sequence
@@ -302,3 +307,49 @@ def slugify(string):
         str: replace string
     """
     return ''.join(s if s.isalnum() else '_' for s in string).strip('_')
+
+
+def get_size(value, to):
+    """Get size of value with specified type."""
+    _map = {'TB': 1024 * 1024 * 1024 * 1024,
+            'GB': 1024 * 1024 * 1024,
+            'MB': 1024 * 1024,
+            'KB': 1024}
+
+    value = value.upper()
+    to = to.upper()
+
+    for k, v in _map.items():
+        if value.endswith(k):
+            value = int(value.strip(k).strip()) * v
+            break
+    else:
+        value = int(value) * 1024
+
+    for k, v in _map.items():
+        if to == k:
+            return value / v
+
+
+class AttrDict(attrdict.AttrDict):
+    """Wrapper over attrdict to provide context manager to update fields."""
+
+    _updated_fields = {}
+
+    def __init__(self, *args, **kwgs):
+        """Constructor."""
+        super(AttrDict, self).__init__(*args, **kwgs)
+
+    def put(self, **kwgs):
+        """Put fields to update in buffer."""
+        self._updated_fields[id(self)] = kwgs
+        return self
+
+    def __enter__(self):
+        """Enter to context manager."""
+        pass
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        """Update fields from buffer on exit from context manager."""
+        updated_fields = self._updated_fields.pop(id(self))
+        self.update(updated_fields)
