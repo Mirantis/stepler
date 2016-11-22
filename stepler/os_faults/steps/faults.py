@@ -18,10 +18,11 @@ os_faults steps
 # limitations under the License.
 
 import os
+import re
 import tempfile
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains, has_items)  # noqa H301
+                      only_contains, has_items, has_length)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -424,3 +425,26 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(compute, cmd, check=False)
         assert_that(
             result, only_contains(has_properties(status=config.STATUS_FAILED)))
+
+    @steps_checker.step
+    def get_ovs_flows_cookies(self, node, check=True):
+        """Step to retrieve ovs flows cookies from node.
+
+        Args:
+            node (obj): NodeCollection to retrieve flows from
+            check (bool, optional): flag whether check step or not
+
+        Returns:
+            set: flows cookies
+
+        Raises:
+            AssertionError: if flows cookies has more than one value
+        """
+        cmd = "ovs-ofctl dump-flows br-int"
+        result = self.execute_cmd(node, cmd)
+        stdout = result[0].payload['stdout']
+        cookies = re.findall(r'cookie=(?P<value>[^,]+)', stdout)
+        uniq_cookies = set(cookies)
+        if check:
+            assert_that(uniq_cookies, has_length(1))
+        return uniq_cookies
