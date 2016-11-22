@@ -22,7 +22,6 @@ from hamcrest import (assert_that, is_not, empty, only_contains,
 from keystoneclient import exceptions
 
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -103,7 +102,7 @@ class GroupSteps(base.BaseSteps):
             except exceptions.NotFound:
                 is_present = False
 
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_group_presence, timeout_seconds=timeout)
 

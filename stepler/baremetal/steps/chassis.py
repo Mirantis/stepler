@@ -21,7 +21,6 @@ from hamcrest import assert_that, equal_to, is_not, empty  # noqa
 from ironicclient import exceptions
 
 from stepler.base import BaseSteps
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -115,7 +114,8 @@ class IronicChassisSteps(BaseSteps):
                 except exceptions.NotFound:
                     actual_presence[chassis.uuid] = False
 
-            return expect_that(actual_presence, equal_to(expected_presence))
+            return waiter.expect_that(actual_presence,
+                                      equal_to(expected_presence))
 
         timeout = len(chassis_list) * chassis_timeout
         waiter.wait(_check_chassis_presence, timeout_seconds=timeout)

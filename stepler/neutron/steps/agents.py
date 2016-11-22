@@ -21,7 +21,6 @@ from hamcrest import (assert_that, is_not, empty, only_contains,
                       has_entry)  # noqa H301
 
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -70,7 +69,7 @@ class AgentSteps(base.BaseSteps):
                 agent for agent in self.get_agents()
                 if agent['id'] in agents_ids
             ]
-            return expect_that(agents, only_contains(
+            return waiter.expect_that(agents, only_contains(
                 has_entry(alive=must_alive)))
 
         waiter.wait(_check_agents_alive, timeout_seconds=timeout)

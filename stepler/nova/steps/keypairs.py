@@ -21,7 +21,6 @@ from hamcrest import assert_that, empty, equal_to, is_not  # noqa
 from novaclient import exceptions as nova_exceptions
 
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -146,7 +145,8 @@ class KeypairSteps(base.BaseSteps):
                 except nova_exceptions.NotFound:
                     actual_presence[keypair.id] = False
 
-            return expect_that(actual_presence, equal_to(expected_presence))
+            return waiter.expect_that(actual_presence,
+                                      equal_to(expected_presence))
 
         timeout = len(keypairs) * keypair_timeout
         waiter.wait(_check_keypairs_presence, timeout_seconds=timeout)
