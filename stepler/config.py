@@ -168,6 +168,8 @@ EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
 NOVA_API_LOG_FILE = '/var/log/nova/nova-api.log'
 NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
 
+SERVER_HOST_ATTR = 'OS-EXT-SRV-ATTR:host'
+
 FLAVOR_TINY = 'm1.tiny'
 FLAVOR_SMALL = 'm1.small'
 BAREMETAL_RAM = "16384"
