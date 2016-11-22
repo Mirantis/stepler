@@ -2,6 +2,9 @@
 Third party modules
 ===================
 
+.. automodule:: stepler.third_party.arping
+   :members:
+
 .. automodule:: stepler.third_party.bugs_file
    :members:
 

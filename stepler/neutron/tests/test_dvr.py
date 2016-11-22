@@ -25,9 +25,10 @@ pytestmark = pytest.mark.requires("computes_count_gte(2)")
 
 @pytest.mark.idempotent_id('91853195-c456-464c-b0a4-5655acee7769')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
-def test_check_connectivity_to_west_east_routing(neutron_2_servers,
-                                                 nova_floating_ip,
-                                                 server_steps):
+def test_check_connectivity_to_west_east_routing(
+        neutron_2_servers_different_networks,
+        nova_floating_ip,
+        server_steps):
     """**Scenario:** Check connectivity to West-East-Routing.
 
     **Setup:**
@@ -57,14 +58,14 @@ def test_check_connectivity_to_west_east_routing(neutron_2_servers,
     #. Delete subnets
     #. Delete networks
     """
-    server_1, server_2 = neutron_2_servers.servers
+    server_1, server_2 = neutron_2_servers_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_ip = next(iter(server_steps.get_ips(server_2,
-                                                 config.FIXED_IP)))
+    server_2_ip = next(iter(server_steps.get_ips(server_2, config.FIXED_IP)))
     with server_steps.get_server_ssh(server_1) as server_1_ssh:
         server_steps.check_ping_for_ip(
-            server_2_ip, server_1_ssh,
+            server_2_ip,
+            server_1_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 

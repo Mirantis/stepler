@@ -24,12 +24,13 @@ from stepler import config
 from stepler.third_party import utils
 
 __all__ = [
-    'neutron_2_servers',
+    'neutron_2_servers_different_networks',
+    'neutron_2_servers_same_network',
 ]
 
 
 @pytest.fixture
-def neutron_2_servers(
+def neutron_2_servers_different_networks(
         cirros_image,
         flavor,
         security_group,
@@ -88,4 +89,53 @@ def neutron_2_servers(
     return attrdict.AttrDict(
         servers=(server, server_2),
         networks=(network, network_2),
+        router=router)
+
+
+@pytest.fixture
+def neutron_2_servers_same_network(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        hypervisor_steps,
+        server_steps):
+    """Function fixture to prepare environment with 2 servers.
+
+    This fixture creates router, network and subnet, connects network
+    to router, boot 2 nova server on different computes.
+
+    All created resources are to be deleted after test.
+
+    Args:
+        cirros_image (obj): cirros image
+        flavor (obj): nova flavor
+        security_group (obj): nova security group
+        net_subnet_router (tuple): network, subnet, router
+        server (obj): nova server
+        hypervisor_steps (obj): instantiated nova hypervisor steps
+        server_steps (obj): instantiated nova server steps
+
+    Returns:
+        attrdict.AttrDict: created resources
+    """
+
+    network, subnet, router = net_subnet_router
+
+    server_2_hypervisor = hypervisor_steps.get_another_hypervisor(server)
+
+    server_2 = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        availability_zone='nova:{}'.format(
+            server_2_hypervisor.hypervisor_hostname),
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME,
+        password=config.CIRROS_PASSWORD)[0]
+
+    return attrdict.AttrDict(
+        servers=(server, server_2),
+        network=network,
         router=router)
