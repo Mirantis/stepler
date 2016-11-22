@@ -247,3 +247,66 @@ def test_restart_with_broadcast_traffic(
             agent_steps.check_alive(
                 ovs_agents,
                 timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('f3935941-4262-41b3-bedb-d9777e63895f')
+def test_restart_with_iperf_traffic(
+        neutron_2_servers_iperf_different_networks,
+        nova_floating_ip,
+        server_steps,
+        os_faults_steps,
+        agent_steps):
+    """**Scenario:** Restart OVS-agents with broadcast traffic on background.
+
+    **Setup:**
+
+    #. Create ubuntu image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create network_2 with subnet_2
+    #. Create server_1
+    #. Create server_2 on another compute and connect it to network
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Attach floating IP to server_1
+    #. Start iperf traffic from server_1 to server_2, wait it done
+    #. Check that iperf loss is 0
+    #. Start iperf traffic from server_1 to server_2
+    #. Restart ovs-agents
+    #. Check that iperf loss is not more than 10%
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete network, subnet, router
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete ubuntu image
+    #. Delete flavor
+    """
+    server_1, server_2 = neutron_2_servers_iperf_different_networks.servers
+
+    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_2_fixed_ip = next(
+        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+
+    ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        with server_steps.check_iperf_loss_context(
+                server_ssh,
+                ip=server_2_fixed_ip,
+                port=config.IPERF_UDP_PORT,
+                max_loss=0):
+            pass
+        with server_steps.check_iperf_loss_context(
+                server_ssh,
+                ip=server_2_fixed_ip,
+                port=config.IPERF_UDP_PORT,
+                max_loss=config.NEUTRON_OVS_RESTART_MAX_IPERF_LOSS):
+            os_faults_steps.restart_services([config.NEUTRON_OVS_SERVICE])
+            agent_steps.check_alive(
+                ovs_agents,
+                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)

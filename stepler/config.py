@@ -211,6 +211,18 @@ INSTALL_QEMU_UTILS_USERDATA = """#!/bin/bash -v
 apt-get install -y qemu-utils
 echo {}""".format(USERDATA_DONE_MARKER)
 
+IPERF_TCP_PORT = 5001
+IPERF_UDP_PORT = 5002
+
+START_IPERF_USERDATA = """#!/bin/bash -v
+apt-get install -yq iperf
+iperf -s -p {tcp_port} <&- > /tmp/iperf.log 2>&1 &
+iperf -u -s -p {udp_port} <&- > /tmp/iperf_udp.log 2>&1 &
+echo {marker}""".format(
+    tcp_port=IPERF_TCP_PORT,
+    udp_port=IPERF_UDP_PORT,
+    marker=USERDATA_DONE_MARKER)
+
 SMALL_RECLAIM_INTERVAL = str(30)
 BIG_RECLAIM_INTERVAL = str(24 * 60 * 60)
 SMALL_RECLAIM_TIMEOUT = 3 * int(SMALL_RECLAIM_INTERVAL)
@@ -278,6 +290,7 @@ NEUTRON_AGENT_DIE_TIMEOUT = 60
 NEUTRON_AGENT_ALIVE_TIMEOUT = 60
 NEUTRON_OVS_RESTART_MAX_PING_LOSS = 50
 NEUTRON_OVS_RESTART_MAX_ARPING_LOSS = 50
+NEUTRON_OVS_RESTART_MAX_IPERF_LOSS = 10
 
 SERVICE_TERMINATE_TIMEOUT = 60
 SERVICE_START_TIMEOUT = 60
