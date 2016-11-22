@@ -20,7 +20,6 @@ Router steps
 from hamcrest import equal_to
 
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -78,7 +77,7 @@ class RouterSteps(base.BaseSteps):
         """
         def _check_router_presence():
             is_present = bool(self._client.find_all(id=router['id']))
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_router_presence, timeout_seconds=timeout)
 
@@ -123,7 +122,7 @@ class RouterSteps(base.BaseSteps):
         def _check_gateway_presence():
             router = self._client.get(router_id)
             is_present = router['external_gateway_info'] is not None
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_gateway_presence, timeout_seconds=timeout)
 
@@ -175,7 +174,7 @@ class RouterSteps(base.BaseSteps):
         def _check_interface_subnet_presence():
             subnet_ids = self._client.get_interfaces_subnets_ids(router['id'])
             is_present = subnet['id'] in subnet_ids
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_interface_subnet_presence, timeout_seconds=timeout)
 

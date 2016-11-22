@@ -21,7 +21,6 @@ from hamcrest import equal_to, assert_that, has_properties  # noqa
 from keystoneclient import exceptions
 
 from stepler.base import BaseSteps
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -187,7 +186,7 @@ class RoleSteps(BaseSteps):
             except exceptions.NotFound:
                 is_present = False
 
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_role_presence, timeout_seconds=timeout)
 
@@ -233,6 +232,6 @@ class RoleSteps(BaseSteps):
             except exceptions.NotFound:
                 is_granted = False
 
-            return expect_that(is_granted, equal_to(must_granted))
+            return waiter.expect_that(is_granted, equal_to(must_granted))
 
         waiter.wait(_check_role_grant_status, timeout_seconds=timeout)
