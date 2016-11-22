@@ -17,7 +17,6 @@ Base
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import types
 
 import requests
@@ -282,7 +281,7 @@ class BaseApiClient(object):
         headers = headers or {}
         headers.update(self._auth_headers)
 
-        url = os.path.join(self._endpoint, url)
+        url = self._endpoint + url
 
         return requests.get(url, headers=headers, params=params, **kwgs)
 
@@ -291,7 +290,7 @@ class BaseApiClient(object):
         headers = headers or {}
         headers.update(self._auth_headers)
 
-        url = os.path.join(self._endpoint, url)
+        url = self._endpoint + url
 
         return requests.put(url, headers=headers, data=data, **kwgs)
 
@@ -300,7 +299,7 @@ class BaseApiClient(object):
         headers = headers or {}
         headers.update(self._auth_headers)
 
-        url = os.path.join(self._endpoint, url)
+        url = self._endpoint + url
 
         return requests.post(
             url, headers=headers, data=data, json=json, **kwgs)
@@ -310,7 +309,7 @@ class BaseApiClient(object):
         headers = headers or {}
         headers.update(self._auth_headers)
 
-        url = os.path.join(self._endpoint, url)
+        url = self._endpoint + url
 
         return requests.patch(url, headers=headers, data=data, **kwgs)
 
@@ -319,7 +318,7 @@ class BaseApiClient(object):
         headers = headers or {}
         headers.update(self._auth_headers)
 
-        url = os.path.join(self._endpoint, url)
+        url = self._endpoint + url
 
         return requests.delete(url, headers=headers, **kwgs)
 
@@ -342,7 +341,11 @@ class Resource(object):
 
     def get(self):
         """Refresh data from remote."""
-        self._client.get(self.id)
+        if hasattr(self, 'uuid'):
+            resource = self._client.get(self.uuid)
+        else:
+            resource = self._client.get(self.id)
+        self._info.update(resource._info)
 
     def to_dict(self):
         """Get data as dict.
