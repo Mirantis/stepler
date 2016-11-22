@@ -23,7 +23,7 @@ import os
 import pytest
 import xvfbwrapper
 
-from stepler.horizon import config
+from stepler import config
 from stepler.third_party import process_mutex
 from stepler.third_party import utils
 from stepler.third_party import video_recorder

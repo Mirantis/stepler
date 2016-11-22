@@ -19,7 +19,7 @@ Fixtures for volumes
 
 import pytest
 
-from stepler.horizon import config
+from stepler import config
 from stepler.horizon import steps
 from stepler.third_party import utils
 

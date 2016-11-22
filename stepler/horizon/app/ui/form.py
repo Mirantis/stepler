@@ -21,13 +21,13 @@ import pom
 from pom import ui
 from selenium.webdriver.common.by import By
 
-from stepler.horizon.config import ACTION_TIMEOUT
+from stepler import config
 
 
 class Form(ui.Form):
     """Custom form."""
 
-    timeout = ACTION_TIMEOUT
+    timeout = config.ACTION_TIMEOUT
 
     submit_locator = By.CSS_SELECTOR, '.btn.btn-primary'
     cancel_locator = By.CSS_SELECTOR, '.btn.cancel'
