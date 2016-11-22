@@ -68,6 +68,9 @@ TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
 
+
+GOOGLE_DNS_IP = '8.8.8.8'
+
 # IMAGE / SERVER CREDENTIALS
 CIRROS_USERNAME = 'cirros'
 CIRROS_PASSWORD = 'cubswin:)'

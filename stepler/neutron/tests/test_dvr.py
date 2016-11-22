@@ -66,3 +66,46 @@ def test_check_connectivity_to_west_east_routing(ovs_restart_resources,
         server_steps.check_ping_for_ip(
             server_2_ip, server_1_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('f3848003-ff36-4f87-899d-de6d3a321b65')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_check_connectivity_to_north_south_routing(cirros_image,
+                                                   flavor,
+                                                   security_group,
+                                                   net_subnet_router,
+                                                   server,
+                                                   nova_floating_ip,
+                                                   server_steps):
+    """**Scenario:** Check connectivity to North-South-Routing.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
