@@ -269,11 +269,25 @@ UNEXPECTED_VOLUMES_LIMIT = int(
 
 
 # Neutron
+NEUTRON_L3_SERVICE = 'neutron-l3-agent'
+NEUTRON_DHCP_SERVICE = 'neutron-dhcp-agent'
 NEUTRON_OVS_SERVICE = 'neutron-openvswitch-agent'
+NEUTRON_METADATA_SERVICE = 'neutron-metadata-agent'
+
 NEUTRON_AGENT_DIE_TIMEOUT = 60
 NEUTRON_AGENT_ALIVE_TIMEOUT = 60
 NEUTRON_OVS_RESTART_MAX_PING_LOSS = 50
 
-
 SERVICE_TERMINATE_TIMEOUT = 60
 SERVICE_START_TIMEOUT = 60
+
+AGENT_LOGS = {
+    NEUTRON_L3_SERVICE: '/var/log/neutron/l3-agent.log',
+    NEUTRON_DHCP_SERVICE: '/var/log/neutron/dhcp-agent.log',
+    NEUTRON_OVS_SERVICE: '/var/log/neutron/openvswitch-agent.log',
+    NEUTRON_METADATA_SERVICE: '/var/log/neutron/metadata-agent.log',
+}
+
+STR_ERROR = 'ERROR'
+STR_TRACE = 'TRACE'
+STR_SIGHUP = 'SIGHUP'

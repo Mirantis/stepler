@@ -30,6 +30,10 @@ class NeutronClient(object):
         self._rest_client = client
 
     @property
+    def agents(self):
+        return agent.AgentManager(self)
+
+    @property
     def networks(self):
         return network.NetworkManager(self)
 
@@ -44,7 +48,3 @@ class NeutronClient(object):
     @property
     def subnets(self):
         return subnet.SubnetManager(self)
-
-    @property
-    def agents(self):
-        return agent.AgentManager(self)

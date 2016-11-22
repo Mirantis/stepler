@@ -43,7 +43,7 @@ class AgentSteps(base.BaseSteps):
             list: neutron agents
 
         Raises:
-            AssertinError: if list of agents is empty
+            AssertionError: if list of agents is empty
         """
         agents = list(self._client.find_all(**kwargs))
         if check:
@@ -55,7 +55,7 @@ class AgentSteps(base.BaseSteps):
         """Verify step to check ``agents`` aliveness status.
 
         Args:
-            agents (list): netron agents to check status
+            agents (list): neutron agents to check status
             must_alive (bool, optional): flag whether all agents should be
                 alive or not
             timeout (int): seconds to wait a result of check
