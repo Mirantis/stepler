@@ -92,3 +92,8 @@ class SettingsSteps(BaseSteps):
             netloc = urlparse(menu.item_help.href).netloc
             assert_that(netloc, equal_to(help_url))
             menu.click()
+
+    @steps_checker.step
+    def check_current_settings(self, expected_settings):
+        """Step to check current settings."""
+        assert_that(self.get_current_settings(), equal_to(expected_settings))

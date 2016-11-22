@@ -30,7 +30,6 @@ import importlib
 import inspect
 import pkgutil
 
-import hamcrest
 import pytest
 
 import stepler
@@ -61,10 +60,6 @@ PERMITTED_CALLS = [
     'len',
     'keys',
 ]
-
-# register hamcrest matchers
-PERMITTED_CALLS += [method_name for method_name in dir(hamcrest)
-                    if not method_name.startswith('_')]
 
 # register utils
 PERMITTED_CALLS += utils.__all__

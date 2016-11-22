@@ -18,7 +18,6 @@ User settings tests
 # limitations under the License.
 
 import pytest
-from hamcrest import assert_that, equal_to  # noqa
 
 from stepler.horizon import config
 
@@ -61,14 +60,13 @@ class TestAdminOnly(object):
     def test_change_own_settings(self, new_user_account, update_settings,
                                  settings_steps):
         """Verify that user can change his settings."""
-        new_settings = {
+        settings = {
             'lang': 'British English (en-gb)',
             'timezone': 'UTC -05:00: Jamaica Time',
             'items_per_page': '1',
             'instance_log_length': '1'}
 
-        update_settings(**new_settings)
+        update_settings(**settings)
         settings_steps.refresh_page()
 
-        assert_that(settings_steps.get_current_settings(),
-                    equal_to(new_settings))
+        settings_steps.check_current_settings(expected_settings=settings)
