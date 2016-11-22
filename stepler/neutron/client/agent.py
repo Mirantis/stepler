@@ -38,3 +38,15 @@ class AgentManager(base.BaseNeutronManager):
         if name:
             kwargs['binary'] = name
         return self._rest_client.list_agents(**kwargs)['agents']
+
+    def get_l3_agents_for_router(self, router_id):
+        """Get router l3 agents ids list.
+
+        Args:
+            router_id (str): router id to get l3 agents
+
+        Returns:
+            list: list of dicts of l3 agents
+        """
+        l3_agents = self._rest_client.list_l3_agent_hosting_routers(router_id)
+        return l3_agents['agents']
