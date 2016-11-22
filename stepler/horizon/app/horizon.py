@@ -24,7 +24,7 @@ from pom import ui
 from selenium.webdriver import FirefoxProfile
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 
-from stepler.horizon import config
+from stepler import config
 
 from .pages import PageBase, pages  # noqa
 
