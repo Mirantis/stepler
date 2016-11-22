@@ -17,165 +17,68 @@ Waiter unittests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import functools
-import timeit
+import logging
 
+from hamcrest import (assert_that, calling, raises, is_,
+                      string_contains_in_order)  # noqa H301
 import pytest
 
 from stepler.third_party import waiter
 
-
-def test_waiter_works_immediately_if_predicate_result_true():
-    """Verify that waiter gets result immediately if predicate returns true."""
-    def predicate():
-        return (True, None)
-
-    result_time = timeit.timeit(
-        lambda: waiter.wait(predicate, timeout_seconds=5), number=1)
-
-    assert result_time < 1
+lambda_predicate = lambda: False
 
 
-def test_waiter_works_immediatelly_if_no_timeout():
-    """Verify that waiter gets result immediately if not timeout."""
-    def predicate():
-        return (False, 'error')
-
-    def wait():
-        try:
-            waiter.wait(predicate)
-        except waiter.TimeoutExpired:
-            pass
-
-    result_time = timeit.timeit(wait, number=1)
-
-    assert result_time < 1
+def simple_predicate():
+    return False
 
 
-def test_waiter_works_during_timeout_if_predicate_result_false():
-    """Verify that waiter gets result nearby timeout."""
-    timeout = 2
-
-    def predicate():
-        return (False, 'error')
-
-    def wait():
-        try:
-            waiter.wait(predicate, timeout_seconds=timeout)
-        except waiter.TimeoutExpired:
-            pass
-
-    result_time = timeit.timeit(wait, number=1)
-
-    assert result_time > timeout - 1 and result_time < timeout
+def expect_predicate():
+    return waiter.expect_that(1, is_(2))
 
 
-def test_waiter_big_multiplier_doesnot_overflow_timeout():
-    """Verify that waiter gets result nearby timeout if multiplier is big."""
-    timeout = 1
-
-    def predicate():
-        return (False, 'error')
-
-    def wait():
-        try:
-            waiter.wait(predicate, timeout_seconds=timeout, multiplier=100)
-        except waiter.TimeoutExpired:
-            pass
-
-    result_time = timeit.timeit(wait, number=1)
-
-    assert result_time > timeout - 1 and result_time < timeout
+def test_trusty_predicate():
+    """Verify correct working with trusty predicate."""
+    result = waiter.wait(lambda: True, timeout_seconds=0)
+    assert_that(result, is_(True))
 
 
-def test_waiter_big_sleep_doesnot_overflow_timeout():
-    """Verify that waiter gets result nearby timeout if sleep is big."""
-    timeout = 1
-
-    def predicate():
-        return (False, 'error')
-
-    def wait():
-        try:
-            waiter.wait(predicate, timeout_seconds=timeout, sleep_seconds=100)
-        except waiter.TimeoutExpired:
-            pass
-
-    result_time = timeit.timeit(wait, number=1)
-
-    assert result_time > timeout - 1 and result_time < timeout
+@pytest.mark.parametrize(
+    'predicate, message',
+    [(lambda_predicate, 'No exception raised during predicate executing'),
+     (simple_predicate, 'No exception raised during predicate executing'),
+     (expect_predicate, r'Expected: <2>\s+but: was <1>')])
+def test_waiter_raises_timeout_expired(predicate, message):
+    """Check that falsy predicates exception and message."""
+    assert_that(
+        calling(waiter.wait).with_args(
+            predicate, timeout_seconds=0),
+        raises(waiter.TimeoutExpired, message))
 
 
-def test_waiter_supports_expected_exceptions():
-    """Verify that waiter supports expected exceptions."""
-    def predicate():
-        raise TypeError('error')
+def test_pass_args_to_predicate():
+    """Test passing args to predicate."""
 
-    with pytest.raises(waiter.TimeoutExpired):
-        waiter.wait(predicate, expected_exceptions=(TypeError,))
+    def predicate(foo, bar=None):
+        return waiter.expect_that(foo, is_(bar))
 
-
-def test_waiter_raises_unexpected_exceptions():
-    """Verify that waiter supports expected exceptions."""
-    def predicate():
-        raise LookupError('error')
-
-    with pytest.raises(LookupError):
-        waiter.wait(predicate, expected_exceptions=(TypeError,))
+    assert_that(
+        calling(waiter.wait).with_args(
+            predicate, timeout_seconds=0, args=[1], kwargs={'bar': 2}),
+        raises(waiter.TimeoutExpired, r'Expected: <2>\s+but: was <1>'))
 
 
-def test_waiter_exception_message_contains_predicate_exception_message():
-    """Verify that waiter supports expected exceptions."""
-    predicate_error = 'predicate error'
-
-    def predicate():
-        raise TypeError(predicate_error)
-
-    with pytest.raises(waiter.TimeoutExpired) as e:
-        waiter.wait(predicate, expected_exceptions=(TypeError,))
-        assert predicate_error in str(e)
-
-
-def test_waiter_exception_message_contains_predicate_result_message():
-    """Verify that waiter supports expected exceptions."""
-    predicate_error = 'predicate error'
-
-    def predicate():
-        return (False, predicate_error)
-
-    with pytest.raises(waiter.TimeoutExpired) as e:
-        waiter.wait(predicate)
-        assert predicate_error in str(e)
-
-
-def test_waiter_raises_exception_if_predicate_doesnot_return_tuple():
-    """Verify that waiter raises exception if predicate result isn't tuple."""
-    def predicate():
-        return False
-
-    with pytest.raises(TypeError) as e:
-        waiter.wait(predicate)
-        assert 'should return tuple' in str(e)
-
-
-def test_waiter_exception_message_correct_if_no_name_predicate():
-    """Verify waiter exception message correct if no predicate ``__name__``."""
-    def predicate(*args, **kwgs):
-        return (False, 'error')
-
-    with pytest.raises(waiter.TimeoutExpired) as e:
-        waiter.wait(functools.partial(predicate, foo='bar'))
-        assert 'functools.partial' in str(e)
-
-
-def test_waiter_provides_waiting_for_message_to_exception_message():
-    """Verify that waiter provides ``waiting_for`` message to exception."""
-    waiting_for_message = "something happens"
-
-    def predicate(*args, **kwgs):
-        return (False, "error")
-
-    with pytest.raises(waiter.TimeoutExpired) as e:
-        waiter.wait(functools.partial(predicate, foo='bar'),
-                    waiting_for=waiting_for_message)
-        assert waiting_for_message in str(e)
+def test_log_wait_calls(caplog):
+    """Check tha logs contains waiting start and end records"""
+    with caplog.atLevel(logging.DEBUG):
+        waiter.wait(
+            lambda: True,
+            timeout_seconds=0,
+            sleep_seconds=1,
+            waiting_for="expected_predicate to be True")
+    assert_that(caplog.text(),
+                string_contains_in_order(
+                    "Function 'wait' starts",
+                    "'timeout_seconds': 0",
+                    "'waiting_for': 'expected_predicate to be True'",
+                    "'sleep_seconds': 1",
+                    "Function 'wait' ended", ))

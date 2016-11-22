@@ -21,7 +21,6 @@ from hamcrest import equal_to, assert_that, is_not, empty  # noqa
 from ironicclient import exceptions
 
 from stepler.base import BaseSteps
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -126,7 +125,8 @@ class IronicNodeSteps(BaseSteps):
                 except exceptions.NotFound:
                     actual_presence[node.uuid] = False
 
-            return expect_that(actual_presence, equal_to(expected_presence))
+            return waiter.expect_that(actual_presence,
+                                      equal_to(expected_presence))
 
         timeout = len(nodes) * node_timeout
         waiter.wait(_check_ironic_nodes_presence, timeout_seconds=timeout)
@@ -177,7 +177,7 @@ class IronicNodeSteps(BaseSteps):
         """
         def _check_ironic_node_maintenance():
             self._get_node(node)
-            return expect_that(node.maintenance, equal_to(state))
+            return waiter.expect_that(node.maintenance, equal_to(state))
 
         waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)
 
@@ -225,7 +225,7 @@ class IronicNodeSteps(BaseSteps):
             else:
                 power_state = 'power ' + state
 
-            return expect_that(node.power_state, equal_to(power_state))
+            return waiter.expect_that(node.power_state, equal_to(power_state))
 
         waiter.wait(_check_ironic_node_power_state, timeout_seconds=timeout)
 

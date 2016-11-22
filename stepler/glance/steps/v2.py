@@ -21,7 +21,6 @@ from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa
 from glanceclient import exc
 
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -216,7 +215,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             except exc.NotFound:
                 is_present = False
 
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_image_presence, timeout_seconds=timeout)
 
@@ -234,7 +233,8 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         def _check_image_status():
             image.update(self._client.images.get(image.id))
-            return expect_that(image.status.lower(), equal_to(status.lower()))
+            return waiter.expect_that(image.status.lower(),
+                                      equal_to(status.lower()))
 
         waiter.wait(_check_image_status, timeout_seconds=timeout)
 
@@ -265,7 +265,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             else:
                 is_bound = False
 
-            return expect_that(is_bound, equal_to(must_bound))
+            return waiter.expect_that(is_bound, equal_to(must_bound))
 
         waiter.wait(_check_image_bind_status, timeout_seconds=timeout)
 

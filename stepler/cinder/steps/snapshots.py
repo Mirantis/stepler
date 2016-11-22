@@ -21,7 +21,6 @@ from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -116,7 +115,8 @@ class SnapshotSteps(base.BaseSteps):
             for snapshot in self._client.list():
                 if snapshot.id in actual_presence:
                     actual_presence[snapshot.id] = True
-            return expect_that(actual_presence, equal_to(expected_presence))
+            return waiter.expect_that(actual_presence,
+                                      equal_to(expected_presence))
 
         waiter.wait(_check_snapshots_presence, timeout_seconds=timeout)
 
@@ -139,8 +139,8 @@ class SnapshotSteps(base.BaseSteps):
 
             def _check_snapshot_status():
                 snapshot.get()
-                return expect_that(snapshot.status.lower(),
-                                   equal_to(status.lower()))
+                return waiter.expect_that(snapshot.status.lower(),
+                                          equal_to(status.lower()))
 
             waiter.wait(_check_snapshot_status, timeout_seconds=timeout)
 
