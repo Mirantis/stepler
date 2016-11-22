@@ -1,7 +1,7 @@
 """
---------------------
-Glance API client v1
---------------------
+------------------
+Ironic API clients
+------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,18 +17,8 @@ Glance API client v1
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base import BaseApiClient
+from .node_v1 import *  # noqa
 
-
-class ApiClientV1(BaseApiClient):
-    """Glance API client v1."""
-
-    def images_update(self, image_id, status=None):
-        """Update image via API call."""
-        headers = {}
-        if status:
-            headers['x-image-meta-status'] = status
-
-        url = '/v1/images/' + image_id
-        response = self._put(url, headers)
-        response.raise_for_status()
+__all__ = [
+    'NodeApiClientV1',
+]
