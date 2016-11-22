@@ -37,6 +37,7 @@ def settimeout():
 
     settimeout_func = socket.socket.settimeout.im_func
     wrapper.__doc__ = settimeout_func.__doc__
+    wrapper.__name__ = settimeout_func.__name__
     return wrapper
 
 socket.socket.settimeout = settimeout()

@@ -61,9 +61,6 @@ def pytest_collection_modifyitems(config, items):
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_teardown(item, nextitem):
     """Pytest hook to dispatch destructive scenarios."""
-
-    destructor = item._request.getfixturevalue('os_faults_client')
-
     do_revert = True
 
     # Revert only destructive tests
@@ -77,6 +74,7 @@ def pytest_runtest_teardown(item, nextitem):
         do_revert = False
 
     if do_revert:
+        destructor = item._request.getfixturevalue('os_faults_client')
         # reject finalizers of all fixture scopes
         for finalizers in item.session._setupstate._finalizers.values():
             for finalizer in finalizers:
