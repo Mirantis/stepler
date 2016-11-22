@@ -19,7 +19,7 @@ Volumes steps
 
 from hamcrest import assert_that, equal_to, starts_with, has_length, any_of  # noqa H301
 
-from stepler.horizon import config
+from stepler import config
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter

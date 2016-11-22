@@ -19,9 +19,10 @@ User settings tests
 
 import pytest
 
-from stepler.horizon import config
+from stepler import config
 
 
+# TODO(schipiga): move it to fixtures
 @pytest.yield_fixture
 def new_user_account(user, auth_steps):
     """Fixture to log in new user account."""

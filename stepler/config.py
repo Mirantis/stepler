@@ -17,11 +17,18 @@ Config
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import os
 import socket
 import uuid
 
 import stepler.hacking  # noqa F401
+
+from stepler.third_party.utils import generate_ids
+
+STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
+# TODO(schipiga): inject STEPLER_PREFIX to prevent cross imports problem.
+generate_ids = functools.partial(generate_ids, _stepler_prefix=STEPLER_PREFIX)
 
 socket.setdefaulttimeout(60)
 
@@ -65,9 +72,6 @@ TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH",
 
 TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '../test_reports'))
-
-STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
-
 
 GOOGLE_DNS_IP = '8.8.8.8'
 
@@ -277,3 +281,37 @@ NEUTRON_OVS_RESTART_MAX_PING_LOSS = 50
 
 SERVICE_TERMINATE_TIMEOUT = 60
 SERVICE_START_TIMEOUT = 60
+
+
+# Horizon
+BROWSER_WINDOW_SIZE = map(
+    int, (os.environ.get('BROWSER_WINDOW_SIZE', ('1920,1080'))).split(','))
+
+UI_TIMEOUT = 30
+ACTION_TIMEOUT = 60
+EVENT_TIMEOUT = 180
+
+BIG_FILE_SIZE = 1024 * 1024 * 1024 * 100  # 100 Gb
+LONG_ACTION_TIMEOUT = 60 * 60  # 1 hour (timeout for 'Working')
+LONG_EVENT_TIMEOUT = 60 * 60 * 3  # 3 hours (timeout for 'Saving')
+
+OS_DASHBOARD_URL = os.environ.get('OS_DASHBOARD_URL')  # should be defined!
+VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')
+
+DEFAULT_ADMIN_NAME = 'admin'
+DEFAULT_ADMIN_PASSWD = 'admin'
+DEFAULT_ADMIN_PROJECT = 'admin'
+
+ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT = list(generate_ids('admin', count=3))
+USER_NAME, USER_PASSWD, USER_PROJECT = list(generate_ids('user', count=3))
+
+FLOATING_NETWORK_NAME = 'admin_floating_net'
+INTERNAL_NETWORK_NAME = next(generate_ids('internal_net'))
+INTERNAL_SUBNET_NAME = next(generate_ids('internal_subnet'))
+ROUTER_NAME = next(generate_ids('router'))
+
+XVFB_LOCK = '/tmp/xvfb.lock'
+
+# Volume creating constants
+IMAGE_SOURCE = 'Image'
+VOLUME_SOURCE = 'Volume'
