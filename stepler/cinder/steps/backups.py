@@ -23,7 +23,6 @@ from hamcrest import (assert_that, calling, empty, equal_to, is_not,
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -149,7 +148,8 @@ class BackupSteps(base.BaseSteps):
 
         def _check_backup_status():
             backup.get()
-            return expect_that(backup.status.lower(), equal_to(status.lower()))
+            return waiter.expect_that(backup.status.lower(),
+                                      equal_to(status.lower()))
 
         waiter.wait(_check_backup_status, timeout_seconds=timeout)
 
@@ -208,6 +208,6 @@ class BackupSteps(base.BaseSteps):
                 is_present = True
             except exceptions.NotFound:
                 is_present = False
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_backup_presence, timeout_seconds=timeout)
