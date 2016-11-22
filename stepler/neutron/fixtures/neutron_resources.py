@@ -20,15 +20,16 @@ Neutron OVS restart tests fixtures
 import attrdict
 import pytest
 
+from stepler import config
 from stepler.third_party import utils
 
 __all__ = [
-    'ovs_restart_resources',
+    'neutron_2_servers',
 ]
 
 
 @pytest.fixture
-def ovs_restart_resources(
+def neutron_2_servers(
         cirros_image,
         flavor,
         security_group,
@@ -39,7 +40,7 @@ def ovs_restart_resources(
         add_router_interfaces,
         hypervisor_steps,
         server_steps):
-    """Function fixture to prepare environment for OVS restart tests.
+    """Function fixture to prepare environment with 2 servers.
 
     This fixture creates router, 2 networks and 2 subnets, connects networks
     to router, boot nova server on each network on different computes.
@@ -80,7 +81,9 @@ def ovs_restart_resources(
         networks=[network_2],
         availability_zone='nova:{}'.format(
             server_2_hypervisor.hypervisor_hostname),
-        security_groups=[security_group])[0]
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME,
+        password=config.CIRROS_PASSWORD)[0]
 
     return attrdict.AttrDict(
         servers=(server, server_2),

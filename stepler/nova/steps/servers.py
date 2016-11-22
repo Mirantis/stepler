@@ -533,9 +533,9 @@ class ServerSteps(base.BaseSteps):
             floating_ip = self.get_ips(server, 'floating').keys()[0]
 
             with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
-                    for ip in ips:
-                        self.check_ping_for_ip(ip, remote_from=server_ssh,
-                                               timeout=timeout)
+                for ip in ips:
+                    self.check_ping_for_ip(ip, remote_from=server_ssh,
+                                           timeout=timeout)
 
     @steps_checker.step
     def live_migrate(self, servers, host=None, block_migration=True,

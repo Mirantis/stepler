@@ -25,7 +25,7 @@ pytestmark = pytest.mark.requires("computes_count_gte(2)")
 
 @pytest.mark.idempotent_id('91853195-c456-464c-b0a4-5655acee7769')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
-def test_check_connectivity_to_west_east_routing(ovs_restart_resources,
+def test_check_connectivity_to_west_east_routing(neutron_2_servers,
                                                  nova_floating_ip,
                                                  server_steps):
     """**Scenario:** Check connectivity to West-East-Routing.
@@ -57,7 +57,7 @@ def test_check_connectivity_to_west_east_routing(ovs_restart_resources,
     #. Delete subnets
     #. Delete networks
     """
-    server_1, server_2 = ovs_restart_resources.servers
+    server_1, server_2 = neutron_2_servers.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
     server_2_ip = next(iter(server_steps.get_ips(server_2,

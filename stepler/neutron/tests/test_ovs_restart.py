@@ -26,7 +26,7 @@ pytestmark = pytest.mark.requires("computes_count_gte(2)")
 
 @pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5')
 def test_restart_with_pcs_disable_enable(
-        ovs_restart_resources,
+        neutron_2_servers,
         nova_floating_ip,
         server_steps,
         os_faults_steps):
@@ -60,7 +60,7 @@ def test_restart_with_pcs_disable_enable(
     #. Delete cirros image
     #. Delete flavor
     """
-    server_1, server_2 = ovs_restart_resources.servers
+    server_1, server_2 = neutron_2_servers.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
     server_2_fixed_ip = next(iter(server_steps.get_ips(server_2,
@@ -81,7 +81,7 @@ def test_restart_with_pcs_disable_enable(
 
 @pytest.mark.idempotent_id('310c630d-38f0-402b-9423-ffb14fb766b2')
 def test_restart_with_pcs_ban_clear(
-        ovs_restart_resources,
+        neutron_2_servers,
         nova_floating_ip,
         server_steps,
         os_faults_steps):
@@ -115,7 +115,7 @@ def test_restart_with_pcs_ban_clear(
     #. Delete cirros image
     #. Delete flavor
     """
-    server_1, server_2 = ovs_restart_resources.servers
+    server_1, server_2 = neutron_2_servers.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
     server_2_fixed_ip = next(iter(server_steps.get_ips(server_2,
@@ -140,7 +140,7 @@ def test_restart_with_pcs_ban_clear(
 
 @pytest.mark.idempotent_id('ab973d26-55e0-478c-b5fd-35a3ea47e583')
 def test_restart_many_times(
-        ovs_restart_resources,
+        neutron_2_servers,
         nova_floating_ip,
         server_steps,
         os_faults_steps,
@@ -176,7 +176,7 @@ def test_restart_many_times(
     #. Delete cirros image
     #. Delete flavor
     """
-    server_1, server_2 = ovs_restart_resources.servers
+    server_1, server_2 = neutron_2_servers.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
     server_2_fixed_ip = next(
