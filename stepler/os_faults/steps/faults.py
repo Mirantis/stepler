@@ -20,8 +20,8 @@ os_faults steps
 import os
 import tempfile
 
-from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains, has_items)  # noqa H301
+from hamcrest import (assert_that, empty, equal_to, has_item, has_properties,
+                      is_not, only_contains, has_items)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -424,3 +424,61 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(compute, cmd, check=False)
         assert_that(
             result, only_contains(has_properties(status=config.STATUS_FAILED)))
+
+    @steps_checker.step
+    def get_ovs_vsctl_tags(self, check=True):
+        """Step to get ovs-vsctl tags.
+
+        Args:
+            check (bool): flag whether check step or not
+
+        Returns:
+            dict: ovs-vsctl tags for all nodes
+
+        Raises:
+            AssertionError: if ovs-vsctl tags dict is empty
+        """
+
+        def get_ports_tags_data(lines):
+            """Returns ovs-vsctl tags in dict format"""
+            port_tags = {}
+            last_offset = 0
+            port = None
+            for line in lines[1:]:
+                line = line.rstrip()
+                key, val = line.split(None, 1)
+                offset = len(line) - len(line.lstrip())
+                if port is None:
+                    if key.lower() == 'port':
+                        port = val.strip('"')
+                        last_offset = offset
+                elif offset <= last_offset:
+                    port = None
+                elif key.lower() == 'tag:':
+                    port_tags[port] = val
+                    port = None
+            return port_tags
+
+        nodes = self.get_nodes()
+        result_records = self.execute_cmd(nodes, 'ovs-vsctl show')
+        ovs_vsctl_tags = {
+            record.host: get_ports_tags_data(record.payload['stdout_lines'])
+            for record in result_records}
+
+        if check:
+            assert_that(ovs_vsctl_tags, is_not(empty()))
+
+        return ovs_vsctl_tags
+
+    @steps_checker.step
+    def check_ovs_vsctl_tags(self, expected_tags):
+        """Step to check ovs-vsctl tags.
+
+        Args:
+            expected_tags (dict): ovs-vsctl tags for all nodes
+
+        Raises:
+            AssertionError: if ovs-vsctl tags not equal to expected ones.
+        """
+        actual_tags = self.get_ovs_vsctl_tags()
+        assert_that(actual_tags, equal_to(expected_tags))
