@@ -19,15 +19,12 @@ Images steps
 
 from hamcrest import assert_that, equal_to  # noqa
 
-from stepler.horizon import config
+from stepler import config
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
 
 from .base import BaseSteps
-
-CIRROS_URL = ('http://download.cirros-cloud.net/0.3.1/'
-              'cirros-0.3.1-x86_64-uec.tar.gz')
 
 
 class ImagesSteps(BaseSteps):
@@ -41,7 +38,7 @@ class ImagesSteps(BaseSteps):
     def create_image(self,
                      image_name,
                      image_description=None,
-                     image_url=CIRROS_URL,
+                     image_url=config.CIRROS_QCOW2_URL,
                      image_file=None,
                      disk_format='QCOW2',
                      min_disk=None,

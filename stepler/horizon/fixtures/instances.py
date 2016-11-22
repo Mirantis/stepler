@@ -19,7 +19,7 @@ Fixtures for instances
 
 import pytest
 
-from stepler.horizon.config import INTERNAL_NETWORK_NAME
+from stepler import config
 from stepler.horizon.steps import InstancesSteps
 from stepler.third_party import utils
 
@@ -35,7 +35,8 @@ def create_instance(instances_steps):
     """Create instances."""
     instances = []
 
-    def _create_instance(instance_name, network_name=INTERNAL_NETWORK_NAME,
+    def _create_instance(instance_name,
+                         network_name=config.INTERNAL_NETWORK_NAME,
                          count=1):
         _instances = []
         instance_names = instances_steps.create_instance(
@@ -66,7 +67,7 @@ def instance(instances_steps):
     instance_name = next(utils.generate_ids('instance'))
 
     instances_steps.create_instance(
-        instance_name, network_name=INTERNAL_NETWORK_NAME)
+        instance_name, network_name=config.INTERNAL_NETWORK_NAME)
     instance = utils.AttrDict(name=instance_name)
 
     yield instance

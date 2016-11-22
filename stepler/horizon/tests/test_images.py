@@ -19,7 +19,7 @@ Image tests
 
 import pytest
 
-from stepler.horizon import config
+from stepler import config
 from stepler.third_party import utils
 
 

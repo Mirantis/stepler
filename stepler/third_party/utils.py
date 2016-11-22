@@ -29,7 +29,6 @@ import attrdict
 import requests
 import six
 
-from stepler import config
 from stepler.third_party import context
 
 
@@ -71,7 +70,7 @@ def generate_mac_addresses(count=1):
 
 
 def generate_ids(prefix=None, postfix=None, count=1, length=50,
-                 use_unicode=False):
+                 use_unicode=False, _stepler_prefix=None):
     """Generate unique identificators, based on UUID.
 
     Arguments:
@@ -80,14 +79,25 @@ def generate_ids(prefix=None, postfix=None, count=1, length=50,
         count (int): count of unique ids
         length (int): length of unique ids
         use_unicode (boolean|False): generate str with unicode or not
+        _stepler_prefix (str, optional): Resources prefix is used to call
+            ``generate_ids`` inside ``stepler.config`` and avoid cross imports
+            problem. By default it has value ``stepler.config.STEPLER_PREFIX``.
 
     Returns:
         generator: unique ids
     """
+    # TODO(schipiga): thirdparty module should know nothing about stepler
+    # configured values. We hack it for usability.
+    # ``If``-statement is used to allow ``generate_ids`` inside
+    # ``stepler.config`` and prevent cross imports problem.
+    if not _stepler_prefix:
+        from stepler import config
+        _stepler_prefix = config.STEPLER_PREFIX
+
     # hash usually should have >= 7 symbols
     min_uid_length = 7
 
-    const_length = len(config.STEPLER_PREFIX + '-' +
+    const_length = len(_stepler_prefix + '-' +
                        (prefix + '-' if postfix else '') +
                        # uid will be here
                        ('-' + postfix if postfix else ''))
@@ -102,7 +112,7 @@ def generate_ids(prefix=None, postfix=None, count=1, length=50,
 
     for _ in range(count):
         # mix constant stepler prefix to separate tested objects
-        uid = config.STEPLER_PREFIX
+        uid = _stepler_prefix
 
         if prefix:
             uid += '-' + prefix
@@ -206,6 +216,10 @@ def get_file_path(url, name=None):
     Returns:
         str: file path of downloaded file.
     """
+    # TODO(schipiga): thirdparty module should know nothing about stepler
+    # configured values. We hack it for usability.
+    from stepler import config
+
     def _get_file_name(url):
         keepcharacters = (' ', '.', '_', '-')
         filename = url.rsplit('/')[-1]

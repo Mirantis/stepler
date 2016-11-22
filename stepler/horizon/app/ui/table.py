@@ -25,7 +25,7 @@ from pom import ui
 from selenium.webdriver.common.by import By
 from waiting import wait
 
-from stepler.horizon.config import EVENT_TIMEOUT
+from stepler import config
 
 
 class Cell(ui.Block):
@@ -47,7 +47,7 @@ class Row(ui.Row):
     transit_statuses = ()
 
     @pom.timeit
-    def wait_for_status(self, status, timeout=EVENT_TIMEOUT):
+    def wait_for_status(self, status, timeout=config.EVENT_TIMEOUT):
         """Wait status value after transit statuses."""
         self.wait_for_presence()
         with self.cell('status') as cell:
