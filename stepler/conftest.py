@@ -187,6 +187,14 @@ __all__ = sorted([  # sort for documentation
     'cleanup_chassis',
     'primary_chassis',
     'unexpected_chassis_cleanup',
+
+    'api_ironic_client_v1',
+    'get_ironic_client',
+    'ironic_client_v1',
+    'get_ironic_steps',
+    'ironic_steps_v1',
+    'api_ironic_steps_v1',
+    'api_ironic_steps',
 ])
 
 _plugins = [
