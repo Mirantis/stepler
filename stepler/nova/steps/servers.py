@@ -34,6 +34,7 @@ from stepler import base
 from stepler import config
 from stepler.third_party import arping
 from stepler.third_party import chunk_serializer
+from stepler.third_party import iperf
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import ping
 from stepler.third_party import ssh
@@ -1213,3 +1214,30 @@ class ServerSteps(base.BaseSteps):
                                      expected_statuses=[config.STATUS_ACTIVE],
                                      transit_statuses=[config.STATUS_SHUTOFF],
                                      timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+    @steps_checker.step
+    @contextlib.contextmanager
+    def check_iperf_loss_context(self, server_ssh, ip, port, time=60,
+                                 max_loss=0):
+        """Step to check that iperf losses inside CM is less than max_loss.
+
+        Note:
+            This step requires to iperf server will be launched with listening
+            for UDP protocol.
+
+        Args:
+            server_ssh (obj): instance of stepler.third_party.ssh.SshClient
+            ip (str): iperf server ip address
+            port (int): iperf server port
+            time (int, optional): time to generate traffic
+            max_loss (float): maximum allowed datagramm loss in percents
+
+        Raises:
+            AssertionError: if iperf loss is greater than `max_loss`
+        """
+        with iperf.iperf(
+                remote=server_ssh, ip=ip, time=time, port=port,
+                udp=True) as result:
+            yield
+        assert_that(result['summary']['error_percent'],
+                    less_than_or_equal_to(max_loss))
