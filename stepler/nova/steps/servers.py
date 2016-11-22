@@ -505,20 +505,23 @@ class ServerSteps(base.BaseSteps):
         floating_ip = self.get_ips(server, 'floating').keys()[0]
         self.check_ping_for_ip(floating_ip, timeout=timeout)
 
-    def _get_ping_plan(self, servers):
+    def _get_ping_plan(self, servers, ip_types):
         """Get dict which contains ip list to ping for each server"""
         ping_plan = {}
         for server1 in servers:
             ping_plan[server1] = []
             for server2 in servers:
                 if server1 != server2:
-                    for ip in self.get_ips(server2).keys():
-                        ping_plan[server1].append(ip)
+                    for ip_type in ip_types:
+                        for ip in self.get_ips(server2,
+                                               ip_type=ip_type).keys():
+                            ping_plan[server1].append(ip)
         return ping_plan
 
     @steps_checker.step
     def check_ping_between_servers_via_floating(self,
                                                 servers,
+                                                ip_types=('floating', 'fixed'),
                                                 timeout=0):
         """Step to check ping from each server to all other servers.
 
@@ -529,7 +532,7 @@ class ServerSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        ping_plan = self._get_ping_plan(servers)
+        ping_plan = self._get_ping_plan(servers, ip_types=ip_types)
         for server, ips in ping_plan.items():
             floating_ip = self.get_ips(server, 'floating').keys()[0]
 

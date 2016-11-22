@@ -50,6 +50,7 @@ __all__ = sorted([  # sort for documentation
     'get_subnet_steps',
     'net_subnet_router',
     'neutron_2_servers_different_networks',
+    'neutron_2_servers_diff_nets_2_routers',
     'neutron_2_servers_same_network',
     'get_agent_steps',
     'agent_steps',

@@ -17,7 +17,7 @@ Agent steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, is_not, empty, only_contains,
+from hamcrest import (assert_that, empty, is_in, is_not, only_contains,
                       has_entries)  # noqa H301
 
 from stepler import base
@@ -74,3 +74,57 @@ class AgentSteps(base.BaseSteps):
                 has_entries(alive=must_alive)))
 
         waiter.wait(_check_agents_alive, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_l3_agents_for_router(self, router, check=True):
+        """Step to retrieve router l3 agents ids list.
+
+        Args:
+            router (obj): router to get l3 agents
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            list: list of l3 agents for router
+        """
+        l3_agents = self._client.get_l3_agents_for_router(router.id)
+        if check:
+            assert_that(l3_agents, is_not(empty()))
+
+        return l3_agents
+
+    @steps_checker.step
+    def get_hosts_with_l3_agent_for_router(self, router, check=True):
+        """Step to retrieve fqdns of hosts with routers l3 agents.
+
+        Args:
+            router (obj): router to get l3 agents' hosts
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            list: list of fqdns
+        """
+        hosts = self._client.get_hosts_with_l3_agent_for_router(router.id)
+        if check:
+            assert_that(hosts, is_not(empty()))
+
+        return hosts
+
+    @steps_checker.step
+    def check_router_rescheduled(self, router, old_l3_agent, timeout=0):
+        """Verify step to check that router was rescheduled.
+
+        Args:
+            router (obj): router to check
+            old_l3_agent (dict): l3 agent before rescheduling
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_router_rescheduled():
+            l3_agents = self._client.get_l3_agents_for_router(router.id)
+            l3_agents_hosts = [agent['host'] for agent in l3_agents]
+            return expect_that(old_l3_agent['host'],
+                               is_not(is_in(l3_agents_hosts)))
+
+        waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)

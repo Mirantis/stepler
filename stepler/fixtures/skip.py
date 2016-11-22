@@ -20,13 +20,15 @@ Skip autouse fixture
 import attrdict
 import pytest
 
+from stepler import config
+
 __all__ = [
     'skip_test',
 ]
 
 
 @pytest.fixture(autouse=True)
-def skip_test(request, hypervisor_steps):
+def skip_test(request, hypervisor_steps, os_faults_steps):
     """Autouse function fixture to skip test by predicate.
 
     Usage:
@@ -53,7 +55,8 @@ def skip_test(request, hypervisor_steps):
         requires = map(lambda req: '({})'.format(req), requires.args)
         requires = ' and '.join(requires)
 
-    env = attrdict.AttrDict(hypervisors_steps=hypervisor_steps)
+    env = attrdict.AttrDict(hypervisors_steps=hypervisor_steps,
+                            os_faults_steps=os_faults_steps)
     predicates = Predicates(env)
     predicates = {attr: getattr(predicates, attr) for attr in dir(predicates)
                   if not attr.startswith('_')}
@@ -74,6 +77,12 @@ class Predicates(object):
     def computes_count_gte(self, count):
         """Define whether computes enough."""
         return len(self._env.hypervisors_steps.get_hypervisors()) >= count
+
+    def nova_api_count_gte(self, count):
+        """Define whether nova API nodes count is enough."""
+        return len(
+            self._env.os_faults_steps.get_nodes(
+                service_names=[config.NOVA_API])) >= count
 
     @property
     def ceph_enabled(self):
