@@ -23,6 +23,8 @@ import select
 
 import paramiko
 import six
+from six import moves
+
 
 __all__ = [
     'SshClient'
@@ -288,7 +290,6 @@ class SshClient(object):
         stdout = chan.makefile('rb')
         stderr = chan.makefile_stderr('rb')
         if self._sudo:
-            command = "sudo -s $SHELL -c '{}'".format(command.replace("'",
-                                                                      "\\'"))
+            command = "sudo -s $SHELL -c " + moves.shlex_quote(command)
         chan.exec_command(command)
         return chan, stdin, stdout, stderr
