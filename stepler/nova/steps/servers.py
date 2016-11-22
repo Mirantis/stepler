@@ -18,6 +18,7 @@ Server steps
 # limitations under the License.
 
 import contextlib
+import itertools
 import os
 import socket
 import time
@@ -506,33 +507,38 @@ class ServerSteps(base.BaseSteps):
         floating_ip = self.get_ips(server, 'floating').keys()[0]
         self.check_ping_for_ip(floating_ip, timeout=timeout)
 
-    def _get_ping_plan(self, servers):
+    def _get_ping_plan(self, servers, ip_types):
         """Get dict which contains ip list to ping for each server"""
-        ping_plan = {}
-        for server1 in servers:
-            ping_plan[server1] = []
-            for server2 in servers:
-                if server1 != server2:
-                    for ip in self.get_ips(server2).keys():
-                        ping_plan[server1].append(ip)
+        ping_plan = {server: [] for server in servers}
+        for server1, server2 in itertools.permutations(servers, 2):
+            for ip_type in ip_types:
+                ips = self.get_ips(server2, ip_type=ip_type)
+                ping_plan[server1].extend(ips)
         return ping_plan
 
     @steps_checker.step
     def check_ping_between_servers_via_floating(self,
                                                 servers,
+                                                ip_types=(config.FLOATING_IP,
+                                                          config.FIXED_IP),
                                                 timeout=0):
         """Step to check ping from each server to all other servers.
 
+        This function uses floating ips of servers to connect to them
+        and then send pings to other servers according to 'ip_types'
+        parameter.
+
         Args:
             servers (list): nova instances to check ping between
+            ip_types (tuple): types of ip addresses which should be pinged
             timeout (int): seconds to wait for result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        ping_plan = self._get_ping_plan(servers)
+        ping_plan = self._get_ping_plan(servers, ip_types)
         for server, ips in ping_plan.items():
-            floating_ip = self.get_ips(server, 'floating').keys()[0]
+            floating_ip = self.get_ips(server, config.FLOATING_IP).keys()[0]
 
             with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
                 for ip in ips:
