@@ -706,3 +706,22 @@ class OsFaultsSteps(base.BaseSteps):
                             "bps_wr={}".format(limit)]
         for expected_string in expected_strings:
             assert_that(expected_string, is_in(stdout))
+
+    @steps_checker.step
+    def get_network_type(self):
+        """Step to retrieve network type from neutron config.
+
+        Network type can be VLAN or VxLAN
+
+        Returns:
+            str: network type (vlan or vxlan)
+        """
+        cmd = "grep -P '^tenant_network_types\s*=\s*.+vxlan' {}".format(
+            config.NEUTRON_ML2_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.NEUTRON_OVS_SERVICE])
+        result = self.execute_cmd(nodes, cmd, check=False)
+        if all(node_result.status == config.STATUS_OK
+               for node_result in result):
+            return config.NETWORK_TYPE_VXLAN
+        else:
+            return config.NETWORK_TYPE_VLAN
