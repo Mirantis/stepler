@@ -315,9 +315,14 @@ AGENT_LOGS = {
     NEUTRON_METADATA_SERVICE: '/var/log/neutron/metadata-agent.log',
 }
 
+NEUTRON_ML2_CONFIG_PATH = '/etc/neutron/plugins/ml2/ml2_conf.ini'
+
 STR_ERROR = 'ERROR'
 STR_TRACE = 'TRACE'
 STR_SIGHUP = 'SIGHUP'
+
+NETWORK_TYPE_VLAN = 'vlan'
+NETWORK_TYPE_VXLAN = 'vxlan'
 
 # Horizon
 BROWSER_WINDOW_SIZE = map(

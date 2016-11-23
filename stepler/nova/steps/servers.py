@@ -676,6 +676,24 @@ class ServerSteps(base.BaseSteps):
 
     @steps_checker.step
     @contextlib.contextmanager
+    def check_no_ping_context(self, ip_to_ping, server_ssh=None):
+        """Step to check that ping is not success inside CM.
+
+        Args:
+            ip_to_ping (str): ip address to ping
+            server_ssh (obj, optional): instance of
+                stepler.third_party.ssh.SshClient. If None - ping will be run
+                from local machine
+
+        Raises:
+            AssertionError: if ping received is not equal to 0
+        """
+        with ping.Pinger(ip_to_ping, remote=server_ssh) as result:
+            yield
+        assert_that(result.received, equal_to(0))
+
+    @steps_checker.step
+    @contextlib.contextmanager
     def check_arping_loss_context(self, server_ssh, ip, iface='eth0',
                                   max_loss=0):
         """Step to check that arping losses inside CM is less than max_loss.
