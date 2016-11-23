@@ -240,16 +240,14 @@ def server(cirros_image,
 
 # TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.
 @pytest.fixture
-def get_ssh_proxy_cmd(admin_ssh_key_path,
-                      ip_by_host,
-                      network_steps,
+def get_ssh_proxy_cmd(network_steps,
+                      os_faults_steps,
                       server_steps):
     """Callable function fixture to get ssh proxy data of server.
 
     Args:
-        admin_ssh_key_path (str): path to admin ssh key
-        ip_by_host (function): function to get IP by host
         network_steps (NetworkSteps): instantiated network steps
+        os_faults_steps (obj): initialized os-faults steps
         server_steps (ServerSteps): instantiated server steps
 
     Returns:
@@ -264,9 +262,10 @@ def get_ssh_proxy_cmd(admin_ssh_key_path,
         net_id = network_steps.get_network_id_by_mac(server_mac)
         dhcp_netns = "qdhcp-{}".format(net_id)
         dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
-        dhcp_server_ip = ip_by_host(dhcp_host)
-        proxy_cmd = 'ssh -i {} root@{} ip netns exec {} netcat {} 22'.format(
-            admin_ssh_key_path, dhcp_server_ip, dhcp_netns, server_ip)
+        dhcp_server_ip = [
+            node.ip for node in os_faults_steps.get_node(fqdns=[dhcp_host])][0]
+        proxy_cmd = 'ssh root@{} ip netns exec {} netcat {} 22'.format(
+            dhcp_server_ip, dhcp_netns, server_ip)
 
         return proxy_cmd
 
