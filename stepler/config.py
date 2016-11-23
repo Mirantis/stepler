@@ -70,8 +70,12 @@ FORCE_API = bool(os.environ.get('FORCE_API_USAGE'))
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH",
                                  os.path.expanduser('~/images'))
 
-TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.getcwd(),
-                                                'test_reports'))
+TEST_REPORTS_DIR = os.environ.get(
+    "TEST_REPORTS_DIR",
+    os.path.join(os.getcwd(),  # put results to folder where tests are launched
+                 "test_reports"))
+
+TEST_REPORTS_DIR = os.path.abspath(os.path.expanduser(TEST_REPORTS_DIR))
 if not os.path.exists(TEST_REPORTS_DIR):
     os.mkdir(TEST_REPORTS_DIR)
 
