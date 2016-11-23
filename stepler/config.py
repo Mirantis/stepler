@@ -70,8 +70,8 @@ FORCE_API = bool(os.environ.get('FORCE_API_USAGE'))
 TEST_IMAGE_PATH = os.environ.get("TEST_IMAGE_PATH",
                                  os.path.expanduser('~/images'))
 
-TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '../test_reports'))
+TEST_REPORTS_DIR = os.path.abspath(os.path.join(os.getcwd(),
+                                                'test_reports'))
 
 GOOGLE_DNS_IP = '8.8.8.8'
 
