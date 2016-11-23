@@ -1,7 +1,7 @@
 """
---------------------
-Glance API client v1
---------------------
+----------------------
+Ironic base API client
+----------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,18 +17,12 @@ Glance API client v1
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base import BaseApiClient
+from stepler import base
 
 
-class ApiClientV1(BaseApiClient):
-    """Glance API client v1."""
+class IronicApiClient(base.BaseApiClient):
+    """Ironic base API client."""
 
-    def images_update(self, image_id, status=None):
-        """Update image via API call."""
-        headers = {}
-        if status:
-            headers['x-image-meta-status'] = status
-
-        url = '/v1/images/' + image_id
-        response = self._put(url, headers)
-        response.raise_for_status()
+    @property
+    def _endpoint(self):
+        return self._session.get_endpoint(service_type='baremetal').rstrip('/')

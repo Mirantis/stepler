@@ -150,6 +150,7 @@ __all__ = sorted([  # sort for documentation
     'keypair',
     'keypair_steps',
     'nova_client',
+    'get_nova_client',
     'create_security_group',
     'security_group',
     'security_group_steps',
@@ -188,6 +189,15 @@ __all__ = sorted([  # sort for documentation
     'cleanup_chassis',
     'primary_chassis',
     'unexpected_chassis_cleanup',
+
+    'api_ironic_client_v1',
+    'get_ironic_client',
+    'ironic_client_v1',
+    'get_api_ironic_client',
+    'get_api_ironic_steps',
+    'ironic_steps_v1',
+    'api_ironic_steps_v1',
+    'api_ironic_steps',
 ])
 
 _plugins = [
