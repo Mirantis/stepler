@@ -24,10 +24,71 @@ from stepler import config
 from stepler.third_party import utils
 
 __all__ = [
+    'neutron_2_networks',
     'neutron_2_servers_different_networks',
     'neutron_2_servers_same_network',
     'neutron_2_servers_iperf_different_networks',
 ]
+
+
+@pytest.fixture
+def neutron_2_networks(
+        request,
+        net_subnet_router,
+        create_network,
+        create_subnet,
+        create_router,
+        add_router_interfaces):
+    """Function fixture to prepare environment with 2 networks.
+
+    This fixture creates router(s), 2 networks and 2 subnets and connects
+    networks to router(s). By default, both networks will be connected to
+    single router.
+
+    All created resources are to be deleted after test.
+
+    Can be parametrized with 'different_routers' to create 2 routers and
+    connect each of networks to different router.
+
+    Example:
+        @pytest.mark.parametrize('neutron_2_networks',
+                                 ['different_routers'],
+                                 indirect=True)
+        def test_foo(neutron_2_networks):
+            # Will be created 2 routers, each of them will be linked with one
+            # of the subnets.
+
+    Args:
+        request (obj): py.test SubRequest
+        net_subnet_router (tuple): network, subnet, router
+        create_network (function): function to create network
+        create_subnet (function): function to create subnet
+        create_router (function): function to create router
+        add_router_interfaces (function): function to add subnet interface to
+            router
+
+    Returns:
+        attrdict.AttrDict: created resources
+    """
+    network, subnet, router = net_subnet_router
+    network_2 = create_network(next(utils.generate_ids()))
+
+    subnet_2 = create_subnet(
+        subnet_name=next(utils.generate_ids()),
+        network=network_2,
+        cidr='192.168.2.0/24')
+    routers = [router]
+    if getattr(request, 'param', None) == 'different_routers':
+        router_2 = create_router(next(utils.generate_ids()))
+        routers.append(router_2)
+        add_router_interfaces(router_2, [subnet_2])
+    else:
+        add_router_interfaces(router, [subnet_2])
+
+    return attrdict.AttrDict(
+        networks=[network, network_2],
+        subnets=[subnet, subnet_2],
+        routers=routers)
 
 
 @pytest.fixture
@@ -36,11 +97,8 @@ def neutron_2_servers_different_networks(
         cirros_image,
         flavor,
         security_group,
-        net_subnet_router,
         server,
-        create_network,
-        create_subnet,
-        add_router_interfaces,
+        neutron_2_networks,
         hypervisor_steps,
         server_steps):
     """Function fixture to prepare environment with 2 servers.
@@ -64,12 +122,9 @@ def neutron_2_servers_different_networks(
         cirros_image (obj): cirros image
         flavor (obj): nova flavor
         security_group (obj): nova security group
-        net_subnet_router (tuple): network, subnet, router
         server (obj): nova server
-        create_network (function): function to create network
-        create_subnet (function): function to create subnet
-        add_router_interfaces (function): function to add subnet interface to
-            router
+        neutron_2_networks (obj): neutron networks, subnets, router(s)
+            resources AttrDict instance
         hypervisor_steps (obj): instantiated nova hypervisor steps
         server_steps (obj): instantiated nova server steps
 
@@ -77,14 +132,8 @@ def neutron_2_servers_different_networks(
         attrdict.AttrDict: created resources
     """
 
-    network, subnet, router = net_subnet_router
-    network_2 = create_network(next(utils.generate_ids()))
-
-    subnet_2 = create_subnet(
-        subnet_name=next(utils.generate_ids()),
-        network=network_2,
-        cidr='192.168.2.0/24')
-    add_router_interfaces(router, [subnet_2])
+    network_1, network_2 = neutron_2_networks.networks
+    router = neutron_2_networks.routers[0]
 
     if getattr(request, 'param', None) == 'same_host':
         server_2_hypervisor = getattr(server, config.SERVER_HOST_ATTR)
@@ -103,7 +152,7 @@ def neutron_2_servers_different_networks(
 
     return attrdict.AttrDict(
         servers=(server, server_2),
-        networks=(network, network_2),
+        networks=(network_1, network_2),
         router=router)
 
 
@@ -176,10 +225,7 @@ def neutron_2_servers_iperf_different_networks(
         flavor,
         keypair,
         security_group,
-        net_subnet_router,
-        create_network,
-        create_subnet,
-        add_router_interfaces,
+        neutron_2_networks,
         hypervisor_steps,
         security_group_steps,
         server_steps):
@@ -196,11 +242,8 @@ def neutron_2_servers_iperf_different_networks(
         flavor (obj): nova flavor
         keypair (obj): nova server keypair
         security_group (obj): nova security group
-        net_subnet_router (tuple): network, subnet, router
-        create_network (function): function to create network
-        create_subnet (function): function to create subnet
-        add_router_interfaces (function): function to add subnet interface to
-            router
+        neutron_2_networks (obj): neutron networks, subnets, router(s)
+            resources AttrDict instance
         hypervisor_steps (obj): instantiated nova hypervisor steps
         security_group_steps (obj): instantiated nova security group steps
         server_steps (obj): instantiated nova server steps
@@ -209,14 +252,8 @@ def neutron_2_servers_iperf_different_networks(
         attrdict.AttrDict: created resources
     """
 
-    network_1, subnet, router = net_subnet_router
-    network_2 = create_network(next(utils.generate_ids()))
-
-    subnet_2 = create_subnet(
-        subnet_name=next(utils.generate_ids()),
-        network=network_2,
-        cidr='192.168.2.0/24')
-    add_router_interfaces(router, [subnet_2])
+    network_1, network_2 = neutron_2_networks.networks
+    router = neutron_2_networks.routers[0]
 
     rules = [
         {

@@ -20,12 +20,14 @@ Neutron fixtures
 from neutronclient.v2_0.client import Client
 import pytest
 
+from stepler import config
 from stepler.neutron.client import client
 
 __all__ = [
     'neutron_client',
     'get_neutron_client',
     'net_subnet_router',
+    'neutron_network_type',
 ]
 
 
@@ -76,3 +78,26 @@ def net_subnet_router(network, subnet, router, add_router_interfaces):
     """
     add_router_interfaces(router, [subnet])
     return network, subnet, router
+
+
+@pytest.fixture
+def neutron_network_type(os_faults_steps):
+    """Function fixture to retrieve network type from neutron config.
+
+    Network type can be VLAN or VxLAN
+
+    Args:
+        os_faults_steps (obj): instantiated os-faults steps
+
+    Returns:
+        str: i
+    """
+    cmd = "grep -P '^tenant_network_types\s*=\s*.+vxlan' {}".format(
+        config.NEUTRON_ML2_CONFIG_PATH)
+    controllers = os_faults_steps.get_nodes(
+        service_names=[config.NEUTRON_OVS_SERVICE])
+    result = os_faults_steps.execute_cmd(controllers, cmd, check=False)
+    if all(node_result.status == config.STATUS_OK for node_result in result):
+        return config.NETWORK_TYPE_VXLAN
+    else:
+        return config.NETWORK_TYPE_VLAN
