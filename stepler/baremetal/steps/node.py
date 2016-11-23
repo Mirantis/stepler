@@ -90,7 +90,7 @@ class IronicNodeSteps(BaseSteps):
         """Step to delete node.
 
         Args:
-            nodes (object): list of ironic nodes
+            nodes (list): list of ironic nodes
             check (bool): flag whether to check step or not
         """
         for node in nodes:
@@ -107,7 +107,7 @@ class IronicNodeSteps(BaseSteps):
         """Verify step to check ironic node is present.
 
         Args:
-            nodes (object): list of ironic nodes
+            nodes (list): list of ironic nodes
             must_present (bool): flag whether node should present or not
             node_timeout (int): seconds to wait a result of check
 
@@ -132,15 +132,15 @@ class IronicNodeSteps(BaseSteps):
         waiter.wait(_check_ironic_nodes_presence, timeout_seconds=timeout)
 
     @steps_checker.step
-    def set_ironic_node_maintenance(self,
-                                    node,
-                                    state,
-                                    reason=None,
-                                    check=True):
-        """Set the maintenance mode for the node.
+    def set_ironic_nodes_maintenance(self,
+                                     nodes,
+                                     state,
+                                     reason=None,
+                                     check=True):
+        """Set the maintenance mode for the nodes.
 
         Args:
-            node (str): The ironic node.
+            nodes (list): The list of ironic nodes.
             state (Bool): the maintenance mode; either a Boolean or a string
                 representation of a Boolean (eg, 'true', 'on', 'false',
                 'off'). True to put the node in maintenance mode; False
@@ -152,33 +152,46 @@ class IronicNodeSteps(BaseSteps):
         Raises:
             InvalidAttribute: if state is an invalid string
         """
-        self._client.node.set_maintenance(node_id=node.uuid,
-                                          state=state, maint_reason=reason)
+        for node in nodes:
+            self._client.node.set_maintenance(node_id=node.uuid,
+                                              state=state,
+                                              maint_reason=reason)
         if check:
-            self.check_ironic_node_maintenance(node=node, state=state)
+            self.check_ironic_nodes_maintenance(nodes=nodes, state=state)
 
     @steps_checker.step
-    def check_ironic_node_maintenance(self,
-                                      node,
-                                      state,
-                                      timeout=0):
+    def check_ironic_nodes_maintenance(self,
+                                       nodes,
+                                       state,
+                                       maintenance_timeout=0):
         """Check ironic node maintenance was changed.
 
         Args:
-            node (object): The ironic node.
+            nodes (list): The list of ironic nodes.
             state (Bool): the maintenance mode; either a Boolean or a string
                 representation of a Boolean (eg, 'true', 'on', 'false',
                 'off'). True to put the node in maintenance mode; False
                 to take the node out of maintenance mode.
-            timeout (int): seconds to wait a result of check
+            maintenance_timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def _check_ironic_node_maintenance():
-            self._get_node(node)
-            return expect_that(node.maintenance, equal_to(state))
+        expected_maintenance = {node.maintenance: state for node in nodes}
 
+        def _check_ironic_node_maintenance():
+            actual_maintenance = {}
+            for node in nodes:
+                try:
+                    self._client.node.get(node.maintenance)
+                    actual_maintenance[node.maintenance] = True
+                except exceptions.NotFound:
+                    actual_maintenance[node.maintenance] = False
+
+            return expect_that(actual_maintenance,
+                               equal_to(expected_maintenance))
+
+        timeout = len(nodes) * maintenance_timeout
         waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)
 
     @steps_checker.step
