@@ -20,16 +20,18 @@ import pytest
 
 from stepler import config
 
-pytestmark = pytest.mark.requires("computes_count_gte(2)")
 
-
+@pytest.mark.requires("computes_count_gte(2)")
 @pytest.mark.idempotent_id('91853195-c456-464c-b0a4-5655acee7769')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
-def test_check_connectivity_to_west_east_routing(
+@pytest.mark.parametrize('neutron_2_servers_different_networks',
+                         ['same_host', 'different_hosts'],
+                         indirect=True)
+def test_check_east_west_connectivity_between_instances(
         neutron_2_servers_different_networks,
         nova_floating_ip,
         server_steps):
-    """**Scenario:** Check connectivity to West-East-Routing.
+    """**Scenario:** Check east-west connectivity between instances.
 
     **Setup:**
 
@@ -38,10 +40,9 @@ def test_check_connectivity_to_west_east_routing(
     #. Create security group
     #. Create network_1 with subnet_1 and DVR
     #. Create server_1
-    #. Create floating ip
     #. Create network_2 with subnet_2
     #. Add network_2 interface to router
-    #. Create server_2 on another compute and connect it to network_2
+    #. Create server_2 and connect it to network_2
 
     **Steps:**
 
@@ -69,6 +70,7 @@ def test_check_connectivity_to_west_east_routing(
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
+@pytest.mark.requires("computes_count_gte(2)")
 @pytest.mark.idempotent_id('f3848003-ff36-4f87-899d-de6d3a321b65')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_check_connectivity_to_north_south_routing(cirros_image,
