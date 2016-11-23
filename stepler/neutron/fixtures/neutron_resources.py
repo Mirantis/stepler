@@ -29,8 +29,9 @@ __all__ = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture(params=['different_hosts'])
 def neutron_2_servers_different_networks(
+        request,
         cirros_image,
         flavor,
         security_group,
@@ -48,7 +49,17 @@ def neutron_2_servers_different_networks(
 
     All created resources are to be deleted after test.
 
+    Can be parametrized with 'same_host'.
+
+    Example:
+        @pytest.mark.parametrize('neutron_2_servers_different_networks',
+                                 ['same_host'],
+                                 indirect=True)
+        def test_foo(neutron_2_servers_different_networks):
+            # Instances will be created on the same compute
+
     Args:
+        request (obj): py.test SubRequest
         cirros_image (obj): cirros image
         flavor (obj): nova flavor
         security_group (obj): nova security group
@@ -74,14 +85,17 @@ def neutron_2_servers_different_networks(
         cidr='192.168.2.0/24')
     add_router_interfaces(router, [subnet_2])
 
-    server_2_hypervisor = hypervisor_steps.get_another_hypervisor(server)
+    if request.param == 'same_host':
+        server_2_hypervisor = getattr(server, 'OS-EXT-SRV-ATTR:host')
+    elif request.param == 'different_hosts':
+        server_2_hypervisor = hypervisor_steps.get_another_hypervisor(server)
+        server_2_hypervisor = server_2_hypervisor.hypervisor_hostname
 
     server_2 = server_steps.create_servers(
         image=cirros_image,
         flavor=flavor,
         networks=[network_2],
-        availability_zone='nova:{}'.format(
-            server_2_hypervisor.hypervisor_hostname),
+        availability_zone='nova:{}'.format(server_2_hypervisor),
         security_groups=[security_group],
         username=config.CIRROS_USERNAME,
         password=config.CIRROS_PASSWORD)[0]
