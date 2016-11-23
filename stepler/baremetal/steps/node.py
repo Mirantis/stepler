@@ -182,11 +182,11 @@ class IronicNodeSteps(BaseSteps):
         waiter.wait(_check_ironic_node_maintenance, timeout_seconds=timeout)
 
     @steps_checker.step
-    def set_ironic_node_power_state(self, node, state, check=True):
+    def set_ironic_nodes_power_state(self, nodes, state, check=True):
         """Set the power state for the node.
 
         Args:
-            node (str): The ironic node.
+            nodes (list): The list of ironic nodes
             state (str): the power state mode; `on` to put the node in power
                 state mode on; `off` to put the node in power state mode off;
                 `reboot` to reboot the node
@@ -195,39 +195,46 @@ class IronicNodeSteps(BaseSteps):
         Raises:
             InvalidAttribute: if state is an invalid string
         """
-        self._client.node.set_power_state(node_id=node.uuid, state=state)
+        for node in nodes:
+            self._client.node.set_power_state(node_id=node.uuid, state=state)
 
         if check:
-            self.check_ironic_node_power_state(node=node, state=state)
+            self.check_ironic_nodes_power_state(nodes=nodes, state=state)
 
     @steps_checker.step
-    def check_ironic_node_power_state(self,
-                                      node,
-                                      state,
-                                      timeout=0):
+    def check_ironic_nodes_power_state(self,
+                                       nodes,
+                                       state,
+                                       node_timeout=0):
         """Check ironic node power state was changed.
 
         Args:
-            node (str): The ironic node.
+            nodes (list): The list of ironic nodes.
             state (str): the power state mode; `on` to put the node in power
                 state mode on; `off` to put the node in power state mode off;
                 `reboot` to reboot the node
-            timeout (int): seconds to wait a result of check
+            node_timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def _check_ironic_node_power_state():
-            self._get_node(node)
+        expected_power_state = {node.uuid: state for node in nodes}
 
-            if state == 'reboot':
-                power_state = 'power on'
-            else:
-                power_state = 'power ' + state
+        def _check_ironic_nodes_power_state():
+            actual_power_state = {}
+            for node in nodes:
+                try:
+                    self._client.node.get(node.uuid)
+                    actual_power_state[node.uuid] = state
 
-            return expect_that(node.power_state, equal_to(power_state))
+                except exceptions.NotFound:
+                    actual_power_state[node.uuid] = False
 
-        waiter.wait(_check_ironic_node_power_state, timeout_seconds=timeout)
+            return expect_that(actual_power_state,
+                               equal_to(expected_power_state))
+
+        timeout = len(nodes) * node_timeout
+        waiter.wait(_check_ironic_nodes_power_state, timeout_seconds=timeout)
 
     def _get_node(self, node):
         node._info.update(self._client.node.get(node.uuid)._info)
@@ -244,7 +251,6 @@ class IronicNodeSteps(BaseSteps):
             AssertionError: if nodes collection is empty.
         """
         nodes_list = self._client.node.list()
-
         if check:
             assert_that(nodes_list, is_not(empty()))
 
