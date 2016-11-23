@@ -1157,23 +1157,29 @@ class ServerSteps(base.BaseSteps):
                                      timeout=config.VERIFY_RESIZE_TIMEOUT)
 
     @steps_checker.step
-    def reboot_server(self, server, check=True):
+    def reboot_server(self,
+                      server,
+                      reboot_type=config.REBOOT_SOFT,
+                      check=True):
         """Step to reboot nova server.
 
         Args:
             server (obj): nova server
+            reboot_type (str): REBOOT_SOFT` for a software-level
+                reboot, or `REBOOT_HARD` for a virtual power cycle hard reboot
             check (bool): flag whether to check step or not
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        server.reboot()
+        server.reboot(reboot_type=reboot_type)
 
         if check:
             self.check_server_status(
                 server,
                 expected_statuses=[config.STATUS_ACTIVE],
-                transit_statuses=[config.STATUS_REBOOT],
+                transit_statuses=[config.STATUS_REBOOT,
+                                  config.STATUS_HARD_REBOOT],
                 timeout=config.SERVER_ACTIVE_TIMEOUT)
 
     @steps_checker.step
