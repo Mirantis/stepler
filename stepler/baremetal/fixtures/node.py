@@ -28,6 +28,7 @@ __all__ = [
     'ironic_node_steps',
     'cleanup_nodes',
     'primary_nodes',
+    'ironic_node',
 ]
 
 
@@ -139,3 +140,17 @@ def primary_nodes(get_ironic_node_steps,
     if config.CLEANUP_UNEXPECTED_AFTER_ALL:
         cleanup_nodes(get_ironic_node_steps(),
                       uncleanable_nodes_uuids=nodes_before)
+
+
+@pytest.fixture
+def ironic_node(ironic_node_steps):
+    """Function fixture to create ironic node with default options.
+
+    Args:
+        ironic_node_steps(function): callable function fixture to get ironic
+            steps
+
+    Returns:
+        object: ironic node
+    """
+    return ironic_node_steps.create_ironic_nodes()[0]
