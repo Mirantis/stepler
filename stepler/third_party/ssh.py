@@ -205,12 +205,14 @@ class SshClient(object):
         """
         self.execute('killall {}'.format(name))
 
-    def background_call(self, command, stdout='/dev/null'):
+    def background_call(self, command, stdout='/dev/null', stderr='&1'):
         """Start long-running command in backgroung and return it's pid.
 
         Args:
             command (str): command to execute
             stdout (str): path to file to redirect command stdout to
+            stderr (str, optional): path to file to redirect command stderr to.
+                By default stderr combines with stdout.
 
         Returns:
             str: pid of running command
@@ -218,8 +220,8 @@ class SshClient(object):
         Raises:
             AssertionError: if command is not running in background
         """
-        bg_command = command + ' <&- >{stdout} 2>&1 & echo $!'.format(
-            stdout=stdout)
+        bg_command = command + ' <&- >{stdout} 2>{stderr} & echo $!'.format(
+            stdout=stdout, stderr=stderr)
         result = self.check_call(bg_command, verbose=False)
         pid = result.stdout
         result = self.execute('ps -o pid | grep {pid}'.format(pid=pid),
