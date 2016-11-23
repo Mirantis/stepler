@@ -136,6 +136,7 @@ __all__ = sorted([  # sort for documentation
     'baremetal_network',
     'net_subnet_router',
     'agent_steps',
+    'neutron_network_type',
 
     'create_flavor',
     'flavor',

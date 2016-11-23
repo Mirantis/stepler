@@ -17,8 +17,9 @@ Skip autouse fixture
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import attrdict
 import pytest
+
+from stepler import config
 
 __all__ = [
     'skip_test',
@@ -26,7 +27,7 @@ __all__ = [
 
 
 @pytest.fixture(autouse=True)
-def skip_test(request, hypervisor_steps):
+def skip_test(request):
     """Autouse function fixture to skip test by predicate.
 
     Usage:
@@ -41,7 +42,6 @@ def skip_test(request, hypervisor_steps):
 
     Args:
         request (object): pytest request
-        hypervisor_steps (object): instantiated hypervisors steps
     """
     requires = request.node.get_marker('requires')
     if not requires:
@@ -53,8 +53,7 @@ def skip_test(request, hypervisor_steps):
         requires = map(lambda req: '({})'.format(req), requires.args)
         requires = ' and '.join(requires)
 
-    env = attrdict.AttrDict(hypervisors_steps=hypervisor_steps)
-    predicates = Predicates(env)
+    predicates = Predicates(request)
     predicates = {attr: getattr(predicates, attr) for attr in dir(predicates)
                   if not attr.startswith('_')}
 
@@ -63,18 +62,34 @@ def skip_test(request, hypervisor_steps):
             'Skipped due to a mismatch to condition: {!r}'.format(requires))
 
 
-# TODO(schipiga): populate predicates when it will be possible
 class Predicates(object):
     """Namespace for predicates to skip a test."""
 
-    def __init__(self, env):
+    def __init__(self, request):
         """Initialize."""
-        self._env = env
+        self._request = request
+
+    def _get_fixture(self, fixture_name):
+        return self._request.getfixturevalue(fixture_name)
+
+    def _network_type(self):
+        return self._get_fixture('neutron_network_type')
 
     def computes_count_gte(self, count):
         """Define whether computes enough."""
-        return len(self._env.hypervisors_steps.get_hypervisors()) >= count
+        hypervisor_steps = self._get_fixture('hypervisor_steps')
+        return len(hypervisor_steps.get_hypervisors()) >= count
 
     @property
     def ceph_enabled(self):
         """Define whether CEPH enabled."""
+
+    @property
+    def vlan(self):
+        """Define whether neutron configures with vlan."""
+        return self._network_type == config.NETWORK_TYPE_VLAN
+
+    @property
+    def vxlan(self):
+        """Define whether neutron configures with vxlan."""
+        return self._network_type == config.NETWORK_TYPE_VXLAN

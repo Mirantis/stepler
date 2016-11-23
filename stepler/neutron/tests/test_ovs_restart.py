@@ -301,6 +301,7 @@ def test_restart_adds_new_flows(
                                            not_contain=old_cookies)
 
 
+@pytest.mark.requires("vlan")
 @pytest.mark.idempotent_id('51340e3b-5762-4bb5-b394-3f050263e96b')
 def test_port_tags_immutable_after_restart(port_steps, os_faults_steps):
     """Check that ports tags are the same after ovs-agents restart.
@@ -317,6 +318,7 @@ def test_port_tags_immutable_after_restart(port_steps, os_faults_steps):
     os_faults_steps.check_ovs_vsctl_tags(expected_tags=before_restart_tags)
 
 
+@pytest.mark.requires("computes_count_gte(2)")
 @pytest.mark.idempotent_id('f3935941-4262-41b3-bedb-d9777e63895f')
 def test_restart_with_iperf_traffic(
         neutron_2_servers_iperf_different_networks,
@@ -435,3 +437,65 @@ def test_restart_servers_on_single_compute(
             os_faults_steps.restart_services([config.NEUTRON_OVS_SERVICE])
             agent_steps.check_alive(
                 ovs_agents, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.requires("computes_count_gte(2) and vlan")
+@pytest.mark.idempotent_id('28d8bd3d-160c-4c58-af46-edd7df2c4502')
+@pytest.mark.parametrize('neutron_2_networks',
+                         ['different_routers'],
+                         indirect=True)
+def test_no_connectivity_with_different_routers_during_restart(
+        neutron_2_servers_different_networks,
+        nova_floating_ip,
+        server_steps,
+        os_faults_steps,
+        agent_steps):
+    """**Scenario:** Check connectivity between networks on different routers.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router_1
+    #. Create network_2 with subnet_2 and router_2
+    #. Create server_1
+    #. Create server_2 on another compute and connect it to network_2
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Attach floating IP to server_1
+    #. Check that there is no ping between server_1 and server_2
+    #. Restart ovs-agents
+    #. Check that there is no ping between server_1 and server_2 during restart
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete networks, subnets, routers
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    server_1, server_2 = neutron_2_servers_different_networks.servers
+
+    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_2_fixed_ip = next(
+        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+
+    ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        with server_steps.check_no_ping_context(
+                server_2_fixed_ip,
+                server_ssh=server_ssh):
+            pass
+        with server_steps.check_no_ping_context(
+                server_2_fixed_ip,
+                server_ssh=server_ssh):
+            os_faults_steps.restart_services([config.NEUTRON_OVS_SERVICE])
+            agent_steps.check_alive(
+                ovs_agents,
+                must_alive=True,
+                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
