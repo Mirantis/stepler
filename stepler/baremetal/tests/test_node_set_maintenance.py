@@ -20,21 +20,16 @@ import pytest
 
 
 @pytest.mark.idempotent_id('d459088e-fa91-4150-9753-2ec3b90850ed')
-def test_set_node_maintenance(ironic_node,
-                              ironic_node_steps):
+def test_set_node_maintenance(ironic_node_steps):
     """**Scenario:** Verify that ironic node maintenance can be changed.
 
-    **Setup:**
-
-    #. Create ironic node
-
     **Steps:**
-
+    #. Create ironic node
     #. Change ironic node maintenance
 
     **Teardown:**
 
     #. Delete ironic node
     """
-    ironic_node_steps.set_ironic_node_maintenance(node=ironic_node,
-                                                  state=True)
+    node = ironic_node_steps.create_ironic_nodes()
+    ironic_node_steps.set_ironic_nodes_maintenance(nodes=node, state=True)
