@@ -330,6 +330,7 @@ AGENT_LOGS = {
 
 NEUTRON_ML2_CONFIG_PATH = '/etc/neutron/plugins/ml2/ml2_conf.ini'
 NEUTRON_CONFIG_PATH = '/etc/neutron/neutron.conf'
+NEUTRON_L3_CONFIG_PATH = '/etc/neutron/l3_agent.ini'
 
 STR_ERROR = 'ERROR'
 STR_TRACE = 'TRACE'
