@@ -21,10 +21,10 @@ from hamcrest import equal_to, assert_that, is_not, empty  # noqa
 from ironicclient import exceptions
 
 from stepler.base import BaseSteps
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
+from stepler.third_party.waiter import expect_that
 
 __all__ = [
     'IronicNodeSteps'

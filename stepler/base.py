@@ -17,6 +17,7 @@ Base
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import types
 
 import requests
@@ -263,8 +264,16 @@ class BaseApiClient(object):
             dict: authentication headers.
         """
         # TODO(schipiga): may be need to use native API
+
+        ironic_version = '1.9'
+
         return {  # catch only token to avoid side effects
-            'X-Auth-Token': self._session.get_auth_headers()['X-Auth-Token']}
+            'X-Auth-Token': self._session.get_auth_headers()['X-Auth-Token'],
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'python-ironicclient',
+            'X-OpenStack-Ironic-API-Version': ironic_version
+        }
 
     @property
     def _endpoint(self):
@@ -294,15 +303,16 @@ class BaseApiClient(object):
 
         return requests.put(url, headers=headers, data=data, **kwgs)
 
-    def _post(self, url, headers=None, data=None, json=None, **kwgs):
+    def _post(self, url, headers=None, data=None, json_data=None, **kwgs):
         """POST request to API."""
         headers = headers or {}
         headers.update(self._auth_headers)
 
         url = self._endpoint + url
+        data = json.dumps(data)
 
-        return requests.post(
-            url, headers=headers, data=data, json=json, **kwgs)
+        resp = requests.post(url, headers=headers, data=data, **kwgs)
+        return resp
 
     def _patch(self, url, headers=None, data=None, **kwgs):
         """PATCH request to API."""

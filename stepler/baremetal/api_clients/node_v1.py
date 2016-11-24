@@ -50,4 +50,13 @@ class IronicApiClientV1(IronicApiClient):
         response = self._get('/v1/nodes/{}'.format(node_ident))
         response.raise_for_status()
 
+        return [Resource(self, response.json())]
+
+    def node_create(self, driver, name):
+        """Create node via API call."""
+        data = {"name": name,
+                "driver": driver
+                }
+        response = self._post('/v1/nodes/', data=data)
+        response.raise_for_status()
         return Resource(self, response.json())

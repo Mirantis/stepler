@@ -28,3 +28,14 @@ def test_nodes_get(api_ironic_steps_v1):
     #. Get ironic nodes
     """
     api_ironic_steps_v1.get_ironic_nodes()
+
+
+@pytest.mark.idempotent_id('21d65216-78b1-4206-bd8b-faad76c079dc')
+def test_node_create(api_ironic_steps_v1):
+    """**Scenario:** Verify that ironic node can be created via API.
+
+    **Steps:**
+
+    #. Create ironic node
+    """
+    api_ironic_steps_v1.create_ironic_nodes()
