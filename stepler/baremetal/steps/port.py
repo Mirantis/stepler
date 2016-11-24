@@ -23,6 +23,7 @@ from hamcrest import assert_that, is_not, empty, equal_to  # noqa
 from stepler import base
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = [
@@ -34,14 +35,21 @@ class IronicPortSteps(base.BaseSteps):
     """Ironic port steps."""
 
     @steps_checker.step
-    def create_port(self, address, node, check=True, **kwargs):
-        """Step to create ironic port based on a kwargs dictionary
+    def create_ports(self,
+                     node,
+                     addresses=None,
+                     count=1,
+                     check=True,
+                     **kwargs):
+        """Step to create ironic ports based on a kwargs dictionary
         of attributes.
 
         Args:
-            address (str): MAC address for this port
+            addresses (list): MAC addresses for ports
             node (object): node of the ports should be associated with
-            check (bool): For checking port presence
+            count(int): count of created ports; one port is created if
+                both args are missing
+            check (bool): For checking ports presence
             kwargs: Optional. A dictionary containing the attributes
             of the resource that will be created:
                extra (dictionary)- Extra node parameters
@@ -57,53 +65,69 @@ class IronicPortSteps(base.BaseSteps):
         Raises:
             TimeoutExpired|AssertionError: if check failed after timeout
         """
-        port = self._client.port.create(address=address,
-                                        node_uuid=node.uuid,
-                                        **kwargs)
-        if check:
-            self.check_port_presence(port)
-            assert_that(port.address, equal_to(address))
-            assert_that(port.node_uuid, equal_to(node.uuid))
+        addresses = addresses or utils.generate_mac_addresses(count=count)
+        ports_list = []
+        _addresses = {}
 
-        return port
+        for address in addresses:
+            port = self._client.port.create(address=address,
+                                            node_uuid=node.uuid,
+                                            **kwargs)
+            _addresses[port.uuid] = address
+            ports_list.append(port)
+
+        if check:
+            self.check_ports_presence(ports_list)
+            for port in ports_list:
+                assert_that(_addresses[port.uuid], equal_to(port.address))
+
+        return ports_list
 
     @steps_checker.step
-    def check_port_presence(self, port, must_present=True, timeout=0):
-        """Verify step to check port is present.
+    def check_ports_presence(self, ports, must_present=True, port_timeout=0):
+        """Verify step to check ports is present.
 
         Args:
-            port (object): ironic port
-            must_present (bool): flag whether port should present or not
-            timeout (int): seconds to wait a result of check
+            ports (list): list of ironic ports
+            must_present (bool): flag whether ports should present or not
+            port_timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def _check_port_presence():
-            try:
-                self._client.port.get(port.uuid)
-                is_present = True
-            except exceptions.NotFound:
-                is_present = False
+        expected_presence = {port.uuid: must_present for port in ports}
 
-            return expect_that(is_present, equal_to(must_present))
+        def _check_ports_presence():
+            actual_presence = {}
 
-        waiter.wait(_check_port_presence, timeout_seconds=timeout)
+            for port in ports:
+                try:
+                    self._client.port.get(port.uuid)
+                    actual_presence[port.uuid] = True
+                except exceptions.NotFound:
+                    actual_presence[port.uuid] = False
+
+            return expect_that(actual_presence, equal_to(expected_presence))
+
+        timeout = len(ports) * port_timeout
+        waiter.wait(_check_ports_presence, timeout_seconds=timeout)
 
     @steps_checker.step
-    def delete_port(self, port, check=True):
-        """Step to delete port.
+    def delete_ports(self, ports, check=True):
+        """Step to delete ports.
 
         Args:
-            port (object): ironic port
+            ports (list): list of ironic port
             check (bool): flag whether to check step or not
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        self._client.port.delete(port.uuid)
+        for port in ports:
+            self._client.port.delete(port.uuid)
+
         if check:
-            self.check_port_presence(port, must_present=False)
+            self.check_ports_presence(ports, must_present=False)
 
     @steps_checker.step
     def get_ports(self, check=True):
