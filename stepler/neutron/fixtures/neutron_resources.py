@@ -26,6 +26,7 @@ from stepler.third_party import utils
 __all__ = [
     'neutron_2_networks',
     'neutron_2_servers_different_networks',
+    'neutron_2_servers_diff_nets_with_floating',
     'neutron_2_servers_same_network',
     'neutron_2_servers_iperf_different_networks',
 ]
@@ -158,6 +159,36 @@ def neutron_2_servers_different_networks(
         servers=(server, server_2),
         networks=(network_1, network_2),
         routers=neutron_2_networks.routers)
+
+
+@pytest.fixture
+def neutron_2_servers_diff_nets_with_floating(
+        neutron_2_servers_different_networks,
+        nova_create_floating_ip,
+        server_steps):
+    """Function fixture to prepare environment with 2 servers.
+
+    This fixture creates resources using neutron_2_servers_different_networks
+    fixture, creates and attaches floating ips for all servers.
+
+    All created resources are to be deleted after test.
+
+    Args:
+        neutron_2_servers_different_networks (obj): neutron networks,
+            subnets, router(s) and servers resources AttrDict instance
+        nova_create_floating_ip (function): function to create floating IP
+        server_steps (obj): instantiated nova server steps
+
+    Returns:
+        attrdict.AttrDict: created resources
+    """
+    servers = neutron_2_servers_different_networks.servers
+
+    for server in servers:
+        floating_ip = nova_create_floating_ip()
+        server_steps.attach_floating_ip(server, floating_ip)
+
+    return neutron_2_servers_different_networks
 
 
 @pytest.fixture
