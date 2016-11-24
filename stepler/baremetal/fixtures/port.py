@@ -20,25 +20,47 @@ Ironic port fixtures
 import pytest
 
 from stepler.baremetal import steps
-from stepler.third_party import utils
 
 __all__ = [
+    'get_ironic_port_steps',
     'ironic_port_steps',
     'ironic_port'
 ]
 
 
-@pytest.fixture
-def ironic_port_steps(ironic_client):
-    """Fixture to get ironic port steps.
+@pytest.fixture(scope='session')
+def get_ironic_port_steps(get_ironic_client):
+    """Callable session fixture to get ironic port steps.
+    return steps.IronicPortSteps(ironic_client)
 
     Args:
-        ironic_client (object): instantiated ironic client
+
+        get_ironic_client (function): function to get ironic client
 
     Returns:
-        stepler.baremetal.steps.IronicPortSteps: instantiated ironic port step
+        function: function to instantiated ironic port steps
     """
-    return steps.IronicPortSteps(ironic_client)
+    def _get_ironic_port_steps(**credentials):
+        return steps.IronicPortSteps(
+            get_ironic_client(**credentials))
+
+    return _get_ironic_port_steps
+
+
+@pytest.fixture
+def ironic_port_steps(get_ironic_port_steps):
+    """Callable function fixture to get ironic steps.
+
+    Can be called several times during a test.
+    After the test it destroys all created nodes.
+
+    Args:
+        get_ironic_port_steps (function): function to get ironic steps
+
+    Returns:
+        IronicPortSteps: instantiated ironic port steps
+    """
+    return get_ironic_port_steps()
 
 
 @pytest.fixture
@@ -52,5 +74,4 @@ def ironic_port(ironic_node, ironic_port_steps):
     Returns:
         (object): ironic port
     """
-    mac_address = next(utils.generate_mac_addresses())
-    return ironic_port_steps.create_port(mac_address, ironic_node)
+    return ironic_port_steps.create_port(ironic_node)
