@@ -17,7 +17,8 @@ Router steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import equal_to
+from hamcrest import (assert_that, empty, equal_to,
+                      has_entries, is_not)  # noqa H301
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -192,3 +193,40 @@ class RouterSteps(base.BaseSteps):
             LookupError: if zero or more than one routers found
         """
         return self._client.find(**kwargs)
+
+    @steps_checker.step
+    def get_routers(self, check=True):
+        """Step to retrieve all routers in current project.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: list of retrieved routers
+        """
+        routers = self._client.list()
+
+        if check:
+            assert_that(routers, is_not(empty()))
+
+        return routers
+
+    @steps_checker.step
+    def check_router_attrs(self, name, expected_attr_values=None):
+        """Step to check whether router has expected attributes or not.
+
+        Args:
+            name (str): name of the router
+            expected_attr_values (dict|None): expected attribute values.
+                If None, only check that elements of router output are
+                not empty.
+
+        Raises:
+            AssertionError: if check failed
+        """
+        router_attr = self.get_router(name=name)
+
+        assert_that(router_attr, is_not(empty()))
+        if expected_attr_values:
+            assert_that(router_attr,
+                        has_entries(**expected_attr_values))
