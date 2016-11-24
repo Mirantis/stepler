@@ -30,6 +30,7 @@ __all__ = [
     'router_steps',
     'get_router_steps',
     'reschedule_router_active_l3_agent',
+    'routers_cleanup',
 ]
 
 
@@ -111,6 +112,27 @@ def router(request, router_steps, create_router, public_network):
     router_steps.set_gateway(router, public_network)
     yield router
     router_steps.clear_gateway(router)
+
+
+@pytest.yield_fixture
+def routers_cleanup(router_steps):
+    """Fixture to clear created routers after test.
+
+    It stores ids of all routers before test and remove all new routers after
+    test has done.
+
+    Args:
+        router_steps (obj): initialized neutron routers steps
+    """
+    preserve_routers_ids = set(
+        router['id'] for router in router_steps.get_routers())
+
+    yield
+
+    for router in router_steps.get_routers():
+        if (router['id'] not in preserve_routers_ids and
+                router['name'].startswith(config.STEPLER_PREFIX)):
+            router_steps.delete(router)
 
 
 @pytest.yield_fixture
