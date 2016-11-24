@@ -20,12 +20,14 @@ import pytest
 
 
 @pytest.mark.idempotent_id('340cec4f-179e-4ebd-843a-67977d666a67')
-def test_node_create(ironic_node_steps):
+def test_node_create(ironic_node):
     """**Scenario:** Verify that ironic node can be created and deleted.
 
-    **Steps:**
+    **Setup:**
 
     #. Create ironic node
+
+    **Teardown:**
+
     #. Delete ironic node
     """
-    ironic_node_steps.create_ironic_nodes()
