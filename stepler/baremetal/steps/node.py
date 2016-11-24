@@ -81,7 +81,7 @@ class IronicNodeSteps(BaseSteps):
         if check:
             self.check_ironic_nodes_presence(nodes_list)
             for node in nodes_list:
-                assert_that(_nodes_names[node.uuid], equal_to(name))
+                assert_that(_nodes_names[node.uuid], equal_to(node.name))
 
         return nodes_list
 
