@@ -23,3 +23,6 @@ Neutron tests
 
 .. automodule:: stepler.neutron.tests.test_sighup
    :members:
+
+.. automodule:: stepler.neutron.tests.test_l3_ha
+   :members:
