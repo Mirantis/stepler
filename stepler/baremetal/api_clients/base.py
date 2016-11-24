@@ -18,6 +18,7 @@ Ironic base API client
 # limitations under the License.
 
 from stepler import base
+from stepler import config
 
 
 class IronicApiClient(base.BaseApiClient):
@@ -26,3 +27,17 @@ class IronicApiClient(base.BaseApiClient):
     @property
     def _endpoint(self):
         return self._session.get_endpoint(service_type='baremetal').rstrip('/')
+
+    @property
+    def _auth_headers(self):
+        """Get auth headers.
+        Returns:
+            dict: authentication headers.
+        """
+        auth_headers = super(IronicApiClient, self)._auth_headers
+        auth_headers.update({
+            'User-Agent': 'python-ironicclient',
+            'X-OpenStack-Ironic-API-Version':
+                config.CURRENT_IRONIC_MICRO_VERSION
+        })
+        return auth_headers

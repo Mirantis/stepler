@@ -42,7 +42,7 @@ def get_api_ironic_client(get_session):
     def _get_api_ironic_client(version, is_api):
         if version == '1':
             if is_api:
-                return api_clients.NodeApiClientV1(session=get_session())
+                return api_clients.IronicApiClientV1(session=get_session())
             else:
                 return client_v1.get_client(session=get_session())
 
@@ -56,7 +56,7 @@ def ironic_client_v1(get_api_ironic_client):
     """Function fixture to get ironic client v1.
 
     Args:
-        get_ironic_client (function): function to get ironic client
+        get_api_ironic_client (function): function to get ironic client
 
     Returns:
         ironicclient.get_client: instantiated ironic client
@@ -69,7 +69,7 @@ def api_ironic_client_v1(get_api_ironic_client):
     """Function fixture to get API ironic client v1.
 
     Args:
-        get_ironic_client (function): function to get ironic client
+        get_api_ironic_client (function): function to get ironic client
 
     Returns:
         api_clients.ApiClientV1: instantiated API ironic client v1
