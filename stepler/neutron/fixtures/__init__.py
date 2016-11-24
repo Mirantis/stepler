@@ -51,6 +51,7 @@ __all__ = sorted([  # sort for documentation
     'net_subnet_router',
     'neutron_2_networks',
     'neutron_2_servers_different_networks',
+    'neutron_2_servers_diff_nets_with_floating',
     'neutron_2_servers_same_network',
     'neutron_2_servers_iperf_different_networks',
     'get_agent_steps',
