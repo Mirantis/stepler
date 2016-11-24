@@ -21,6 +21,8 @@ import pytest
 
 from stepler import config
 
+pytestmark = pytest.mark.destructive
+
 
 @pytest.mark.requires("computes_count_gte(2)")
 @pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5')
