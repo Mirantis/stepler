@@ -309,6 +309,7 @@ NEUTRON_L3_SERVICE = 'neutron-l3-agent'
 NEUTRON_DHCP_SERVICE = 'neutron-dhcp-agent'
 NEUTRON_OVS_SERVICE = 'neutron-openvswitch-agent'
 NEUTRON_METADATA_SERVICE = 'neutron-metadata-agent'
+NEUTRON_SERVER_SERVICE = 'neutron-server'
 
 NEUTRON_AGENT_DIE_TIMEOUT = 60
 NEUTRON_AGENT_ALIVE_TIMEOUT = 60
@@ -322,10 +323,17 @@ SERVICE_START_TIMEOUT = 60
 L3_AGENT_RESCHEDULING_TIMEOUT = 3 * 60
 
 AGENT_LOGS = {
-    NEUTRON_L3_SERVICE: '/var/log/neutron/l3-agent.log',
-    NEUTRON_DHCP_SERVICE: '/var/log/neutron/dhcp-agent.log',
-    NEUTRON_OVS_SERVICE: '/var/log/neutron/openvswitch-agent.log',
-    NEUTRON_METADATA_SERVICE: '/var/log/neutron/metadata-agent.log',
+    # logs on controllers and computes
+    NEUTRON_L3_SERVICE: ['/var/log/neutron/l3-agent.log',  # controller
+                         '/var/log/neutron/neutron-l3-agent.log'],  # compute
+    NEUTRON_DHCP_SERVICE: ['/var/log/neutron/dhcp-agent.log',  # controller
+                           None],  # file is absent on compute
+    NEUTRON_OVS_SERVICE: ['/var/log/neutron/openvswitch-agent.log',
+                          '/var/log/neutron/neutron-openvswitch-agent.log'],
+    NEUTRON_METADATA_SERVICE: ['/var/log/neutron/metadata-agent.log',
+                               '/var/log/neutron/neutron-metadata-agent.log'],
+    NEUTRON_SERVER_SERVICE: ['/var/log/neutron/server.log',
+                             None]
 }
 
 NEUTRON_ML2_CONFIG_PATH = '/etc/neutron/plugins/ml2/ml2_conf.ini'
