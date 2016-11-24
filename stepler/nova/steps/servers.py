@@ -508,8 +508,73 @@ class ServerSteps(base.BaseSteps):
         floating_ip = self.get_ips(server, 'floating').keys()[0]
         self.check_ping_for_ip(floating_ip, timeout=timeout)
 
-    def _get_ping_plan(self, servers, ip_types):
-        """Get dict which contains ip list to ping for each server"""
+    def _parse_ping_plan(self, ping_plan):
+        """Parse ping plan dict.
+
+        This function replaces servers to be pinged with required ips
+        in ping plan dictionary.
+        Example of ping plan dict parameter:
+            {
+                server1: ['8.8.8.8', (server2, config.FLOATING_IP),
+                          server3]
+                server2: [(server1, config.FLOATING_IP),
+                          (server3, config.FLOATING_IP)]
+                server3: ['8.8.8.8', (server2, config.FLOATING_IP),
+                          server1]
+            }
+
+        Args:
+            ping_plan (dict): servers and lists of
+                ips/tuples(server, type)/servers to ping
+
+        Returns:
+            dict: servers and lists of ips to ping
+        """
+        parsed_ping_plan = {}
+        for server_from, objects_to_ping in ping_plan.items():
+            ips_list = []
+            for object_to_ping in objects_to_ping:
+                if (isinstance(object_to_ping, list) or
+                        isinstance(object_to_ping, tuple)):
+                    server_to_ping, ip_type = object_to_ping
+                    ips = self.get_ips(server_to_ping, ip_type=ip_type)
+                    ips_list.extend(ips)
+                elif hasattr(object_to_ping, 'addresses'):
+                    server_to_ping = object_to_ping
+                    ips = self.get_ips(server_to_ping)
+                    ips_list.extend(ips)
+                else:
+                    ips_list.append(object_to_ping)
+            parsed_ping_plan[server_from] = ips_list
+        return parsed_ping_plan
+
+    @steps_checker.step
+    def check_ping_by_plan(self, ping_plan, timeout=0):
+        """Step to check ping using ping plan dict.
+
+        This step should be used to check pings between not all servers
+        ips or some other ips (for example: "8.8.8.8").
+
+        Args:
+            ping_plan (dict): servers and lists of
+                ips/tuples(server, ip_type)/servers to ping
+            timeout (int): seconds to wait for result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        parsed_ping_plan = self._parse_ping_plan(ping_plan)
+        for server, ips in parsed_ping_plan.items():
+            floating_ip = self.get_ips(server, config.FLOATING_IP).keys()[0]
+
+            with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
+                for ip in ips:
+                    self.check_ping_for_ip(ip,
+                                           remote_from=server_ssh,
+                                           timeout=timeout)
+
+    def _get_ping_plan_for_servers(self, servers, ip_types):
+        """Get dict which contains ip list to ping for all servers"""
         ping_plan = collections.defaultdict(list)
         for server1, server2 in itertools.permutations(servers, 2):
             for ip_type in ip_types:
@@ -528,6 +593,7 @@ class ServerSteps(base.BaseSteps):
         This function uses floating ips of servers to connect to them
         and then send pings to other servers according to 'ip_types'
         parameter.
+        This step should be used to check pings between all servers ips.
 
         Args:
             servers (list): nova instances to check ping between
@@ -537,14 +603,8 @@ class ServerSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        ping_plan = self._get_ping_plan(servers, ip_types)
-        for server, ips in ping_plan.items():
-            floating_ip = self.get_ips(server, config.FLOATING_IP).keys()[0]
-
-            with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
-                for ip in ips:
-                    self.check_ping_for_ip(ip, remote_from=server_ssh,
-                                           timeout=timeout)
+        ping_plan = self._get_ping_plan_for_servers(servers, ip_types)
+        self.check_ping_by_plan(ping_plan, timeout=timeout)
 
     @steps_checker.step
     def live_migrate(self, servers, host=None, block_migration=True,
