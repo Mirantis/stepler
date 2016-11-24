@@ -28,6 +28,7 @@ __all__ = sorted([  # sort for documentation
     'ironic_client',
     'get_ironic_client',
 
+    'get_ironic_port_steps',
     'ironic_port_steps',
     'ironic_port',
 

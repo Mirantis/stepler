@@ -183,6 +183,7 @@ __all__ = sorted([  # sort for documentation
     'cleanup_nodes',
     'primary_nodes',
     'ironic_node',
+    'get_ironic_port_steps',
     'ironic_port',
     'ironic_port_steps',
     'ironic_chassis_steps',
