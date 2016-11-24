@@ -45,6 +45,7 @@ __all__ = [
 
 # predefined permitted calls
 PERMITTED_CALLS = [
+    'append',
     'list',
     'next',
     'iter',
