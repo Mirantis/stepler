@@ -21,6 +21,7 @@ from hamcrest import (assert_that, empty, is_in, is_not, only_contains,
                       has_entries)  # noqa H301
 
 from stepler import base
+from stepler import config
 from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
@@ -76,11 +77,13 @@ class AgentSteps(base.BaseSteps):
         waiter.wait(_check_agents_alive, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_l3_agents_for_router(self, router, check=True):
+    def get_l3_agents_for_router(self, router, filter_attrs=None, check=True):
         """Step to retrieve router l3 agents dicts list.
 
         Args:
             router (dict): router to get l3 agents
+            filter_attrs (dict, optional): filter attrs dict to return only
+                matched l3_agents
             check (bool, optional): flag whether to check step or not
 
         Returns:
@@ -89,9 +92,15 @@ class AgentSteps(base.BaseSteps):
         Raises:
             AssertionError: if list of agents is empty
         """
+        filter_attrs = filter_attrs or {}
         l3_agents = self._client.get_l3_agents_for_router(router['id'])
+        for key, prop in filter_attrs.items():
+            l3_agents = [agent for agent in l3_agents if agent[key] == prop]
         if check:
             assert_that(l3_agents, is_not(empty()))
+            if filter_attrs:
+                assert_that(l3_agents, only_contains(
+                    has_entries(**filter_attrs)))
 
         return l3_agents
 
@@ -112,5 +121,24 @@ class AgentSteps(base.BaseSteps):
             l3_agents_ids = [agent['id'] for agent in l3_agents]
             return expect_that(old_l3_agent['id'],
                                is_not(is_in(l3_agents_ids)))
+
+        waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_l3_ha_router_rescheduled(self, router, old_l3_agent, timeout=0):
+        """Verify step to check that l3 ha router was rescheduled.
+
+        Args:
+            router (obj): router to check
+            old_l3_agent (dict): l3 agent before rescheduling
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_router_rescheduled():
+            l3_agents = self.get_l3_agents_for_router(
+                router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)
+            return expect_that(old_l3_agent, is_not(is_in(l3_agents)))
 
         waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)

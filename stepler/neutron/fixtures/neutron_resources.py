@@ -138,7 +138,6 @@ def neutron_2_servers_different_networks(
     """
 
     network_1, network_2 = neutron_2_networks.networks
-    router = neutron_2_networks.routers[0]
 
     if getattr(request, 'param', None) == 'same_host':
         server_2_hypervisor = getattr(server, config.SERVER_HOST_ATTR)
@@ -158,7 +157,7 @@ def neutron_2_servers_different_networks(
     return attrdict.AttrDict(
         servers=(server, server_2),
         networks=(network_1, network_2),
-        router=router)
+        routers=neutron_2_networks.routers)
 
 
 @pytest.fixture

@@ -118,11 +118,17 @@ class Predicates(object):
         os_faults_steps = self._get_fixture('os_faults_steps')
         return os_faults_steps.get_network_type()
 
+    @property
+    @_store_call
+    def computes_count(self):
+        """Returns computes count."""
+        hypervisor_steps = self._get_fixture('hypervisor_steps')
+        return len(hypervisor_steps.get_hypervisors())
+
     @_store_call
     def computes_count_gte(self, count):
         """Define whether computes enough."""
-        hypervisor_steps = self._get_fixture('hypervisor_steps')
-        return len(hypervisor_steps.get_hypervisors()) >= count
+        return self.computes_count >= count
 
     @property
     @_store_call
@@ -149,3 +155,10 @@ class Predicates(object):
     def vxlan(self):
         """Define whether neutron configures with vxlan."""
         return self._network_type == config.NETWORK_TYPE_VXLAN
+
+    @property
+    @_store_call
+    def l3_ha(self):
+        """Define whether neutron configures with l3 ha."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_neutron_l3_ha()
