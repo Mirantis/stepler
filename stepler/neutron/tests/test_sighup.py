@@ -23,6 +23,9 @@ import pytest
 from stepler import config
 
 
+pytestmark = pytest.mark.destructive
+
+
 @pytest.mark.idempotent_id('4f4c6072-d528-4488-b0a6-75a7753a0783',
                            agent_name=config.NEUTRON_L3_SERVICE)
 @pytest.mark.idempotent_id('cd3fc092-6305-4659-ad88-a477e73588f7',

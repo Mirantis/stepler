@@ -21,6 +21,7 @@ import os_faults
 import pytest
 
 from stepler import config
+from stepler import os_faults_config
 from stepler.os_faults.steps import OsFaultsSteps
 from stepler.third_party import context
 
@@ -40,10 +41,12 @@ def os_faults_client():
     Returns:
         object: instantiated os_faults client
     """
-    assert config.OS_FAULTS_CONFIG, \
-        "Environment variable OS_FAULTS_CONFIG is not defined"
+    if os_faults_config.OS_FAULTS_CONFIG:
+        destructor = os_faults.connect(
+            config_filename=os_faults_config.OS_FAULTS_CONFIG)
+    else:
+        destructor = os_faults.connect(os_faults_config.OS_FAULTS_DICT_CONFIG)
 
-    destructor = os_faults.connect(config_filename=config.OS_FAULTS_CONFIG)
     destructor.verify()
     return destructor
 
