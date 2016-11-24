@@ -40,12 +40,16 @@ class OsFaultsSteps(base.BaseSteps):
     """os-faults steps."""
 
     @steps_checker.step
-    def get_nodes(self, fqdns=None, service_names=None, check=True):
+    def get_nodes(self, fqdns=None, service_names=None,
+                  all_services_on_nodes=False, check=True):
         """Step to get nodes.
 
         Args:
             fqdns (list): nodes hostnames to filter
             service_names (list): names of services to filter nodes with
+            all_services_on_nodes (bool): flag to get nodes with all
+                services running on them or at least one service on node
+                (meaningful for two or more services)
             check (bool): flag whether check step or not
 
         Returns:
@@ -53,10 +57,15 @@ class OsFaultsSteps(base.BaseSteps):
         """
         if service_names:
             service_fqdns = set()
+            first_service = True
             for service_name in service_names:
                 nodes = self._client.get_service(service_name).get_nodes()
-                for host in nodes.hosts:
-                    service_fqdns.add(host.fqdn)
+                one_service_fqdns = set([host.fqdn for host in nodes.hosts])
+                if not all_services_on_nodes or first_service:
+                    service_fqdns |= one_service_fqdns
+                    first_service = False
+                else:
+                    service_fqdns &= one_service_fqdns
             if not fqdns:
                 fqdns = service_fqdns
             else:
@@ -70,19 +79,24 @@ class OsFaultsSteps(base.BaseSteps):
         return nodes
 
     @steps_checker.step
-    def get_node(self, fqdns=None, service_names=None, check=True):
+    def get_node(self, fqdns=None, service_names=None,
+                 all_services_on_node=False, check=True):
         """Step to get one node.
 
         Args:
             fqdns (list): nodes hostnames to filter
             service_names (list): names of services to filter nodes with
+            all_services_on_node (bool): flag to get node with all
+                services running on it or at least one service
+                (meaningful for two or more services)
             check (bool): flag whether check step or not
 
         Returns:
-            FuelNodeCollection: one node
+            NodeCollection: one node
         """
         nodes = self.get_nodes(
-            fqdns=fqdns, service_names=service_names, check=check)
+            fqdns=fqdns, service_names=service_names,
+            all_services_on_nodes=all_services_on_node, check=check)
         return nodes.pick()
 
     @steps_checker.step
@@ -481,6 +495,7 @@ class OsFaultsSteps(base.BaseSteps):
         #     3673 3468
         # or: 1234 1
         pids = map(int, stdout.split())
+        assert_that(pids, is_not(empty()))
         pids.remove(1)
         main_pids = [pid for pid in pids if pids.count(pid) > 1]
         if len(main_pids) == 0:
@@ -489,7 +504,6 @@ class OsFaultsSteps(base.BaseSteps):
             children_pids = []
         else:
             children_pids = [pid for pid in pids if pids.count(pid) == 1]
-        assert_that(main_pids, is_not(empty()))
         if get_parent:
             return main_pids[0]
         else:
@@ -537,16 +551,19 @@ class OsFaultsSteps(base.BaseSteps):
             time.sleep(delay)
 
     @steps_checker.step
-    def check_string_in_file(self, node, file_name, keyword, expected_count,
-                             start_line_number=None):
+    def check_string_in_file(self, node, file_name, keyword,
+                             start_line_number=None, must_present=True,
+                             expected_count=None):
         """Step to check number of keywords in a textual file on a single node.
 
         Args:
             node (NodeCollection): node
             file_name (str): name of textual file
             keyword (str): string to search
-            expected_count (int): expected count of lines containing keyword
             start_line_number (int|None): number of first line for searching
+            must_present (bool): flag that keyword must be present or not
+            expected_count (int|None): expected count of lines containing
+                keyword
 
         Raises:
             AssertionError|AnsibleExecutionException: if command execution
@@ -557,9 +574,12 @@ class OsFaultsSteps(base.BaseSteps):
             cmd = "tail -n +{0} {1}".format(start_line_number, file_name)
         else:
             cmd = "cat {}".format(file_name)
-        if expected_count == 0:
+        if expected_count == 0 or expected_count is None:
             cmd += " | grep -q '{}'; echo $?".format(keyword)
-            expected_value = 1
+            if must_present:
+                expected_value = 0
+            else:
+                expected_value = 1
         else:
             cmd += " | grep '{}' | wc -l".format(keyword)
             expected_value = expected_count
