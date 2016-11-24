@@ -755,3 +755,17 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(nodes, cmd, check=False)
         return any(node_result.status == config.STATUS_OK
                    for node_result in result)
+
+    @steps_checker.step
+    def get_neutron_dvr(self):
+        """Step to retrieve neutron DVR feature enabled or not.
+
+        Returns:
+            bool: is neutron DVR feature enabled
+        """
+        cmd = "grep -iP '^agent_mode\s*=\s*dvr' {}".format(
+            config.NEUTRON_L3_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.NEUTRON_L3_SERVICE])
+        result = self.execute_cmd(nodes, cmd, check=False)
+        return all(node_result.status == config.STATUS_OK
+                   for node_result in result)

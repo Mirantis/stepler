@@ -21,6 +21,9 @@ import pytest
 from stepler import config
 
 
+pytestmark = pytest.mark.requires('dvr')
+
+
 @pytest.mark.requires("computes_count_gte(2)")
 @pytest.mark.idempotent_id(
     '91853195-c456-464c-b0a4-5655acee7769',
