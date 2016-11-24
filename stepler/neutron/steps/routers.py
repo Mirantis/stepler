@@ -17,7 +17,7 @@ Router steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import equal_to
+from hamcrest import assert_that, equal_to  # noqa H301
 
 from stepler import base
 from stepler.third_party.matchers import expect_that
@@ -193,3 +193,32 @@ class RouterSteps(base.BaseSteps):
             LookupError: if zero or more than one routers found
         """
         return self._client.find(**kwargs)
+
+    @steps_checker.step
+    def get_routers(self):
+        """Step to retrieve all routers in current project.
+
+        Returns:
+            list: list of retrieved routers
+
+        """
+        return self._client.list()
+
+    @steps_checker.step
+    def check_router_distributed_status(self,
+                                        name,
+                                        distributed=True,
+                                        timeout=0):
+        """Step to check whether router distributed or not.
+
+        Args:
+            name (str): name of the router
+            distributed (bool): flag whether router should be distributed
+                or not
+            timeout (int): seconds to wait for a result of check
+
+        Raises:
+            AssertionError: if check was failed
+        """
+        distributed_status = self.get_router(name=name)['distributed']
+        assert_that(distributed_status, equal_to(distributed))
