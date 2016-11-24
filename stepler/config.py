@@ -39,7 +39,6 @@ USER_DOMAIN_NAME = os.environ.get('OS_USER_DOMAIN_NAME', 'default')
 PROJECT_NAME = os.environ.get('OS_PROJECT_NAME', 'admin')
 USERNAME = os.environ.get('OS_USERNAME', 'admin')
 PASSWORD = os.environ.get('OS_PASSWORD', 'password')
-OS_FAULTS_CONFIG = os.environ.get('OS_FAULTS_CONFIG')  # should be defined!
 
 # If AUTH_URL is undefined, corresponding fixture raises exception.
 # AUTH_URL absence doesn't raise exception here, because for docs generation

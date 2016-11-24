@@ -100,6 +100,8 @@ def pytest_addoption(parser):
     """Hook to register checker options."""
     parser.addoption("--disable-steps-checker", action="store_true",
                      help="disable steps checker (warning will be shown)")
+    parser.addoption("--steps-check-only", action="store_true",
+                     help="disable steps checker (warning will be shown)")
 
 
 def pytest_collection_modifyitems(config, items):
@@ -125,8 +127,16 @@ def pytest_collection_modifyitems(config, items):
                     '\n'.join(errors))
 
 
+def pytest_runtestloop(session):
+    """Check idempotent id presence."""
+    if session.config.option.steps_check_only:
+        return True
+
+
 def pytest_configure(config):
     """Hook to check steps consistency."""
+    if config.option.steps_check_only:
+        config.option.force_destructive = True
     if config.option.disable_steps_checker:
         config.warn('P1', 'Step consistency checker is disabled!')
         return
