@@ -725,3 +725,17 @@ class OsFaultsSteps(base.BaseSteps):
             return config.NETWORK_TYPE_VXLAN
         else:
             return config.NETWORK_TYPE_VLAN
+
+    @steps_checker.step
+    def get_neutron_l3_ha(self):
+        """Step to retrieve neutron L3 HA feature enabled or not.
+
+        Returns:
+            bool: is neutron L3 HA feature enabled
+        """
+        cmd = "grep -iP '^l3_ha\s*=\s*true' {}".format(
+            config.NEUTRON_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.NEUTRON_L3_SERVICE])
+        result = self.execute_cmd(nodes, cmd, check=False)
+        return any(node_result.status == config.STATUS_OK
+                   for node_result in result)
