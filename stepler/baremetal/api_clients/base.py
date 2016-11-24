@@ -26,3 +26,20 @@ class IronicApiClient(base.BaseApiClient):
     @property
     def _endpoint(self):
         return self._session.get_endpoint(service_type='baremetal').rstrip('/')
+
+    @property
+    def _auth_headers(self):
+        """Get auth headers.
+
+        Returns:
+            dict: authentication headers.
+        """
+        ironic_version = '1.9'
+
+        return {
+            'X-Auth-Token': self._session.get_auth_headers()['X-Auth-Token'],
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'python-ironicclient',
+            'X-OpenStack-Ironic-API-Version': ironic_version
+        }
