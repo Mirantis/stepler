@@ -20,6 +20,52 @@ import pytest
 from stepler import config
 
 
+@pytest.mark.idempotent_id('db942db2-59c8-4736-9b00-58635a157c77')
+def test_hard_reboot_server_on_ironic_node(keypair,
+                                           baremetal_flavor,
+                                           baremetal_ubuntu_image,
+                                           baremetal_network,
+                                           nova_floating_ip,
+                                           server_steps):
+    """**Scenario:** Hard reboot server on ironic node.
+
+    **Setup:**
+
+    #. Create keypair
+    #. Create baremetal flavor
+    #. Upload baremetal ubuntu image
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Create and boot server
+    #. Check that server status is active
+    #. Attach floating ip to server
+    #. Check ssh access to server
+    #. Reboot server
+    #. Check that server status is hard reboot
+    #. Check that server status is active
+    #. Check ssh access to server
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete image
+    #. Delete flavor
+    #. Delete keypair
+    """
+    server = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                         flavor=baremetal_flavor,
+                                         networks=[baremetal_network],
+                                         keypair=keypair,
+                                         username=config.UBUNTU_USERNAME)[0]
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.get_server_ssh(server)
+    server_steps.reboot_server(server, reboot_type=config.REBOOT_HARD)
+    server_steps.get_server_ssh(server)
+
+
 @pytest.mark.idempotent_id('9e1ce800-1873-4471-9903-5f2433a412f6')
 def test_stop_start_server_on_baremetal_node(keypair,
                                              baremetal_flavor,
