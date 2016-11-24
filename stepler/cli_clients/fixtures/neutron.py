@@ -1,7 +1,7 @@
 """
-----------------
-CLI client steps
-----------------
+---------------------------
+Neutron CLI client fixtures
+---------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +17,23 @@ CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .baremetal import *  # noqa
-from .cinder import *  # noqa
-from .glance import *  # noqa
-from .heat import *  # noqa
-from .neutron import *  # noqa
-from .nova import *  # noqa
-from .openstack import *  # noqa
+import pytest
+
+from stepler.cli_clients import steps
 
 __all__ = [
-    'CliCinderSteps',
-    'CliHeatSteps',
-    'CliGlanceSteps',
-    'CliIronicSteps',
-    'CliNovaSteps',
-    'CliOpenstackSteps',
-    'CliNeutronSteps',
+    'cli_neutron_steps',
 ]
+
+
+@pytest.fixture
+def cli_neutron_steps(remote_executor):
+    """Function fixture to neutron CLI steps.
+
+    Args:
+        remote_executor (callable): function to execute command on remote node
+
+    Returns:
+        CliNeutronSteps: instantiated neutron CLI steps
+    """
+    return steps.CliNeutronSteps(remote_executor)
