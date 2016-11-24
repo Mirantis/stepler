@@ -22,11 +22,28 @@ from stepler import config
 
 
 @pytest.mark.requires("computes_count_gte(2)")
-@pytest.mark.idempotent_id('91853195-c456-464c-b0a4-5655acee7769')
-@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
-@pytest.mark.parametrize('neutron_2_servers_different_networks',
-                         ['same_host', 'different_hosts'],
-                         indirect=True)
+@pytest.mark.idempotent_id(
+    '91853195-c456-464c-b0a4-5655acee7769',
+    router=dict(distributed=True),
+    neutron_2_servers_different_networks='same_host')
+@pytest.mark.idempotent_id(
+    '8dd82992-136b-4a46-b399-74a12bb16613',
+    router=dict(distributed=True),
+    neutron_2_servers_different_networks='different_hosts')
+@pytest.mark.idempotent_id(
+    '3120dece-6c16-44ca-84c5-ae25fc1a0039',
+    router=dict(distributed=False),
+    neutron_2_servers_different_networks='same_host')
+@pytest.mark.idempotent_id(
+    '808b1d0c-e492-4a26-97b3-758c0baace80',
+    router=dict(distributed=False),
+    neutron_2_servers_different_networks='different_hosts')
+@pytest.mark.parametrize(
+    'router', [dict(distributed=True), dict(distributed=False)],
+    ids=['distributed router', 'centralized router'], indirect=True)
+@pytest.mark.parametrize(
+    'neutron_2_servers_different_networks',
+    ['same_host', 'different_hosts'], indirect=True)
 def test_check_east_west_connectivity_between_instances(
         neutron_2_servers_different_networks,
         nova_floating_ip,
