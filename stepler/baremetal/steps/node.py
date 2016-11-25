@@ -254,17 +254,83 @@ class IronicNodeSteps(BaseSteps):
         node.__dict__.update(node._info)
 
     @steps_checker.step
-    def get_ironic_nodes(self, check=True):
+    def get_ironic_nodes(self, check=True, **kwargs):
         """Step to retrieve nodes.
 
         Returns:
             list of objects: list of nodes.
+            **kwargs: like: {'name': 'test_node', 'status': 'active'}
 
         Raises:
             AssertionError: if nodes collection is empty.
         """
-        nodes_list = self._client.node.list()
-        if check:
-            assert_that(nodes_list, is_not(empty()))
+        nodes = self._client.node.list()
 
-        return nodes_list
+        if kwargs:
+            matched_nodes = []
+            for node in nodes:
+                node_dict = node.to_dict()
+                for key, value in kwargs.items():
+                    if not (key in node_dict and node_dict[key] == value):
+                        break
+                else:
+                    matched_nodes.append(node)
+
+            nodes = matched_nodes
+
+        if check:
+            assert_that(nodes, is_not(empty()))
+
+        return nodes
+
+    @steps_checker.step
+    def get_ironic_node(self, check=True, **kwargs):
+        """Find one node by provided **kwargs.
+
+        Args:
+            check (bool): flag whether to check step or not
+            **kwargs: like: {'name': 'test_node', 'status': 'active'}
+
+        Returns:
+            object: ironic node
+
+        Raises:
+            ValueError: if '**kwargs' were not provided
+        """
+        if not kwargs:
+            raise ValueError("Need to provide search criteria.")
+
+        return self.get_ironic_nodes(check=check, **kwargs)[0]
+
+    def check_ironic_nodes_provision_state(self,
+                                           nodes,
+                                           state,
+                                           node_timeout=0):
+        """Check ironic node provision state was changed.
+
+        Args:
+            nodes (list): the list of ironic nodes.
+            state (str): the provision state mode
+            node_timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        expected_provision_state = {node.uuid: state for node in nodes}
+
+        def _check_ironic_nodes_provision_state():
+            actual_provision_state = {}
+            for node in nodes:
+                try:
+                    self._get_node(node)
+                    actual_provision_state[node.uuid] = node.provision_state
+
+                except exceptions.NotFound:
+                    actual_provision_state[node.uuid] = None
+
+            return waiter.expect_that(actual_provision_state,
+                                      equal_to(expected_provision_state))
+
+        timeout = len(nodes) * node_timeout
+        waiter.wait(_check_ironic_nodes_provision_state,
+                    timeout_seconds=timeout)
