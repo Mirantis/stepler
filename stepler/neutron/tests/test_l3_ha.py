@@ -21,17 +21,25 @@ import pytest
 
 from stepler import config
 
+pytestmark = [
+    pytest.mark.destructive,
+    pytest.mark.requires("l3_ha", "l3_agent_nodes_count >= 3")
+]
 
-@pytest.mark.requires("l3_ha and computes_count >= 2")
-@pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5')
+
+@pytest.mark.requires("computes_count >= 2")
+@pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5', ban_count=1)
+@pytest.mark.idempotent_id('f48dc010-f4d1-464b-aa73-834a706569e6', ban_count=2)
 @pytest.mark.parametrize(
     'neutron_2_networks', ['different_routers'], indirect=True)
+@pytest.mark.parametrize('ban_count', [1, 2])
 def test_ban_l3_agent_with_active_ha_state_for_router(
         neutron_2_servers_different_networks,
         nova_create_floating_ip,
         server_steps,
         agent_steps,
-        os_faults_steps):
+        os_faults_steps,
+        ban_count):
     """**Scenario:** Ban l3-agent with ACTIVE ha_state for router.
 
     **Setup:**
@@ -51,7 +59,8 @@ def test_ban_l3_agent_with_active_ha_state_for_router(
     #. Start ping between servers with floating IP
     #. Ban ACTIVE L3 agent
     #. Wait for another L3 agent becomes ACTIVE
-    #. Check that ping loss is not more than 10 packets.
+    #. Repeat last 2 steps ``ban_count`` times
+    #. Check that ping loss is not more than 10 * ``ban_count`` packets.
 
     **Teardown:**
 
@@ -68,17 +77,20 @@ def test_ban_l3_agent_with_active_ha_state_for_router(
     floating_ip_2 = nova_create_floating_ip()
     server_steps.attach_floating_ip(server_1, floating_ip_1)
     server_steps.attach_floating_ip(server_2, floating_ip_2)
-    agents = agent_steps.get_l3_agents_for_router(
-        router_1, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)
-    agent_node = os_faults_steps.get_nodes_for_l3_agents(agents[:1])
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
                 floating_ip_2.ip,
-                max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
+                max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS *
+                ban_count,
                 server_ssh=server_ssh):
-            os_faults_steps.terminate_service(
-                config.NEUTRON_L3_SERVICE, nodes=agent_node)
-            agent_steps.check_l3_ha_router_rescheduled(
-                router_1,
-                old_l3_agent=agents[0],
-                timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+            for _ in range(ban_count):
+                agents = agent_steps.get_l3_agents_for_router(
+                    router_1, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)
+                agent_node = os_faults_steps.get_nodes_for_l3_agents(agents[:
+                                                                            1])
+                os_faults_steps.terminate_service(
+                    config.NEUTRON_L3_SERVICE, nodes=agent_node)
+                agent_steps.check_l3_ha_router_rescheduled(
+                    router_1,
+                    old_l3_agent=agents[0],
+                    timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)

@@ -103,7 +103,7 @@ def neutron_2_servers_different_networks(
         cirros_image,
         flavor,
         security_group,
-        server,
+        sorted_hypervisors,
         neutron_2_networks,
         hypervisor_steps,
         server_steps):
@@ -128,7 +128,7 @@ def neutron_2_servers_different_networks(
         cirros_image (obj): cirros image
         flavor (obj): nova flavor
         security_group (obj): nova security group
-        server (obj): nova server
+        sorted_hypervisors (list): available hypervisors
         neutron_2_networks (obj): neutron networks, subnets, router(s)
             resources AttrDict instance
         hypervisor_steps (obj): instantiated nova hypervisor steps
@@ -138,26 +138,35 @@ def neutron_2_servers_different_networks(
         attrdict.AttrDict: created resources
     """
 
-    network_1, network_2 = neutron_2_networks.networks
-
+    hypervisors = sorted_hypervisors[:2]
     if getattr(request, 'param', None) == 'same_host':
-        server_2_hypervisor = getattr(server, config.SERVER_HOST_ATTR)
-    else:
-        server_2_hypervisor = hypervisor_steps.get_another_hypervisor(server)
-        server_2_hypervisor = server_2_hypervisor.hypervisor_hostname
+        hypervisors[1] = hypervisors[0]
 
-    server_2 = server_steps.create_servers(
-        image=cirros_image,
-        flavor=flavor,
-        networks=[network_2],
-        availability_zone='nova:{}'.format(server_2_hypervisor),
-        security_groups=[security_group],
-        username=config.CIRROS_USERNAME,
-        password=config.CIRROS_PASSWORD)[0]
+    servers = []
+
+    for hypervisor, network in zip(hypervisors, neutron_2_networks.networks):
+        server = server_steps.create_servers(
+            image=cirros_image,
+            flavor=flavor,
+            networks=[network],
+            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME,
+            password=config.CIRROS_PASSWORD,
+            check=False)[0]
+        servers.append(server)
+
+    for server in servers:
+
+        server_steps.check_server_status(
+            server,
+            expected_statuses=[config.STATUS_ACTIVE],
+            transit_statuses=[config.STATUS_BUILD],
+            timeout=config.SERVER_ACTIVE_TIMEOUT)
 
     return attrdict.AttrDict(
-        servers=(server, server_2),
-        networks=(network_1, network_2),
+        servers=servers,
+        networks=neutron_2_networks.networks,
         routers=neutron_2_networks.routers)
 
 
