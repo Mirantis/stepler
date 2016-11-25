@@ -138,7 +138,10 @@ class AgentSteps(base.BaseSteps):
         """
         def _check_router_rescheduled():
             l3_agents = self.get_l3_agents_for_router(
-                router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)
-            return expect_that(old_l3_agent, is_not(is_in(l3_agents)))
+                router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS, check=False)
+            l3_agents_ids = [agent['id'] for agent in l3_agents]
+            expect_that(l3_agents, is_not(empty()))
+            expect_that(old_l3_agent['id'], is_not(is_in(l3_agents_ids)))
+            return l3_agents
 
         waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)
