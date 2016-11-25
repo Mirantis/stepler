@@ -33,6 +33,7 @@ __all__ = [
 LOG = logging.getLogger(__name__)
 DESTRUCTIVE = 'destructive'
 INDESTRUCTIBLE = 'indestructible'
+SKIPPED = 'skipped'
 
 
 def pytest_addoption(parser):
@@ -59,9 +60,20 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    if outcome.get_result().outcome == 'skipped':
+        setattr(item, SKIPPED, True)
+
+
+@pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_teardown(item, nextitem):
     """Pytest hook to dispatch destructive scenarios."""
     do_revert = True
+
+    # Prevent reverting after skipped tests
+    if getattr(item, SKIPPED, False):
+        do_revert = False
 
     # Revert only destructive tests
     if not item.get_marker(DESTRUCTIVE):
