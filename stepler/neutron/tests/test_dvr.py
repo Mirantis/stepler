@@ -308,3 +308,128 @@ def test_east_west_connectivity_after_ban_clear_l3_on_compute(
             server_2_ip,
             server_1_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('8aaa9951-57c0-4690-bbab-cd649633bed8')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_associate_floating_ip_after_ban_clear_l3_on_compute(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        nova_floating_ip,
+        nova_create_floating_ip,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check floating ip association after ban/clear l3 agent.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check that ping from server to 8.8.8.8 is successful
+    #. Terminate L3 service on compute with server
+    #. Start L3 service on compute with server
+    #. Boot server_2 on the compute where the l3-agent has been restarted
+    #. Assign floating ip to server_2
+    #. Check pings between server and server_2 via floating ip
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+    server_host = getattr(server, config.SERVER_HOST_ATTR)
+    host_compute = os_faults_steps.get_node(fqdns=[server_host])
+    os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE, host_compute)
+    os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, host_compute)
+
+    network, _, _ = net_subnet_router
+    server_2 = server_steps.create_servers(
+        image=cirros_image, flavor=flavor, networks=[network],
+        security_groups=[security_group],
+        availability_zone='nova:{}'.format(server_host),
+        username=config.CIRROS_USERNAME,
+        password=config.CIRROS_PASSWORD)[0]
+
+    nova_floating_ip_2 = nova_create_floating_ip()
+    server_steps.attach_floating_ip(server_2, nova_floating_ip_2)
+    server_steps.check_ping_between_servers_via_floating(
+        servers=[server, server_2],
+        ip_types=(config.FLOATING_IP,),
+        timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('d2682741-b7f5-4aec-b6d8-2642ca0ec701')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_check_router_namespace_on_compute_node(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check router namespace with server and without it.
+
+    This test check router namespace on compute node with server and after
+        server deletion.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Check that router namespace is on compute node where server is hosted
+    #. Delete server
+    #. Check that router namespace is deleted
+
+    **Teardown:**
+
+    #. Delete server (if it was not removed)
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    _, _, router = net_subnet_router
+    server_host = getattr(server, config.SERVER_HOST_ATTR)
+    host_compute = os_faults_steps.get_node(fqdns=[server_host])
+
+    os_faults_steps.check_router_namespace_presence(router, host_compute)
+
+    server_steps.delete_servers([server])
+    os_faults_steps.check_router_namespace_presence(
+        router,
+        host_compute,
+        must_present=False,
+        timeout=config.ROUTER_NAMESPACE_TIMEOUT)
