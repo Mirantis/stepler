@@ -22,7 +22,6 @@ from hamcrest import (assert_that, empty, is_in, is_not, only_contains,
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -71,7 +70,7 @@ class AgentSteps(base.BaseSteps):
                 agent for agent in self.get_agents()
                 if agent['id'] in agents_ids
             ]
-            return expect_that(agents, only_contains(
+            return waiter.expect_that(agents, only_contains(
                 has_entries(alive=must_alive)))
 
         waiter.wait(_check_agents_alive, timeout_seconds=timeout)
@@ -119,8 +118,8 @@ class AgentSteps(base.BaseSteps):
         def _check_router_rescheduled():
             l3_agents = self._client.get_l3_agents_for_router(router['id'])
             l3_agents_ids = [agent['id'] for agent in l3_agents]
-            return expect_that(old_l3_agent['id'],
-                               is_not(is_in(l3_agents_ids)))
+            return waiter.expect_that(old_l3_agent['id'],
+                                      is_not(is_in(l3_agents_ids)))
 
         waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)
 
@@ -136,12 +135,14 @@ class AgentSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
+
         def _check_router_rescheduled():
             l3_agents = self.get_l3_agents_for_router(
                 router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS, check=False)
             l3_agents_ids = [agent['id'] for agent in l3_agents]
-            expect_that(l3_agents, is_not(empty()))
-            expect_that(old_l3_agent['id'], is_not(is_in(l3_agents_ids)))
+            waiter.expect_that(l3_agents, is_not(empty()))
+            waiter.expect_that(old_l3_agent['id'],
+                               is_not(is_in(l3_agents_ids)))
             return l3_agents
 
         waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)

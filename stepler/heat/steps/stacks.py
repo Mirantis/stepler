@@ -22,7 +22,6 @@ from heatclient import exc
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -70,8 +69,9 @@ class StackSteps(base.BaseSteps):
 
         def _get_prop():
             stack.get()
-            return expect_that(getattr(stack, property_name).lower(),
-                               is_not(is_in(transit_values)))
+            return waiter.expect_that(
+                getattr(stack, property_name).lower(),
+                is_not(is_in(transit_values)))
 
         waiter.wait(_get_prop, timeout_seconds=timeout)
         return getattr(stack, property_name)
@@ -178,7 +178,7 @@ class StackSteps(base.BaseSteps):
             except exc.NotFound:
                 is_present = False
 
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_presence, timeout_seconds=timeout)
 

@@ -21,7 +21,6 @@ Ironic port steps
 from ironicclient import exceptions
 from hamcrest import assert_that, is_not, empty, equal_to  # noqa
 from stepler import base
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -108,7 +107,8 @@ class IronicPortSteps(base.BaseSteps):
                 except exceptions.NotFound:
                     actual_presence[port.uuid] = False
 
-            return expect_that(actual_presence, equal_to(expected_presence))
+            return waiter.expect_that(actual_presence,
+                                      equal_to(expected_presence))
 
         timeout = len(ports) * port_timeout
         waiter.wait(_check_ports_presence, timeout_seconds=timeout)

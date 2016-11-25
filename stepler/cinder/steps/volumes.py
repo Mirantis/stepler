@@ -24,7 +24,6 @@ from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
 
 from stepler import base
 from stepler import config
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -197,7 +196,7 @@ class VolumeSteps(base.BaseSteps):
                 is_present = True
             except exceptions.NotFound:
                 is_present = False
-            return expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_volume_presence, timeout_seconds=timeout)
 
@@ -217,8 +216,8 @@ class VolumeSteps(base.BaseSteps):
         """
         def _check_volume_status():
             volume.get()
-            return expect_that(volume.status.lower(),
-                               is_not(is_in(transit_statuses)))
+            return waiter.expect_that(volume.status.lower(),
+                                      is_not(is_in(transit_statuses)))
 
         waiter.wait(_check_volume_status, timeout_seconds=timeout)
         assert_that(volume.status.lower(), equal_to(status.lower()))
@@ -288,7 +287,7 @@ class VolumeSteps(base.BaseSteps):
         """
         def _check_volume_properties():
             volume.get()
-            return expect_that(volume, has_properties(properties))
+            return waiter.expect_that(volume, has_properties(properties))
 
         waiter.wait(_check_volume_properties, timeout_seconds=timeout)
 
@@ -306,7 +305,7 @@ class VolumeSteps(base.BaseSteps):
         """
         def _check_volume_size():
             volume.get()
-            return expect_that(volume.size, equal_to(size))
+            return waiter.expect_that(volume.size, equal_to(size))
 
         waiter.wait(_check_volume_size, timeout_seconds=timeout)
 
@@ -345,7 +344,8 @@ class VolumeSteps(base.BaseSteps):
         """
         def _check_volume_type():
             volume.get()
-            return expect_that(volume.volume_type, equal_to(volume_type.name))
+            return waiter.expect_that(volume.volume_type,
+                                      equal_to(volume_type.name))
 
         waiter.wait(_check_volume_type, timeout_seconds=timeout)
 
@@ -366,7 +366,8 @@ class VolumeSteps(base.BaseSteps):
         def _check_volume_attachments():
             volume.get()
             attached_ids = self.get_attached_server_ids(volume, check=False)
-            return expect_that(set(attached_ids), equal_to(set(server_ids)))
+            return waiter.expect_that(set(attached_ids),
+                                      equal_to(set(server_ids)))
 
         waiter.wait(_check_volume_attachments, timeout_seconds=timeout)
 
@@ -562,7 +563,7 @@ class VolumeSteps(base.BaseSteps):
 
         def _check_migration_status():
             volume.get()
-            return expect_that(
+            return waiter.expect_that(
                 volume.migration_status.lower(), equal_to(status.lower()))
 
         waiter.wait(_check_migration_status, timeout_seconds=timeout)
@@ -583,7 +584,8 @@ class VolumeSteps(base.BaseSteps):
         def _check_volume_host():
             volume.get()
             volume_host = getattr(volume, config.VOLUME_HOST_ATTR)
-            return expect_that(volume_host.lower(), equal_to(host.lower()))
+            return waiter.expect_that(volume_host.lower(),
+                                      equal_to(host.lower()))
 
         waiter.wait(_check_volume_host, timeout_seconds=timeout)
 

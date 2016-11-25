@@ -37,7 +37,6 @@ from stepler import config
 from stepler.third_party import arping
 from stepler.third_party import chunk_serializer
 from stepler.third_party import iperf
-from stepler.third_party.matchers import expect_that
 from stepler.third_party import ping
 from stepler.third_party import ssh
 from stepler.third_party import steps_checker
@@ -240,8 +239,8 @@ class ServerSteps(base.BaseSteps):
         """
         def _check_server_status():
             server.get()
-            return expect_that(server.status.lower(),
-                               is_not(is_in(transit_statuses)))
+            return waiter.expect_that(server.status.lower(),
+                                      is_not(is_in(transit_statuses)))
 
         waiter.wait(_check_server_status, timeout_seconds=timeout)
         err_msg = self._error_message(server)
@@ -369,8 +368,8 @@ class ServerSteps(base.BaseSteps):
             def _check_fixed_ip_attached():
                 server.get()
                 ips_after_attach = self.get_ips(server, 'fixed').keys()
-                return expect_that(len(ips_after_attach),
-                                   equal_to(len(ips_before_attach) + 1))
+                return waiter.expect_that(len(ips_after_attach),
+                                          equal_to(len(ips_before_attach) + 1))
 
             waiter.wait(_check_fixed_ip_attached,
                         timeout_seconds=config.SERVER_UPDATE_TIMEOUT)
@@ -400,7 +399,7 @@ class ServerSteps(base.BaseSteps):
             def _check_detach_fixed_ip():
                 server.get()
                 fixed_ips = self.get_ips(server, 'fixed').keys()
-                return expect_that(fixed_ip, is_not(is_in(fixed_ips)))
+                return waiter.expect_that(fixed_ip, is_not(is_in(fixed_ips)))
 
             waiter.wait(_check_detach_fixed_ip,
                         timeout_seconds=config.SERVER_UPDATE_TIMEOUT)
@@ -1042,7 +1041,7 @@ class ServerSteps(base.BaseSteps):
 
         def predicate():
             server.get()
-            return expect_that(server.metadata, matcher)
+            return waiter.expect_that(server.metadata, matcher)
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
