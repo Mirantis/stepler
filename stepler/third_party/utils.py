@@ -385,3 +385,16 @@ def get_md5sum(file_path, size=4096):
         for chunk in iter(lambda: file.read(size), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+
+def get_server_fault_string(server):
+    """Returns nova server ``fault`` property as string.
+
+    Args:
+        server (obj): nova server
+
+    Returns:
+        str: string representation of nova server ``fault`` property
+    """
+    fault = getattr(server, 'fault', {})
+    return '\n'.join(("{}:\n{}".format(k, v) for k, v in fault.items()))
