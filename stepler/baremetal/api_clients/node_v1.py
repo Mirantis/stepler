@@ -50,4 +50,33 @@ class IronicApiClientV1(IronicApiClient):
         response = self._get('/v1/nodes/{}'.format(node_ident))
         response.raise_for_status()
 
+        return [Resource(self, response.json())]
+
+    def node_create(self, driver, name=None, driver_info=None):
+        """Create node via API call.
+
+        Args:
+            name(str): node name
+            driver(str): node driver
+            driver_info(json): node driver info
+
+        Returns:
+            object: ironic node
+        """
+        data = {"name": name,
+                "driver": driver,
+                "driver_info": driver_info}
+
+        response = self._post('/v1/nodes/', data=data)
+        response.raise_for_status()
+
         return Resource(self, response.json())
+
+    def node_delete(self, node_ident):
+        """Delete node via API call.
+
+        Args:
+            node_ident (str): the UUID or Name of the node.
+        """
+        response = self._delete('/v1/nodes/{}'.format(node_ident))
+        response.raise_for_status()

@@ -263,8 +263,10 @@ class BaseApiClient(object):
             dict: authentication headers.
         """
         # TODO(schipiga): may be need to use native API
+
         return {  # catch only token to avoid side effects
-            'X-Auth-Token': self._session.get_auth_headers()['X-Auth-Token']}
+            'X-Auth-Token': self._session.get_auth_headers()['X-Auth-Token'],
+        }
 
     @property
     def _endpoint(self):
@@ -294,15 +296,14 @@ class BaseApiClient(object):
 
         return requests.put(url, headers=headers, data=data, **kwgs)
 
-    def _post(self, url, headers=None, data=None, json=None, **kwgs):
+    def _post(self, url, headers=None, data=None, **kwgs):
         """POST request to API."""
         headers = headers or {}
         headers.update(self._auth_headers)
 
         url = self._endpoint + url
 
-        return requests.post(
-            url, headers=headers, data=data, json=json, **kwgs)
+        return requests.post(url, headers=headers, json=data, **kwgs)
 
     def _patch(self, url, headers=None, data=None, **kwgs):
         """PATCH request to API."""
