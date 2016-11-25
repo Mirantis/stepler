@@ -20,6 +20,35 @@ import pytest
 from stepler import config
 
 
+@pytest.mark.idempotent_id('6f241b44-a3b2-48e8-8cf2-422137b6851b')
+def test_boot_server_consequently_on_ironic_node(keypair,
+                                                 baremetal_flavor,
+                                                 baremetal_ubuntu_image,
+                                                 baremetal_network,
+                                                 nova_create_floating_ip,
+                                                 server_steps):
+    server_1_float = nova_create_floating_ip()
+    server_2_float = nova_create_floating_ip()
+
+    server_1 = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                           flavor=baremetal_flavor,
+                                           networks=[baremetal_network],
+                                           keypair=keypair,
+                                           username=config.UBUNTU_USERNAME)[0]
+
+    server_2 = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                           flavor=baremetal_flavor,
+                                           networks=[baremetal_network],
+                                           keypair=keypair,
+                                           username=config.UBUNTU_USERNAME)[0]
+
+    server_steps.attach_floating_ip(server_1, server_1_float)
+    server_steps.attach_floating_ip(server_2, server_2_float)
+
+    server_steps.get_server_ssh(server_1)
+    server_steps.get_server_ssh(server_2)
+
+
 @pytest.mark.idempotent_id('db942db2-59c8-4736-9b00-58635a157c77')
 def test_hard_reboot_server_on_ironic_node(keypair,
                                            baremetal_flavor,
