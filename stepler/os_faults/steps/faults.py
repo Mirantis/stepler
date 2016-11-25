@@ -769,3 +769,29 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(nodes, cmd, check=False)
         return all(node_result.status == config.STATUS_OK
                    for node_result in result)
+
+    @steps_checker.step
+    def check_router_namespace_presence(self, router, node, must_present=True,
+                                        timeout=0):
+        """Step to check router namespace presence on compute node.
+
+        Args:
+            router (object): neutron router
+            node (NodeCollection): node
+            must_present (bool): flag to check is namespace present or absent
+            timeout (int, optional): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+
+        def _check_router_namespace_presence():
+            router_namespace = "qrouter-{0}".format(router['id'])
+            cmd = 'ip net | grep {}'.format(router_namespace)
+            result = self.execute_cmd(node, cmd, check=False)
+
+            status = config.STATUS_OK if must_present else config.STATUS_FAILED
+            return waiter.expect_that(
+                result, only_contains(has_properties(status=status)))
+
+        waiter.wait(_check_router_namespace_presence, timeout_seconds=timeout)
