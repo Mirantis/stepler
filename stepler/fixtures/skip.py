@@ -49,27 +49,26 @@ def skip_test(request):
     Args:
         request (object): pytest request
     """
-    requires = request.node.get_marker('requires')
-    if not requires:
+    marker = request.node.get_marker('requires')
+    if not marker:
         return
 
-    if len(requires.args) == 1:
-        requires = requires.args[0]
-    else:
-        requires = map(lambda req: '({})'.format(req), requires.args)
-        requires = ' and '.join(requires)
-
     predicates = Predicates(request)
-    tree = ast.parse(requires, mode='eval')
 
-    tree = RewritePredicates().visit(tree)
-    ast.fix_missing_locations(tree)
-    code = compile(tree, '<ast>', mode='eval')
+    for requires in marker.args:
 
-    if not eval(code, {PREDICATES: predicates}):
-        pytest.skip('Skipped due to a mismatch to condition: {!r}\n'
-                    'Calculated conditions: {}'.format(
-                        requires, predicates._get_calculated_conditions()))
+        tree = ast.parse(requires, mode='eval')
+
+        tree = RewritePredicates().visit(tree)
+        tree = ast.fix_missing_locations(tree)
+        code = compile(tree, '<ast>', mode='eval')
+
+        if not eval(code, {PREDICATES: predicates}):
+            pytest.skip('Skipped due to a mismatch to condition: {!r}\n'
+                        'Calculated conditions: {}'.format(
+                            requires, predicates._get_calculated_conditions()))
+
+        predicates._clear_calls()
 
 
 class RewritePredicates(ast.NodeTransformer):
@@ -101,6 +100,10 @@ class Predicates(object):
             self._calls.append([f.__name__, result])
             return result
         return wrapper
+
+    def _clear_calls(self):
+        """Clear calls history."""
+        self._calls = []
 
     def _get_calculated_conditions(self):
         """Get all calculated conditions (names and results).
