@@ -244,7 +244,8 @@ class ServerSteps(base.BaseSteps):
                                is_not(is_in(transit_statuses)))
 
         waiter.wait(_check_server_status, timeout_seconds=timeout)
-        assert_that(server.status.lower(), is_in(expected_statuses))
+        err_msg = self._error_message(server)
+        assert_that(server.status.lower(), is_in(expected_statuses), err_msg)
 
     @steps_checker.step
     def get_server_credentials(self, server):
@@ -1271,3 +1272,12 @@ class ServerSteps(base.BaseSteps):
             yield
         assert_that(result['summary']['error_percent'],
                     less_than_or_equal_to(max_loss))
+
+    def _error_message(self, server):
+        fault = getattr(server, 'fault', {})
+        if not fault:
+            fault_msg = "No information"
+        else:
+            fault_msg = '\n'.join(("{}:\n{}".format(k, v)
+                                   for k, v in fault.items()))
+        return "Server fault:\n{}".format(fault_msg)
