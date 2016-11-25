@@ -128,11 +128,12 @@ class OsFaultsSteps(base.BaseSteps):
         waiter.wait(_check_service_state, timeout_seconds=timeout)
 
     @steps_checker.step
-    def restart_services(self, names, check=True):
+    def restart_services(self, names, nodes=None, check=True):
         """Step to restart services.
 
         Args:
             names (list): service names
+            nodes (obj): NodeCollection instance to restart service on it
             check (bool): flag whether to check step or not
 
         Raises:
@@ -142,7 +143,7 @@ class OsFaultsSteps(base.BaseSteps):
         for name in names:
             service = self._client.get_service(name=name)
             services.append(service)
-            service.restart()
+            service.restart(nodes=nodes)
         if check:
             # TODO(gdyuldin): make normal check
             assert_that(services, is_not(empty()))
@@ -769,3 +770,28 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(nodes, cmd, check=False)
         return all(node_result.status == config.STATUS_OK
                    for node_result in result)
+
+    @steps_checker.step
+    def check_router_namespace_presence(self, router, node, must_present=True,
+                                        timeout=0):
+        """Step to check router namespace presence on compute node.
+
+        Args:
+            router (object): neutron router
+            node (NodeCollection): node
+            must_present (bool): flag to check is namespace present or absent
+            timeout (int, optional): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        router_namespace = "qrouter-{0}".format(router['id'])
+        cmd = 'ip net | grep {}'.format(router_namespace)
+        status = config.STATUS_OK if must_present else config.STATUS_FAILED
+
+        def _check_router_namespace_presence():
+            result = self.execute_cmd(node, cmd, check=False)
+            return waiter.expect_that(
+                result, only_contains(has_properties(status=status)))
+
+        waiter.wait(_check_router_namespace_presence, timeout_seconds=timeout)
