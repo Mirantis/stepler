@@ -257,6 +257,9 @@ class IronicNodeSteps(BaseSteps):
     def get_ironic_nodes(self, check=True):
         """Step to retrieve nodes.
 
+        Args:
+            check (bool): flag whether to check step or not
+
         Returns:
             list of objects: list of nodes.
 
@@ -264,6 +267,27 @@ class IronicNodeSteps(BaseSteps):
             AssertionError: if nodes collection is empty.
         """
         nodes_list = self._client.node.list()
+        if check:
+            assert_that(nodes_list, is_not(empty()))
+
+        return nodes_list
+
+    @steps_checker.step
+    def get_node_by_instance_uuid(self, instance_uuid, check=True):
+        """Step to get node by instance uuid.
+
+        Args:
+            instance_uuid (str): the uuid of the instance.
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list of objects: list of nodes.
+
+        Raises:
+            AssertionError: if nodes collection is empty.
+        """
+        nodes_list = self._client.node.get_by_instance_uuid(instance_uuid)
+
         if check:
             assert_that(nodes_list, is_not(empty()))
 
