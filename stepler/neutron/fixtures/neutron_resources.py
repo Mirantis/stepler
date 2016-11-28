@@ -191,13 +191,15 @@ def neutron_2_servers_diff_nets_with_floating(
     Returns:
         attrdict.AttrDict: created resources
     """
-    servers = neutron_2_servers_different_networks.servers
+    resources = attrdict.AttrDict(neutron_2_servers_different_networks.copy())
 
-    for server in servers:
+    resources.floating_ips = []
+    for server in resources.servers:
         floating_ip = nova_create_floating_ip()
         server_steps.attach_floating_ip(server, floating_ip)
+        resources.floating_ips.append(floating_ip)
 
-    return neutron_2_servers_different_networks
+    return resources
 
 
 @pytest.fixture
