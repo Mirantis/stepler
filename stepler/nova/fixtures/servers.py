@@ -103,47 +103,40 @@ def server_steps(get_server_steps, servers_cleanup):
         get_server_steps (function): function to get server steps
         servers_cleanup (function): function to cleanup servers after test
 
-    Yields:
+    Returns:
         ServerSteps: instantiated server steps
     """
-    _server_steps = get_server_steps()
-    with servers_cleanup(_server_steps):
-        yield _server_steps
+    return get_server_steps()
 
 
 @pytest.fixture
-def servers_cleanup(uncleanable):
-    """Callable function fixture to cleanup servers after test.
+def servers_cleanup(uncleanable, get_server_steps):
+    """Function fixture to cleanup servers after test.
 
     Args:
         uncleanable (AttrDict): data structure with skipped resources
-
-    Returns:
-        function: function to cleanup servers
     """
-    @context.context
-    def _servers_cleanup(server_steps):
 
-        def _get_servers():
-            # check=False because in best case no servers will be retrieved
-            return server_steps.get_servers(
-                name_prefix=config.STEPLER_PREFIX, check=False)
+    server_steps = get_server_steps()
 
-        server_ids_before = [server.id for server in _get_servers()]
+    def _get_servers():
+        # check=False because in best case no servers will be retrieved
+        return server_steps.get_servers(
+            name_prefix=config.STEPLER_PREFIX, check=False)
 
-        yield
+    server_ids_before = [server.id for server in _get_servers()]
 
-        deleting_servers = []
-        for server in _get_servers():
+    yield
 
-            if server.id not in uncleanable.server_ids:
-                if server.id not in server_ids_before:
+    deleting_servers = []
+    for server in _get_servers():
 
-                    deleting_servers.append(server)
+        if server.id not in uncleanable.server_ids:
+            if server.id not in server_ids_before:
 
-        server_steps.delete_servers(deleting_servers)
+                deleting_servers.append(server)
 
-    return _servers_cleanup
+    server_steps.delete_servers(deleting_servers)
 
 
 @pytest.fixture

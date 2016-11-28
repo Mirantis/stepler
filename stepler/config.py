@@ -382,3 +382,9 @@ XVFB_LOCK = '/tmp/xvfb.lock'
 # Volume creating constants
 IMAGE_SOURCE = 'Image'
 VOLUME_SOURCE = 'Volume'
+
+
+# Cloud-specific variables
+
+# Check if current node is fuel primary controller
+FUEL_PRIMARY_CONTROLLER_CMD = "hiera roles | grep primary-controller"

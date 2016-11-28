@@ -863,3 +863,38 @@ class OsFaultsSteps(base.BaseSteps):
         if check:
             self.check_router_namespace_presence(router, nodes,
                                                  must_present=False)
+
+    @steps_checker.step
+    def get_nodes_by_cmd(self, cmd):
+        """Step to retrieve nodes with `0` exit code for `cmd` executing.
+
+        Args:
+            cmd (str): command to check should node be filtered of not. If
+                command exit code on node is not `0` - node will be skipped.
+
+        Returns:
+            obj: NodeCollection with filtered nodes
+
+        Raises:
+            AssertionError: if no nodes filtered
+        """
+        nodes = self.get_nodes()
+        result = self.execute_cmd(nodes, cmd, check=False)
+        filtered_hosts_ips = set(record.host for record in result
+                                 if record.status == config.STATUS_OK)
+        fqdns = []
+        for node in nodes:
+            if node.ip in filtered_hosts_ips:
+                fqdns.append(node.fqdn)
+        return self.get_nodes(fqdns=[node.fqdn])
+
+    @steps_checker.step
+    def poweroff_nodes(self, nodes, check=True):
+        """Step to poweroff nodes.
+
+        Args:
+            nodes (obj): NodeCollection to poweroff
+            check (bool, optional): flag whether to check this step or not
+        """
+        nodes.poweroff()
+        # TODO(gdyuldin): add correct check here
