@@ -844,3 +844,22 @@ class OsFaultsSteps(base.BaseSteps):
                 result, only_contains(has_properties(status=status)))
 
         waiter.wait(_check_router_namespace_presence, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def delete_router_namespace(self, nodes, router, check=True):
+        """Step to delete router namespace on nodes.
+
+        Args:
+            nodes (obj): NodeCollection to delete router namespace on
+            router (dict): neutron router
+            check (bool, optional): flag whether check step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed or router namespace was not deleted
+        """
+        cmd = "ip net delete qrouter-{}".format(router['id'])
+        self.execute_cmd(nodes, cmd, check=check)
+        if check:
+            self.check_router_namespace_presence(router, nodes,
+                                                 must_present=False)

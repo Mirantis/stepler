@@ -148,3 +148,54 @@ def test_ban_l3_agent_with_ping_public_ip(
                 router,
                 old_l3_agent=agent,
                 timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('dd0de43b-6aae-4731-8383-05987c539cde')
+def test_delete_ns_for_router_on_node_with_active_ha_state(
+        router,
+        server,
+        nova_floating_ip,
+        server_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Delete namespace for router on node with ACTIVE ha_state.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create server
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Attach floating IP to server
+    #. Get L3 agent with ACTIVE ha_state for router
+    #. Start ping from server to public ip
+    #. Delete router namespace on node with active L3 agent
+    #. Check that ping loss is not more than 40 packets
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete network, subnet, router
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    agent = agent_steps.get_l3_agents_for_router(
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+    agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        with server_steps.check_ping_loss_context(
+                config.GOOGLE_DNS_IP,
+                max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
+                server_ssh=server_ssh):
+            os_faults_steps.delete_router_namespace(nodes=agent_node,
+                                                    router=router)
