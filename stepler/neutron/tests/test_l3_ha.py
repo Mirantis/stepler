@@ -390,3 +390,71 @@ def test_reset_primary_controller(
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
                 server_ssh=server_ssh):
             os_faults_steps.reset_nodes(primary_controller)
+
+
+@pytest.mark.requires("computes_count >= 2")
+@pytest.mark.idempotent_id('8830caf4-5931-469b-bc7c-55ccdfdb3723')
+@pytest.mark.parametrize(
+    'neutron_2_networks', ['different_routers'], indirect=True)
+def test_disable_all_l3_agents_and_enable_them(
+        neutron_2_servers_different_networks,
+        nova_create_floating_ip,
+        server_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Disable all l3 agents and enable them.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router_1
+    #. Create network_2 with subnet_2 and router_2
+    #. Create server_1
+    #. Create server_2 on another compute and connect it to network_2
+
+    **Steps:**
+
+    #. Create and attach floating IP for each server
+    #. Start ping between servers with floating IP
+    #. Ban all L3 agents
+    #. Wait for all L3 agents to be died
+    #. Clear all L3 agents
+    #. Wait for all L3 agents to be alive
+    #. Check that ping loss is not more than 100 packets
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete networks, subnets, router
+    #. Delete floating IPs
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    server_1, server_2 = neutron_2_servers_different_networks.servers
+    floating_ip_1 = nova_create_floating_ip()
+    floating_ip_2 = nova_create_floating_ip()
+    server_steps.attach_floating_ip(server_1, floating_ip_1)
+    server_steps.attach_floating_ip(server_2, floating_ip_2)
+
+    l3_agents = agent_steps.get_agents(binary=config.NEUTRON_L3_SERVICE)
+    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents(l3_agents)
+
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        with server_steps.check_ping_loss_context(
+                floating_ip_2.ip,
+                max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
+                server_ssh=server_ssh):
+            os_faults_steps.terminate_service(
+                config.NEUTRON_L3_SERVICE, nodes=nodes_with_l3)
+            agent_steps.check_alive(
+                l3_agents,
+                must_alive=False,
+                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+            os_faults_steps.start_service(
+                config.NEUTRON_L3_SERVICE, nodes=nodes_with_l3)
+            agent_steps.check_alive(
+                l3_agents, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
