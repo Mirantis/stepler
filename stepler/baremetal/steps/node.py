@@ -257,14 +257,38 @@ class IronicNodeSteps(BaseSteps):
     def get_ironic_nodes(self, check=True):
         """Step to retrieve nodes.
 
+        Args:
+            check (bool): flag whether to check step or not
+
         Returns:
-            list of objects: list of nodes.
+            list of objects: list of nodes
 
         Raises:
-            AssertionError: if nodes collection is empty.
+            AssertionError: if nodes collection is empty
         """
         nodes_list = self._client.node.list()
         if check:
             assert_that(nodes_list, is_not(empty()))
 
         return nodes_list
+
+    @steps_checker.step
+    def get_node_by_instance_uuid(self, server_uuid, check=True):
+        """Step to get node by instance uuid.
+
+        Args:
+            server_uuid (str): the uuid of the nova server
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: ironic node
+
+        Raises:
+            AssertionError: if nodes collection is empty
+        """
+        node = self._client.node.get_by_instance_uuid(server_uuid)
+
+        if check:
+            assert_that(node.uuid, equal_to(server_uuid))
+
+        return node
