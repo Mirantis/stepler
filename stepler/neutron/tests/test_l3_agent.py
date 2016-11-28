@@ -17,12 +17,15 @@ Neutron l3 agent tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import signal
+
 import pytest
 
 from stepler import config
 
 
-pytestmark = [pytest.mark.requires("computes_count >= 2"),
+pytestmark = [pytest.mark.requires("not dvr and not l3_ha",
+                                   "computes_count >= 2"),
               pytest.mark.destructive]
 
 
@@ -363,6 +366,94 @@ def test_ban_l3_agent_many_times(cirros_image,
                    (server_3, config.FLOATING_IP)],
         server_3: [config.GOOGLE_DNS_IP, (server_2, config.FLOATING_IP),
                    server_1]
+    }
+    server_steps.check_ping_by_plan(
+        ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('11660a80-2510-419d-a9eb-471e4ff7e20c')
+@pytest.mark.parametrize('neutron_2_networks',
+                         ['different_routers'],
+                         indirect=True)
+def test_kill_l3_agent_process(cirros_image,
+                               flavor,
+                               security_group,
+                               neutron_2_servers_diff_nets_with_floating,
+                               nova_create_floating_ip,
+                               server_steps,
+                               os_faults_steps,
+                               agent_steps):
+    """**Scenario:** Kill l3-agent process and check that ping is available.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router1
+    #. Create server_1
+    #. Create network_2 with subnet_2
+    #. Create server_2 on another compute and connect it to network_2
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Ping server_1 and server_2 from each other with floatings ip
+    #. Get node with l3 agent for router_1
+    #. Get PID of l3 agent process
+    #. Send SIGKILL to the process
+    #. Wait for l3 agent becoming active
+    #. Boot server_3 in network_1
+    #. Associate floating ip for server_3
+    #. Ping server_1 and server_3 from each other with internal ip
+    #. Ping server_2 and server_1 from each other with floating ip
+    #. Ping server_2 and server_3 from each other with floating ip
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete networks, subnets, routers
+    #. Delete floating IPs
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    network_1, network_2 = neutron_2_servers_diff_nets_with_floating.networks
+    router_1, _ = neutron_2_servers_diff_nets_with_floating.routers
+    servers = neutron_2_servers_diff_nets_with_floating.servers
+
+    server_steps.check_ping_between_servers_via_floating(
+        servers,
+        ip_types=(config.FLOATING_IP,),
+        timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
+    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+
+    pid = os_faults_steps.get_process_pid(nodes_with_l3,
+                                          config.NEUTRON_L3_SERVICE)
+    os_faults_steps.send_signal_to_process(nodes_with_l3,
+                                           pid=pid,
+                                           signal=signal.SIGKILL)
+    agent_steps.check_alive([l3_agent],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    server_3 = server_steps.create_servers(image=cirros_image,
+                                           flavor=flavor,
+                                           networks=[network_1],
+                                           security_groups=[security_group],
+                                           username=config.CIRROS_USERNAME,
+                                           password=config.CIRROS_PASSWORD)[0]
+    floating_ip = nova_create_floating_ip()
+    server_steps.attach_floating_ip(server_3, floating_ip)
+
+    server_1, server_2 = neutron_2_servers_diff_nets_with_floating.servers
+    ping_plan = {
+        server_1: [(server_2, config.FLOATING_IP), (server_3,
+                                                    config.FIXED_IP)],
+        server_2: [(server_1, config.FLOATING_IP),
+                   (server_3, config.FLOATING_IP)],
+        server_3: [(server_2, config.FLOATING_IP), (server_1, config.FIXED_IP)]
     }
     server_steps.check_ping_by_plan(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
