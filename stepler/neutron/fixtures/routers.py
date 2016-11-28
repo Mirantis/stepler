@@ -19,6 +19,7 @@ Routers fixtures
 
 import pytest
 
+from stepler import config
 from stepler.neutron import steps
 from stepler.third_party.utils import generate_ids
 
@@ -28,6 +29,7 @@ __all__ = [
     'add_router_interfaces',
     'router_steps',
     'get_router_steps',
+    'reschedule_router_active_l3_agent',
 ]
 
 
@@ -136,3 +138,36 @@ def add_router_interfaces(router_steps):
     for router, subnets in _cleanup_data:
         for subnet in subnets:
             router_steps.remove_subnet_interface(router, subnet)
+
+
+@pytest.fixture
+def reschedule_router_active_l3_agent(os_faults_steps, agent_steps):
+    """Callable function fixture to reschedule router's active L3 agent.
+
+    Args:
+        os_faults_steps (obj): instantiated os-faults steps
+        agent_steps (obj): instantiated neutron agent steps
+
+    Returns:
+        function: function to reschedule router
+    """
+
+    def _reschedule_router(router, target_node):
+        active_agent = agent_steps.get_l3_agents_for_router(
+            router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+        if active_agent['host'] not in target_node.get_fqdns():
+            agents = agent_steps.get_l3_agents_for_router(router)
+            agents_nodes = os_faults_steps.get_nodes_for_l3_agents(
+                agents) - target_node
+            os_faults_steps.terminate_service(
+                config.NEUTRON_L3_SERVICE, nodes=agents_nodes)
+            agent_steps.check_l3_ha_router_rescheduled(
+                router,
+                active_agent,
+                timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+            os_faults_steps.start_service(
+                config.NEUTRON_L3_SERVICE, nodes=agents_nodes)
+            agent_steps.check_alive(agents,
+                                    timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    return _reschedule_router
