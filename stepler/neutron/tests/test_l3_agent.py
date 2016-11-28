@@ -456,3 +456,74 @@ def test_kill_l3_agent_process(cirros_image,
     }
     server_steps.check_ping_by_plan(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('6d7ae90c-d6a1-4c90-b0d3-70a1fd4bafd7')
+@pytest.mark.parametrize('neutron_2_networks',
+                         ['different_routers'],
+                         indirect=True)
+def test_l3_agent_after_drop_rabbit_port(
+        neutron_2_servers_diff_nets_with_floating,
+        server_steps,
+        os_faults_steps,
+        agent_steps):
+    """**Scenario:** Drop rabbit port and check l3-agent work.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router_1
+    #. Create server_1
+    #. Create network_2 with subnet_2
+    #. Create server_2 on another compute and connect it to network_2
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Ping server_1 and server_2 from each other with floatings ip
+    #. Get node with l3 agent for router_1
+    #. Drop rabbit's port 5673 using iptables
+    #. Wait for l3 agent becoming dead
+    #. Check that router_1 was rescheduled
+    #. Ping server_1 and server_2 from each other with floatings ip
+    #. Remove rule for dropping port using iptables
+    #. Wait for l3 agent becoming active
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete networks, subnets, routers
+    #. Delete floating IPs
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    router_1, _ = neutron_2_servers_diff_nets_with_floating.routers
+    servers = neutron_2_servers_diff_nets_with_floating.servers
+
+    server_steps.check_ping_between_servers_via_floating(
+        servers,
+        ip_types=(config.FLOATING_IP,),
+        timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
+    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+    os_faults_steps.add_rule_to_drop_port(nodes_with_l3, config.RABBIT_PORT)
+    agent_steps.check_alive([l3_agent],
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    agent_steps.check_router_rescheduled(
+        router_1,
+        l3_agent,
+        timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+
+    server_steps.check_ping_between_servers_via_floating(
+        servers,
+        ip_types=(config.FLOATING_IP,),
+        timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    os_faults_steps.remove_rule_to_drop_port(nodes_with_l3, config.RABBIT_PORT)
+    agent_steps.check_alive([l3_agent],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
