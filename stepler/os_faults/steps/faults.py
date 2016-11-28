@@ -947,3 +947,35 @@ class OsFaultsSteps(base.BaseSteps):
         if wait_reboot:
             self.check_nodes_tcp_availability(
                 nodes, timeout=config.NODE_REBOOT_TIMEOUT)
+
+    @steps_checker.step
+    def add_rule_to_drop_port(self, nodes, port, check=True):
+        """Step to add rule to drop port on nodes.
+
+        Args:
+            nodes (obj): NodeCollection to reset
+            port (int): port number to drop
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed
+        """
+        cmd = "iptables -I OUTPUT 1 -p tcp --dport {0} -j DROP".format(port)
+        self.execute_cmd(nodes, cmd, check=check)
+
+    @steps_checker.step
+    def remove_rule_to_drop_port(self, nodes, port, check=True):
+        """Step to remove rule to drop port on nodes.
+
+        Args:
+            nodes (obj): NodeCollection to reset
+            port (int): port number for removing the rule
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed
+        """
+        cmd = "iptables -D OUTPUT -p tcp --dport {0} -j DROP".format(port)
+        self.execute_cmd(nodes, cmd, check=check)
