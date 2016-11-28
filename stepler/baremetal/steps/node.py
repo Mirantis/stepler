@@ -177,16 +177,16 @@ class IronicNodeSteps(BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        expected_maintenance = {node.maintenance: state for node in nodes}
+        expected_maintenance = {node.uuid: state for node in nodes}
 
         def _check_ironic_node_maintenance():
             actual_maintenance = {}
             for node in nodes:
                 try:
-                    self._client.node.get(node.maintenance)
-                    actual_maintenance[node.maintenance] = True
+                    self._get_node(node)
+                    actual_maintenance[node.uuid] = node.maintenance
                 except exceptions.NotFound:
-                    actual_maintenance[node.maintenance] = False
+                    actual_maintenance[node.uuid] = None
 
             return waiter.expect_that(actual_maintenance,
                                       equal_to(expected_maintenance))
@@ -237,11 +237,11 @@ class IronicNodeSteps(BaseSteps):
             actual_power_state = {}
             for node in nodes:
                 try:
-                    self._client.node.get(node.uuid)
-                    actual_power_state[node.uuid] = state
+                    self._get_node(node)
+                    actual_power_state[node.uuid] = node.power_state
 
                 except exceptions.NotFound:
-                    actual_power_state[node.uuid] = False
+                    actual_power_state[node.uuid] = None
 
             return waiter.expect_that(actual_power_state,
                                       equal_to(expected_power_state))
@@ -268,3 +268,9 @@ class IronicNodeSteps(BaseSteps):
             assert_that(nodes_list, is_not(empty()))
 
         return nodes_list
+
+    @steps_checker.step
+    def get_ironic_node(self, uuid):
+        """
+        """
+        return self._client.node.get(uuid)
