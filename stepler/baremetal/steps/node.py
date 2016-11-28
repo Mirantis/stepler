@@ -45,27 +45,27 @@ class IronicNodeSteps(BaseSteps):
         Args:
             driver (str): The name or UUID of the driver.
             nodes_names (list): names of created images, if not specified
-                one image name will be generated
+                one image name will be generated.
             count (int): count of created chassis, it's ignored if
                 chassis_descriptions are specified; one chassis is created if
-                both args are missing
+                both args are missing.
             check (str): For checking node presence
             **kwargs (optional): A dictionary containing the attributes
             of the resource that will be created:
-                chassis_uuid - The uuid of the chassis
-                driver_info - The driver info
-                extra - Extra node parameters
-                uuid - The uuid of the node
-                properties - Node properties
-                name - The name of the node
-                network_interface - The network interface of the node
-                resource_class - The resource class of the node
+                chassis_uuid - The uuid of the chassis.
+                driver_info - The driver info.
+                extra - Extra node parameters.
+                uuid - The uuid of the node.
+                properties - Node properties.
+                name - The name of the node.
+                network_interface - The network interface of the node.
+                resource_class - The resource class of the node.
 
         Raises:
-             TimeoutExpired: if check failed after timeout
+             TimeoutExpired: if check failed after timeout.
 
         Returns:
-            object: ironic node
+            object: ironic node.
         """
         nodes_names = nodes_names or utils.generate_ids(count=count)
         nodes_list = []
@@ -89,8 +89,8 @@ class IronicNodeSteps(BaseSteps):
         """Step to delete node.
 
         Args:
-            nodes (list): list of ironic nodes
-            check (bool): flag whether to check step or not
+            nodes (list): list of ironic nodes.
+            check (bool): flag whether to check step or not.
         """
         for node in nodes:
             self._client.node.delete(node.uuid)
@@ -106,12 +106,12 @@ class IronicNodeSteps(BaseSteps):
         """Verify step to check ironic node is present.
 
         Args:
-            nodes (list): list of ironic nodes
-            must_present (bool): flag whether node should present or not
-            node_timeout (int): seconds to wait a result of check
+            nodes (list): list of ironic nodes.
+            must_present (bool): flag whether node should present or not.
+            node_timeout (int): seconds to wait a result of check.
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            TimeoutExpired: if check failed after timeout.
         """
         expected_presence = {node.uuid: must_present for node in nodes}
 
@@ -147,10 +147,10 @@ class IronicNodeSteps(BaseSteps):
                 to take the node out of maintenance mode.
             reason (str): Optional string. Reason for putting node
                 into maintenance mode.
-            check (bool): flag whether to check step or not
+            check (bool): flag whether to check step or not.
 
         Raises:
-            InvalidAttribute: if state is an invalid string
+            InvalidAttribute: if state is an invalid string.
         """
         for node in nodes:
             self._client.node.set_maintenance(node_id=node.uuid,
@@ -172,10 +172,10 @@ class IronicNodeSteps(BaseSteps):
                 representation of a Boolean (eg, 'true', 'on', 'false',
                 'off'). True to put the node in maintenance mode; False
                 to take the node out of maintenance mode.
-            node_timeout (int): seconds to wait a result of check
+            node_timeout (int): seconds to wait a result of check.
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            TimeoutExpired: if check failed after timeout.
         """
         expected_maintenance = {node.uuid: state for node in nodes}
 
@@ -199,14 +199,14 @@ class IronicNodeSteps(BaseSteps):
         """Set the power state for the node.
 
         Args:
-            nodes (list): The list of ironic nodes
+            nodes (list): The list of ironic nodes.
             state (str): the power state mode; `on` to put the node in power
                 state mode on; `off` to put the node in power state mode off;
-                `reboot` to reboot the node
-            check (bool): flag whether to check step or not
+                `reboot` to reboot the node.
+            check (bool): flag whether to check step or not.
 
         Raises:
-            InvalidAttribute: if state is an invalid string
+            InvalidAttribute: if state is an invalid string.
         """
         for node in nodes:
             self._client.node.set_power_state(node_id=node.uuid, state=state)
@@ -225,11 +225,11 @@ class IronicNodeSteps(BaseSteps):
             nodes (list): The list of ironic nodes.
             state (str): the power state mode; `on` to put the node in power
                 state mode on; `off` to put the node in power state mode off;
-                `reboot` to reboot the node
-            node_timeout (int): seconds to wait a result of check
+                `reboot` to reboot the node.
+            node_timeout (int): seconds to wait a result of check.
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            TimeoutExpired: if check failed after timeout.
         """
         expected_power_state = {node.uuid: state for node in nodes}
 
@@ -256,6 +256,9 @@ class IronicNodeSteps(BaseSteps):
     @steps_checker.step
     def get_ironic_nodes(self, check=True, **kwargs):
         """Step to retrieve nodes.
+
+        Args:
+            check (bool): flag whether to check step or not.
 
         Returns:
             list of objects: list of nodes.
@@ -288,14 +291,14 @@ class IronicNodeSteps(BaseSteps):
         """Find one node by provided **kwargs.
 
         Args:
-            check (bool): flag whether to check step or not
+            check (bool): flag whether to check step or not.
             **kwargs: like: {'name': 'test_node', 'status': 'active'}
 
         Returns:
-            object: ironic node
+            object: ironic node.
 
         Raises:
-            ValueError: if '**kwargs' were not provided
+            ValueError: if '**kwargs' were not provided.
         """
         if not kwargs:
             raise ValueError("Need to provide search criteria.")
@@ -311,11 +314,11 @@ class IronicNodeSteps(BaseSteps):
 
         Args:
             nodes (list): the list of ironic nodes.
-            state (str): the provision state mode
-            node_timeout (int): seconds to wait a result of check
+            state (str): the provision state mode.
+            node_timeout (int): seconds to wait a result of check.
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            TimeoutExpired: if check failed after timeout.
         """
         expected_provision_state = {node.uuid: state for node in nodes}
 
@@ -335,3 +338,24 @@ class IronicNodeSteps(BaseSteps):
         timeout = len(nodes) * node_timeout
         waiter.wait(_check_ironic_nodes_provision_state,
                     timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_node_by_instance_uuid(self, server_uuid, check=True):
+        """Step to get node by instance uuid.
+
+        Args:
+            server_uuid (str): the uuid of the nova server.
+            check (bool): flag whether to check step or not.
+
+        Returns:
+            object: ironic node.
+
+        Raises:
+            AssertionError: if node is empty.
+        """
+        node = self._client.node.get_by_instance_uuid(server_uuid)
+
+        if check:
+            assert_that(node.instance_uuid, equal_to(server_uuid))
+
+        return node
