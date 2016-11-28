@@ -863,3 +863,33 @@ class OsFaultsSteps(base.BaseSteps):
         if check:
             self.check_router_namespace_presence(router, nodes,
                                                  must_present=False)
+
+    @steps_checker.step
+    def get_primary_controller(self):
+        """Step to retrieve primary controller.
+
+        Returns:
+            obj: NodeCollection with primary controller
+
+        Raises:
+            Exception: if primary controller was not found
+        """
+        cmd = "hiera roles | grep primary-controller"
+        nodes = self.get_nodes()
+        result = self.execute_cmd(nodes, cmd, check=False)
+        primary_host_ip = next(record.host for record in result
+                               if record.status == config.STATUS_OK)
+        for node in nodes:
+            if node.ip == primary_host_ip:
+                return self.get_nodes(fqdns=[node.fqdn])
+        else:
+            raise Exception("Can't find primary controller node.")
+
+    @steps_checker.step
+    def poweroff_nodes(self, nodes, check=True):
+        """Step to poweroff nodes.
+
+        Args:
+            nodes (obj): NodeCollection to poweroff
+        """
+        nodes.poweroff()
