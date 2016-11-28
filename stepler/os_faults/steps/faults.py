@@ -28,6 +28,7 @@ from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
 
 from stepler import base
 from stepler import config
+from stepler.third_party import network_checks
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
@@ -889,12 +890,60 @@ class OsFaultsSteps(base.BaseSteps):
         return self.get_nodes(fqdns=fqdns)
 
     @steps_checker.step
+    def check_nodes_tcp_availability(self, nodes, must_available=True,
+                                     timeout=0):
+        """Step to check that all nodes available (or not) on 22 TCP port.
+
+
+        Args:
+            nodes (obj): NodeCollection to check availability
+            must_available (bool, optional): flag whether nodes should be
+                available or not
+            timeout (int, optional): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if all nodes availability not equal
+                ``must_available`` argument after timeout.
+        """
+        ips = nodes.get_ips()
+        expected_availability = dict.fromkeys(ips, must_available)
+
+        def _check_nodes_ssh_availability():
+            actual_availability = dict.fromkeys(ips)
+            for ip in ips:
+                actual_availability[ip] = network_checks.check_tcp_connect(ip)
+            return waiter.expect_that(expected_availability,
+                                      equal_to(actual_availability))
+
+        waiter.wait(_check_nodes_ssh_availability, timeout_seconds=timeout)
+
+    @steps_checker.step
     def poweroff_nodes(self, nodes, check=True):
         """Step to poweroff nodes.
 
         Args:
             nodes (obj): NodeCollection to poweroff
             check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            TimeoutExpired: if nodes are available on 22 TCP port after power
+                off.
         """
         nodes.poweroff()
-        # TODO(gdyuldin): add correct check here
+        if check:
+            self.check_nodes_tcp_availability(nodes, must_available=False)
+
+    @steps_checker.step
+    def reset_nodes(self, nodes, check=True, wait_reboot=True):
+        """Step to reset nodes.
+
+        Args:
+            nodes (obj): NodeCollection to reset
+            check (bool, optional): flag whether to check this step or not
+        """
+        nodes.reset()
+        if check:
+            self.check_nodes_tcp_availability(nodes, must_available=False)
+        if wait_reboot:
+            self.check_nodes_tcp_availability(
+                nodes, timeout=config.NODE_REBOOT_TIMEOUT)

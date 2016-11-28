@@ -329,3 +329,64 @@ def test_destroy_non_primary_controller(
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
                 server_ssh=server_ssh):
             os_faults_steps.poweroff_nodes(agent_node)
+
+
+@pytest.mark.requires("computes_count >= 2")
+@pytest.mark.idempotent_id('d796d59b-2cb3-447a-acf7-d7072312f877')
+@pytest.mark.parametrize(
+    'neutron_2_networks', ['different_routers'], indirect=True)
+def test_reset_primary_controller(
+        neutron_2_servers_different_networks,
+        nova_create_floating_ip,
+        reschedule_router_active_l3_agent,
+        server_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Reset primary controller.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router_1
+    #. Create network_2 with subnet_2 and router_2
+    #. Create server_1
+    #. Create server_2 on another compute and connect it to network_2
+
+    **Steps:**
+
+    #. Create and attach floating IP for each server
+    #. Get L3 agent with ACTIVE ha_state for router_1
+    #. Get primary controller
+    #. Reschedule router's active L3 agent to primary controller
+    #. Start ping between servers with floating IP
+    #. Reset primary controller
+    #. Check that ping loss is not more than 40 packets
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete networks, subnets, router
+    #. Delete floating IPs
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    server_1, server_2 = neutron_2_servers_different_networks.servers
+    floating_ip_1 = nova_create_floating_ip()
+    floating_ip_2 = nova_create_floating_ip()
+    server_steps.attach_floating_ip(server_1, floating_ip_1)
+    server_steps.attach_floating_ip(server_2, floating_ip_2)
+
+    primary_controller = os_faults_steps.get_nodes_by_cmd(
+        config.FUEL_PRIMARY_CONTROLLER_CMD)
+    router_1 = neutron_2_servers_different_networks.routers[0]
+    reschedule_router_active_l3_agent(router_1, primary_controller)
+
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        with server_steps.check_ping_loss_context(
+                floating_ip_2.ip,
+                max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
+                server_ssh=server_ssh):
+            os_faults_steps.reset_nodes(primary_controller)
