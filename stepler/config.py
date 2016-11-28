@@ -384,6 +384,8 @@ IMAGE_SOURCE = 'Image'
 VOLUME_SOURCE = 'Volume'
 
 
+NODE_REBOOT_TIMEOUT = 5 * 60
+
 # Cloud-specific variables
 
 # Check if current node is fuel primary controller
