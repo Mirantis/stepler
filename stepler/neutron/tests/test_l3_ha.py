@@ -86,13 +86,13 @@ def test_ban_l3_agent_with_active_ha_state_for_router(
             for _ in range(ban_count):
                 agent = agent_steps.get_l3_agents_for_router(
                     router_1, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
-                agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+                agent_node = os_faults_steps.get_nodes_for_agents([agent])
                 os_faults_steps.terminate_service(
                     config.NEUTRON_L3_SERVICE, nodes=agent_node)
                 agent_steps.check_l3_ha_router_rescheduled(
                     router_1,
                     old_l3_agent=agent,
-                    timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+                    timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('df236e04-e743-4c3d-94ca-d76e0183b509')
@@ -134,7 +134,7 @@ def test_ban_l3_agent_with_ping_public_ip(
     """
     agent = agent_steps.get_l3_agents_for_router(
         router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
-    agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+    agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
     with server_steps.get_server_ssh(server) as server_ssh:
@@ -147,7 +147,7 @@ def test_ban_l3_agent_with_ping_public_ip(
             agent_steps.check_l3_ha_router_rescheduled(
                 router,
                 old_l3_agent=agent,
-                timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+                timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('dd0de43b-6aae-4731-8383-05987c539cde')
@@ -188,7 +188,7 @@ def test_delete_ns_for_router_on_node_with_active_ha_state(
     """
     agent = agent_steps.get_l3_agents_for_router(
         router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
-    agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+    agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
 
@@ -321,7 +321,7 @@ def test_destroy_non_primary_controller(
 
     agent = agent_steps.get_l3_agents_for_router(
         router_1, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
-    agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+    agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
@@ -436,7 +436,7 @@ def test_disable_all_l3_agents_and_enable_them(
     floating_ip_2 = neutron_2_servers_diff_nets_with_floating.floating_ips[1]
 
     l3_agents = agent_steps.get_agents(binary=config.NEUTRON_L3_SERVICE)
-    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents(l3_agents)
+    nodes_with_l3 = os_faults_steps.get_nodes_for_agents(l3_agents)
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
