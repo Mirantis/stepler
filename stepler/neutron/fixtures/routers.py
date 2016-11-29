@@ -179,14 +179,14 @@ def reschedule_router_active_l3_agent(os_faults_steps, agent_steps):
             router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
         if active_agent['host'] not in target_nodes.get_fqdns():
             agents = agent_steps.get_l3_agents_for_router(router)
-            agents_nodes = os_faults_steps.get_nodes_for_l3_agents(
+            agents_nodes = os_faults_steps.get_nodes_for_agents(
                 agents) - target_nodes
             os_faults_steps.terminate_service(
                 config.NEUTRON_L3_SERVICE, nodes=agents_nodes)
             agent_steps.check_l3_ha_router_rescheduled(
                 router,
                 active_agent,
-                timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+                timeout=config.AGENT_RESCHEDULING_TIMEOUT)
             os_faults_steps.start_service(
                 config.NEUTRON_L3_SERVICE, nodes=agents_nodes)
             agent_steps.check_alive(agents,
