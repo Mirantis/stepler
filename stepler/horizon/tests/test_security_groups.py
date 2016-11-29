@@ -24,6 +24,9 @@ import pytest
 class TestAnyOne(object):
     """Tests for any user."""
 
-    @pytest.mark.idempotent_id('bd1840c3-ac0c-4a36-ac63-d0182edfb6ec')
+    @pytest.mark.idempotent_id('bd1840c3-ac0c-4a36-ac63-d0182edfb6ec',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('e41796c3-0f14-467c-80b0-98012d13bc1c',
+                               any_one='user')
     def test_create_security_group(self, security_group):
         """Verify that user can create security group."""

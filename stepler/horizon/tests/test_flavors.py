@@ -60,8 +60,11 @@ class TestAdminOnly(object):
         auth_steps.logout()
         auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)
 
+    @pytest.mark.idempotent_id('2cdca1ac-c343-47f5-bb4c-ecbb319d98e7',
+                               flavors_count=2)
+    @pytest.mark.idempotent_id('c9ea16ff-539b-436f-8689-cbd5814abffd',
+                               flavors_count=1)
     @pytest.mark.parametrize('flavors_count', [2, 1])
-    @pytest.mark.idempotent_id('2cdca1ac-c343-47f5-bb4c-ecbb319d98e7')
     def test_delete_flavors(self, flavors_count, create_flavors):
         """Verify that admin can delete flavors as batch."""
         flavor_names = list(utils.generate_ids('flavor', count=flavors_count))

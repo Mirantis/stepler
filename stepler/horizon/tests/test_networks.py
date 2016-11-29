@@ -26,7 +26,10 @@ from stepler.third_party import utils
 class TestAnyOne(object):
     """Tests for any user."""
 
-    @pytest.mark.idempotent_id('6e212b0c-503e-4339-a504-4548344291ee')
+    @pytest.mark.idempotent_id('6e212b0c-503e-4339-a504-4548344291ee',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('6467bf60-2ee3-4abd-9f00-7471f7985a32',
+                               any_one='user')
     def test_subnet_add(self, network, networks_steps):
         """Verify that user can add subnet."""
         subnet_name = next(utils.generate_ids('subnet'))

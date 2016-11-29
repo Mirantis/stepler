@@ -19,8 +19,11 @@ Volume tests
 import pytest
 
 
+@pytest.mark.idempotent_id('adcb5b96-35a3-401b-8ca2-3bc13ee225b9',
+                           size=-1)
+@pytest.mark.idempotent_id('3657244b-1009-46ae-9a03-30b414a0d61d',
+                           size=1)
 @pytest.mark.parametrize('size', [-1, 1])
-@pytest.mark.idempotent_id('adcb5b96-35a3-401b-8ca2-3bc13ee225b9')
 def test_negative_extend_volume(volume_steps, size):
     """**Scenario:** Verify negative cases of volume extend.
 

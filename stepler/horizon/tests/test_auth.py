@@ -20,7 +20,10 @@ Auth tests
 import pytest
 
 
+@pytest.mark.idempotent_id('7f35902f-81ca-4a69-a7dc-5b538195c14c',
+                           any_one='admin')
+@pytest.mark.idempotent_id('ca21eba8-932d-4a8b-b691-fbdc54448c8d',
+                           any_one='user')
 @pytest.mark.usefixtures('any_one')
-@pytest.mark.idempotent_id('7f35902f-81ca-4a69-a7dc-5b538195c14c')
 def test_login(login):
     """Verify that one can login and logout."""

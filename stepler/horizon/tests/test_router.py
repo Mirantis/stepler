@@ -24,6 +24,9 @@ import pytest
 class TestAnyOne(object):
     """Tests for any user."""
 
-    @pytest.mark.idempotent_id('baa62875-afbe-46bc-9063-9d62f37f9e49')
+    @pytest.mark.idempotent_id('baa62875-afbe-46bc-9063-9d62f37f9e49',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('64927ee0-25a4-4b43-8bfe-097ae7d4a3b6',
+                               any_one='user')
     def test_create_router(self, router):
         """Verify that user can create router."""

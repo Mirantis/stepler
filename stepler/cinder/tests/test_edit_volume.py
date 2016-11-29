@@ -21,10 +21,14 @@ import pytest
 from stepler import config
 from stepler.third_party import utils
 
+new_volume_name = next(utils.generate_ids('volume'))
 
-@pytest.mark.idempotent_id('2df43a46-72b0-4d25-bf68-13d07776af7c')
-@pytest.mark.parametrize('new_volume_name',
-                         ['', next(utils.generate_ids('volume'))])
+
+@pytest.mark.idempotent_id('849ab480-6d56-4efa-bd43-e9e615626368',
+                           new_volume_name='')
+@pytest.mark.idempotent_id('2df43a46-72b0-4d25-bf68-13d07776af7c',
+                           new_volume_name=new_volume_name)
+@pytest.mark.parametrize('new_volume_name', ['', new_volume_name])
 def test_edit_volume_name(volume, volume_steps, new_volume_name):
     """**Scenario:** Verify ability to change volume name.
 
@@ -43,9 +47,15 @@ def test_edit_volume_name(volume, volume_steps, new_volume_name):
     volume_steps.update_volume(volume, new_name=new_volume_name)
 
 
-@pytest.mark.idempotent_id('1c5ef0e5-64ac-43d5-b9f2-97cb4ad62e95')
+new_volume_description = next(utils.generate_ids('description'))
+
+
+@pytest.mark.idempotent_id('6e470fea-fd6b-4eac-a3e3-d718e9c703dd',
+                           new_volume_description='')
+@pytest.mark.idempotent_id('1c5ef0e5-64ac-43d5-b9f2-97cb4ad62e95',
+                           new_volume_description=new_volume_description)
 @pytest.mark.parametrize('new_volume_description',
-                         ['', next(utils.generate_ids('description'))])
+                         ['', new_volume_description])
 def test_edit_volume_description(volume, volume_steps, new_volume_description):
     """**Scenario:** Verify ability to change volume description.
 
