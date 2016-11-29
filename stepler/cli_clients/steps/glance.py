@@ -190,39 +190,42 @@ class CliGlanceSteps(base.BaseCliSteps):
             cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
 
     @steps_checker.step
-    def check_image_list_contains(self, image,
+    def check_image_list_contains(self, images,
                                   api_version=config.
                                   CURRENT_GLANCE_VERSION):
         """Step to check that image is in images list.
 
         Args:
-            image (dict): glance image
+            images (dict): glance images
             api_version (int): the API version of Glance
 
         Raises:
             AssertionError: check failed if image is present in images list
         """
-        images = self.list_images(api_version=api_version)
-        assert_that(images, is_not(empty()))
-        image_ids = images.keys()
-        assert_that(image['id'], is_in(image_ids))
+        list_images = self.list_images(api_version=api_version)
+        assert_that(list_images, is_not(empty()))
+        image_ids = list_images.keys()
+        for image in images:
+            assert_that(image['id'], is_in(image_ids))
 
     @steps_checker.step
-    def check_image_list_doesnt_contain(
-            self, image, api_version=config.CURRENT_GLANCE_VERSION):
+    def check_image_list_doesnt_contain(self, images,
+                                        api_version=config.
+                                        CURRENT_GLANCE_VERSION):
         """Step to check that image doesn't exist in images list.
 
         Args:
-            image (dict): glance image
+            images (dict): glance images
             api_version (int): the API version of Glance
 
         Raises:
             AssertionError: check failed if image doesn't present in
             images list
         """
-        images = self.list_images(api_version=api_version)
-        image_ids = images.keys()
-        assert_that(image['id'], is_not(is_in(image_ids)))
+        list_images = self.list_images(api_version=api_version)
+        image_ids = list_images.keys()
+        for image in images:
+            assert_that(image['id'], is_not(is_in(image_ids)))
 
     @steps_checker.step
     def check_negative_image_create_without_properties(

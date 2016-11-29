@@ -289,3 +289,58 @@ def test_negative_remove_deleted_image(glance_steps,
     cli_glance_steps.check_negative_delete_non_existing_image(
         image,
         api_version=api_version)
+
+
+@pytest.mark.idempotent_id('886d07c2-3766-455a-a9ed-c07747a4992e',
+                           api_version=1)
+@pytest.mark.idempotent_id('b7ab5fd4-925d-4695-b2f5-a39a34e1155e',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_image_list_contains_created_qcow2_images(glance_steps,
+                                                  cli_glance_steps,
+                                                  api_version):
+    """**Scenario:** Check that created images contain in images list.
+
+    **Steps:**
+
+    #. Create 3 images with disk format qcow2 with Glance API
+    #. Check that created images is in list using CLI
+
+    **Teardown:**
+
+    #. Delete images
+
+    """
+    image_qcow = glance_steps.create_images(
+        image_names=['image-1', 'image-4', 'image-2,image-5'],
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))[0]
+    cli_glance_steps.check_image_list_contains(image=image_qcow,
+                                               api_version=api_version)
+
+
+@pytest.mark.idempotent_id('7561113e-030e-4c61-a022-9a556ae47bf6',
+                           api_version=1)
+@pytest.mark.idempotent_id('cb7f9328-6d02-41be-b0a9-5e0b0328b77b',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_image_list_contains_created_images(glance_steps,
+                                            cli_glance_steps,
+                                            api_version):
+    """**Scenario:** Check that created images contain in images list.
+
+    **Steps:**
+
+    #. Create 2 images with disk format ami with Glance API
+    #. Check that created images is in list using CLI
+
+    **Teardown:**
+
+    #. Delete images
+
+    """
+    image_ami = glance_steps.create_images(
+        image_names=['image-3', 'image-4'],
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL),
+        disk_format='ami')[0]
+    cli_glance_steps.check_image_list_contains(image=image_ami,
+                                               api_version=api_version)
