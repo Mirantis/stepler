@@ -31,17 +31,13 @@ class BaseGlanceSteps(base.BaseSteps):
     """Glance base steps."""
 
     @steps_checker.step
-    def update_images(self, images, status=None, check=True):
+    def update_images(self, images, status=None, check=True, **kwargs):
         """Step to update images."""
-        kwgs = {}
-        if status:
-            kwgs['status'] = status
-
         for image in images:
-            self._client.images.update(image.id, **kwgs)
+            self._client.images.update(image.id, **kwargs)
 
         if check:
             for image in images:
-                image.get()
+                image.update(self._client.images.get(image.id))
                 if status:
                     assert_that(image.status, equal_to(status))

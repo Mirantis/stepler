@@ -289,3 +289,36 @@ def test_negative_remove_deleted_image(glance_steps,
     cli_glance_steps.check_negative_delete_non_existing_image(
         image,
         api_version=api_version)
+
+
+@pytest.mark.idempotent_id('e790bb42-b631-11e6-a72f-db6c1f65dd0f',
+                           api_version=1)
+@pytest.mark.idempotent_id('e841a33a-b631-11e6-b970-4769909f93c3',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_update_image_property(ubuntu_image,
+                               glance_steps,
+                               cli_glance_steps,
+                               api_version):
+    """**Scenario:** Update image property.
+
+    **SetUp:**
+
+        #. Create ubuntu image
+
+    **Steps:**
+
+        #. Update image property
+        #. Check that output cli command 'glance image-show <id>'
+           contains updated property
+
+    **TearDown:**
+
+        #. Delete ubuntu image
+    """
+    glance_steps.update_images(images=[ubuntu_image],
+                               key='value')
+    cli_glance_steps.check_image_property(ubuntu_image,
+                                          property_key='key',
+                                          property_value='value',
+                                          api_version=api_version)
