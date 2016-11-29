@@ -51,11 +51,22 @@ class BaseNeutronManager(object):
         methodname = 'show_{}'.format(self.NAME)
         return getattr(self._rest_client, methodname)
 
+    @property
+    def _update_method(self):
+        """Returns resource update callable."""
+        methodname = 'update_{}'.format(self.NAME)
+        return getattr(self._rest_client, methodname)
+
     def create(self, **kwargs):
         """Base create."""
         query = {self.NAME: kwargs}
         obj = self._create_method(query)[self.NAME]
         return obj
+
+    def update(self, obj_id, **kwargs):
+        """Base update."""
+        query = {self.NAME: kwargs}
+        return self._update_method(obj_id, query)[self.NAME]
 
     def delete(self, obj_id):
         """Base delete."""

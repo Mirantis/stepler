@@ -1,7 +1,7 @@
 """
--------------
-Neutron steps
--------------
+---------------------
+Neutron quota manager
+---------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,19 +17,10 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .agents import *  # noqa
-from .networks import *  # noqa
-from .ports import *  # noqa
-from .quotas import *  # noqa
-from .routers import *  # noqa
-from .subnets import *  # noqa
+from stepler.neutron.client import base
 
 
-__all__ = [
-    "AgentSteps",
-    "NetworkSteps",
-    "PortSteps",
-    "QuotaSteps",
-    "RouterSteps",
-    "SubnetSteps",
-]
+class QuotaManager(base.BaseNeutronManager):
+    """Quota (neutron) manager."""
+
+    NAME = 'quota'

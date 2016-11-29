@@ -22,6 +22,7 @@ from .networks import *  # noqa
 from .neutron import *  # noqa
 from .neutron_resources import *  # noqa
 from .ports import *  # noqa
+from .quotas import *  # noqa
 from .routers import *  # noqa
 from .subnets import *  # noqa
 
@@ -57,4 +58,7 @@ __all__ = sorted([  # sort for documentation
     'get_agent_steps',
     'agent_steps',
     'reschedule_router_active_l3_agent',
+    'get_neutron_quota_steps',
+    'neutron_quota_steps',
+    'change_neutron_quota',
 ])
