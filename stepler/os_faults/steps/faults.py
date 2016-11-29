@@ -778,17 +778,17 @@ class OsFaultsSteps(base.BaseSteps):
             return config.NETWORK_TYPE_VLAN
 
     @steps_checker.step
-    def get_nodes_for_l3_agents(self, l3_agents, check=True):
-        """Step to retrieve nodes for l3 agents.
+    def get_nodes_for_agents(self, agents, check=True):
+        """Step to retrieve nodes for L3 or DHCP agents.
 
         Args:
-            l3_agents (list): list of dicts of l3 agents
+            agents (list): list of dicts of L3 or DHCP agents
             check (bool): flag whether check step or not
 
         Returns:
-            NodeCollection: nodes for l3 agents
+            NodeCollection: nodes for L3 or DHCP agents
         """
-        hosts = [agent['host'] for agent in l3_agents]
+        hosts = [agent['host'] for agent in agents]
         nodes = self.get_nodes(fqdns=hosts, check=check)
 
         return nodes
