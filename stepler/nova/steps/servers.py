@@ -497,6 +497,21 @@ class ServerSteps(base.BaseSteps):
         return ip
 
     @steps_checker.step
+    def check_dhcp_on_cirros_server(self, server):
+        """Verify step to check dhcp on cirros server.
+
+        Args:
+            server (object): instance of nova server
+
+        Raises:
+            TimeoutExpired: if check for ssh command failed after timeout
+        """
+        cmd = "sudo -i cirros-dhcpc up eth0"
+
+        with self.get_server_ssh(server) as server_ssh:
+            server_ssh.check_call(cmd)
+
+    @steps_checker.step
     def check_ping_for_ip(self,
                           ip_to_ping,
                           remote_from=None,
