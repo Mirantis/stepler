@@ -22,6 +22,7 @@ from .base import *  # noqa
 from .cinder import *  # noqa
 from .glance import *  # noqa
 from .heat import *  # noqa
+from .neutron import *  # noqa
 from .nova import *  # noqa
 from .openstack import *  # noqa
 
@@ -40,4 +41,6 @@ __all__ = [
 
     'cli_nova_steps',
     'cli_openstack_steps',
+
+    'cli_neutron_steps',
 ]
