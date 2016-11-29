@@ -136,11 +136,20 @@ class Predicates(object):
     @property
     @_store_call
     def l3_agent_nodes_count(self):
-        """Get l3 agents nodes count."""
+        """Get L3 agents nodes count."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(
             os_faults_steps.get_nodes(
                 service_names=[config.NEUTRON_L3_SERVICE]))
+
+    @property
+    @_store_call
+    def l3_agent_nodes_with_snat_count(self):
+        """Get count of L3 agent nodes with SNAT."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(
+            os_faults_steps.get_nodes_with_services(
+                service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API]))
 
     @property
     @_store_call
