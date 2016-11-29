@@ -61,7 +61,7 @@ FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases
 CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'  # noqa E501
 UBUNTU_ISO_URL = 'http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-amd64/current/images/netboot/mini.iso'  # noqa E501
 BAREMETAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/dib-user-image-dkms-grub.raw'  # noqa E501
-BAREMETAL_UBUNTU_FOR_VIRTUAL_NODE = 'http://mos-ironic.vm.mirantis.net/ipukha/trusty-server-cloudimg-amd64.img'  # noqa E501
+BAREMETAL_VIRTUAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/trusty-server-cloudimg-amd64.img'  # noqa E501
 
 FORCE_API = bool(os.environ.get('FORCE_API_USAGE'))
 
@@ -163,16 +163,16 @@ BAREMETAL_DISK_INFO = [{"name": "sda",
                                      "type": "partition",
                                      "file_system": "ext4",
                                      "size": 10000}]}]
-BAREMETAL_DISK_INFO_FOR_VIRTUAL_NODE = [{"name": "vda",
-                                         "extra": [],
-                                         "free_space": 11000,
-                                         "type": "disk",
-                                         "id": "vda",
-                                         "size": 11000,
-                                         "volumes": [{"mount": "/",
-                                                      "type": "partition",
-                                                      "file_system": "ext4",
-                                                      "size": 10000}]}]
+BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
+                                "extra": [],
+                                "free_space": 11000,
+                                "type": "disk",
+                                "id": "vda",
+                                "size": 11000,
+                                "volumes": [{"mount": "/",
+                                             "type": "partition",
+                                             "file_system": "ext4",
+                                             "size": 10000}]}]
 
 
 # Nova
@@ -193,8 +193,8 @@ BAREMETAL_RAM = "16384"
 BAREMETAL_VCPUS = "4"
 BAREMETAL_DISK = "150"
 
-BAREMETAL_RAM_FOR_VIRTUAL_NODE = '3072'
-BAREMETAL_VCPUS_FOR_VIRTUAL_NODE = '1'
+BAREMETAL_VIRTUAL_RAM = "3072"
+BAREMETAL_VIRTUAL_VCPUS = "1"
 
 ROLE_MEMBER = '_member_'
 
