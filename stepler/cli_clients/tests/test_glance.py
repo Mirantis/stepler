@@ -289,3 +289,71 @@ def test_negative_remove_deleted_image(glance_steps,
     cli_glance_steps.check_negative_delete_non_existing_image(
         image,
         api_version=api_version)
+
+
+@pytest.mark.idempotent_id('886d07c2-3766-455a-a9ed-c07747a4992e',
+                           api_version=1)
+@pytest.mark.idempotent_id('b7ab5fd4-925d-4695-b2f5-a39a34e1155e',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_image_list_contains_created_qcow2_images(glance_steps,
+                                                  cli_glance_steps,
+                                                  api_version):
+    """**Scenario:** Check that created images contain in images list.
+
+    **Steps:**
+
+    #. Create 3 images with disk format qcow2 with Glance API
+    #. Create 2 images with disk format ami with Glance API
+    #. Check that created images is in list using CLI
+
+    **Teardown:**
+
+    #. Delete images
+
+    """
+    image_qcow = glance_steps.create_images(
+        image_names=[utils.generate_ids('image-1'),
+                     utils.generate_ids('image-4'),
+                     utils.generate_ids('image-2,image-5')],
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
+    image_ami = glance_steps.create_images(
+        image_names=[utils.generate_ids('image-3'),
+                     utils.generate_ids('image4')],
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL),
+        disk_format='ami')
+    cli_glance_steps.check_image_list_contains(image=[image_qcow, image_ami],
+                                               api_version=api_version)
+
+
+@pytest.mark.idempotent_id('fda66539-9ead-4a19-bae1-a0b0c573c26b')
+@pytest.mark.idempotent_id('64a1d788-d0a6-4e0c-9b1e-c4f110625118')
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_filter_names_in_images_list(glance_steps, cli_glance_steps,
+                                     api_version):
+    """**Scenario:** Check that created images contain in images list.
+
+        **Steps:**
+
+        #. Create 5 images with Glance API
+        #. Check that created images filtered using CLI
+
+        **Teardown:**
+
+        #. Delete images
+
+    """
+    image_qcow = glance_steps.create_images(
+        image_names=[utils.generate_ids('image-1'),
+                     utils.generate_ids('image-4'),
+                     utils.generate_ids('image-2,image-5')],
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
+    image_ami = glance_steps.create_images(
+        image_names=[utils.generate_ids('image-3'),
+                     utils.generate_ids('image4')],
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL),
+        disk_format='ami')
+    cli_glance_steps.check_property_filter_in_image_list(images=[image_qcow,
+                                                                 image_ami],
+                                                         api_version=
+                                                         api_version)
