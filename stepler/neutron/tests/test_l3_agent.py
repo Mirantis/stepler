@@ -38,15 +38,15 @@ pytestmark = [pytest.mark.requires("not dvr and not l3_ha",
 @pytest.mark.parametrize('neutron_2_networks',
                          ['different_routers'],
                          indirect=True)
-def test_ban_one_l3_agent(cirros_image,
-                          flavor,
-                          security_group,
-                          neutron_2_servers_diff_nets_with_floating,
-                          nova_create_floating_ip,
-                          server_steps,
-                          os_faults_steps,
-                          agent_steps,
-                          ban_count):
+def test_ban_some_l3_agents(cirros_image,
+                            flavor,
+                            security_group,
+                            neutron_2_servers_diff_nets_with_floating,
+                            nova_create_floating_ip,
+                            server_steps,
+                            os_faults_steps,
+                            agent_steps,
+                            ban_count):
     """**Scenario:** Ban l3-agent and check that ping is available.
 
     **Setup:**
@@ -94,14 +94,14 @@ def test_ban_one_l3_agent(cirros_image,
 
     for _ in range(ban_count):
         old_l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
-        nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([old_l3_agent])
+        nodes_with_l3 = os_faults_steps.get_nodes_for_agents([old_l3_agent])
 
         os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE,
                                           nodes=nodes_with_l3)
         agent_steps.check_router_rescheduled(
             router_1,
             old_l3_agent,
-            timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
     server_3 = server_steps.create_servers(image=cirros_image,
                                            flavor=flavor,
@@ -212,7 +212,7 @@ def test_ban_all_l3_agents_restart_one(
 
     for number in range(l3_agents_count - 1):
         l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
-        nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+        nodes_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
         os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE,
                                           nodes=nodes_with_l3)
         agent_steps.check_alive([l3_agent],
@@ -221,11 +221,11 @@ def test_ban_all_l3_agents_restart_one(
         agent_steps.check_router_rescheduled(
             router_1,
             l3_agent,
-            timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
         banned_agents.append(l3_agent)
 
     l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
-    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+    nodes_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
     os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE,
                                       nodes=nodes_with_l3)
     # there are no active agents after we have banned the last
@@ -239,7 +239,7 @@ def test_ban_all_l3_agents_restart_one(
     banned_agents.append(l3_agent)
 
     agent_to_clear = banned_agents[agent_number]
-    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([agent_to_clear])
+    nodes_with_l3 = os_faults_steps.get_nodes_for_agents([agent_to_clear])
     os_faults_steps.start_service(config.NEUTRON_L3_SERVICE,
                                   nodes=nodes_with_l3)
     agent_steps.check_alive([agent_to_clear],
@@ -328,7 +328,7 @@ def test_ban_l3_agent_many_times(cirros_image,
     l3_agent = l3_agents[0]
     if len(l3_agents) > 1:
         for agent_to_ban in l3_agents[1:]:
-            nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents(
+            nodes_with_l3 = os_faults_steps.get_nodes_for_agents(
                 [agent_to_ban])
             os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE,
                                               nodes=nodes_with_l3)
@@ -337,7 +337,7 @@ def test_ban_l3_agent_many_times(cirros_image,
                                     timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
     for _ in range(40):
-        nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+        nodes_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
         os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE,
                                           nodes=nodes_with_l3)
         agent_steps.check_alive([l3_agent],
@@ -428,7 +428,7 @@ def test_kill_l3_agent_process(cirros_image,
         timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
-    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+    nodes_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
 
     pid = os_faults_steps.get_process_pid(nodes_with_l3,
                                           config.NEUTRON_L3_SERVICE)
@@ -509,7 +509,7 @@ def test_l3_agent_after_drop_rabbit_port(
         timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
-    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+    nodes_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
     os_faults_steps.add_rule_to_drop_port(nodes_with_l3, config.RABBIT_PORT)
     agent_steps.check_alive([l3_agent],
                             must_alive=False,
@@ -517,7 +517,7 @@ def test_l3_agent_after_drop_rabbit_port(
     agent_steps.check_router_rescheduled(
         router_1,
         l3_agent,
-        timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
     server_steps.check_ping_between_servers_via_floating(
         servers,

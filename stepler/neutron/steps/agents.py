@@ -76,17 +76,67 @@ class AgentSteps(base.BaseSteps):
         waiter.wait(_check_agents_alive, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_l3_agents_for_router(self, router, filter_attrs=None, check=True):
-        """Step to retrieve router l3 agents dicts list.
+    def get_dhcp_agents_for_net(self, network, filter_attrs=None, check=True):
+        """Step to retrieve network DHCP agents dicts list.
 
         Args:
-            router (dict): router to get l3 agents
+            network (dict): network to get DHCP agents
+            filter_attrs (dict, optional): filter attrs dict to return only
+                matched dhcp_agents
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            list: list of DHCP agents dicts for network
+
+        Raises:
+            AssertionError: if list of agents is empty
+        """
+        filter_attrs = filter_attrs or {}
+        dhcp_agents = self._client.get_dhcp_agents_for_network(network['id'])
+        for key, prop in filter_attrs.items():
+            dhcp_agents = [agent for agent in dhcp_agents
+                           if agent[key] == prop]
+        if check:
+            assert_that(dhcp_agents, is_not(empty()))
+            if filter_attrs:
+                assert_that(dhcp_agents, only_contains(
+                    has_entries(**filter_attrs)))
+
+        return dhcp_agents
+
+    @steps_checker.step
+    def check_network_rescheduled(self, network, old_dhcp_agent, timeout=0):
+        """Step to check that network was rescheduled.
+
+        Args:
+            network (dict): network to check
+            old_dhcp_agent (dict): DHCP agent before rescheduling
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_network_rescheduled():
+            dhcp_agents = self._client.get_dhcp_agents_for_network(
+                network['id'])
+            dhcp_agents_ids = [agent['id'] for agent in dhcp_agents]
+            return waiter.expect_that(old_dhcp_agent['id'],
+                                      is_not(is_in(dhcp_agents_ids)))
+
+        waiter.wait(_check_network_rescheduled, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_l3_agents_for_router(self, router, filter_attrs=None, check=True):
+        """Step to retrieve router L3 agents dicts list.
+
+        Args:
+            router (dict): router to get L3 agents
             filter_attrs (dict, optional): filter attrs dict to return only
                 matched l3_agents
             check (bool, optional): flag whether to check step or not
 
         Returns:
-            list: list of l3 agents dicts for router
+            list: list of L3 agents dicts for router
 
         Raises:
             AssertionError: if list of agents is empty
@@ -109,7 +159,7 @@ class AgentSteps(base.BaseSteps):
 
         Args:
             router (dict): router to check
-            old_l3_agent (dict): l3 agent before rescheduling
+            old_l3_agent (dict): L3 agent before rescheduling
             timeout (int): seconds to wait a result of check
 
         Raises:
