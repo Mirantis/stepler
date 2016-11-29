@@ -20,6 +20,73 @@ import pytest
 from stepler import config
 
 
+@pytest.mark.idempotent_id('6f241b44-a3b2-48e8-8cf2-422137b6851b')
+def test_boot_servers_consequently_on_ironic_node(keypair,
+                                                  baremetal_flavor,
+                                                  baremetal_ubuntu_image,
+                                                  baremetal_network,
+                                                  nova_create_floating_ip,
+                                                  server_steps,
+                                                  ironic_node_steps):
+    """**Scenario:** Hard reboot server on ironic node.
+
+    **Setup:**
+
+    #. Create keypair
+    #. Create baremetal flavor
+    #. Upload baremetal ubuntu image
+
+    **Steps:**
+
+    #. Create and boot server_1
+    #. Check that server_1 status is active
+    #. Create and boot server_2
+    #. Check that server_2 status is active
+    #. Get ironic_node_1
+    #. Get ironic_node_1
+    #. Check that ironic nodes provision state is active
+    #. Create floating ip  for server_1
+    #. Attach floating ip to server_2
+    #. Create floating ip  for server_2
+    #. Attach floating ip to server_2
+    #. Check ssh access to server_1
+    #. Check ssh access to server_2
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete floating ips
+    #. Delete image
+    #. Delete flavor
+    #. Delete keypair
+    """
+    server_1 = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                           flavor=baremetal_flavor,
+                                           networks=[baremetal_network],
+                                           keypair=keypair,
+                                           username=config.UBUNTU_USERNAME)[0]
+
+    server_2 = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                           flavor=baremetal_flavor,
+                                           networks=[baremetal_network],
+                                           keypair=keypair,
+                                           username=config.UBUNTU_USERNAME)[0]
+
+    ironic_node_1 = ironic_node_steps.get_ironic_node(
+        instance_uuid=server_1.id)
+    ironic_node_2 = ironic_node_steps.get_ironic_node(
+        instance_uuid=server_2.id)
+
+    ironic_node_steps.check_ironic_nodes_provision_state(
+        [ironic_node_1, ironic_node_2], config.STATUS_ACTIVE)
+
+    server_steps.attach_floating_ip(server_1, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_2, nova_create_floating_ip())
+
+    server_steps.get_server_ssh(server_1)
+    server_steps.get_server_ssh(server_2)
+
+
 @pytest.mark.idempotent_id('db942db2-59c8-4736-9b00-58635a157c77')
 def test_hard_reboot_server_on_ironic_node(keypair,
                                            baremetal_flavor,
