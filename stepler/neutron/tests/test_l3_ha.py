@@ -28,7 +28,7 @@ pytestmark = [
 
 
 @pytest.mark.requires("computes_count >= 2")
-@pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5', ban_count=1)
+@pytest.mark.idempotent_id('acd1600e-3da7-4761-b4b3-d557a55b62b0', ban_count=1)
 @pytest.mark.idempotent_id('f48dc010-f4d1-464b-aa73-834a706569e6', ban_count=2)
 @pytest.mark.parametrize(
     'neutron_2_networks', ['different_routers'], indirect=True)

@@ -19,8 +19,15 @@ Volume tests
 import pytest
 
 
+@pytest.mark.idempotent_id('7a8f8745-0348-458c-8cf6-143b4627276a',
+                           disk_format='raw')
+@pytest.mark.idempotent_id('c74f8a82-7905-4215-b604-f902a6228a70',
+                           disk_format='qcow2')
+@pytest.mark.idempotent_id('d3f83a8c-eafc-4cd0-b72c-dfb56fce5cea',
+                           disk_format='vdi')
+@pytest.mark.idempotent_id('4a1f2935-6128-424a-aa7a-d9532ab6668b',
+                           disk_format='vmdk')
 @pytest.mark.parametrize('disk_format', ['raw', 'qcow2', 'vdi', 'vmdk'])
-@pytest.mark.idempotent_id('7a8f8745-0348-458c-8cf6-143b4627276a')
 def test_create_image_from_volume(upload_volume_to_image, disk_format):
     """**Scenario:** raw/qcow2/vdi/vmdk image is created from volume.
 

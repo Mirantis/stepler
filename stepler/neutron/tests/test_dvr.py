@@ -90,7 +90,7 @@ def test_check_east_west_connectivity_between_instances(
 
 
 @pytest.mark.requires("computes_count_gte(2)")
-@pytest.mark.idempotent_id('f3848003-ff36-4f87-899d-de6d3a321b65',
+@pytest.mark.idempotent_id('820fa7c3-4e6d-43e7-9d61-2bbc4a09c699',
                            router=dict(distributed=True))
 @pytest.mark.idempotent_id('578d0cf2-8db6-424b-a9a5-7bdfa8bfa37d',
                            router=dict(distributed=False))

@@ -19,7 +19,7 @@ Tests for openstack CLI client
 import pytest
 
 
-@pytest.mark.idempotent_id('c6c11d30-f0b0-4574-b501-e111c3c631f1')
+@pytest.mark.idempotent_id('5109e66d-4e40-42bf-a829-ee3018bae44f')
 def test_server_list(server, cli_openstack_steps):
     """**Scenario:** nova list works via shell.
 

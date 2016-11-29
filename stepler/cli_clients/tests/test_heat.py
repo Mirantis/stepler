@@ -22,7 +22,7 @@ from stepler import config
 from stepler.third_party import utils
 
 
-@pytest.mark.idempotent_id('1fb54c78-20f5-459b-9515-3d7caf73ed64')
+@pytest.mark.idempotent_id('61a7b0ac-2c80-44fb-b8dd-4894cd1da692')
 @pytest.mark.usefixtures('stacks_cleanup')
 def test_stack_create_from_file(empty_heat_template_path, cli_heat_steps,
                                 stack_steps):
@@ -331,7 +331,7 @@ def test_stack_resume(empty_stack,
         timeout=config.STACK_RESUME_TIMEOUT)
 
 
-@pytest.mark.idempotent_id('13031bc9-19e5-4ab9-8478-968f8fc925f2')
+@pytest.mark.idempotent_id('d77351ab-50da-4973-84e2-19e9bdc466c7')
 def test_stack_check_resources(empty_stack, cli_heat_steps, stack_steps):
     """**Scenario:** Check stack resources with heat CLI.
 

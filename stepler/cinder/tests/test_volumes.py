@@ -111,7 +111,18 @@ def test_create_volume_description_max(volume_steps):
         description=next(utils.generate_ids(length=255)))
 
 
-@pytest.mark.idempotent_id('978a580d-22c3-4e98-8ff9-7ff8541cdd48')
+@pytest.mark.idempotent_id('978a580d-22c3-4e98-8ff9-7ff8541cdd48',
+                           size=0)
+@pytest.mark.idempotent_id('3610f889-15ff-43a2-9678-6375f1621f7c',
+                           size=-1)
+@pytest.mark.idempotent_id('65fe505b-d526-4d05-a77a-b94c129314ec',
+                           size='')
+@pytest.mark.idempotent_id('8b9fa581-19bb-41ac-bb97-c8eb21f7fa98',
+                           size=' ')
+@pytest.mark.idempotent_id('8c725286-cd52-4c3f-8abb-1e38109041aa',
+                           size='abc')
+@pytest.mark.idempotent_id('1f2a2eb8-5d10-4021-b2b1-483766698c37',
+                           size='*&^%$%')
 @pytest.mark.parametrize('size', [0, -1, '', ' ', 'abc', '*&^%$%'])
 def test_create_volume_wrong_size(volume_steps, size):
     """**Scenario:** Verify creation of volume with zero/negative size.
@@ -234,7 +245,7 @@ def test_create_volume_from_volume(volume, volume_steps):
     volume_steps.create_volumes(source_volid=volume.id)
 
 
-@pytest.mark.idempotent_id('fbcb9a58-9a4d-4864-88db-c08a14475994')
+@pytest.mark.idempotent_id('ac8eba2e-7cb1-4a90-af7f-0179affaeeb4')
 def test_delete_volume_cascade(volume, volume_steps, snapshot_steps):
     """**Scenario:** Verify volume deletion with cascade option.
 

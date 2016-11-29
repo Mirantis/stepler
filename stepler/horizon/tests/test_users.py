@@ -27,8 +27,11 @@ from stepler.third_party import utils
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.idempotent_id('1fc6f276-5d0b-46ca-906c-08c8e8f2752f',
+                               users_count=1)
+    @pytest.mark.idempotent_id('7aa66c15-1d7f-4d6a-96b6-740465971488',
+                               users_count=2)
     @pytest.mark.parametrize('users_count', [1, 2])
-    @pytest.mark.idempotent_id('1fc6f276-5d0b-46ca-906c-08c8e8f2752f')
     def test_delete_users(self, users_count, create_users):
         """Verify that admin can create users and delete them as batch."""
         user_names = list(utils.generate_ids('user', count=users_count))

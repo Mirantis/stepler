@@ -16,6 +16,8 @@ Dispatch an external event tests
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pytest
+
 from stepler import config
 from stepler.third_party import utils
 
@@ -23,6 +25,7 @@ EVENT_RECORD = 'server_external_events.*status.*completed' + \
                '.*name.*network-vif-plugged.*server_uuid.*'
 
 
+@pytest.mark.idempotent_id('41815ab6-981b-4910-ae01-c9cab4fd9911')
 def test_dispatch_external_event(
         cirros_image,
         flavor,
