@@ -15,6 +15,9 @@ Neutron tests
 .. automodule:: stepler.neutron.tests.test_l3_agent
    :members:
 
+.. automodule:: stepler.neutron.tests.test_dhcp_agent
+   :members:
+
 .. automodule:: stepler.neutron.tests.test_ovs_restart
    :members:
 

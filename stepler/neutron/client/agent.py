@@ -39,8 +39,21 @@ class AgentManager(base.BaseNeutronManager):
             kwargs['binary'] = name
         return self._rest_client.list_agents(**kwargs)['agents']
 
+    def get_dhcp_agents_for_network(self, network_id):
+        """Get network dhcp agents list.
+
+        Args:
+            network_id (str): network id to get dhcp agents
+
+        Returns:
+            list: list of dicts of dhcp agents
+        """
+        dhcp_agents = self._rest_client.list_dhcp_agent_hosting_networks(
+            network_id)
+        return dhcp_agents['agents']
+
     def get_l3_agents_for_router(self, router_id):
-        """Get router l3 agents ids list.
+        """Get router l3 agents list.
 
         Args:
             router_id (str): router id to get l3 agents
