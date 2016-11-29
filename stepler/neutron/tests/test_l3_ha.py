@@ -20,6 +20,7 @@ Neutron L3 HA tests
 import pytest
 
 from stepler import config
+from stepler.third_party import utils
 
 pytestmark = [
     pytest.mark.destructive,
@@ -412,10 +413,10 @@ def test_disable_all_l3_agents_and_enable_them(
     #. Create network_2 with subnet_2 and router_2
     #. Create server_1
     #. Create server_2 on another compute and connect it to network_2
+    #. Create and attach floating IP for each server
 
     **Steps:**
 
-    #. Create and attach floating IP for each server
     #. Start ping between servers with floating IP
     #. Ban all L3 agents
     #. Wait for all L3 agents to be died
@@ -454,3 +455,87 @@ def test_disable_all_l3_agents_and_enable_them(
                 config.NEUTRON_L3_SERVICE, nodes=nodes_with_l3)
             agent_steps.check_alive(
                 l3_agents, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.requires("computes_count >= 2")
+@pytest.mark.idempotent_id('f56453e1-4799-4a26-baeb-006e13b05bb3')
+@pytest.mark.parametrize(
+    'neutron_2_networks', ['different_routers'], indirect=True)
+@pytest.mark.parametrize(
+    'change_neutron_quota', [dict(
+        network=30, router=30, subnet=30, port=90)],
+    indirect=True)
+@pytest.mark.usefixtures('change_neutron_quota')
+def test_ban_l3_agent_for_many_routers(
+        neutron_2_servers_diff_nets_with_floating,
+        public_network,
+        create_network,
+        create_subnet,
+        create_router,
+        add_router_interfaces,
+        router_steps,
+        server_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Ban l3-agent for many routers.
+
+    **Setup:**
+
+    #. Increase neutron quotas
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router_1
+    #. Create network_2 with subnet_2
+    #. Create server_1
+    #. Create server_2 on another compute and connect it to network_2
+    #. Create and attach floating IP for each server
+
+    **Steps:**
+
+    #. Create 20 networks, subnets, routers
+    #. Get L3 agent with ACTIVE ha_state for router_1
+    #. Start ping between servers with floating IP
+    #. Ban ACTIVE L3 agent
+    #. Wait for another L3 agent becomes ACTIVE
+    #. Check that ping loss is not more than 10 packets
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete floating IPs
+    #. Delete networks, subnets, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    #. Restore original neutron quotas
+    """
+    server_1, server_2 = neutron_2_servers_diff_nets_with_floating.servers
+    floating_ip_2 = neutron_2_servers_diff_nets_with_floating.floating_ips[1]
+    router_1 = neutron_2_servers_diff_nets_with_floating.routers[0]
+
+    for _ in range(20):
+        network = create_network(next(utils.generate_ids()))
+
+        subnet = create_subnet(
+            subnet_name=next(utils.generate_ids()),
+            network=network,
+            cidr=config.LOCAL_CIDR)
+        router = create_router(next(utils.generate_ids()))
+        router_steps.set_gateway(router, public_network)
+        add_router_interfaces(router, [subnet])
+
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        with server_steps.check_ping_loss_context(
+                floating_ip_2.ip,
+                max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
+                server_ssh=server_ssh):
+            agent = agent_steps.get_l3_agents_for_router(
+                router_1, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+            agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+            os_faults_steps.terminate_service(
+                config.NEUTRON_L3_SERVICE, nodes=agent_node)
+            agent_steps.check_l3_ha_router_rescheduled(
+                router_1,
+                old_l3_agent=agent,
+                timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)

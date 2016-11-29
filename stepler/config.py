@@ -353,6 +353,8 @@ HA_STATE_ACTIVE_ATTRS = {'ha_state': 'active'}
 
 ROUTER_AVAILABLE_TIMEOUT = 60
 
+LOCAL_CIDR = '192.168.3.0/24'
+
 # Horizon
 BROWSER_WINDOW_SIZE = map(
     int, (os.environ.get('BROWSER_WINDOW_SIZE', ('1920,1080'))).split(','))

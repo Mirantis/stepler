@@ -20,6 +20,7 @@ Neutron client wrapper
 from stepler.neutron.client import agent
 from stepler.neutron.client import network
 from stepler.neutron.client import port
+from stepler.neutron.client import quota
 from stepler.neutron.client import router
 from stepler.neutron.client import subnet
 
@@ -40,6 +41,10 @@ class NeutronClient(object):
     @property
     def ports(self):
         return port.PortManager(self)
+
+    @property
+    def quotas(self):
+        return quota.QuotaManager(self)
 
     @property
     def routers(self):
