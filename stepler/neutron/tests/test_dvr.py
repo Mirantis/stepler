@@ -433,3 +433,76 @@ def test_check_router_namespace_on_compute_node(
         host_compute,
         must_present=False,
         timeout=config.ROUTER_NAMESPACE_TIMEOUT)
+
+
+@pytest.mark.requires("l3_agent_nodes_count >= 2")
+@pytest.mark.destructive
+@pytest.mark.idempotent_id('0bfc9465-a29b-47b2-9c59-382fae7e086e', count=1)
+@pytest.mark.idempotent_id('48bf701f-7bd9-474c-b19c-1192702be9b0', count=2)
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+@pytest.mark.parametrize('ban_count', [1, 2])
+def test_check_ban_l3_agent_on_node_with_snat(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        get_ssh_proxy_cmd,
+        agent_steps,
+        os_faults_steps,
+        server_steps,
+        ban_count):
+    """**Scenario:** Check North-South after ban l3 agent on node with snat.
+
+    This test check North-South connectivity without floating after ban l3
+        agent on node with snat.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Check that ping from server to 8.8.8.8 is successful
+    #. Find node with snat for router and ban L3 agent on it
+    #. Wait for another L3 agent becomes ACTIVE
+    #. Repeat last 2 steps ``count`` times
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server (if it was not removed)
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    net, subnet, router = net_subnet_router
+
+    proxy_cmd = get_ssh_proxy_cmd(server)
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
+
+    for _ in range(ban_count):
+        agent = agent_steps.get_l3_agents_for_router(router)[0]
+        agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+        os_faults_steps.terminate_service(
+            config.NEUTRON_L3_SERVICE, nodes=agent_node)
+        agent_steps.check_router_rescheduled(
+            router=router,
+            old_l3_agent=agent,
+            timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
