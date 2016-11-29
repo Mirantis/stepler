@@ -140,11 +140,13 @@ class CliGlanceSteps(base.BaseCliSteps):
         return image, exit_code, stdout, stderr
 
     @steps_checker.step
-    def list_images(self, api_version=config.CURRENT_GLANCE_VERSION,
+    def list_images(self, property_filter=None,
+                    api_version=config.CURRENT_GLANCE_VERSION,
                     check=True):
         """Step to get glance images list.
 
         Args:
+            property_filter (str): filter Glance images list
             api_version (int): the API version of Glance
             check (bool): flag whether to check result or not
 
@@ -156,6 +158,11 @@ class CliGlanceSteps(base.BaseCliSteps):
         """
         images = []
         cmd = 'glance image-list'
+        if property_filter:
+            if api_version == 2:
+                cmd = '{} --property {}'.format(cmd, property_filter)
+            else:
+                cmd = '{} --property-filter {}'.format(cmd, property_filter)
         exit_code, stdout, stderr = self.execute_command(
             cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
         if check:
@@ -189,39 +196,42 @@ class CliGlanceSteps(base.BaseCliSteps):
             cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
 
     @steps_checker.step
-    def check_image_list_contains(self, image,
+    def check_image_list_contains(self, images,
                                   api_version=config.
                                   CURRENT_GLANCE_VERSION):
         """Step to check that image is in images list.
 
         Args:
-            image (dict): glance image
+            images (list): glance images
             api_version (int): the API version of Glance
 
         Raises:
             AssertionError: check failed if image is present in images list
         """
-        images = self.list_images(api_version=api_version)
-        assert_that(images, is_not(empty()))
-        image_ids = images.keys()
-        assert_that(image['id'], is_in(image_ids))
+        all_images = self.list_images(api_version=api_version)
+        assert_that(all_images, is_not(empty()))
+        image_ids = all_images.keys()
+        for image in images:
+            assert_that(image['id'], is_in(image_ids))
 
     @steps_checker.step
-    def check_image_list_doesnt_contain(
-            self, image, api_version=config.CURRENT_GLANCE_VERSION):
+    def check_image_list_doesnt_contain(self, images,
+                                        api_version=config.
+                                        CURRENT_GLANCE_VERSION):
         """Step to check that image doesn't exist in images list.
 
         Args:
-            image (dict): glance image
+            images (list): glance images
             api_version (int): the API version of Glance
 
         Raises:
             AssertionError: check failed if image doesn't present in
             images list
         """
-        images = self.list_images(api_version=api_version)
-        image_ids = images.keys()
-        assert_that(image['id'], is_not(is_in(image_ids)))
+        all_images = self.list_images(api_version=api_version)
+        image_ids = all_images.keys()
+        for image in images:
+            assert_that(image['id'], is_not(is_in(image_ids)))
 
     @steps_checker.step
     def check_negative_image_create_without_properties(
@@ -391,3 +401,21 @@ class CliGlanceSteps(base.BaseCliSteps):
         if api_version == 1:
             property_key = "Property '{0}'".format(property_key)
         assert_that(image[property_key], is_(property_value))
+
+    @steps_checker.step
+    def check_property_filter_in_image_list(self, images, property_filter,
+                                            api_version=config.
+                                            CURRENT_GLANCE_VERSION):
+        """Step to check that images list filter.
+
+        Args:
+            images (obj): glance images
+            property_filter (str): filter Glance images list
+            api_version (int): glance api version (1 or 2). Default is 2
+        """
+        for image in images:
+            properties = '{}={}'.format(property_filter, image['name'])
+            filtered_images = self.list_images(property_filter=properties,
+                                               api_version=api_version)
+            if api_version == 2:
+                assert_that(image['id'], is_in(filtered_images.keys()))
