@@ -230,6 +230,7 @@ echo {}""".format(USERDATA_DONE_MARKER)
 
 IPERF_TCP_PORT = 5001
 IPERF_UDP_PORT = 5002
+RABBIT_PORT = 5673
 
 START_IPERF_USERDATA = """#!/bin/bash -v
 apt-get install -yq iperf
