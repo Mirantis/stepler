@@ -47,7 +47,7 @@ def test_image_list_contains_created_image(glance_steps,
     image = glance_steps.create_images(
         image_names=utils.generate_ids(u'試験画像', use_unicode=True),
         image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))[0]
-    cli_glance_steps.check_image_list_contains(image=image,
+    cli_glance_steps.check_image_list_contains(images=[image],
                                                api_version=api_version)
 
 
@@ -71,7 +71,7 @@ def test_image_list_doesnt_contain_deleted_image(glance_steps,
         image_names=utils.generate_ids(u'試験画像', use_unicode=True),
         image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))[0]
     glance_steps.delete_images([image])
-    cli_glance_steps.check_image_list_doesnt_contain(image=image,
+    cli_glance_steps.check_image_list_doesnt_contain(images=[image],
                                                      api_version=api_version)
 
 
@@ -322,3 +322,53 @@ def test_update_image_property(ubuntu_image,
                                           property_key='key',
                                           property_value='value',
                                           api_version=api_version)
+
+
+@pytest.mark.idempotent_id('886d07c2-3766-455a-a9ed-c07747a4992e',
+                           api_version=1)
+@pytest.mark.idempotent_id('b7ab5fd4-925d-4695-b2f5-a39a34e1155e',
+                           api_version=2)
+@pytest.mark.parametrize('api_version', [1, 2])
+def test_image_list_contains_created_qcow2_images(glance_steps,
+                                                  cli_glance_steps,
+                                                  api_version):
+    """**Scenario:** Check that created images are contained in images list.
+
+    **Steps:**
+
+    #. Create 3 images with disk format qcow2 with Glance API
+    #. Check that created images is in list using CLI
+
+    **Teardown:**
+
+    #. Delete images
+    """
+    qcow_images = glance_steps.create_images(
+        image_names=utils.generate_ids(count=3),
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
+    cli_glance_steps.check_image_list_contains(images=qcow_images,
+                                               api_version=api_version)
+
+
+# FIXME: add the test for api_version=1 then bug will be fixed
+@pytest.mark.idempotent_id('cdac5f90-59f6-4d67-a123-0ad7886b84de')
+def test_filter_names_in_images_list(glance_steps, cli_glance_steps,
+                                     api_version=2):
+    """**Scenario:** Check that created images are filtered.
+
+    **Steps:**
+
+    #. Create 3 images with disk format qcow2 with Glance API
+    #. Check that created images filtered using CLI
+
+    **Teardown:**
+
+    #. Delete images
+    """
+    qcow_images = glance_steps.create_images(
+        image_names=utils.generate_ids(count=3),
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
+    cli_glance_steps.check_property_filter_in_image_list(
+        images=qcow_images,
+        property_filter='name',
+        api_version=api_version)
