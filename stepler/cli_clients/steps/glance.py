@@ -17,7 +17,7 @@ Glance CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, contains_string, is_in, is_not, empty  # noqa
+from hamcrest import assert_that, contains_string, is_, is_in, is_not, empty  # noqa
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -116,12 +116,12 @@ class CliGlanceSteps(base.BaseCliSteps):
         return file_path
 
     @steps_checker.step
-    def show_image(self, image_id,
+    def show_image(self, image,
                    api_version=config.CURRENT_GLANCE_VERSION, check=True):
         """Step to show glance image.
 
         Args:
-            image_id (str): id of image to show
+            image (obj): glance image
             api_version (int): the API version of Glance
             check (bool): flag whether to check result or not
 
@@ -131,13 +131,12 @@ class CliGlanceSteps(base.BaseCliSteps):
         Raises:
             AssertionError: if check failed
         """
-        image = None
-        cmd = 'glance image-show {0}'.format(image_id)
+        cmd = 'glance image-show {0}'.format(image.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
         if check:
             image_table = output_parser.table(stdout)['values']
-            image = {key: value for key, value in image_table['values']}
+            image = {line[0]: line[1] for line in image_table}
         return image, exit_code, stdout, stderr
 
     @steps_checker.step
@@ -172,20 +171,20 @@ class CliGlanceSteps(base.BaseCliSteps):
         return images
 
     @steps_checker.step
-    def delete_image(self, image_id,
+    def delete_image(self, image,
                      api_version=config.CURRENT_GLANCE_VERSION,
                      check=True):
         """Step to delete glance image.
 
         Args:
-            image_id (str): image ID
+            image (obj): glance image
             api_version (int): API version of Glance
             check (bool): flag whether to check result or not
 
         Raises:
             AnsibleExecutionException: if command execution failed
         """
-        cmd = 'glance image-delete {0}'.format(image_id)
+        cmd = 'glance image-delete {0}'.format(image.id)
         self.execute_command(
             cmd, environ={'OS_IMAGE_API_VERSION': api_version}, check=check)
 
@@ -250,12 +249,12 @@ class CliGlanceSteps(base.BaseCliSteps):
 
     @steps_checker.step
     def check_negative_download_zero_size_image(
-            self, image_id, progress=False,
+            self, image, progress=False,
             api_version=config.CURRENT_GLANCE_VERSION):
         """Step to check that zero-size image cannot be downloaded.
 
         Args:
-            image_id (str): image ID
+            image (obj): glance image
             progress (bool): option of download command
             api_version (int): glance api version (1 or 2). Default is 2
 
@@ -263,14 +262,14 @@ class CliGlanceSteps(base.BaseCliSteps):
             AssertionError: if command exit code is 0 or stderr doesn't
                 contain expected message.
         """
-        cmd = "glance image-download {}".format(image_id)
+        cmd = "glance image-download {}".format(image.id)
         if progress:
             cmd += " --progress"
         if api_version == 1:
             error_message = ("Image {} is not active (HTTP 404)".
-                             format(image_id))
+                             format(image.id))
         else:
-            error_message = "Image {} has no data".format(image_id)
+            error_message = "Image {} has no data".format(image.id)
 
         exit_code, stdout, stderr = self.execute_command(
             cmd, environ={'OS_IMAGE_API_VERSION': int(api_version)},
@@ -366,3 +365,33 @@ class CliGlanceSteps(base.BaseCliSteps):
 
         assert_that(exit_code, is_not(0))
         assert_that(stderr, contains_string(error_message))
+
+    @steps_checker.step
+    def check_image_property(self, image,
+                             property_key,
+                             property_value,
+                             api_version=config.CURRENT_GLANCE_VERSION):
+        """Step to check that output of cli command `glance image-show <id>`
+           contains updated property.
+
+        Args:
+            image (obj): glance image
+            property_key (str): name of property for check
+            property_value (str): value of property for check
+            api_version (int): glance api version (1 or 2). Default is 2
+
+        Raises:
+            AssertionError: if command exit code is not 0 or output of cli
+                command `glance image-show <id>` doesn't contain
+                updated property
+        """
+        image, exit_code, _, _ = self.show_image(
+            image,
+            api_version=api_version)
+
+        assert_that(exit_code, is_(0))
+        if api_version == 2:
+            assert_that(image[property_key], is_(property_value))
+        else:
+            assert_that(image["Property '{0}'".format(property_key)],
+                        is_(property_value))
