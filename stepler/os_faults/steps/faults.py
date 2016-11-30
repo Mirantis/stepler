@@ -1608,3 +1608,21 @@ class OsFaultsSteps(base.BaseSteps):
                config.GLANCE_API_CONFIG_PATH)
         glance_nodes = self._client.get_service(config.GLANCE_API).get_nodes()
         return self.execute_cmd(glance_nodes.pick(), cmd)[0].payload['stdout']
+
+    @steps_checker.step
+    def nova_compute_force_down(self, nova_api_node, failed_node, check=True):
+        """Step to set nova-compute service to Forced down status against
+           compute node where nova-compute service is stopped. It's required
+           for nova evacuate tests.
+
+        Args:
+            nova_api_node (NodeCollection): node with nova-api service
+            failed_node (str): fqdn of node with stopped nova-compute service
+            check (bool, optional): flag whether to check this step or not
+        """
+        cmd = '%s && nova service-force-down %s %s ' % (
+            config.OPENRC_ACTIVATE_CMD,
+            failed_node,
+            config.NOVA_COMPUTE)
+
+        self.execute_cmd(nova_api_node, cmd, check=check)
