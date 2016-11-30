@@ -281,3 +281,48 @@ def test_create_server_on_baremetal_node(keypair,
                                          username=config.UBUNTU_USERNAME)[0]
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.get_server_ssh(server)
+
+
+@pytest.mark.idempotent_id('3c48b915-1e2e-4800-af8b-3d249610dd50')
+def test_create_server_on_baremetal_node_in_maintenance_state(
+        ironic_node_steps,
+        baremetal_network,
+        baremetal_ubuntu_image,
+        baremetal_flavor,
+        server_steps):
+    """**Scenario:** Launch server on baremetal node in maintenance state.
+
+    **Setup:**
+
+    #. Create baremetal flavor
+    #. Upload baremetal ubuntu image
+
+    **Steps:**
+
+    #. Get Ironic nodes
+    #. Set all Ironic nodes into maintenance mode
+    #. Create and boot server
+    #. Check that server status is error
+    #. Check that instance doesn't exist in ironic node
+
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete image
+    #. Delete flavor
+    """
+    ironic_nodes = ironic_node_steps.get_ironic_nodes()
+    ironic_node_steps.set_ironic_nodes_maintenance(nodes=ironic_nodes,
+                                                   state=True)
+    server = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                         networks=[baremetal_network],
+                                         flavor=baremetal_flavor,
+                                         username=config.UBUNTU_USERNAME,
+                                         check=False)[0]
+    server_steps.check_server_status(server=server,
+                                     expected_statuses=[config.STATUS_ERROR])
+    ironic_node_steps.check_ironic_nodes_attribute_value(
+        nodes=ironic_nodes,
+        attribute='instance_uuid',
+        expected_value=server.id)
