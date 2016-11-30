@@ -40,8 +40,8 @@ class CommandResult(object):
         super(CommandResult, self).__init__(*args, **kwargs)
         self.command = None
         self.exit_code = None
-        self._stdout = ''
-        self._stderr = ''
+        self.stdout_bytes = ''
+        self.stderr_bytes = ''
 
     def __repr__(self):
         return (u'`{0.command}` result:\n'
@@ -55,17 +55,17 @@ class CommandResult(object):
 
     @property
     def stdout(self):
-        return self._stdout.decode('utf-8').strip()
+        return self.stdout_bytes.decode('utf-8').strip()
 
     def append_stdout(self, value):
-        self._stdout += value
+        self.stdout_bytes += value
 
     @property
     def stderr(self):
-        return self._stderr.decode('utf-8').strip()
+        return self.stderr_bytes.decode('utf-8').strip()
 
     def append_stderr(self, value):
-        self._stderr += value
+        self.stderr_bytes += value
 
     def check_exit_code(self, expected=0):
         """Check that exit_code is 0."""
@@ -295,3 +295,18 @@ class SshClient(object):
             command = "sudo -s $SHELL -c " + moves.shlex_quote(command)
         chan.exec_command(command)
         return chan, stdin, stdout, stderr
+
+    @contextlib.contextmanager
+    def open(self, path, mode='r'):
+        """Open remote file with SFTP.
+
+        Args:
+            path (str): path to remote file
+            mode (str, optional): file open mode. The arguments are the same
+                as for Python's built-in open. Read-only by default.
+
+        Yields:
+            obj: an SFTPFile object representing the open file
+        """
+        with self._ssh.open_sftp() as sftp:
+            yield sftp.open(path, mode)
