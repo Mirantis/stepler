@@ -41,3 +41,16 @@ class NetworkManager(base.BaseNeutronManager):
         for subnet_id in network['subnets']:
             self.client.subnets.delete(subnet_id)
         super(NetworkManager, self).delete(network_id)
+
+    def get_networks_for_dhcp_agent(self, dhcp_agent_id):
+        """Get networks list for DHCP agent.
+
+        Args:
+            dhcp_agent_id (str): DHCP agent id to get networks
+
+        Returns:
+            list: list of dicts of networks
+        """
+        networks = self._rest_client.list_networks_on_dhcp_agent(
+            dhcp_agent_id)
+        return networks['networks']

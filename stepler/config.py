@@ -384,6 +384,8 @@ INTERNAL_NETWORK_NAME = next(generate_ids('internal_net'))
 INTERNAL_SUBNET_NAME = next(generate_ids('internal_subnet'))
 ROUTER_NAME = next(generate_ids('router'))
 
+EXTERNAL_ROUTER = 'router:external'
+
 XVFB_LOCK = '/tmp/xvfb.lock'
 
 # Volume creating constants
