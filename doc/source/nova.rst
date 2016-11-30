@@ -35,3 +35,6 @@ Nova tests
 
 .. automodule:: stepler.nova.tests.test_restart_all_services
    :members:
+
+.. automodule:: stepler.nova.tests.test_evacuate
+   :members:
