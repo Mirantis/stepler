@@ -124,6 +124,7 @@ STATUS_PAUSED = 'paused'
 STATUS_PAUSING = 'pausing'
 STATUS_QUEUED = 'queued'
 STATUS_REBOOT = 'reboot'
+STATUS_REBUILD = 'rebuild'
 STATUS_REBUILD_SPAWNING = 'rebuild_spawning'
 STATUS_REBUILDING = 'rebuilding'
 STATUS_RESCUE = 'rescue'
@@ -135,7 +136,6 @@ STATUS_SUCCESS = 'success'
 STATUS_UPDATING = 'updating'
 STATUS_UPLOADING = 'uploading'
 STATUS_VERIFY_RESIZE = 'verify_resize'
-STATUS_ERROR = 'error'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
@@ -219,6 +219,7 @@ SSH_CONNECT_TIMEOUT = 8 * 60
 LIVE_MIGRATE_TIMEOUT = 5 * 60
 LIVE_MIGRATION_PING_MAX_LOSS = 20
 VERIFY_RESIZE_TIMEOUT = 3 * 60
+EVACUATE_TIMEOUT = 3 * 60
 SOFT_DELETED_TIMEOUT = 30
 SERVER_DELETE_TIMEOUT = 3 * 60
 SERVER_ACTIVE_TIMEOUT = 14 * 60
