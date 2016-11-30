@@ -278,6 +278,14 @@ class BaseApiClient(object):
         # TODO(schipiga): may be need to use native API
         raise NotImplemented
 
+    def _head(self, url, headers=None, params=None, **kwgs):
+        """HEAD request to API."""
+        headers = headers or {}
+        headers.update(self._auth_headers)
+
+        url = self._endpoint + url
+        return requests.head(url, headers=headers, params=params, **kwgs)
+
     def _get(self, url, headers=None, params=None, **kwgs):
         """GET request to API."""
         headers = headers or {}

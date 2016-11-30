@@ -26,3 +26,17 @@ class BaseApiClient(base.BaseApiClient):
     @property
     def _endpoint(self):
         return self._session.get_endpoint(service_type='image').rstrip('/')
+
+    def _retrieve_data(self, response):
+        """Retrieve image data from response."""
+        data_prefix = 'x-image-meta-'
+        data = {}
+
+        for key, value in response.headers.items():
+            key = key.lower()
+
+            if key.startswith(data_prefix):
+                attr = key.split(data_prefix)[-1]
+                data[attr] = value
+
+        return data
