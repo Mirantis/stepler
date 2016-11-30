@@ -17,7 +17,7 @@ Port steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import equal_to
+from hamcrest import assert_that, equal_to, has_entries  # noqa H301
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -74,3 +74,24 @@ class PortSteps(base.BaseSteps):
             return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_port_presence, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_port(self, check=True, **kwargs):
+        """Step to get port by params in '**kwargs'.
+
+        Args:
+            check (bool): flag whether to check step or not
+            **kwargs: params to filter port
+
+        Returns:
+            dict: port
+
+        Raises:
+            LookupError: if zero or more than one networks found
+            AssertonError: if port attributes are wrong
+        """
+        port = self._client.find(**kwargs)
+
+        if check:
+            assert_that(port, has_entries(kwargs))
+        return port
