@@ -532,10 +532,10 @@ def test_ban_l3_agent_for_many_routers(
                 server_ssh=server_ssh):
             agent = agent_steps.get_l3_agents_for_router(
                 router_1, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
-            agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+            agent_node = os_faults_steps.get_nodes_for_agents([agent])
             os_faults_steps.terminate_service(
                 config.NEUTRON_L3_SERVICE, nodes=agent_node)
             agent_steps.check_l3_ha_router_rescheduled(
                 router_1,
                 old_l3_agent=agent,
-                timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+                timeout=config.AGENT_RESCHEDULING_TIMEOUT)
