@@ -122,6 +122,11 @@ class Predicates(object):
         return os_faults_steps.get_network_type()
 
     @property
+    def _storage_protocol(self):
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_storage_protocol()
+
+    @property
     @_store_call
     def computes_count(self):
         """Returns computes count."""
