@@ -169,6 +169,7 @@ __all__ = sorted([  # sort for documentation
     'generate_traffic',
     'get_security_group_steps',
     'ubuntu_server',
+    'evacuated_servers',
 
     'get_availability_zone_steps',
     'availability_zone_steps',

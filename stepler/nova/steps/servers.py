@@ -607,7 +607,8 @@ class ServerSteps(base.BaseSteps):
                 ip_to_ping, remote=remote_from).ping(count=ping_count)
             return result.loss == 0
 
-        waiter.wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout,
+                    expected_exceptions=EOFError)
 
     @steps_checker.step
     def check_ping_to_server_floating(self, server, timeout=0):
@@ -1533,3 +1534,38 @@ class ServerSteps(base.BaseSteps):
             fault_msg = '\n'.join(("{}:\n{}".format(k, v)
                                    for k, v in fault.items()))
         return "Server fault:\n{}".format(fault_msg)
+
+    @steps_checker.step
+    def evacuate_servers(self, servers, host=None, check=True):
+        """Step to evacuate servers from failed host
+
+        Args:
+            servers (): servers to evacuate
+            host (str): target host
+            check (bool): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        failed_host = {}
+        for server in servers:
+            server.get()
+            failed_host[server.id] = getattr(server, config.SERVER_ATTR_HOST)
+            server.evacuate(host)
+
+        if check:
+            for server in servers:
+
+                self.check_server_status(
+                    server,
+                    expected_statuses=[config.STATUS_ACTIVE],
+                    transit_statuses=[config.STATUS_REBUILD,
+                                      config.STATUS_REBUILDING,
+                                      config.STATUS_REBUILD_SPAWNING],
+                    timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+                self.check_instance_hypervisor_hostname(
+                    server,
+                    failed_host[server.id],
+                    equal=False,
+                    timeout=config.EVACUATE_TIMEOUT)

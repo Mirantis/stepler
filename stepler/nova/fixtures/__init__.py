@@ -77,6 +77,7 @@ __all__ = sorted([  # sort for documentation
 
     'create_server_context',
     'create_servers_context',
+    'evacuated_servers',
     'get_server_steps',
     'get_ssh_proxy_cmd',
     'server',
