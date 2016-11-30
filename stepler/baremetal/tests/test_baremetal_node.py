@@ -49,5 +49,4 @@ def test_set_node_maintenance(ironic_node, ironic_node_steps):
 
     #. Delete ironic node
     """
-    ironic_node_steps.set_ironic_nodes_maintenance(nodes=[ironic_node],
-                                                   state=True)
+    ironic_node_steps.set_maintenance(nodes=[ironic_node], state=True)

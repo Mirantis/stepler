@@ -132,11 +132,11 @@ class IronicNodeSteps(BaseSteps):
         waiter.wait(_check_ironic_nodes_presence, timeout_seconds=timeout)
 
     @steps_checker.step
-    def set_ironic_nodes_maintenance(self,
-                                     nodes,
-                                     state,
-                                     reason=None,
-                                     check=True):
+    def set_maintenance(self,
+                        nodes,
+                        state,
+                        reason=None,
+                        check=True):
         """Set the maintenance mode for the nodes.
 
         Args:
@@ -359,3 +359,41 @@ class IronicNodeSteps(BaseSteps):
             assert_that(node.instance_uuid, equal_to(server_uuid))
 
         return node
+
+    @steps_checker.step
+    def check_ironic_nodes_attribute_value(self,
+                                           nodes,
+                                           attribute,
+                                           expected_value,
+                                           node_timeout=0):
+        """Check ironic nodes attribute value.
+
+        Args:
+            nodes (list): the list of ironic nodes.
+            attribute (str): the node attribute.
+            expected_value (str): the value of the node attribute.
+            node_timeout (int): seconds to wait a result of check.
+
+        Raises:
+            TimeoutExpired: if check failed after timeout.
+        """
+        expected_attribute_value = {node.uuid:
+                                    expected_value for node in nodes}
+
+        def _check_ironic_nodes_attribute_value():
+            actual_attribute_value = {}
+            for node in nodes:
+                try:
+                    self._get_node(node)
+                    actual_attribute_value[node.uuid] = getattr(node,
+                                                                attribute)
+
+                except exceptions.NotFound:
+                    actual_attribute_value[node.uuid] = None
+
+            return waiter.expect_that(actual_attribute_value,
+                                      equal_to(expected_attribute_value))
+
+        timeout = len(nodes) * node_timeout
+        waiter.wait(_check_ironic_nodes_attribute_value,
+                    timeout_seconds=timeout)

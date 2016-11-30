@@ -130,6 +130,7 @@ STATUS_SUCCESS = 'success'
 STATUS_UPDATING = 'updating'
 STATUS_UPLOADING = 'uploading'
 STATUS_VERIFY_RESIZE = 'verify_resize'
+STATUS_ERROR = 'error'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
