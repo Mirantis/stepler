@@ -113,8 +113,8 @@ class Pinger(object):
         yield result
         if count:
             waiting.wait(
-                lambda: not self.remote.execute('ps -o pid | grep {}'.format(
-                    pid)).is_ok,
+                lambda: not self.remote.execute(
+                    'bash -c "ps -o pid | grep {}"'.format(pid)).is_ok,
                 timeout_seconds=count * 10)
         self.remote.execute('kill -SIGINT {}'.format(pid))
         result.stdout = self.remote.check_call("cat {}".format(
