@@ -17,7 +17,9 @@ Glance base steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import glanceclient.v1.images
 from hamcrest import assert_that, equal_to  # noqa
+import warlock.model
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -29,6 +31,18 @@ __all__ = [
 
 class BaseGlanceSteps(base.BaseSteps):
     """Glance base steps."""
+
+    def _refresh_image(self, image):
+        """Refresh local image data structure according to its type."""
+        if isinstance(image, (glanceclient.v1.images.Image,
+                              warlock.model.Model)):  # glanceclient
+
+            fresh = self._client.images.get(image.id)
+            data = getattr(fresh, '_info', fresh)
+            getattr(image, '_info', image).update(data)
+
+        else:  # stepler.base.Resource
+            image.get()
 
     @steps_checker.step
     def update_images(self, images, status=None, check=True):
@@ -42,6 +56,6 @@ class BaseGlanceSteps(base.BaseSteps):
 
         if check:
             for image in images:
-                image.get()
+                self._refresh_image(image)
                 if status:
                     assert_that(image.status, equal_to(status))

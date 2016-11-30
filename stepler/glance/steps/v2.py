@@ -210,7 +210,7 @@ class GlanceStepsV2(BaseGlanceSteps):
         """
         def _check_image_presence():
             try:
-                self._client.images.get(image.id)
+                self._refresh_image(image)
                 is_present = True
             except exc.NotFound:
                 is_present = False
@@ -232,7 +232,7 @@ class GlanceStepsV2(BaseGlanceSteps):
             TimeoutExpired: if check failed after timeout
         """
         def _check_image_status():
-            image.update(self._client.images.get(image.id))
+            self._refresh_image(image)
             return waiter.expect_that(image.status.lower(),
                                       equal_to(status.lower()))
 
