@@ -359,3 +359,40 @@ class IronicNodeSteps(BaseSteps):
             assert_that(node.instance_uuid, equal_to(server_uuid))
 
         return node
+
+    @steps_checker.step
+    def check_ironic_nodes_argument_value(self,
+                                          nodes,
+                                          argument,
+                                          argument_value,
+                                          node_timeout=0):
+        """Check ironic node provision state was changed.
+
+        Args:
+            nodes (list): the list of ironic nodes.
+            argument (str): the node argument
+            argument_value (str): the value of the node argument
+            node_timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        expected_argument_value = {node.uuid: argument_value for node in nodes}
+
+        def _check_ironic_nodes_argument_value():
+            actual_argument_value = {}
+            for node in nodes:
+                try:
+                    self._get_node(node)
+                    actual_argument_value[node.uuid] = node.to_dict()\
+                        .get(argument)
+
+                except exceptions.NotFound:
+                    actual_argument_value[node.uuid] = None
+
+            return waiter.expect_that(actual_argument_value,
+                                      equal_to(expected_argument_value))
+
+        timeout = len(nodes) * node_timeout
+        waiter.wait(_check_ironic_nodes_argument_value,
+                    timeout_seconds=timeout)
