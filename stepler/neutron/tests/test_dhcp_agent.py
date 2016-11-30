@@ -90,7 +90,98 @@ def test_ban_some_dhcp_agents(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
 
-@pytest.mark.requires("dhcp_agent_nodes_count >= 2")
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('d14003d7-4cd9-4f68-98e6-c88b8a2ee45d')
+def test_ban_all_dhcp_agents_restart_one(network,
+                                         nova_floating_ip,
+                                         server,
+                                         server_steps,
+                                         os_faults_steps,
+                                         agent_steps,
+                                         network_steps):
+    """**Scenario:** Ban all DHCP agents and restart the last banned.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Get all existing DHCP agents
+    #. Get 2 nodes with DHCP agents for network
+    #. Ban 2 DHCP agents for nodes with pcs
+    #. Wait for DHCP agents becoming dead
+    #. Check that banned dhcp-agents don't in dhcp-agents list
+        for network
+    #. Get new node with DHCP agent for network
+    #. Ban DHCP agent for node with pcs
+    #. Wait for DHCP agent becoming dead
+    #. Check that banned dhcp-agent is dead
+    #. Repeat last 4 steps for all active DHCP agents
+    #. Clear the last banned dhcp-agent
+    #. Check that cleared dhcp-agent is active
+    #. Check that network is on the dhcp-agent which is cleared
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Check that all networks except for external are
+        on the cleared dhcp-agent
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    dhcp_agents_count = len(
+        agent_steps.get_agents(binary=config.NEUTRON_DHCP_SERVICE))
+
+    dhcp_agents_for_net = agent_steps.get_dhcp_agents_for_net(network)
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents(dhcp_agents_for_net)
+    os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=nodes_with_dhcp)
+
+    for dhcp_agent in dhcp_agents_for_net:
+        agent_steps.check_network_rescheduled(
+            network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    for _ in range(dhcp_agents_count - 2):
+        dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
+        node_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
+        os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                          nodes=node_with_dhcp)
+        agent_steps.check_alive([dhcp_agent],
+                                must_alive=False,
+                                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    os_faults_steps.start_service(config.NEUTRON_DHCP_SERVICE,
+                                  nodes=node_with_dhcp)
+    agent_steps.check_alive([dhcp_agent],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    agent_steps.check_agents_count_for_net(network, expected_count=1)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    not_external_filter = {'router:external': False}
+    networks_count = len(network_steps.get_networks(**not_external_filter))
+    network_steps.check_nets_count_for_agent(
+        dhcp_agent,
+        expected_count=networks_count,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('5fea925f-e7a2-4524-80c2-c4f632c304c9')
 def test_dhcp_agent_after_drop_rabbit_port(network,
                                            nova_floating_ip,
