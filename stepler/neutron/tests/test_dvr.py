@@ -494,13 +494,13 @@ def test_check_ban_l3_agent_on_node_with_snat(
 
     for _ in range(ban_count):
         agent = agent_steps.get_l3_agents_for_router(router)[0]
-        agent_node = os_faults_steps.get_nodes_for_l3_agents([agent])
+        agent_node = os_faults_steps.get_nodes_for_agents([agent])
         os_faults_steps.terminate_service(
             config.NEUTRON_L3_SERVICE, nodes=agent_node)
         agent_steps.check_router_rescheduled(
             router=router,
             old_l3_agent=agent,
-            timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
     with server_steps.get_server_ssh(
             server, proxy_cmd=proxy_cmd) as server_ssh:
@@ -574,7 +574,7 @@ def test_check_ban_l3_agents_and_clear_one(
         service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API]))
     for _ in range(l3_agents_count - 1):
         l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
-        nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+        nodes_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
         os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE,
                                           nodes=nodes_with_l3)
         agent_steps.check_alive([l3_agent],
@@ -583,11 +583,11 @@ def test_check_ban_l3_agents_and_clear_one(
         agent_steps.check_router_rescheduled(
             router=router,
             old_l3_agent=l3_agent,
-            timeout=config.L3_AGENT_RESCHEDULING_TIMEOUT)
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
         banned_agents.append(l3_agent)
 
     l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
-    last_node_with_l3 = os_faults_steps.get_nodes_for_l3_agents([l3_agent])
+    last_node_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
     os_faults_steps.terminate_service(service_name=config.NEUTRON_L3_SERVICE,
                                       nodes=last_node_with_l3)
     agent_steps.check_alive(agents=[l3_agent],
@@ -596,7 +596,7 @@ def test_check_ban_l3_agents_and_clear_one(
     banned_agents.append(l3_agent)
 
     agent_to_clear = banned_agents[agent_number]
-    nodes_with_l3 = os_faults_steps.get_nodes_for_l3_agents([agent_to_clear])
+    nodes_with_l3 = os_faults_steps.get_nodes_for_agents([agent_to_clear])
     os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, nodes_with_l3)
     agent_steps.check_alive([agent_to_clear],
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
