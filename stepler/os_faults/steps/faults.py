@@ -30,6 +30,7 @@ from stepler import base
 from stepler import config
 from stepler.third_party import network_checks
 from stepler.third_party import steps_checker
+from stepler.third_party import tcpdump
 from stepler.third_party import utils
 from stepler.third_party import waiter
 
@@ -979,3 +980,130 @@ class OsFaultsSteps(base.BaseSteps):
         """
         cmd = "iptables -D OUTPUT -p tcp --dport {0} -j DROP".format(port)
         self.execute_cmd(nodes, cmd, check=check)
+
+    @steps_checker.step
+    def start_tcpdump(self, nodes, args='', prefix=None, check=True):
+        """Step to start tcpdump on nodes in backgroud.
+
+        Args:
+            nodes (NodeCollection): nodes to start tcpdump on
+            args (str, optional): additional ``tcpdump`` args
+            prefix (str, optional): prefix for command. It can be useful for
+                executing tcpdump on ip namespace.
+            check (bool, optional): flag whether to check this step or not
+
+        Returns:
+            str: base path for cap, pid, stdout, stderr files for tcpdump
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed
+        """
+        base_path = tempfile.mktemp()
+        cmd = ("( ( nohup {prefix} tcpdump -w{base_path}.cap {args} "
+               "<&- >{base_path}.stdout 2>{base_path}.stderr ) & "
+               "echo $! > {base_path}.pid )").format(
+                   args=args, base_path=base_path, prefix=prefix or '')
+        self.execute_cmd(nodes, cmd, check=check)
+        if check:
+            # Check that commands is running
+            cmd = "ps -eo pid | grep $(cat {}.pid)".format(base_path)
+            self.execute_cmd(nodes, cmd)
+            # Check that pcap file is appear
+            cmd = 'while [ ! -f {}.cap ]; do sleep 1; done'.format(base_path)
+            self.execute_cmd(nodes, cmd)
+            # tcpdump need some more time to start packets capturing
+            time.sleep(2)
+
+        return base_path
+
+    @steps_checker.step
+    def stop_tcpdump(self, nodes, base_path, check=True):
+        """Step stop background tcpdump.
+
+        Args:
+            nodes (NodeCollection): nodes to stop tcpdump on
+            base_path (str): base path for cap, pid, stdout, stderr files for
+                tcpdump
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed
+        """
+        # Wait some time to allow tcpdump to process all packets
+        time.sleep(2)
+
+        # Send SIGINT
+        cmd = 'kill -s INT $(cat {}.pid) || true'.format(base_path)
+        self.execute_cmd(nodes, cmd, check=check)
+
+        # Wait until process to be stopped
+        cmd = ('while kill -0 $(cat {}.pid) 2> /dev/null; '
+               'do sleep 1; done;').format(base_path)
+
+    @steps_checker.step
+    def download_tcpdump_results(self, nodes, base_path, check=True):
+        """Step to copy tcpdump cap files to local server.
+
+        Args:
+            nodes (NodeCollection): nodes to start tcpdump
+            base_path (str): base path for cap, pid, stdout, stderr files for
+                tcpdump
+            check (bool, optional): flag whether to check this step or not
+
+        Returns:
+            dict: node fqdn -> local cap file path
+
+        Raises:
+            ValueError: if any of local cap files are not a regular file
+            AssertionError|AnsibleExecutionException: if command execution
+                failed
+        """
+        dest_dir = tempfile.mkdtemp()
+        task = {
+            'fetch': {
+                'src': base_path + '.cap',
+                'dest': dest_dir,
+            }
+        }
+        nodes.run_task(task)
+
+        # Clear tcpdump results on nodes
+        cmd = "rm {}*".format(base_path)
+        self.execute_cmd(nodes, cmd)
+
+        cap_files = {}
+        for node in nodes:
+            path = os.path.join(dest_dir, node.ip)
+            cap_files[node.fqdn] = path + base_path + '.cap'
+
+        if check:
+            for path in cap_files.values():
+                if not os.path.isfile(path):
+                    raise ValueError('{!r} is not a regular file'.format(path))
+                file_stat = os.stat(path)
+                assert_that(file_stat.st_size, is_not(0))
+
+        return cap_files
+
+    @steps_checker.step
+    def check_last_pings_replies_ts(self, file1, matcher, file2):
+        """Compare last ICMP echo response timestamp from 2 files.
+
+        Args:
+            file1 (str): path to 1'st file
+            matcher (obj): hamcrest matcher
+            file2 (str): path to 2'nd file
+
+        Raises:
+            AssertionError: if check will failed
+        """
+        with open(file1) as f:
+            packets = tcpdump.parse_pcap(f, proto='icmp')
+            ts_1 = tcpdump.get_last_ping_reply_ts(packets)
+        with open(file2) as f:
+            packets = tcpdump.parse_pcap(f, proto='icmp')
+            ts_2 = tcpdump.get_last_ping_reply_ts(packets)
+
+        assert_that(ts_1, matcher(ts_2))

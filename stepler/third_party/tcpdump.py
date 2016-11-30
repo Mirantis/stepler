@@ -31,7 +31,17 @@ _ip_protocols = {
 }
 
 
-def _filter_ip_packets(content, proto):
+def parse_pcap(content, proto=None):
+    """Parse pcap file and yields pairs of timestamp and ip packets.
+
+    Args:
+        content (obj): file-like object
+        proto (str, optional): protocol name to filter packets. By default
+            yields all packets.
+
+    Yields:
+        tuple: timestamp and ip packet
+    """
     if proto:
         proto = _ip_protocols[proto]
     for ts, pkt in dpkt.pcap.Reader(content):
@@ -90,7 +100,7 @@ def tcpdump(remote, args='', prefix=None, proto=None):
         remote.execute('while kill -0 {pid} 2> /dev/null; '
                        'do sleep 1; done;'.format(pid=pid))
         with remote.open(pcap_file) as f:
-            result.extend(_filter_ip_packets(f, proto))
+            result.extend(parse_pcap(f, proto))
         remote.execute('rm {}'.format(pcap_file))
 
 
