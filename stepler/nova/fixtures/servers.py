@@ -34,6 +34,7 @@ __all__ = [
     'get_ssh_proxy_cmd',
     'server',
     'server_steps',
+    'servers_to_evacuate',
     'live_migration_server',
     'live_migration_servers',
     'live_migration_servers_with_volumes',
@@ -502,3 +503,80 @@ def live_migration_server(request,
         timeout=config.USERDATA_EXECUTING_TIMEOUT)
     server_steps.attach_floating_ip(server, nova_floating_ip)
     return server
+
+
+@pytest.fixture
+def servers_to_evacuate(request,
+                        cirros_image,
+                        security_group,
+                        flavor,
+                        net_subnet_router,
+                        keypair,
+                        hypervisor_steps,
+                        volume_steps,
+                        server_steps):
+    """Fixture to create servers for nova evacuate tests.
+
+    This fixture creates amount of servers defined in config file and
+    schedules them against dedicated compute node. It can boot servers from
+    cirros image or cirros-based volume with parametrization.
+    Default is boot from image.
+
+    All created resources will be deleted after test.
+
+    Example:
+        @pytest.mark.parametrize('servers_to_evacuate', [
+                {'boot_from_volume': True},
+                {'boot_from_volume': False}
+            ], indirect=True)
+        def test_foo(servers_to_evacuate):
+            pass
+
+    Args:
+        request (obj): pytest SubRequest instance
+        keypair (obj): keypair
+        flavor (obj): flavor
+        security_group (obj): security group
+        cirros_image (obj): cirros image
+        net_subnet_router (tuple): neutron network, subnet and router
+        hypervisor_steps (obj): instantiated hypervisor steps
+        volume_steps (obj): instantiated volume steps
+        server_steps (obj): instantiated server steps
+
+    Returns:
+        list: nova servers
+    """
+    network, _, _ = net_subnet_router
+
+    params = getattr(request, "param", {})
+    boot_from_volume = params.get('boot_from_volume', False)
+
+    hypervisor = hypervisor_steps.get_hypervisors()[0]
+
+    kwargs_list = []
+    if boot_from_volume:
+        volume_names = utils.generate_ids(count=config.EVACUATE_SERVERS_COUNT)
+        volumes = volume_steps.create_volumes(size=5,
+                                              image=cirros_image,
+                                              names=volume_names)
+        for volume in volumes:
+            block_device_mapping = {'vda': volume.id}
+            kwargs_list.append(
+                dict(
+                    image=None, block_device_mapping=block_device_mapping))
+    else:
+        kwargs_list = [dict(
+            image=cirros_image)] * config.EVACUATE_SERVERS_COUNT
+
+    servers = []
+    for kwargs in kwargs_list:
+        server = server_steps.create_servers(
+            flavor=flavor,
+            keypair=keypair,
+            networks=[network],
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME,
+            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            **kwargs)[0]
+        servers.append(server)
+    return servers
