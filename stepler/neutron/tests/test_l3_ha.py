@@ -17,6 +17,7 @@ Neutron L3 HA tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import greater_than
 import pytest
 
 from stepler import config
@@ -539,3 +540,79 @@ def test_ban_l3_agent_for_many_routers(
                 router_1,
                 old_l3_agent=agent,
                 timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('9b17953d-888b-4e46-8d09-85c7e41f07e9')
+def test_ping_routing_during_l3_agent_ban(
+        router,
+        server,
+        nova_floating_ip,
+        server_steps,
+        port_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Check ping from server with tcpdump during banning agent.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create server
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Attach floating IP to server
+    #. Get L3 agent with ACTIVE ha_state for router
+    #. Start tcpdump on each controller
+    #. Start ping server's floating ip
+    #. Ban ACTIVE L3 agent
+    #. Wait for another L3 agent becomes ACTIVE
+    #. Check that icmp traffic is disappeared on old active l3 agent host and
+        appeared on new active l3 agent host
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete network, subnet, router
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    old_agent = agent_steps.get_l3_agents_for_router(
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+    old_agent_node = os_faults_steps.get_nodes_for_agents([old_agent])
+    router_port = port_steps.get_port(
+        device_owner=config.PORT_DEVICE_OWNER_ROUTER_GATEWAY,
+        device_id=router['id'])
+
+    prefix = 'ip net e qrouter-{}'.format(router['id'])
+    args = "-i qg-{} icmp".format(router_port['id'][:11])
+
+    agent_nodes = os_faults_steps.get_nodes(
+        service_names=[config.NEUTRON_L3_SERVICE])
+    tcpdump_files = os_faults_steps.start_tcpdump(
+        agent_nodes, args=args, prefix=prefix)
+    with server_steps.check_ping_loss_context(
+            nova_floating_ip.ip,
+            max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS):
+        os_faults_steps.terminate_service(
+            config.NEUTRON_L3_SERVICE, nodes=old_agent_node)
+        agent_steps.check_l3_ha_router_rescheduled(
+            router,
+            old_l3_agent=old_agent,
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    os_faults_steps.stop_tcpdump(agent_nodes, tcpdump_files)
+    pcap_files = os_faults_steps.download_tcpdump_results(agent_nodes,
+                                                          tcpdump_files)
+
+    new_agent = agent_steps.get_l3_agents_for_router(
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+    os_faults_steps.check_last_pings_replies_timestamp(
+        pcap_files[new_agent['host']], greater_than,
+        pcap_files[old_agent['host']])
