@@ -153,6 +153,15 @@ class Predicates(object):
 
     @property
     @_store_call
+    def l3_agent_nodes_with_snat_count(self):
+        """Get count of L3 agent nodes with SNAT."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(
+            os_faults_steps.get_nodes_with_services(
+                service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API]))
+
+    @property
+    @_store_call
     def ceph_enabled(self):
         """Define whether CEPH enabled."""
 
