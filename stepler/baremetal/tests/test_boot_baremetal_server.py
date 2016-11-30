@@ -244,11 +244,12 @@ def test_stop_start_server_on_baremetal_node(keypair,
 
 @pytest.mark.idempotent_id('fce98286-30c1-420d-8d35-7660907ec1ff')
 def test_create_server_on_baremetal_node(keypair,
-                                         baremetal_ubuntu_image,
+                                         glance_steps,
                                          baremetal_flavor,
                                          baremetal_network,
                                          nova_floating_ip,
                                          server_steps):
+    # baremetal_ubuntu_image,
     """**Scenario:** Launch server on baremetal node.
 
     **Setup:**
@@ -273,10 +274,54 @@ def test_create_server_on_baremetal_node(keypair,
     #. Delete flavor
     #. Delete keypair
     """
-    server = server_steps.create_servers(image=baremetal_ubuntu_image,
+    bare_img = glance_steps.get_images(name_prefix='virtual_trusty_ext4')
+
+    server = server_steps.create_servers(image=bare_img[0],
                                          flavor=baremetal_flavor,
                                          networks=[baremetal_network],
                                          keypair=keypair,
                                          username=config.UBUNTU_USERNAME)[0]
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.get_server_ssh(server)
+
+
+@pytest.mark.idempotent_id('3c48b915-1e2e-4800-af8b-3d249610dd50')
+def test_create_server_on_baremetal_node_in_maintenance_state(
+        ironic_node_steps,
+        baremetal_network,
+        baremetal_ubuntu_image,
+        baremetal_flavor,
+        server_steps):
+    """**Scenario:** Launch server on baremetal node in maintenance state.
+
+    **Setup:**
+
+    #. Create baremetal flavor
+    #. Upload baremetal ubuntu image
+
+    **Steps:**
+
+    #. Get Ironic nodes
+    #. Set all Ironic nodes into maintenance mode
+    #. Create and boot server
+    #. Check that server status is error
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete image
+    #. Delete flavor
+    """
+    ironic_nodes = ironic_node_steps.get_ironic_nodes()
+    ironic_node_steps.set_ironic_nodes_maintenance(nodes=ironic_nodes,
+                                                   state='on',
+                                                   check=False)
+
+    server = server_steps.create_servers(image=baremetal_ubuntu_image,
+                                         networks=[baremetal_network],
+                                         flavor=baremetal_flavor,
+                                         username=config.UBUNTU_USERNAME,
+                                         check=False)[0]
+    server_steps.check_server_status(server=server,
+                                     expected_statuses=['error'],
+                                     timeout=300)
