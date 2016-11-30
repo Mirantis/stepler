@@ -125,6 +125,7 @@ STATUS_QUEUED = 'queued'
 STATUS_REBOOT = 'reboot'
 STATUS_HARD_REBOOT = 'hard_reboot'
 STATUS_SHUTOFF = 'shutoff'
+STATUS_ERROR = 'error'
 
 # TIMEOUTS (in seconds)
 # TODO(kromanenko): Investigate less intensive good polling interval value.
