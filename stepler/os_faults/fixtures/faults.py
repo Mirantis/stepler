@@ -31,6 +31,7 @@ __all__ = [
     'patch_ini_file_and_restart_services',
     'execute_command_with_rollback',
     'nova_api_node',
+    'ironic_api_node',
 ]
 
 
@@ -132,3 +133,16 @@ def nova_api_node(os_faults_steps):
         obj: node with nova-api service
     """
     return os_faults_steps.get_nodes(service_names=[config.NOVA_API]).pick()
+
+
+@pytest.fixture
+def ironic_api_node(os_faults_steps):
+    """Function fixture to get node with ironic-api service.
+
+    Args:
+        os_faults_steps (object): instantiated os_faults steps
+
+    Returns:
+        obj: node with ironic-api service
+    """
+    return os_faults_steps.get_nodes(service_names=[config.IRONIC_API]).pick()

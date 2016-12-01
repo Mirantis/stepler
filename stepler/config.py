@@ -96,6 +96,8 @@ CINDER_VOLUME = 'cinder-volume'
 KEYSTONE = 'keystone'
 NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
+IRONIC_API = 'ironic-api'
+IRONIC_CONDUCTOR = 'ironic-conductor'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
