@@ -251,6 +251,68 @@ def test_north_south_connectivity_after_ban_clear_l3_on_compute(
             timeout=config.PING_CALL_TIMEOUT)
 
 
+@pytest.mark.destructive
+@pytest.mark.idempotent_id('08192558-e632-410f-bded-9d124dcce52c')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_north_south_connectivity_after_reset_compute(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        nova_floating_ip,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check North-South connectivity after reset compute.
+
+    This test checks connectivity to North-South-Routing reset of compute
+       where vm hosted.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check that ping from server to 8.8.8.8 is successful
+    #. Destroy compute with server
+    #. Start compute with server
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+    server_compute = os_faults_steps.get_node(
+        fqdns=[getattr(server, config.SERVER_ATTR_HOST)])
+    os_faults_steps.poweroff_nodes(server_compute)
+    os_faults_steps.poweron_nodes(server_compute)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+
 @pytest.mark.idempotent_id('db7e0ff4-d76c-469e-82a1-478c1c0b9a8f')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 @pytest.mark.parametrize('neutron_2_servers_different_networks',
@@ -307,6 +369,146 @@ def test_east_west_connectivity_after_ban_clear_l3_on_compute(
         server_steps.check_ping_for_ip(
             server_2_ip,
             server_1_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.destructive
+@pytest.mark.requires("computes_count >=2")
+@pytest.mark.idempotent_id('c3c5d5ef-00b9-4054-8ac0-3605abfa7d23')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+@pytest.mark.parametrize('neutron_2_servers_different_networks',
+                         ['different_hosts'], indirect=True)
+def test_east_west_connectivity_after_reset_computes(
+        neutron_2_servers_different_networks,
+        nova_floating_ip,
+        get_ssh_proxy_cmd,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check east-west connectivity after reset computes.
+
+    This test checks east-west connectivity between instances on different
+        hosts after reset of computes.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and DVR
+    #. Create server_1
+    #. Create network_2 with subnet_2
+    #. Add network_2 interface to router
+    #. Create server_2 and connect it to network_2
+
+    **Steps:**
+
+    #. Check that ping from server_1 to server_2 by internal ip is successful
+    #. Destroy computes where servers are hosted
+    #. Start computes where servers are hosted
+    #. Check that ping from server_2 to server_1 by internal ip is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnets
+    #. Delete networks
+    """
+    server_1, server_2 = neutron_2_servers_different_networks.servers
+
+    proxy_cmd = get_ssh_proxy_cmd(server_1)
+    server_2_ip = server_steps.get_fixed_ip(server_2)
+    with server_steps.get_server_ssh(
+            server_1, proxy_cmd=proxy_cmd) as server_1_ssh:
+        server_steps.check_ping_for_ip(
+            server_2_ip,
+            server_1_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    computes = os_faults_steps.get_nodes(
+        fqdns=[getattr(server_1, config.SERVER_ATTR_HOST),
+               getattr(server_2, config.SERVER_ATTR_HOST)])
+    os_faults_steps.poweroff_nodes(computes)
+    os_faults_steps.poweron_nodes(computes)
+
+    proxy_cmd = get_ssh_proxy_cmd(server_2)
+    server_1_ip = server_steps.get_fixed_ip(server_1)
+    with server_steps.get_server_ssh(
+            server_2, proxy_cmd=proxy_cmd) as server_2_ssh:
+        server_steps.check_ping_for_ip(
+            server_1_ip,
+            server_2_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.destructive
+@pytest.mark.requires("computes_count >=2 and controllers_count >=2")
+@pytest.mark.idempotent_id('99f40662-2f62-4b75-bf82-52f3f0180558')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+@pytest.mark.parametrize('neutron_2_servers_different_networks',
+                         ['different_hosts'], indirect=True)
+def test_east_west_connectivity_after_destroy_controller(
+        neutron_2_servers_different_networks,
+        nova_floating_ip,
+        get_ssh_proxy_cmd,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check east-west connectivity after destroy controller.
+
+    This test checks east-west connectivity between instances on different
+        hosts after destroy of controller.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and DVR
+    #. Create server_1
+    #. Create network_2 with subnet_2
+    #. Add network_2 interface to router
+    #. Create server_2 and connect it to network_2
+
+    **Steps:**
+
+    #. Check that ping from server_1 to server_2 by internal ip is successful
+    #. Destroy any controller
+    #. Check that ping from server_2 to server_1 by internal ip is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnets
+    #. Delete networks
+    """
+    server_1, server_2 = neutron_2_servers_different_networks.servers
+
+    proxy_cmd = get_ssh_proxy_cmd(server_1)
+    server_2_ip = server_steps.get_fixed_ip(server_2)
+    with server_steps.get_server_ssh(
+            server_1, proxy_cmd=proxy_cmd) as server_1_ssh:
+        server_steps.check_ping_for_ip(
+            server_2_ip,
+            server_1_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    controller = os_faults_steps.get_node(service_names=[config.NOVA_API])
+    os_faults_steps.poweroff_nodes(controller)
+
+    proxy_cmd = get_ssh_proxy_cmd(server_2)
+    server_1_ip = server_steps.get_fixed_ip(server_1)
+    with server_steps.get_server_ssh(
+            server_2, proxy_cmd=proxy_cmd) as server_2_ssh:
+        server_steps.check_ping_for_ip(
+            server_1_ip,
+            server_2_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
