@@ -920,10 +920,10 @@ class OsFaultsSteps(base.BaseSteps):
 
     @steps_checker.step
     def poweroff_nodes(self, nodes, check=True):
-        """Step to poweroff nodes.
+        """Step to power off nodes.
 
         Args:
-            nodes (obj): NodeCollection to poweroff
+            nodes (obj): NodeCollection to power off
             check (bool, optional): flag whether to check this step or not
 
         Raises:
@@ -933,6 +933,23 @@ class OsFaultsSteps(base.BaseSteps):
         nodes.poweroff()
         if check:
             self.check_nodes_tcp_availability(nodes, must_available=False)
+
+    @steps_checker.step
+    def poweron_nodes(self, nodes, check=True):
+        """Step to power on nodes.
+
+        Args:
+            nodes (obj): NodeCollection to power on
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            TimeoutExpired: if nodes are not available on 22 TCP port after
+                power on.
+        """
+        nodes.poweron()
+        if check:
+            self.check_nodes_tcp_availability(
+                nodes, timeout=config.NODE_REBOOT_TIMEOUT)
 
     @steps_checker.step
     def reset_nodes(self, nodes, check=True, wait_reboot=True):
