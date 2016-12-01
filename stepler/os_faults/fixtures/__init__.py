@@ -25,4 +25,5 @@ __all__ = sorted([  # sort for documentation
     'patch_ini_file_and_restart_services',
     'execute_command_with_rollback',
     'nova_api_node',
+    'ironic_api_node',
 ])
