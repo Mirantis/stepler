@@ -1107,3 +1107,21 @@ class OsFaultsSteps(base.BaseSteps):
             ts_2 = tcpdump.get_last_ping_reply_ts(packets)
 
         assert_that(ts_1, matcher(ts_2))
+
+    @steps_checker.step
+    def move_ha_router_interface_to_down_state(self, node, router, check=True):
+        """Step to move router's HA interface to down state.
+
+        Args:
+            node (NodeCollection): node to perform operation on
+            router (dict): neutron router
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        ns_cmd = "ip net e qrouter-{}".format(router['id'])
+        cmd = ("{ns_cmd} ip link set dev "
+               "$({ns_cmd} ip -o l | grep -oE 'ha-[^:]+') "
+               "down").format(ns_cmd=ns_cmd)
+        self.execute_cmd(node, cmd, check=check)

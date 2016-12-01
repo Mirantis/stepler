@@ -616,3 +616,58 @@ def test_ping_routing_during_l3_agent_ban(
     os_faults_steps.check_last_pings_replies_timestamp(
         pcap_files[new_agent['host']], greater_than,
         pcap_files[old_agent['host']])
+
+
+@pytest.mark.idempotent_id('ed21b831-dd74-4a4e-8e6b-f22e5db094f0')
+def test_move_router_ha_interface_to_down_state(
+        router,
+        server,
+        nova_floating_ip,
+        server_steps,
+        port_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Move router HA interface to down state.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create server
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Attach floating IP to server
+    #. Get L3 agent with ACTIVE ha_state for router
+    #. Start ping server's floating ip
+    #. Move router HA interface to down state
+    #. Wait for another L3 agent becomes ACTIVE
+    #. Check that ping loss is not more than 10 packets
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete network, subnet, router
+    #. Delete floating IP
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    agent = agent_steps.get_l3_agents_for_router(
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+    agent_node = os_faults_steps.get_nodes_for_agents([agent])
+
+    with server_steps.check_ping_loss_context(
+            nova_floating_ip.ip,
+            max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS):
+        os_faults_steps.move_ha_router_interface_to_down_state(
+            agent_node, router)
+        agent_steps.check_l3_ha_router_rescheduled(
+            router,
+            old_l3_agent=agent,
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
