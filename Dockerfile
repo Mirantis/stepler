@@ -24,11 +24,11 @@ rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
 
-COPY requirements.txt /opt/app/
-COPY c-requirements.txt /opt/app/
-RUN pip install -r requirements.txt -r c-requirements.txt
-
 COPY . /opt/app/
+
+ENV OSLO_PACKAGE_VERSION=1.8
+
+RUN pip install -e .
 
 ENV OS_USERNAME=admin
 ENV OS_PASSWORD=admin
