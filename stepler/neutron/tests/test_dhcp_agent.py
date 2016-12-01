@@ -17,6 +17,8 @@ Neutron DHCP agent tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import signal
+
 import pytest
 
 from stepler import config
@@ -220,4 +222,60 @@ def test_ban_dhcp_agent_many_times(network,
     agent_steps.check_alive([agent_to_ban],
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     agent_steps.check_agents_count_for_net(network, expected_count=2)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+
+@pytest.mark.idempotent_id('a771c0e1-58c0-4b44-8fe2-a3d557504751')
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+def test_kill_check_dhcp_agents(network,
+                                nova_floating_ip,
+                                server,
+                                server_steps,
+                                os_faults_steps,
+                                agent_steps):
+    """**Scenario:** Kill process and check dhcp-agents.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Get node with DHCP agent for network
+    #. Kill dhcp-agent process
+    #. Wait and check that dhcp agent has status active
+    #. Check that network is on the health dhcp-agents
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.check_dhcp_on_cirros_server(server)
+    dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
+    pid = os_faults_steps.get_process_pid(nodes_with_dhcp,
+                                          config.NEUTRON_DHCP_SERVICE)
+    os_faults_steps.send_signal_to_process(nodes_with_dhcp,
+                                           pid=pid,
+                                           signal=signal.SIGKILL)
+    agent_steps.check_alive([dhcp_agent],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    agent_steps.check_agents_count_for_net(network, expected_count=2)
+    dhcp_agents = agent_steps.get_dhcp_agents_for_net(network)
+    agent_steps.check_alive(dhcp_agents,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
