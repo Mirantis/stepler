@@ -105,6 +105,33 @@ class AgentSteps(base.BaseSteps):
         return dhcp_agents
 
     @steps_checker.step
+    def get_dhcp_agents_not_hosting_net(self, network, check=True):
+        """Step to retrieve DHCP agents which are not hosting network.
+
+        Args:
+            network (dict): network to get DHCP agents which can't be used
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            list: list of DHCP agents which are not hosting network
+
+        Raises:
+            AssertionError: if list of agents is empty
+        """
+        all_dhcp_agents = self.get_agents(binary=config.NEUTRON_DHCP_SERVICE)
+
+        dhcp_agents = self._client.get_dhcp_agents_for_network(network['id'])
+        dhcp_agents_ids = [agent['id'] for agent in dhcp_agents]
+
+        free_agents = [agent for agent in all_dhcp_agents
+                       if agent['id'] not in dhcp_agents_ids]
+
+        if check:
+            assert_that(free_agents, is_not(empty()))
+
+        return free_agents
+
+    @steps_checker.step
     def check_agents_count_for_net(self, network, expected_count, timeout=0):
         """Step to check DHCP agents count for network.
 

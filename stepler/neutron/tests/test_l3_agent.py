@@ -266,6 +266,7 @@ def test_ban_all_l3_agents_restart_one(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
+@pytest.mark.requires("l3_agent_nodes_count >= 1")
 @pytest.mark.idempotent_id('e4338068-7a16-4db9-9645-68b074c91f91')
 @pytest.mark.parametrize('neutron_2_networks',
                          ['different_routers'],
@@ -371,6 +372,7 @@ def test_ban_l3_agent_many_times(cirros_image,
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
+@pytest.mark.requires("l3_agent_nodes_count >= 1")
 @pytest.mark.idempotent_id('11660a80-2510-419d-a9eb-471e4ff7e20c')
 @pytest.mark.parametrize('neutron_2_networks',
                          ['different_routers'],
@@ -458,6 +460,7 @@ def test_kill_l3_agent_process(cirros_image,
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
+@pytest.mark.requires("l3_agent_nodes_count >= 1")
 @pytest.mark.idempotent_id('6d7ae90c-d6a1-4c90-b0d3-70a1fd4bafd7')
 @pytest.mark.parametrize('neutron_2_networks',
                          ['different_routers'],

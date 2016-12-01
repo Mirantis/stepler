@@ -90,7 +90,7 @@ def test_ban_some_dhcp_agents(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
 
-@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.requires("dhcp_agent_nodes_count >= 2")
 @pytest.mark.idempotent_id('5fea925f-e7a2-4524-80c2-c4f632c304c9')
 def test_dhcp_agent_after_drop_rabbit_port(network,
                                            nova_floating_ip,
@@ -152,3 +152,72 @@ def test_dhcp_agent_after_drop_rabbit_port(network,
                                              config.RABBIT_PORT)
     agent_steps.check_alive(all_dhcp_agents,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('09a8280b-38b2-4414-bc88-665a3843ee6c')
+def test_ban_dhcp_agent_many_times(network,
+                                   nova_floating_ip,
+                                   server,
+                                   server_steps,
+                                   os_faults_steps,
+                                   agent_steps):
+    """**Scenario:** Ban dhcp-agent many times.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Get nodes with DHCP agents not hosting network
+    #. Ban all DHCP agents not hosting network
+    #. Wait for banned DHCP agents becoming dead
+    #. Get node with DHCP agent for network
+    #. Ban DHCP agent for network with pcs
+    #. Clear DHCP agent for network with pcs
+    #. Repeat last 2 steps 40 times
+    #. Check that neutron agent from the previous step is alive
+    #. Check that network is on 2 health DHCP-agents
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    agent_to_ban = agent_steps.get_dhcp_agents_for_net(network)[0]
+    free_agents = agent_steps.get_dhcp_agents_not_hosting_net(network)
+
+    nodes_with_free_agents = os_faults_steps.get_nodes_for_agents(free_agents)
+    os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=nodes_with_free_agents)
+    agent_steps.check_alive(free_agents,
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    node_with_dhcp = os_faults_steps.get_nodes_for_agents([agent_to_ban])
+    for _ in range(40):
+        os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                          nodes=node_with_dhcp)
+        os_faults_steps.start_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=node_with_dhcp)
+
+    agent_steps.check_alive([agent_to_ban],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    agent_steps.check_agents_count_for_net(network, expected_count=2)
+    server_steps.check_dhcp_on_cirros_server(server)
