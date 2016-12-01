@@ -28,7 +28,7 @@ COPY . /opt/app/
 
 ENV OSLO_PACKAGE_VERSION=1.8
 
-RUN pip install -e .
+RUN pip install -e .[libvirt]
 
 ENV OS_USERNAME=admin
 ENV OS_PASSWORD=admin
