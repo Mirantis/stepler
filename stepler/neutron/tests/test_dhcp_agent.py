@@ -88,3 +88,67 @@ def test_ban_some_dhcp_agents(network,
 
     agent_steps.get_dhcp_agents_for_net(network)
     server_steps.check_dhcp_on_cirros_server(server)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('5fea925f-e7a2-4524-80c2-c4f632c304c9')
+def test_dhcp_agent_after_drop_rabbit_port(network,
+                                           nova_floating_ip,
+                                           server,
+                                           server_steps,
+                                           os_faults_steps,
+                                           agent_steps):
+    """**Scenario:** Drop rabbit port and check dhcp-agent work.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Get node with DHCP agent for network
+    #. Drop rabbit's port 5673 using iptables for node from the previous step
+    #. Wait for DHCP agent becoming dead
+    #. Check that dhcp-agent does not in dhcp-agents list for network
+    #. Check that network is on 2 health DHCP-agents
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Remove rule for dropping port using iptables
+    #. Check that all neutron agents are alive
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    all_dhcp_agents = agent_steps.get_agents(
+        binary=config.NEUTRON_DHCP_SERVICE)
+
+    dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
+    os_faults_steps.add_rule_to_drop_port(nodes_with_dhcp, config.RABBIT_PORT)
+    agent_steps.check_alive([dhcp_agent],
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    agent_steps.check_network_rescheduled(
+        network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    agent_steps.check_agents_count_for_net(network, expected_count=2)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    os_faults_steps.remove_rule_to_drop_port(nodes_with_dhcp,
+                                             config.RABBIT_PORT)
+    agent_steps.check_alive(all_dhcp_agents,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)

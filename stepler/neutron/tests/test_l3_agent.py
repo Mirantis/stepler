@@ -508,6 +508,8 @@ def test_l3_agent_after_drop_rabbit_port(
         ip_types=(config.FLOATING_IP,),
         timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
+    all_l3_agents = agent_steps.get_agents(binary=config.NEUTRON_L3_SERVICE)
+
     l3_agent = agent_steps.get_l3_agents_for_router(router_1)[0]
     nodes_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
     os_faults_steps.add_rule_to_drop_port(nodes_with_l3, config.RABBIT_PORT)
@@ -525,5 +527,5 @@ def test_l3_agent_after_drop_rabbit_port(
         timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     os_faults_steps.remove_rule_to_drop_port(nodes_with_l3, config.RABBIT_PORT)
-    agent_steps.check_alive([l3_agent],
+    agent_steps.check_alive(all_l3_agents,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
