@@ -135,6 +135,13 @@ class Predicates(object):
 
     @property
     @_store_call
+    def controllers_count(self):
+        """Returns controllers count."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(os_faults_steps.get_nodes(service_names=[config.NOVA_API]))
+
+    @property
+    @_store_call
     def dhcp_agent_nodes_count(self):
         """Get DHCP agents nodes count."""
         os_faults_steps = self._get_fixture('os_faults_steps')
