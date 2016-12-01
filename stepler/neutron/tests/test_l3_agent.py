@@ -532,3 +532,54 @@ def test_l3_agent_after_drop_rabbit_port(
     os_faults_steps.remove_rule_to_drop_port(nodes_with_l3, config.RABBIT_PORT)
     agent_steps.check_alive(all_l3_agents,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('a771c0e1-58c0-4b44-8fe2-a3d557504751')
+def test_kill_check_dhcp_agents(network,
+                                nova_floating_ip,
+                                server,
+                                server_steps,
+                                os_faults_steps,
+                                agent_steps):
+    """**Scenario:** Ban dhcp-agent and check cirros-dhcpc command on server.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Get node with DHCP agent for network
+    #. Find dhcp-agent process
+    #. Kill dhcp-agent process
+    #. Check that network is on the health dhcp-agents from some time
+    (~30-60 seconds)
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.check_dhcp_on_cirros_server(server)
+    dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
+    pid = os_faults_steps.get_process_pid(nodes_with_dhcp,
+                                          config.NEUTRON_DHCP_SERVICE)
+    os_faults_steps.send_signal_to_process(nodes_with_dhcp,
+                                           pid=pid,
+                                           signal=signal.SIGKILL)
+    agent_steps.check_alive([dhcp_agent],
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
