@@ -937,11 +937,9 @@ class OsFaultsSteps(base.BaseSteps):
     @steps_checker.step
     def poweron_nodes(self, nodes, check=True):
         """Step to power on nodes.
-
         Args:
             nodes (obj): NodeCollection to power on
             check (bool, optional): flag whether to check this step or not
-
         Raises:
             TimeoutExpired: if nodes are not available on 22 TCP port after
                 power on.
