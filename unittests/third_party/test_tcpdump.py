@@ -77,37 +77,43 @@ def gateway_ip(container_data):
 
 def test_icmp_success(remote, gateway_ip):
     """Test successful ping - it should return request and reply packets."""
-    with tcpdump.tcpdump(remote, args='', proto='icmp') as result:
+    with tcpdump.tcpdump(remote) as pcap:
         remote.check_call('ping -c1 {}'.format(gateway_ip))
-    assert len(result) == 2
+    packets = tcpdump.read_pcap(pcap, lfilter=tcpdump.filter_icmp)
+    assert len(list(packets)) == 2
 
 
 def test_icmp_wrong_ip(remote):
     """Test wrong ping - it should return request packet only."""
-    with tcpdump.tcpdump(remote, args='', proto='icmp') as result:
+    with tcpdump.tcpdump(remote) as pcap:
         remote.check_call('! ping -c1 192.168.254.254')
-    assert len(result) == 1
+    packets = tcpdump.read_pcap(pcap, lfilter=tcpdump.filter_icmp)
+    assert len(list(packets)) == 1
 
 
 def test_without_proto(remote, gateway_ip):
     """Test capturing without protocol filtering."""
-    with tcpdump.tcpdump(remote, args='') as result:
+    with tcpdump.tcpdump(remote) as pcap:
         remote.check_call('ping -c1 {}'.format(gateway_ip))
-    assert len(result) >= 2
+    packets = tcpdump.read_pcap(pcap)
+    assert len(list(packets)) > 2
 
 
 def test_get_last_ping_reply_ts(remote, gateway_ip):
     """Test extracting last retrieved ICMP reply timestamp."""
-    with tcpdump.tcpdump(remote, args='', proto='icmp') as result:
+    with tcpdump.tcpdump(
+            remote, args='', lfilter=tcpdump.filter_icmp) as pcap:
         remote.check_call('ping -c2 {}'.format(gateway_ip))
-    ts = tcpdump.get_last_ping_reply_ts(result)
-    last_ts = max(ts for ts, _ in result)
+    ts = tcpdump.get_last_ping_reply_ts(pcap)
+
+    packets = tcpdump.read_pcap(pcap, lfilter=tcpdump.filter_icmp)
+    last_ts = max(packet.time for packet in packets)
     assert ts == last_ts
 
 
 def test_get_last_ping_reply_ts_wrong_ip(remote):
     """Negative test extracting last retrieved ICMP reply timestamp."""
-    with tcpdump.tcpdump(remote, args='', proto='icmp') as result:
+    with tcpdump.tcpdump(remote, args='') as result:
         remote.check_call('! ping -c2 192.168.254.254')
     ts = tcpdump.get_last_ping_reply_ts(result)
     assert ts is None

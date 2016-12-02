@@ -20,7 +20,7 @@ mock==2.0.0
 pyaml==16.9.0
 python-dateutil==2.5.3
 prettytable==0.7.2
-dpkt==1.8.8
+scapy==2.3.3
 os-faults>=0.1.7,<0.2.0
 
 # ui testing

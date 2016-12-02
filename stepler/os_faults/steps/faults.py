@@ -772,7 +772,7 @@ class OsFaultsSteps(base.BaseSteps):
             config.NEUTRON_ML2_CONFIG_PATH)
         nodes = self.get_nodes(service_names=[config.NEUTRON_OVS_SERVICE])
         result = self.execute_cmd(nodes, cmd, check=False)
-        if all(node_result.status == config.STATUS_OK
+        if any(node_result.status == config.STATUS_OK
                for node_result in result):
             return config.NETWORK_TYPE_VXLAN
         else:
@@ -1099,13 +1099,8 @@ class OsFaultsSteps(base.BaseSteps):
         Raises:
             AssertionError: if check will failed
         """
-        with open(file1) as f:
-            packets = tcpdump.parse_pcap(f, proto='icmp')
-            ts_1 = tcpdump.get_last_ping_reply_ts(packets)
-        with open(file2) as f:
-            packets = tcpdump.parse_pcap(f, proto='icmp')
-            ts_2 = tcpdump.get_last_ping_reply_ts(packets)
-
+        ts_1 = tcpdump.get_last_ping_reply_ts(file1)
+        ts_2 = tcpdump.get_last_ping_reply_ts(file2)
         assert_that(ts_1, matcher(ts_2))
 
     @steps_checker.step
@@ -1125,3 +1120,54 @@ class OsFaultsSteps(base.BaseSteps):
                "$({ns_cmd} ip -o l | grep -oE 'ha-[^:]+') "
                "down").format(ns_cmd=ns_cmd)
         self.execute_cmd(node, cmd, check=check)
+
+    @steps_checker.step
+    def ping_ip_with_router_namescape(self, node, ip, router, count=3,
+                                      check=True):
+        """Step to ping ip from node with router namespace.
+
+        Args:
+            node (NodeCollection): node to start ping on
+            ip (str): ip address to ping
+            router (dict): neutron router
+            count (int, optional): count of ping requests
+            check (bool, optional): flag whether to check this step or not
+        """
+        ns_cmd = "ip net e qrouter-{}".format(router['id'])
+        cmd = "{ns_cmd} ping -c{count} {ip}".format(
+            ns_cmd=ns_cmd, ip=ip, count=count)
+        self.execute_cmd(node, cmd, check=check)
+
+    @steps_checker.step
+    def check_vxlan_enabled(self, node):
+        """Step check that vxlan enabled on ovs on node.
+
+        Args:
+            node (NodeCollection): node to check vxlan on
+
+        Raises:
+            AssertionError: if check failed
+        """
+        cmd = "ovs-vsctl show | grep 'type: vxlan'"
+        result = self.execute_cmd(node, cmd)
+        assert_that(
+            result, only_contains(has_properties(status=config.STATUS_OK)))
+
+    @steps_checker.step
+    def check_vni_segmentation(self, pcap_files, network):
+        """Check that vni for vxlan packets equal to network segmentation_id.
+
+        Args:
+            pcap_files (dict): dict with paths to pcap files
+            network (dict): neutron network
+
+        Raises:
+            AssertionError: if check failed
+        """
+        vnis = set()
+        for path in pcap_files.values():
+            for packet in tcpdump.read_pcap(
+                    path, lfilter=tcpdump.filter_vxlan):
+                vnis.add(packet.getlayer('VXLAN').vni)
+
+        assert_that(vnis, only_contains(network['provider:segmentation_id']))

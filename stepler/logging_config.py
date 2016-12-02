@@ -55,6 +55,10 @@ config = {
             'level': logging.DEBUG,
             'handlers': ['console'],
         },
+        'scapy.runtime': {
+            'level': logging.ERROR,
+            'propagate': False,
+        },
         '': {
             'level': logging.DEBUG,
             'handlers': ['file']
