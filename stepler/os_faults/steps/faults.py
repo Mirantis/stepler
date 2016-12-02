@@ -1154,20 +1154,24 @@ class OsFaultsSteps(base.BaseSteps):
             result, only_contains(has_properties(status=config.STATUS_OK)))
 
     @steps_checker.step
-    def check_vni_segmentation(self, pcap_files, network):
+    def check_vni_segmentation(self, pcap_path, network, add_filters=None):
         """Check that vni for vxlan packets equal to network segmentation_id.
 
         Args:
-            pcap_files (dict): dict with paths to pcap files
+            pcap_path (path): path to pcap file
             network (dict): neutron network
+            add_filters (list, optional): additional filters to packets. By
+                default all vxlan packets will be filteres.
 
         Raises:
             AssertionError: if check failed
         """
+        filters = add_filters or []
+        filters.append(tcpdump.filter_vxlan)
+        lfilter = lambda x: all(filter_(x) for filter_ in filters)
         vnis = set()
-        for path in pcap_files.values():
-            for packet in tcpdump.read_pcap(
-                    path, lfilter=tcpdump.filter_vxlan):
-                vnis.add(packet.getlayer('VXLAN').vni)
+        for packet in tcpdump.read_pcap(
+                pcap_path, lfilter=lfilter):
+            vnis.add(packet.getlayer('VXLAN').vni)
 
         assert_that(vnis, only_contains(network['provider:segmentation_id']))
