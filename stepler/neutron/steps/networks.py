@@ -17,7 +17,8 @@ Network steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, has_entries  # noqa
+from hamcrest import (assert_that, empty, equal_to, has_entries,
+                      has_length, is_not)  # noqa
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -114,6 +115,25 @@ class NetworkSteps(base.BaseSteps):
         return network
 
     @steps_checker.step
+    def get_networks(self, check=True, **kwargs):
+        """Step to get networks by params in '**kwargs'.
+
+        Args:
+            check (bool, optional): flag whether to check step or not
+            **kwargs: additional arguments to pass to API
+
+        Returns:
+            list: neutron networks
+
+        Raises:
+            AssertionError: if list of networks is empty
+        """
+        networks = list(self._client.find_all(**kwargs))
+        if check:
+            assert_that(networks, is_not(empty()))
+        return networks
+
+    @steps_checker.step
     def get_network_id_by_mac(self, mac):
         """Step to get network ID by server MAC.
 
@@ -133,3 +153,17 @@ class NetworkSteps(base.BaseSteps):
             network_id)
         nodes = [node for node in result['agents'] if node['alive'] is True]
         return nodes[0]['host']
+
+    @steps_checker.step
+    def check_nets_count_for_agent(self, agent, expected_count):
+        """Step to check networks count for DHCP agent.
+
+        Args:
+            agent (dict): neutron agent dict to check status
+            expected_count (int): expected networks count for DHCP agents
+
+        Raises:
+            AssertionError: if check failed
+        """
+        networks = self._client.get_networks_for_dhcp_agent(agent['id'])
+        assert_that(networks, has_length(expected_count))

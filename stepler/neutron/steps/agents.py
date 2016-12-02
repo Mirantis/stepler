@@ -17,8 +17,8 @@ Agent steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, is_, is_in, is_not, only_contains,
-                      has_entries)  # noqa H301
+from hamcrest import (assert_that, empty, is_in, is_not, only_contains,
+                      has_entries, has_length)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -132,23 +132,18 @@ class AgentSteps(base.BaseSteps):
         return free_agents
 
     @steps_checker.step
-    def check_agents_count_for_net(self, network, expected_count, timeout=0):
+    def check_agents_count_for_net(self, network, expected_count):
         """Step to check DHCP agents count for network.
 
         Args:
             network (dict): network to check
             expected_count (int): expected DHCP agents count for network
-            timeout (int): seconds to wait a result of check
 
         Raises:
-            TimeoutExpired: if check failed after timeout
+            AssertionError: if check failed
         """
-        def _check_agents_count_for_net():
-            dhcp_agents = self.get_dhcp_agents_for_net(network)
-            return waiter.expect_that(len(dhcp_agents),
-                                      is_(expected_count))
-
-        waiter.wait(_check_agents_count_for_net, timeout_seconds=timeout)
+        dhcp_agents = self.get_dhcp_agents_for_net(network)
+        assert_that(dhcp_agents, has_length(expected_count))
 
     @steps_checker.step
     def check_network_rescheduled(self, network, old_dhcp_agent, timeout=0):
