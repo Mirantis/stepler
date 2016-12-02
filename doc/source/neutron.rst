@@ -29,3 +29,6 @@ Neutron tests
 
 .. automodule:: stepler.neutron.tests.test_l3_ha
    :members:
+
+.. automodule:: stepler.neutron.tests.test_vxlan
+   :members:
