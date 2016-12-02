@@ -251,6 +251,95 @@ def test_north_south_connectivity_after_ban_clear_l3_on_compute(
             timeout=config.PING_CALL_TIMEOUT)
 
 
+@pytest.mark.idempotent_id('1c803f4b-a47c-44c2-b321-5d53919390cb4')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_north_south_connectivity_after_primary_controller_reset(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        get_ssh_proxy_cmd,
+        nova_floating_ip,
+        agent_steps,
+        os_faults_steps,
+        router_steps,
+        server_steps):
+    """**Scenario:** Check North-South after reset primary controller.
+
+    This test checks connectivity to North-South-Routing without floating
+        after reset of primary controller with SNAT.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Check that ping from server to 8.8.8.8 is successful
+    #. Find controller with SNAT for router
+    #. Reschedule router if controller with SNAT is not primary controller
+    #. Reset primary controller
+    #. Wait for another L3 agent becomes ACTIVE
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    _, _, router = net_subnet_router
+
+    proxy_cmd = get_ssh_proxy_cmd(server)
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+    primary_controller = os_faults_steps.get_nodes_by_cmd(
+        config.FUEL_PRIMARY_CONTROLLER_CMD)
+    primary_controller_agent = agent_steps.get_agents(
+        binary=config.NEUTRON_L3_SERVICE,
+        host=primary_controller.hosts[0].fqdn)[0]
+
+    current_agent = agent_steps.get_l3_agents_for_router(router)[0]
+    current_agent_node = os_faults_steps.get_nodes_for_agents([current_agent])
+
+    if current_agent_node.hosts[0] != primary_controller.hosts[0]:
+        router_steps.remove_router_from_l3_agent(router, current_agent)
+        router_steps.add_router_to_l3_agent(router, primary_controller_agent)
+        agent_steps.check_router_rescheduled(
+            router=router,
+            old_l3_agent=current_agent,
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    os_faults_steps.poweroff_nodes(primary_controller)
+    os_faults_steps.poweron_nodes(primary_controller)
+
+    agent_steps.check_router_rescheduled(
+        router=router,
+        old_l3_agent=primary_controller_agent,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    proxy_cmd = get_ssh_proxy_cmd(server)
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+
 @pytest.mark.idempotent_id('db7e0ff4-d76c-469e-82a1-478c1c0b9a8f')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 @pytest.mark.parametrize('neutron_2_servers_different_networks',

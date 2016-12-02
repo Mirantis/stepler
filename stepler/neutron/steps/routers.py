@@ -18,7 +18,7 @@ Router steps
 # limitations under the License.
 
 from hamcrest import (assert_that, empty, equal_to,
-                      has_entries, is_not)  # noqa H301
+                      has_entries, is_in, is_not)  # noqa H301
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -230,3 +230,43 @@ class RouterSteps(base.BaseSteps):
         if expected_attr_values:
             assert_that(router_attr,
                         has_entries(**expected_attr_values))
+
+    @steps_checker.step
+    def remove_router_from_l3_agent(self, router, l3_agent, check=True):
+        """Step to remove router from L3 agent.
+
+        Args:
+            router (dict): router
+            l3_agent (dict): L3 agent
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if router is in agent routers list
+        """
+        self._client.remove_router_from_l3_agent(router_id=router['id'],
+                                                 l3_agent_id=l3_agent['id'])
+        if check:
+            routers_ids = [router_on_l3_agent['id'] for router_on_l3_agent in
+                           self._client.get_routers_on_l3_agent(
+                               l3_agent['id'])['routers']]
+            assert_that(router['id'], is_not(is_in(routers_ids)))
+
+    @steps_checker.step
+    def add_router_to_l3_agent(self, router, l3_agent, check=True):
+        """Step to add router to L3 agent.
+
+        Args:
+            router (dict): router
+            l3_agent (dict): L3 agent
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if router not in agent routers list
+        """
+        self._client.add_router_to_l3_agent(router_id=router['id'],
+                                            l3_agent_id=l3_agent['id'])
+        if check:
+            routers_ids = [router_on_l3_agent['id'] for router_on_l3_agent in
+                           self._client.get_routers_on_l3_agent(
+                               l3_agent['id'])['routers']]
+            assert_that(router['id'], is_in(routers_ids))
