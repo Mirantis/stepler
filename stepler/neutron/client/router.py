@@ -109,3 +109,17 @@ class RouterManager(base.BaseNeutronManager):
             self.remove_port_interface(router_id, port_id=port['id'])
 
         super(RouterManager, self).delete(router_id)
+
+    def remove_router_from_l3_agent(self, l3_agent_id, router_id):
+        """Remove router from L3 agent."""
+        self._rest_client.remove_router_from_l3_agent(router_id=router_id,
+                                                      l3_agent=l3_agent_id)
+
+    def get_routers_on_l3_agent(self, l3_agent_id):
+        """Get a routers list of L3 agent."""
+        return self._rest_client.list_routers_on_l3_agent(l3_agent_id)
+
+    def add_router_to_l3_agent(self, l3_agent_id, router_id):
+        """Add router to L3 agent."""
+        self._rest_client.add_router_to_l3_agent(l3_agent_id,
+                                                 body={'router_id': router_id})
