@@ -25,6 +25,7 @@ from stepler import config
 
 level = logging.DEBUG if config.DEBUG else logging.INFO
 
+LOG_FILE_PATH = os.path.join(config.TEST_REPORTS_DIR, 'test.log')
 
 config = {
     'version': 1,
@@ -45,19 +46,18 @@ config = {
         'file': {
             'level': logging.DEBUG,
             'class': 'logging.FileHandler',
-            'filename': os.path.join(config.TEST_REPORTS_DIR, 'test.log'),
+            'filename': LOG_FILE_PATH,
             'formatter': 'simple',
         },
     },
     'loggers': {
         'os_faults': {
             'level': logging.DEBUG,
-            'handlers': ['console', 'file'],
-            'propagate': False,
+            'handlers': ['console'],
         },
         '': {
-            'level': logging.INFO,
-            'handlers': ['console', 'file']
+            'level': logging.DEBUG,
+            'handlers': ['file']
         },
     },
 }
