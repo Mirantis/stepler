@@ -25,7 +25,7 @@ pytestmark = [
     pytest.mark.usefixtures('skip_live_migration_tests',
                             'disable_nova_config_drive',
                             'unlimited_live_migrations'),
-    pytest.mark.requires('computes_count_gte(2)')
+    pytest.mark.requires('computes_count >= 2')
 ]
 
 

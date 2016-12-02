@@ -24,7 +24,7 @@ from stepler import config
 pytestmark = pytest.mark.requires('dvr')
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id(
     '91853195-c456-464c-b0a4-5655acee7769',
     router=dict(distributed=True),
@@ -89,7 +89,7 @@ def test_check_east_west_connectivity_between_instances(
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('820fa7c3-4e6d-43e7-9d61-2bbc4a09c699',
                            router=dict(distributed=True))
 @pytest.mark.idempotent_id('578d0cf2-8db6-424b-a9a5-7bdfa8bfa37d',

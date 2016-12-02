@@ -126,12 +126,7 @@ class Predicates(object):
     def computes_count(self):
         """Returns computes count."""
         hypervisor_steps = self._get_fixture('hypervisor_steps')
-        return len(hypervisor_steps.get_hypervisors())
-
-    @_store_call
-    def computes_count_gte(self, count):
-        """Define whether computes enough."""
-        return self.computes_count >= count
+        return len(hypervisor_steps.get_hypervisors(check=False))
 
     @property
     @_store_call
@@ -140,7 +135,7 @@ class Predicates(object):
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(
             os_faults_steps.get_nodes(
-                service_names=[config.NEUTRON_DHCP_SERVICE]))
+                service_names=[config.NEUTRON_DHCP_SERVICE]), check=False)
 
     @property
     @_store_call
@@ -149,7 +144,7 @@ class Predicates(object):
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(
             os_faults_steps.get_nodes(
-                service_names=[config.NEUTRON_L3_SERVICE]))
+                service_names=[config.NEUTRON_L3_SERVICE]), check=False)
 
     @property
     @_store_call
@@ -158,7 +153,8 @@ class Predicates(object):
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(
             os_faults_steps.get_nodes_with_services(
-                service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API]))
+                service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API],
+                check=False))
 
     @property
     @_store_call
