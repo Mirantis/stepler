@@ -29,6 +29,7 @@ import shutil
 import pytest
 
 from stepler import config as stepler_config
+from stepler import logging_config
 from stepler.third_party import utils
 
 __all__ = [
@@ -43,7 +44,8 @@ def pytest_configure(config):
         if os.path.isdir(stepler_config.TEST_REPORTS_DIR):
             for name in os.listdir(stepler_config.TEST_REPORTS_DIR):
                 path = os.path.join(stepler_config.TEST_REPORTS_DIR, name)
-                if os.path.isfile(path):
+                if (os.path.isfile(path) and
+                        path != logging_config.LOG_FILE_PATH):
                     os.unlink(path)
                 elif os.path.isdir(path):
                     shutil.rmtree(path)
