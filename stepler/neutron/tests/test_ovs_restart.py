@@ -290,7 +290,7 @@ def test_restart_adds_new_flows(
     """
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
 
-    compute_fqdn = getattr(server, config.SERVER_HOST_ATTR)
+    compute_fqdn = getattr(server, config.SERVER_ATTR_HOST)
     compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
 
     old_cookies = os_faults_steps.get_ovs_flows_cookies(compute_node)

@@ -241,7 +241,7 @@ def test_north_south_connectivity_after_ban_clear_l3_on_compute(
             timeout=config.PING_CALL_TIMEOUT)
 
     compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(server, config.SERVER_HOST_ATTR)])
+        fqdns=[getattr(server, config.SERVER_ATTR_HOST)])
     os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE, compute_node)
     os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, compute_node)
 
@@ -296,7 +296,7 @@ def test_east_west_connectivity_after_ban_clear_l3_on_compute(
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
     server_1_host = os_faults_steps.get_node(
-        fqdns=[getattr(server_1, config.SERVER_HOST_ATTR)])
+        fqdns=[getattr(server_1, config.SERVER_ATTR_HOST)])
     os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE, server_1_host)
     os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, server_1_host)
 
@@ -359,7 +359,7 @@ def test_associate_floating_ip_after_restart_l3_on_compute(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
 
-    server_host = getattr(server, config.SERVER_HOST_ATTR)
+    server_host = getattr(server, config.SERVER_ATTR_HOST)
     host_compute = os_faults_steps.get_node(fqdns=[server_host])
 
     os_faults_steps.restart_services(names=[config.NEUTRON_L3_SERVICE],
@@ -422,7 +422,7 @@ def test_check_router_namespace_on_compute_node(
     #. Delete network
     """
     _, _, router = net_subnet_router
-    server_host = getattr(server, config.SERVER_HOST_ATTR)
+    server_host = getattr(server, config.SERVER_ATTR_HOST)
     host_compute = os_faults_steps.get_node(fqdns=[server_host])
 
     os_faults_steps.check_router_namespace_presence(router, host_compute)
