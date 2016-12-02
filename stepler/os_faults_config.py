@@ -27,6 +27,10 @@ def getenv(suffix, default=None):
     return os.environ.get("OS_FAULTS_{}".format(suffix), default)
 
 
+def get_bool(str_val):
+    return str_val.lower().strip() in ('true', 'yes')
+
+
 # Configure with shell environment variables if no file passed
 OS_FAULTS_DICT_CONFIG = {
     'cloud_management': {
@@ -45,3 +49,10 @@ OS_FAULTS_DICT_CONFIG = {
         }
     }
 }
+
+# tcpcloud-specific
+if OS_FAULTS_DICT_CONFIG['cloud_management']['driver'] == 'tcpcloud':
+    OS_FAULTS_DICT_CONFIG['cloud_management']['args'].update({
+        'master_sudo': get_bool(getenv('CLOUD_DRIVER_MASTER_SUDO', 'True')),
+        'slave_username': getenv('CLOUD_DRIVER_SLAVE_USERNAME', 'root'),
+    })
