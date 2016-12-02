@@ -17,12 +17,14 @@ Neutron DHCP agent tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import signal
+
 import pytest
 
 from stepler import config
 
 
-pytestmark = [pytest.mark.requires("computes_count >= 2"),
+pytestmark = [pytest.mark.requires("computes_count >= 2 and vlan"),
               pytest.mark.destructive]
 
 
@@ -127,7 +129,7 @@ def test_ban_all_dhcp_agents_restart_one(network,
     #. Repeat last 4 steps for all active DHCP agents
     #. Clear the last banned dhcp-agent
     #. Check that cleared dhcp-agent is active
-    #. Check that network is on the dhcp-agent which is cleared
+    #. Check that network is on the dhcp-agent which has been cleared
     #. Check DHCP with cirros-dhcpc command on server with sudo
     #. Check that all networks except for external are
         on the cleared dhcp-agent
@@ -177,6 +179,105 @@ def test_ban_all_dhcp_agents_restart_one(network,
         network_steps.get_networks(**{config.EXTERNAL_ROUTER: False}))
     network_steps.check_nets_count_for_agent(dhcp_agent,
                                              expected_count=networks_count)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('d89b894b-dda2-4156-a4bb-33fff229f54c')
+def test_ban_all_dhcp_agents_restart_first(network,
+                                           nova_floating_ip,
+                                           server,
+                                           server_steps,
+                                           os_faults_steps,
+                                           agent_steps,
+                                           network_steps):
+    """**Scenario:** Ban all DHCP agents and restart the first banned.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check DHCP with cirros-dhcpc command on server with sudo
+    #. Get free DHCP agents
+    #. Get nodes with free DHCP agents
+    #. Ban all free DHCP agents for nodes with pcs
+    #. Kill all dnsmasq processes for nodes
+    #. Wait for DHCP agents becoming dead
+    #. Get 2 nodes with DHCP agents for network
+    #. Ban 2 DHCP agents for nodes with pcs
+    #. Kill all dnsmasq processes for nodes
+    #. Wait for DHCP agents becoming dead
+    #. Get node for the first banned dhcp-agent
+    #. Clear the first banned dhcp-agent
+    #. Check that cleared dhcp-agent is active
+    #. Check that all dhcp-agents except for the first banned
+        don't in dhcp-agents list for network
+    #. Check that network is on the dhcp-agent which has been cleared
+    #. Check that all networks except for external are
+        on the cleared dhcp-agent
+    #. Check DHCP with cirros-dhcpc command on server with sudo
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    free_agents = agent_steps.get_dhcp_agents_not_hosting_net(network)
+    nodes_with_free_agents = os_faults_steps.get_nodes_for_agents(free_agents)
+    os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=nodes_with_free_agents)
+    os_faults_steps.send_signal_to_processes_by_name(
+        nodes_with_free_agents,
+        name=config.DNSMASQ_SERVICE,
+        signal=signal.SIGKILL)
+    agent_steps.check_alive(free_agents,
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    dhcp_agents_for_net = agent_steps.get_dhcp_agents_for_net(network)
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents(dhcp_agents_for_net)
+    os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=nodes_with_dhcp)
+    os_faults_steps.send_signal_to_processes_by_name(
+        nodes_with_free_agents,
+        name=config.DNSMASQ_SERVICE,
+        signal=signal.SIGKILL)
+    agent_steps.check_alive(dhcp_agents_for_net,
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    agent_to_clear = free_agents[0]
+    banned_agents = free_agents[1:] + dhcp_agents_for_net
+
+    node_for_agent = os_faults_steps.get_nodes_for_agents([agent_to_clear])
+    os_faults_steps.start_service(config.NEUTRON_DHCP_SERVICE,
+                                  nodes=node_for_agent)
+    agent_steps.check_alive([agent_to_clear],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    for banned_agent in banned_agents:
+        agent_steps.check_network_rescheduled(
+            network, banned_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    agent_steps.check_agents_count_for_net(network, expected_count=1)
+    networks_count = len(
+        network_steps.get_networks(**{config.EXTERNAL_ROUTER: False}))
+    network_steps.check_nets_count_for_agent(agent_to_clear,
+                                             expected_count=networks_count)
+    server_steps.check_dhcp_on_cirros_server(server)
 
 
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
