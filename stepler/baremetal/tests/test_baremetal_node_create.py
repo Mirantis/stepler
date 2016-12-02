@@ -31,3 +31,18 @@ def test_node_create(ironic_node):
 
     #. Delete ironic node
     """
+
+@pytest.mark.idempotent_id('b08d3461-fe78-479d-8acc-00267ca79b5f')
+def test_ironic_node_name(ironic_node_steps):
+    """**Scenario:** Verify that ironic node can be created with name
+    which has dot.
+
+    **Steps:**
+
+    #. Create ironic node with name 'stepler.test'
+
+    **Teardown:**
+
+    #. Delete ironic node
+    """
+    ironic_node_steps.create_ironic_nodes(nodes_names=["stepler.test"])
