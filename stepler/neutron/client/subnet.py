@@ -14,10 +14,15 @@
 from stepler.neutron.client import base
 
 
+class Subnet(base.Resource):
+    pass
+
+
 class SubnetManager(base.BaseNeutronManager):
     """Subnet (neutron) manager."""
 
     NAME = 'subnet'
+    _resource_class = Subnet
 
     def create(self,
                name,

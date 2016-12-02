@@ -14,10 +14,15 @@
 from stepler.neutron.client import base
 
 
+class Router(base.Resource):
+    pass
+
+
 class RouterManager(base.BaseNeutronManager):
     """Router (neutron) manager."""
 
     NAME = 'router'
+    _resource_class = Router
 
     def create(self, name, distributed=None, project_id=None):
         """Create router.

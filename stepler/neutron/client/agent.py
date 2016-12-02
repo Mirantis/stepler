@@ -20,25 +20,17 @@ Neutron agent manager
 from stepler.neutron.client import base
 
 
+class Agent(base.Resource):
+    pass
+
+
 class AgentManager(base.BaseNeutronManager):
     """Agent (neutron) manager."""
 
     NAME = 'agent'
+    _resource_class = Agent
 
-    def list_agents(self, name=None):
-        """Get neutron agents.
-
-        Args:
-            name (str|None): agent name, ex: neutron-l3-agent
-
-        Returns:
-            list: list of agents data (dict - binary, host, alive etc.)
-        """
-        kwargs = {}
-        if name:
-            kwargs['binary'] = name
-        return self._rest_client.list_agents(**kwargs)['agents']
-
+    @base.transform_many
     def get_dhcp_agents_for_network(self, network_id):
         """Get network DHCP agents list.
 
@@ -52,6 +44,7 @@ class AgentManager(base.BaseNeutronManager):
             network_id)
         return dhcp_agents['agents']
 
+    @base.transform_many
     def get_l3_agents_for_router(self, router_id):
         """Get router L3 agents list.
 

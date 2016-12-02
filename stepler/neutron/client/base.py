@@ -11,11 +11,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
+
+
+class Resource(dict):
+    """Base class for neutron resource.
+
+    It will be helpful on comparsion operations.
+
+    Example:
+        >>> a = dict(id=1, state='active')
+        >>> b = dict(id=1, state='available')
+        >>> ar = Resource(a)
+        >>> br = Resource(b)
+
+        >>> a == b
+        False
+        >>> ar == br
+        True
+        >>> a in [b]
+        False
+        >>> ar in [br]
+        True
+    """
+
+    def __repr__(self):
+        return u'<{}: {}>'.format(self.__class__.__name__,
+                                  super(Resource, self).__repr__())
+
+    def __hash__(self):
+        if 'id' in self:
+            return hash(self['id'])
+        else:
+            return super(Resource, self).__hash__()
+
+    def __eq__(self, other):
+        if 'id' in other and 'id' in self:
+            return self['id'] == other['id']
+        else:
+            return self == other
+
+
+def transform_one(f):
+    """Decorator to transform single dict to Resource."""
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        result = f(self, *args, **kwargs)
+        return self._resource_class(result)
+    return wrapper
+
+
+def transform_many(f):
+    """Decorator to transform list of dicts to list of Resource instances."""
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        result = f(self, *args, **kwargs)
+        return [self._resource_class(item) for item in result]
+    return wrapper
+
 
 class BaseNeutronManager(object):
     """Base Neutron components manager."""
 
     NAME = ''
+    _resource_class = Resource
 
     def __init__(self, client):
         """Init base neutron manager
@@ -57,6 +116,7 @@ class BaseNeutronManager(object):
         methodname = 'update_{}'.format(self.NAME)
         return getattr(self._rest_client, methodname)
 
+    @transform_one
     def create(self, **kwargs):
         """Base create."""
         query = {self.NAME: kwargs}
@@ -72,10 +132,12 @@ class BaseNeutronManager(object):
         """Base delete."""
         self._delete_method(obj_id)
 
+    @transform_many
     def list(self):
         """Base list (retrive all)."""
         return self.find_all()
 
+    @transform_many
     def find_all(self, **kwargs):
         """Returns a list of objects by conditions.
 
@@ -84,6 +146,7 @@ class BaseNeutronManager(object):
         objs = self._list_method(**kwargs)[self.NAME + 's']
         return objs
 
+    @transform_one
     def find(self, **kwargs):
         """Returns one found object.
 
@@ -99,6 +162,7 @@ class BaseNeutronManager(object):
                 self.NAME, kwargs))
         return objs[0]
 
+    @transform_one
     def get(self, obj_id):
         """Return object by id."""
         return self._show_method(obj_id)[self.NAME]

@@ -14,11 +14,17 @@
 from stepler.neutron.client import base
 
 
+class Network(base.Resource):
+    pass
+
+
 class NetworkManager(base.BaseNeutronManager):
     """Neutwork (neutron) manager."""
 
     NAME = 'network'
+    _resource_class = Network
 
+    @base.transform_one
     def create(self, name, project_id=None):
         """Create new neutron network.
 
@@ -42,6 +48,7 @@ class NetworkManager(base.BaseNeutronManager):
             self.client.subnets.delete(subnet_id)
         super(NetworkManager, self).delete(network_id)
 
+    @base.transform_many
     def get_networks_for_dhcp_agent(self, dhcp_agent_id):
         """Get networks list for DHCP agent.
 
