@@ -17,8 +17,9 @@ Router steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, equal_to,
-                      has_entries, is_in, is_not)  # noqa H301
+from hamcrest import (assert_that, calling, empty, equal_to,
+                      has_entries, is_in, is_not, raises)  # noqa H301
+from neutronclient.common import exceptions
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -270,3 +271,59 @@ class RouterSteps(base.BaseSteps):
                            self._client.get_routers_on_l3_agent(
                                l3_agent['id'])]
             assert_that(router['id'], is_in(routers_ids))
+
+    @steps_checker.step
+    def update_router(self, router, params, check=True):
+        """Step to update router attributes.
+
+        Args:
+            router (dict): router dict
+            params (dict): attribute values to change
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        self._client.update_router(router['id'], params)
+
+        if check:
+            self.check_router_attrs(router['name'], params)
+
+    @steps_checker.step
+    def check_router_type_not_changed_to_centralized(self, router):
+        """Step to check router is not updated from distributed to centralized.
+
+        Args:
+            router (dict): router dict
+
+        Raises:
+            AssertionError: if BadRequest is not appeared or exception message
+                is unexpected.
+        """
+        exception_message = ("Migration from distributed router to "
+                             "centralized is not supported.")
+
+        assert_that(calling(self.update_router).with_args(
+            router=router, params={'distributed': False}, check=False),
+            raises(exceptions.BadRequest, exception_message))
+
+    @steps_checker.step
+    def check_change_type_of_active_router(self, router):
+        """Step to check that router type can't be changed for active router.
+
+        Args:
+            router (dict): router dict
+
+        Raises:
+            AssertionError: if BadRequest is not appeared or exception message
+                is unexpected.
+        """
+        exception_message = (
+            "Cannot upgrade active router to distributed. "
+            "Please set router admin_state_up to False prior to upgrade")
+
+        assert_that(
+            calling(self.update_router).with_args(router=router,
+                                                  params={'distributed': True},
+                                                  check=False),
+            raises(exceptions.BadRequest, exception_message))
