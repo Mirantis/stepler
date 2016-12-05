@@ -583,6 +583,27 @@ class OsFaultsSteps(base.BaseSteps):
             time.sleep(delay)
 
     @steps_checker.step
+    def send_signal_to_processes_by_name(self, nodes, name, signal, delay=None,
+                                         check=True):
+        """Step to send a signal to processes using name.
+
+        Args:
+            nodes (NodeCollection): nodes
+            name (str): partial name of processes
+            signal (int): signal id
+            delay (int): delay after signal sending, in seconds
+            check (bool): flag whether check step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True
+        """
+        cmd = "killall -{0} {1}".format(signal, name)
+        self.execute_cmd(nodes, cmd, check=check)
+        if delay:
+            time.sleep(delay)
+
+    @steps_checker.step
     def check_string_in_file(self, node, file_name, keyword,
                              start_line_number=None, must_present=True,
                              expected_count=None):

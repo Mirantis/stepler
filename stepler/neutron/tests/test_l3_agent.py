@@ -24,7 +24,7 @@ import pytest
 from stepler import config
 
 
-pytestmark = [pytest.mark.requires("not dvr and not l3_ha",
+pytestmark = [pytest.mark.requires("not dvr and not l3_ha and vlan",
                                    "computes_count >= 2"),
               pytest.mark.destructive]
 
