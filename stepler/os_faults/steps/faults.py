@@ -24,7 +24,7 @@ import time
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
                       only_contains, has_items, has_length, is_, equal_to,
-                      contains_inanyorder, is_in)  # noqa H301
+                      contains_inanyorder, is_in, any_of)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -1227,3 +1227,66 @@ class OsFaultsSteps(base.BaseSteps):
 
         packets = list(tcpdump.read_pcap(pcap_path, lfilter))
         assert_that(packets, is_not(empty()))
+
+    @steps_checker.step
+    def get_nodes_ips(self, nodes=None, ipv6=False, check=True):
+        """Step to retrive nodes IP addresses.
+
+        Args:
+            nodes (NodeCollection, optional): nodes to retrieve IP addresses
+                for. By default IP addresses will be retrieved from all nodes.
+            ipv6 (bool, optional): flag whether to filter ipv6 ip addresses.
+                By default only ipv4 addreses will be filtered.
+            check (bool, optional): flag whether to check this step or not
+
+        Returns:
+            dict: node'd fqdn -> list of node ip addresses
+
+        Raises:
+            AssertionError: if check will fail
+        """
+        nodes = nodes or self.get_nodes()
+        cmd = "ip -o a | grep -v ' lo '"
+        if ipv6:
+            cmd += "| awk '/inet6 /{split($4,ip,\"/\"); print ip[1]}'"
+        else:
+            cmd += "| awk '/inet /{split($4,ip,\"/\"); print ip[1]}'"
+        result = self.execute_cmd(nodes, cmd, check=check)
+
+        ips = {}
+        for node_result in result:
+            for node in nodes:
+                if node.ip == node_result.host:
+                    ips[node.fqdn] = node_result.payload['stdout_lines']
+                    break
+        if check:
+            assert_that(ips.values(), only_contains(is_not(empty())))
+        return ips
+
+    @steps_checker.step
+    def check_ovs_toonels(self, from_nodes, to_nodes, must_established=True):
+        """Step to check that OVS toonels established (or not) to nodes.
+
+        Args:
+            from_nodes (NodeCollection): nodes to check OVS toonels on
+            to_nodes (NodeCollection): nodes to check are OVS toonels
+                established to
+            must_established (bool, optional): flag whether toonels should be
+                established or should be not established
+
+        Raises:
+            AssertionError: if check will fail
+        """
+        cmd = "ovs-vsctl show"
+        result = self.execute_cmd(from_nodes, cmd)
+        for node_result in result:
+            stdout = node_result.payload['stdout']
+            toonels_remotes = re.findall(
+                r'remote_ip="(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"', stdout)
+            to_nodes_ips = self.get_nodes_ips(nodes=to_nodes)
+            for node in to_nodes:
+                matchers = [has_item(ip) for ip in to_nodes_ips[node.fqdn]]
+                if must_established:
+                    assert_that(toonels_remotes, any_of(*matchers))
+                else:
+                    assert_that(toonels_remotes, is_not(any_of(*matchers)))
