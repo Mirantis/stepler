@@ -56,3 +56,23 @@ class AgentManager(base.BaseNeutronManager):
         """
         l3_agents = self._rest_client.list_l3_agent_hosting_routers(router_id)
         return l3_agents['agents']
+
+    def remove_network_from_dhcp_agent(self, dhcp_agent_id, network_id):
+        """Remove network from DHCP agent.
+
+        Args:
+            dhcp_agent_id (str): DHCP agent id to remove network from
+            network_id (str): network id to remove from DHCP agent
+        """
+        self._rest_client.remove_network_from_dhcp_agent(dhcp_agent_id,
+                                                         network_id)
+
+    def add_network_to_dhcp_agent(self, dhcp_agent_id, network_id):
+        """Add network to DHCP agent.
+
+        Args:
+            dhcp_agent_id (str): DHCP agent id to add network to
+            network_id (str): network id to add to DHCP agent
+        """
+        self._rest_client.add_network_to_dhcp_agent(dhcp_agent_id,
+                                                    {'network_id': network_id})

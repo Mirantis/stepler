@@ -32,10 +32,13 @@ class AgentSteps(base.BaseSteps):
     """Agent steps."""
 
     @steps_checker.step
-    def get_agents(self, check=True, **kwargs):
+    def get_agents(self, node=None, check=True, **kwargs):
         """Step to get agents by params in '**kwargs'.
 
         Args:
+            node (obj): NodeCollection instance to get agents. If node
+                parameter is defined, 'host' parameter can't be used
+                in **kwargs
             check (bool, optional): flag whether to check step or not
             **kwargs: additional arguments to pass to API
 
@@ -45,6 +48,10 @@ class AgentSteps(base.BaseSteps):
         Raises:
             AssertionError: if list of agents is empty
         """
+        if node:
+            assert_that('host', is_not(is_in(kwargs)))
+            kwargs['host'] = node.get_fqdns()[0]
+
         agents = list(self._client.find_all(**kwargs))
         if check:
             assert_that(agents, is_not(empty()))
@@ -167,6 +174,25 @@ class AgentSteps(base.BaseSteps):
         waiter.wait(_check_network_rescheduled, timeout_seconds=timeout)
 
     @steps_checker.step
+    def check_network_is_on_agent(self, network, dhcp_agent, timeout=0):
+        """Step to check that network is on DHCP agent.
+
+        Args:
+            network (dict): network to check
+            dhcp_agent (dict): DHCP agent to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_network_is_on_agent():
+            dhcp_agents = self._client.get_dhcp_agents_for_network(
+                network['id'])
+            return waiter.expect_that(dhcp_agent, is_in(dhcp_agents))
+
+        waiter.wait(_check_network_is_on_agent, timeout_seconds=timeout)
+
+    @steps_checker.step
     def get_l3_agents_for_router(self, router, filter_attrs=None, check=True):
         """Step to retrieve router L3 agents dicts list.
 
@@ -233,3 +259,68 @@ class AgentSteps(base.BaseSteps):
             return l3_agents
 
         waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def remove_network_from_dhcp_agent(self, dhcp_agent, network, check=True):
+        """Step to remove network from DHCP agent.
+
+        Args:
+            dhcp_agent (dict): DHCP agent to remove network from
+            network (dict): network to remove from DHCP agent
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        self._client.remove_network_from_dhcp_agent(dhcp_agent['id'],
+                                                    network['id'])
+
+        if check:
+            self.check_network_rescheduled(network, dhcp_agent)
+
+    @steps_checker.step
+    def add_network_to_dhcp_agent(self, dhcp_agent, network, check=True):
+        """Step to add network to DHCP agent.
+
+        Args:
+            dhcp_agent (dict): DHCP agent to add network to
+            network (dict): network to add to DHCP agent
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        self._client.add_network_to_dhcp_agent(dhcp_agent['id'], network['id'])
+
+        if check:
+            self.check_network_is_on_agent(network, dhcp_agent)
+
+    @steps_checker.step
+    def reschedule_network_to_dhcp_agent(self,
+                                         target_dhcp_agent,
+                                         network,
+                                         timeout=0,
+                                         check=True):
+        """Step to reschedule network's active DHCP agent.
+
+        Args:
+            target_dhcp_agent (dict): DHCP agent to reschedule network to
+            network (dict): network to be rescheduled
+            timeout (int): seconds to wait a result of check
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        active_agents = self.get_dhcp_agents_for_net(network)
+
+        if target_dhcp_agent not in active_agents:
+            agent_to_remove = active_agents[0]
+            self.remove_network_from_dhcp_agent(agent_to_remove,
+                                                network,
+                                                timeout=timeout,
+                                                check=check)
+            self.add_network_to_dhcp_agent(target_dhcp_agent,
+                                           network,
+                                           timeout=timeout,
+                                           check=check)
