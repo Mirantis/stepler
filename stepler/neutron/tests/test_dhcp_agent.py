@@ -253,7 +253,7 @@ def test_ban_all_dhcp_agents_restart_first(network,
     os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
                                       nodes=nodes_with_dhcp)
     os_faults_steps.send_signal_to_processes_by_name(
-        nodes_with_free_agents,
+        nodes_with_dhcp,
         name=config.DNSMASQ_SERVICE,
         signal=signal.SIGKILL)
     agent_steps.check_alive(dhcp_agents_for_net,
@@ -410,4 +410,68 @@ def test_ban_dhcp_agent_many_times(network,
     agent_steps.check_alive([agent_to_ban],
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     agent_steps.check_agents_count_for_net(network, expected_count=2)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('d794afda-4e3e-422d-80be-525e6517d625')
+def test_destroy_primary_controller_check_dhcp(network,
+                                               server,
+                                               nova_floating_ip,
+                                               server_steps,
+                                               os_faults_steps,
+                                               network_steps,
+                                               agent_steps):
+    """**Scenario:** Destroy primary controller and check DHCP.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Get primary controller
+    #. Get DHCP agent for primary controller node
+    #. Reschedule network to DHCP agent on primary controller
+        if it is not there yet
+    #. Check DHCP with cirros-dhcpc command on server with sudo
+    #. Destroy primary controller
+    #. Wait for primary controller's DHCP agent becoming dead
+    #. Check that dhcp-agent does not in dhcp-agents list for network
+    #. Check that all networks rescheduled from primary controller
+    #. Check DHCP with cirros-dhcpc command on server with sudo
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    primary_controller = os_faults_steps.get_nodes_by_cmd(
+        config.FUEL_PRIMARY_CONTROLLER_CMD)
+    dhcp_agent = agent_steps.get_agents(node=primary_controller,
+                                        binary=config.NEUTRON_DHCP_SERVICE)[0]
+    agent_steps.reschedule_network_to_dhcp_agent(
+        dhcp_agent, network, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    os_faults_steps.poweroff_nodes(primary_controller)
+    agent_steps.check_alive([dhcp_agent],
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    agent_steps.check_network_rescheduled(
+        network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    network_steps.check_nets_count_for_agent(dhcp_agent,
+                                             expected_count=0)
     server_steps.check_dhcp_on_cirros_server(server)

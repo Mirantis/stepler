@@ -142,7 +142,7 @@ class Predicates(object):
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(
             os_faults_steps.get_nodes(
-                service_names=[config.NEUTRON_DHCP_SERVICE]), check=False)
+                service_names=[config.NEUTRON_DHCP_SERVICE], check=False))
 
     @property
     @_store_call
@@ -151,7 +151,7 @@ class Predicates(object):
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(
             os_faults_steps.get_nodes(
-                service_names=[config.NEUTRON_L3_SERVICE]), check=False)
+                service_names=[config.NEUTRON_L3_SERVICE], check=False))
 
     @property
     @_store_call
