@@ -157,3 +157,64 @@ def test_vni_matching_network_segmentation_id_for_different_computes(
         compute_1_pcap, networks[0], add_filters=[tcpdump.filter_icmp])
     os_faults_steps.check_vni_segmentation(
         compute_2_pcap, networks[1], add_filters=[tcpdump.filter_icmp])
+
+
+@pytest.mark.requires("computes_count >= 2 and l2pop")
+@pytest.mark.idempotent_id('0ee4924a-e3cb-471f-9cb8-ca16b1ad6e0a')
+def test_broadcast_traffic_propagation_with_l2pop(
+        neutron_2_servers_diff_nets_with_floating,
+        server_steps,
+        os_faults_steps):
+    """**Scenario:** Check broadcast traffic propagation with l2pop driver.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router
+    #. Create network_2 with subnet_2
+    #. Create server_1
+    #. Create server_2 on another compute and connect it to network_2
+    #. Create and attach floating IP for each server
+
+    **Steps:**
+
+    #. Start tcpdump on compute with server_2
+    #. Run arping from server_1 to server_2
+    #. Run ping from server_1 to server_2
+    #. Stop tcpdump
+    #. Check that there are no ARP packets from server_1 on pcap file
+    #. Check that VXLAN packets with ICMP from server_1 are on pcap file
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete floating IPs
+    #. Delete networks, subnets, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_1, server_2 = neutron_2_servers_diff_nets_with_floating.servers
+    server_1_fixed_ip = server_steps.get_fixed_ip(server_1)
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
+    server_2_compute_fqdn = getattr(server_2, config.SERVER_ATTR_HOST)
+    server_2_compute = os_faults_steps.get_nodes(fqdns=[server_2_compute_fqdn])
+
+    tcpdump_files = os_faults_steps.start_tcpdump(
+        server_2_compute, args="-vvni any port 4789")
+
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        server_steps.check_no_arping_for_ip(server_ssh,
+                                            ip=server_2_fixed_ip, count=10)
+        server_steps.check_ping_for_ip(
+            server_2_fixed_ip, server_ssh, ping_count=10)
+
+    os_faults_steps.stop_tcpdump(server_2_compute, tcpdump_files)
+    pcap_files = os_faults_steps.download_tcpdump_results(server_2_compute,
+                                                          tcpdump_files)
+
+    pcap_file = pcap_files[server_2_compute_fqdn]
+    os_faults_steps.check_no_arp_traffic_from_ip(pcap_file, server_1_fixed_ip)
+    os_faults_steps.check_vxlan_icmp_traffic(pcap_file, server_1_fixed_ip)

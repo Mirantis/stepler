@@ -92,9 +92,7 @@ def tcpdump(remote, args='', prefix=None, latency=2, lfilter=None):
     time.sleep(latency)
     with remote.sudo():
         remote.execute('kill -SIGINT {}'.format(pid))
-        # Wait tcpdump to done
-        remote.execute('while kill -0 {pid} 2> /dev/null; '
-                       'do sleep 1; done;'.format(pid=pid))
+        remote.wait_process_done(pid, timeout=latency)
         with remote.open(pcap_file) as src:
             with open(pcap_file, 'wb') as dst:
                 dst.write(src.read())
