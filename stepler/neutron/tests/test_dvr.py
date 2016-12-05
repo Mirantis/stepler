@@ -308,8 +308,7 @@ def test_north_south_connectivity_after_primary_controller_reset(
             old_l3_agent=current_agent,
             timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
-    os_faults_steps.poweroff_nodes(primary_controller)
-    os_faults_steps.poweron_nodes(primary_controller)
+    os_faults_steps.reset_nodes(primary_controller)
 
     agent_steps.check_router_rescheduled(
         router=router,
@@ -502,8 +501,7 @@ def test_north_south_connectivity_after_reset_compute(
 
     server_compute = os_faults_steps.get_node(
         fqdns=[getattr(server, config.SERVER_ATTR_HOST)])
-    os_faults_steps.poweroff_nodes(server_compute)
-    os_faults_steps.poweron_nodes(server_compute)
+    os_faults_steps.reset_nodes(server_compute)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -627,8 +625,7 @@ def test_east_west_connectivity_after_reset_computes(
     computes = os_faults_steps.get_nodes(
         fqdns=[getattr(server_1, config.SERVER_ATTR_HOST),
                getattr(server_2, config.SERVER_ATTR_HOST)])
-    os_faults_steps.poweroff_nodes(computes)
-    os_faults_steps.poweron_nodes(computes)
+    os_faults_steps.reset_nodes(computes)
 
     proxy_cmd = get_ssh_proxy_cmd(server_2)
     server_1_ip = server_steps.get_fixed_ip(server_1)
