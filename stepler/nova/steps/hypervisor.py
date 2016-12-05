@@ -20,6 +20,7 @@ Hypervisor steps
 from hamcrest import assert_that, empty, greater_than, is_not  # noqa
 
 from stepler import base
+from stepler import config
 from stepler.third_party import steps_checker
 
 __all__ = [
@@ -83,26 +84,27 @@ class HypervisorSteps(base.BaseSteps):
         return capacity
 
     @steps_checker.step
-    def get_another_hypervisor(self, server, check=True):
-        """Step to get any hypervisor except server's one.
+    def get_another_hypervisor(self, servers, check=True):
+        """Step to get any hypervisor except occupied by servers.
 
         Args:
-            server (obj): nova server
+            servers (list): nova servers list
             check (bool, optional): flag whether to check step or not
 
         Returns:
             obj: nova hypervisor
 
         Raises:
-            ValueError: if there is no one hypervisor except server's one
+            ValueError: if there is no one hypervisor except occupied by
+                servers
         """
-        server_hypervisor = getattr(server,
-                                    'OS-EXT-SRV-ATTR:hypervisor_hostname')
+        busy_hypervisors = [getattr(server, config.SERVER_ATTR_HOST)
+                            for server in servers]
 
         for hypervisor in self.get_hypervisors():
-            if hypervisor.hypervisor_hostname != server_hypervisor:
+            if hypervisor.hypervisor_hostname not in busy_hypervisors:
                 return hypervisor
         else:
             if check:
                 raise ValueError(
-                    'No available hypervisors except ' + server_hypervisor)
+                    'No available hypervisors except ' + busy_hypervisors)
