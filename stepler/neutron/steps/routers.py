@@ -241,10 +241,8 @@ class RouterSteps(base.BaseSteps):
         self._client.remove_router_from_l3_agent(router_id=router['id'],
                                                  l3_agent_id=l3_agent['id'])
         if check:
-            routers_ids = [router_on_l3_agent['id'] for router_on_l3_agent in
-                           self._client.get_routers_on_l3_agent(
-                               l3_agent['id'])]
-            assert_that(router['id'], is_not(is_in(routers_ids)))
+            routers = self._client.get_routers_on_l3_agent(l3_agent['id'])
+            assert_that(router, is_not(is_in(routers)))
 
     @steps_checker.step
     def add_router_to_l3_agent(self, router, l3_agent, check=True):
@@ -261,10 +259,8 @@ class RouterSteps(base.BaseSteps):
         self._client.add_router_to_l3_agent(router_id=router['id'],
                                             l3_agent_id=l3_agent['id'])
         if check:
-            routers_ids = [router_on_l3_agent['id'] for router_on_l3_agent in
-                           self._client.get_routers_on_l3_agent(
-                               l3_agent['id'])]
-            assert_that(router['id'], is_in(routers_ids))
+            routers = self._client.get_routers_on_l3_agent(l3_agent['id'])
+            assert_that(router, is_in(routers))
 
     @steps_checker.step
     def update_router(self, router, check=True, **kwargs):

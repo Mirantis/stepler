@@ -324,6 +324,135 @@ def test_north_south_connectivity_after_primary_controller_reset(
             timeout=config.PING_CALL_TIMEOUT)
 
 
+@pytest.mark.idempotent_id('32002b62-6d83-4d1b-9881-21eea7d38f56')
+@pytest.mark.requires("l3_agent_nodes_with_snat_count >= 2")
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_reschedule_router_from_snat_controller(
+        net_subnet_router,
+        server,
+        nova_floating_ip,
+        agent_steps,
+        os_faults_steps,
+        router_steps,
+        server_steps):
+    """**Scenario:** Check manually reschedule router from SNAT controller.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Find controller with SNAT for router
+    #. Reschedule router to another controller
+    #. Wait for another L3 agent becomes ACTIVE
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    _, _, router = net_subnet_router
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    current_agent = agent_steps.get_l3_agents_for_router(router)[0]
+    current_agent_node = os_faults_steps.get_nodes_for_agents([current_agent])
+
+    l3_agents_nodes = os_faults_steps.get_nodes_with_services(
+        service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API])
+    free_agents_nodes = l3_agents_nodes - current_agent_node
+    new_agent = agent_steps.get_agents(binary=config.NEUTRON_L3_SERVICE,
+                                       host=free_agents_nodes.hosts[0].fqdn)[0]
+
+    router_steps.remove_router_from_l3_agent(router, current_agent)
+    router_steps.add_router_to_l3_agent(router, new_agent)
+    agent_steps.check_router_rescheduled(
+        router=router,
+        old_l3_agent=current_agent,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    agent_steps.check_alive(agents=[new_agent],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.destructive
+@pytest.mark.idempotent_id('4dda8b1f-bbad-46d5-8dfa-2dbdc7a526b3')
+@pytest.mark.requires("l3_agent_nodes_with_snat_count >= 2")
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_shutdown_controller_with_snat(
+        net_subnet_router,
+        server,
+        nova_floating_ip,
+        agent_steps,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check reschedule router after shutdown controller.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Find controller with SNAT for router
+    #. Destroy controller
+    #. Wait for SNAT reschedule to another controller
+    #. Wait for L3 agent becomes ACTIVE
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    _, _, router = net_subnet_router
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
+    l3_agent_node = os_faults_steps.get_nodes_for_agents([l3_agent])
+
+    os_faults_steps.poweroff_nodes(l3_agent_node)
+    agent_steps.check_router_rescheduled(
+        router=router,
+        old_l3_agent=l3_agent,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    new_l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
+    agent_steps.check_alive(agents=[new_l3_agent],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+
 @pytest.mark.destructive
 @pytest.mark.idempotent_id('08192558-e632-410f-bded-9d124dcce52c')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
