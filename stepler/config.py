@@ -387,6 +387,8 @@ INTERNAL_SUBNET_NAME = next(generate_ids('internal_subnet'))
 ROUTER_NAME = next(generate_ids('router'))
 
 EXTERNAL_ROUTER = 'router:external'
+ROUTER_DISTRIBUTED_ATTR = 'distributed'
+ROUTER_STATE_ATTR = 'admin_state_up'
 
 XVFB_LOCK = '/tmp/xvfb.lock'
 

@@ -129,3 +129,7 @@ class RouterManager(base.BaseNeutronManager):
         """Add router to L3 agent."""
         self._rest_client.add_router_to_l3_agent(l3_agent_id,
                                                  body={'router_id': router_id})
+
+    def update_router(self, router_id, params):
+        """Update router action."""
+        self._rest_client.update_router(router_id, {'router': params})
