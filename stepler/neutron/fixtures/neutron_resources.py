@@ -247,7 +247,7 @@ def neutron_2_servers_same_network(
     if getattr(request, 'param', None) == 'same_host':
         server_2_hypervisor = getattr(server, config.SERVER_ATTR_HOST)
     else:
-        server_2_hypervisor = hypervisor_steps.get_another_hypervisor(server)
+        server_2_hypervisor = hypervisor_steps.get_another_hypervisor([server])
         server_2_hypervisor = server_2_hypervisor.hypervisor_hostname
 
     network, subnet, router = net_subnet_router
