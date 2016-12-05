@@ -190,3 +190,10 @@ class Predicates(object):
         """Define whether neutron configures with DVR."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return os_faults_steps.get_neutron_dvr()
+
+    @property
+    @_store_call
+    def l2pop(self):
+        """Define whether neutron configures with L2pop."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_neutron_l2pop()

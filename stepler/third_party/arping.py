@@ -23,7 +23,7 @@ import tempfile
 
 
 @contextlib.contextmanager
-def arping(ip, iface, remote):
+def arping(ip, iface, remote, count=None, latency=2):
     """Non-blocking context manager for run arping on backgroud.
 
     It yields ping results (dict) and update it with 'sent' and 'received'
@@ -33,18 +33,28 @@ def arping(ip, iface, remote):
         ip (str): ip to arping
         iface (string): name of interface, like 'eth0'
         remote (obj): instance of stepler.third_party.ssh.SshClient
+        count (int, optional): Count of packets to send. By default, arping
+            will send packets until termination
+        latency (int, optional): time to wait before arping will be terminated
 
     Yields:
         dict: arping results
     """
-    cmd = "arping -I {iface} {ip}".format(iface=iface, ip=ip)
+    if count:
+        cmd = "arping -I {iface} -c {count} {ip}"
+        latency += count
+    else:
+        cmd = "arping -I {iface} {ip}"
+    cmd = cmd.format(iface=iface, ip=ip, count=count)
     output_file = tempfile.mktemp()
     with remote.sudo():
         pid = remote.background_call(cmd, stdout=output_file)
     result = {}
     yield result
     with remote.sudo():
-        remote.execute('kill -SIGINT {}'.format(pid))
+        if not count:
+            remote.execute('kill -SIGINT {}'.format(pid))
+        remote.wait_process_done(pid, timeout=latency)
         stdout = remote.check_call("cat {}".format(output_file)).stdout
         remote.execute('rm {}'.format(output_file))
     search_result = re.search(

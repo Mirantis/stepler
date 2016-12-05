@@ -20,6 +20,7 @@ SSH client
 import contextlib
 import logging
 import select
+import time
 
 import paramiko
 import six
@@ -31,6 +32,10 @@ __all__ = [
 ]
 
 LOGGER = logging.getLogger(__name__)
+
+
+class ExecutionTimeout(Exception):
+    """Command execution timeout exception."""
 
 
 class CommandResult(object):
@@ -231,19 +236,35 @@ class SshClient(object):
             "processes".format(command=command, pid=pid))
         return pid
 
-    def execute(self, command, merge_stderr=False, verbose=False):
+    def wait_process_done(self, pid, timeout=0):
+        """Wait until command with `pid` will be done.
+
+
+        Args:
+            pid (int|str): pid
+            timeout (int, optional): time to wait for process to be done
+
+        Raises:
+            ExecutionTimeout: if process executing after timeout.
+        """
+        self.execute('while kill -0 {pid} 2> /dev/null; '
+                     'do sleep 1; done;'.format(pid=pid), timeout=timeout)
+
+    def execute(self, command, merge_stderr=False, verbose=False,
+                timeout=None):
         """Execute command and returns CommandResult instance.
 
         Args:
             command (str): command to execute
             merge_stderr (bool): merge stderr to stdout
             verbose (bool): make log records or not
+            timeout (int, optional): maximum command executing time in seconds
 
         Returns:
             object: CommandResult instance
 
         Raises:
-            Exception: if command executing more than self._execution_timeout
+            ExecutionTimeout: if command executing more than timeout
         """
         chan, stdin, stdout, stderr = self.execute_async(
             command, merge_stderr=merge_stderr)
@@ -251,6 +272,7 @@ class SshClient(object):
         result = CommandResult()
         result.command = command
 
+        start = time.time()
         while not chan.closed or chan.recv_ready() or chan.recv_stderr_ready():
             select.select([chan], [], [chan], 60)
 
@@ -258,6 +280,12 @@ class SshClient(object):
                 result.append_stdout(chan.recv(1024))
             if chan.recv_stderr_ready():
                 result.append_stderr(chan.recv_stderr(1024))
+
+            if timeout and (time.time() > start + timeout):
+                chan.close()
+                raise ExecutionTimeout('Executing `{cmd}` is too long '
+                                       '(more than {timeout} seconds)'.format(
+                                           cmd=command, timeout=timeout))
 
         result.exit_code = chan.recv_exit_status()
         stdin.close()
