@@ -24,7 +24,7 @@ from stepler import config
 pytestmark = pytest.mark.destructive
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5')
 def test_restart_with_pcs_disable_enable(
         neutron_2_servers_different_networks,
@@ -80,7 +80,7 @@ def test_restart_with_pcs_disable_enable(
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('310c630d-38f0-402b-9423-ffb14fb766b2')
 def test_restart_with_pcs_ban_clear(
         neutron_2_servers_different_networks,
@@ -140,7 +140,7 @@ def test_restart_with_pcs_ban_clear(
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('ab973d26-55e0-478c-b5fd-35a3ea47e583')
 def test_restart_many_times(
         neutron_2_servers_different_networks,
@@ -199,7 +199,7 @@ def test_restart_many_times(
                     timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('6188b10f-c8f1-4d00-9c97-d163503592a5')
 def test_restart_with_broadcast_traffic(
         neutron_2_servers_same_network,
@@ -253,7 +253,7 @@ def test_restart_with_broadcast_traffic(
                 timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('f92c6488-f87d-46d7-b2a5-13a98e10ab28')
 def test_restart_adds_new_flows(
         net_subnet_router,
@@ -320,7 +320,7 @@ def test_port_tags_immutable_after_restart(port_steps, os_faults_steps):
     os_faults_steps.check_ovs_vsctl_tags(expected_tags=before_restart_tags)
 
 
-@pytest.mark.requires("computes_count_gte(2)")
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('f3935941-4262-41b3-bedb-d9777e63895f')
 def test_restart_with_iperf_traffic(
         neutron_2_servers_iperf_different_networks,
@@ -441,7 +441,7 @@ def test_restart_servers_on_single_compute(
                 ovs_agents, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
 
-@pytest.mark.requires("computes_count_gte(2) and vlan")
+@pytest.mark.requires("computes_count >= 2 and vlan")
 @pytest.mark.idempotent_id('28d8bd3d-160c-4c58-af46-edd7df2c4502')
 @pytest.mark.parametrize('neutron_2_networks',
                          ['different_routers'],
