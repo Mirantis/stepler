@@ -487,6 +487,70 @@ def test_destroy_controller_check_dhcp(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
 
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('eac820d1-a4b4-43da-a8c6-4514f20300d1')
+def test_reset_primary_controller_check_dhcp(network,
+                                             server,
+                                             nova_floating_ip,
+                                             server_steps,
+                                             os_faults_steps,
+                                             network_steps,
+                                             agent_steps):
+    """**Scenario:** Reset primary controller and check DHCP.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Get primary controller
+    #. Get DHCP agent for primary controller node
+    #. Reschedule network to DHCP agent on primary controller
+        if it is not there yet
+    #. Check DHCP with cirros-dhcpc command on server with sudo
+    #. Reset primary controller
+    #. Wait for primary controller's DHCP agent becoming dead
+    #. Check that dhcp-agent does not in dhcp-agents list for network
+    #. Check that all networks rescheduled from primary controller
+    #. Check DHCP with cirros-dhcpc command on server with sudo
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    primary_controller = os_faults_steps.get_node_by_cmd(
+        config.FUEL_PRIMARY_CONTROLLER_CMD)
+    dhcp_agent = agent_steps.get_agents(node=primary_controller,
+                                        binary=config.NEUTRON_DHCP_SERVICE)[0]
+    agent_steps.reschedule_network_to_dhcp_agent(
+        dhcp_agent, network, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    server_steps.check_dhcp_on_cirros_server(server)
+
+    os_faults_steps.reset_nodes(primary_controller)
+    agent_steps.check_alive([dhcp_agent],
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    agent_steps.check_network_rescheduled(
+        network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    network_steps.check_nets_count_for_agent(dhcp_agent,
+                                             expected_count=0)
+    server_steps.check_dhcp_on_cirros_server(server)
+
+
 @pytest.mark.idempotent_id('a771c0e1-58c0-4b44-8fe2-a3d557504751')
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 def test_kill_check_dhcp_agents(network,

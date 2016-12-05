@@ -1003,19 +1003,27 @@ class OsFaultsSteps(base.BaseSteps):
                 nodes, timeout=config.NODE_REBOOT_TIMEOUT)
 
     @steps_checker.step
-    def reset_nodes(self, nodes, check=True, wait_reboot=True):
+    def reset_nodes(self, nodes, native=False, check=True, wait_reboot=True):
         """Step to reset nodes.
 
         Args:
             nodes (obj): NodeCollection to reset
+            native (bool, optional: flag whether to use reset or
+                poweroff/poweron. By default poweroff/poweron is used
             check (bool, optional): flag whether to check this step or not
+            wait_reboot (bool, optional): flag whether to wait for nodes
+                availability
         """
-        nodes.reset()
-        if check:
-            self.check_nodes_tcp_availability(nodes, must_available=False)
-        if wait_reboot:
-            self.check_nodes_tcp_availability(
-                nodes, timeout=config.NODE_REBOOT_TIMEOUT)
+        if native:
+            nodes.reset()
+            if check:
+                self.check_nodes_tcp_availability(nodes, must_available=False)
+            if wait_reboot:
+                self.check_nodes_tcp_availability(
+                    nodes, timeout=config.NODE_REBOOT_TIMEOUT)
+        else:
+            self.poweroff_nodes(nodes, check=check)
+            self.poweron_nodes(nodes, check=wait_reboot)
 
     @steps_checker.step
     def add_rule_to_drop_port(self, nodes, port, check=True):
