@@ -844,6 +844,20 @@ class OsFaultsSteps(base.BaseSteps):
                    for node_result in result)
 
     @steps_checker.step
+    def get_neutron_l2pop(self):
+        """Step to retrieve neutron L2 population driver enabled or not.
+
+        Returns:
+            bool: is neutron L2 population driver enabled
+        """
+        cmd = "grep -iP '^mechanism_drivers\s*=\s*.+l2population' {}".format(
+            config.NEUTRON_ML2_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.NEUTRON_L3_SERVICE])
+        result = self.execute_cmd(nodes, cmd, check=False)
+        return all(node_result.status == config.STATUS_OK
+                   for node_result in result)
+
+    @steps_checker.step
     def check_router_namespace_presence(self, router, node, must_present=True,
                                         timeout=0):
         """Step to check router namespace presence on compute node.
@@ -1213,3 +1227,41 @@ class OsFaultsSteps(base.BaseSteps):
             vnis.add(packet.getlayer('VXLAN').vni)
 
         assert_that(vnis, only_contains(network['provider:segmentation_id']))
+
+    @steps_checker.step
+    def check_no_arp_traffic_from_ip(self, pcap_path, psrc):
+        """Check that pcap file doesn't contain ARP packets from psrc.
+
+        Args:
+            pcap_path (path): path to pcap file
+            psrc (str): source ip address
+
+        Raises:
+            AssertionError: if check failed
+        """
+        def lfilter(packet):
+            return (packet.haslayer('ARP') and
+                    packet.getlayer('ARP').psrc == psrc)
+
+        packets = list(tcpdump.read_pcap(pcap_path, lfilter))
+        assert_that(packets, is_(empty()))
+
+    @steps_checker.step
+    def check_vxlan_icmp_traffic(self, pcap_path, src):
+        """Check that pcap file contains VXLAN packets with ICMP from src.
+
+        Args:
+            pcap_path (path): path to pcap file
+            src (str): source ip address
+
+        Raises:
+            AssertionError: if check failed
+        """
+        def lfilter(packet):
+            vxlan = packet.getlayer('VXLAN')
+            if vxlan is None:
+                return False
+            return vxlan.haslayer('ICMP') and vxlan.getlayer('IP').src == src
+
+        packets = list(tcpdump.read_pcap(pcap_path, lfilter))
+        assert_that(packets, is_not(empty()))
