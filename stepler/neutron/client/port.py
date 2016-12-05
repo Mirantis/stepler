@@ -14,10 +14,15 @@
 from stepler.neutron.client import base
 
 
+class Port(base.Resource):
+    pass
+
+
 class PortManager(base.BaseNeutronManager):
     """Port (neutron) manager."""
 
     NAME = 'port'
+    _resource_class = Port
 
     def delete(self, port_id):
         """Delete port."""
