@@ -97,11 +97,7 @@ def test_check_east_west_connectivity_between_instances(
 @pytest.mark.parametrize('router',
                          [dict(distributed=True), dict(distributed=False)],
                          ids=['distributed', 'centralized'], indirect=True)
-def test_check_connectivity_to_north_south_routing(cirros_image,
-                                                   flavor,
-                                                   security_group,
-                                                   net_subnet_router,
-                                                   server,
+def test_check_connectivity_to_north_south_routing(server,
                                                    nova_floating_ip,
                                                    server_steps):
     """**Scenario:** Check connectivity to North-South-Routing.
@@ -146,12 +142,7 @@ def test_check_connectivity_to_north_south_routing(cirros_image,
     'router', [dict(distributed=False), dict(distributed=True)],
     ids=['centralized router', 'distributed router'], indirect=True)
 def test_north_south_connectivity_without_floating(
-        cirros_image,
-        flavor,
-        security_group,
-        net_subnet_router,
         server,
-        nova_floating_ip,
         get_ssh_proxy_cmd,
         server_steps):
     """**Scenario:** Check connectivity to North-South-Routing.
@@ -193,10 +184,6 @@ def test_north_south_connectivity_without_floating(
 @pytest.mark.idempotent_id('bbc32bc5-d3ed-4e25-a957-04288420dc54')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_north_south_connectivity_after_ban_clear_l3_on_compute(
-        cirros_image,
-        flavor,
-        security_group,
-        net_subnet_router,
         server,
         nova_floating_ip,
         os_faults_steps,
@@ -255,13 +242,9 @@ def test_north_south_connectivity_after_ban_clear_l3_on_compute(
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 @pytest.mark.destructive
 def test_north_south_connectivity_after_primary_controller_reset(
-        cirros_image,
-        flavor,
-        security_group,
         net_subnet_router,
         server,
         get_ssh_proxy_cmd,
-        nova_floating_ip,
         agent_steps,
         os_faults_steps,
         router_steps,
@@ -345,10 +328,6 @@ def test_north_south_connectivity_after_primary_controller_reset(
 @pytest.mark.idempotent_id('08192558-e632-410f-bded-9d124dcce52c')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_north_south_connectivity_after_reset_compute(
-        cirros_image,
-        flavor,
-        security_group,
-        net_subnet_router,
         server,
         nova_floating_ip,
         os_faults_steps,
@@ -409,7 +388,6 @@ def test_north_south_connectivity_after_reset_compute(
                          ['different_hosts'], indirect=True)
 def test_east_west_connectivity_after_ban_clear_l3_on_compute(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
         get_ssh_proxy_cmd,
         os_faults_steps,
         server_steps):
@@ -470,7 +448,6 @@ def test_east_west_connectivity_after_ban_clear_l3_on_compute(
                          ['different_hosts'], indirect=True)
 def test_east_west_connectivity_after_reset_computes(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
         get_ssh_proxy_cmd,
         os_faults_steps,
         server_steps):
@@ -542,7 +519,6 @@ def test_east_west_connectivity_after_reset_computes(
                          ['different_hosts'], indirect=True)
 def test_east_west_connectivity_after_destroy_controller(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
         get_ssh_proxy_cmd,
         os_faults_steps,
         server_steps):
@@ -676,9 +652,6 @@ def test_associate_floating_ip_after_restart_l3_on_compute(
 @pytest.mark.idempotent_id('d2682741-b7f5-4aec-b6d8-2642ca0ec701')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_check_router_namespace_on_compute_node(
-        cirros_image,
-        flavor,
-        security_group,
         net_subnet_router,
         server,
         os_faults_steps,
@@ -734,9 +707,6 @@ def test_check_router_namespace_on_compute_node(
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 @pytest.mark.parametrize('ban_count', [1, 2])
 def test_check_ban_l3_agent_on_node_with_snat(
-        cirros_image,
-        flavor,
-        security_group,
         net_subnet_router,
         server,
         get_ssh_proxy_cmd,
@@ -809,9 +779,6 @@ def test_check_ban_l3_agent_on_node_with_snat(
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 @pytest.mark.parametrize('agent_number', [0, -1], ids=['first', 'last'])
 def test_check_ban_l3_agents_and_clear_one(
-        cirros_image,
-        flavor,
-        security_group,
         net_subnet_router,
         server,
         get_ssh_proxy_cmd,
@@ -897,3 +864,88 @@ def test_check_ban_l3_agents_and_clear_one(
             server, proxy_cmd=proxy_cmd) as server_ssh:
         server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('149fad6f-a0c9-4434-a7d0-22902399851e')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_update_router_from_distributed_to_centralized(router, router_steps):
+    """**Scenario:** Check update router type from distributed to centralized.
+
+    This test checks that it's not possible to update distributed router to
+        centralized.
+
+    **Setup:**
+
+    #. Create distributed router
+
+    **Steps:**
+
+    #. Try to update router type to centralized and check that BadRequest with
+        correct exception message occurs
+
+    **Teardown:**
+
+    #. Delete router
+    """
+    router_steps.check_router_type_not_changed_to_centralized(router)
+
+
+@pytest.mark.idempotent_id('25e2f9f0-5e3d-439a-94d9-14b7bfec6171')
+@pytest.mark.parametrize('router', [dict(distributed=False)], indirect=True)
+def test_update_router_from_centralized_to_distributed(
+        net_subnet_router,
+        server,
+        nova_floating_ip,
+        os_faults_steps,
+        router_steps,
+        server_steps):
+    """**Scenario:** Check update router type from centralized to distributed.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and centralized router.
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Try to update router type to distributed while router is in active state
+        and check that BadRequest with correct exception message occurs
+    #. Set admin state for router to down
+    #. Update router type to distributed
+    #. Set admin state for router to up
+    #. Check that namespace for router appeared on compute with server
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    _, _, router = net_subnet_router
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    router_steps.check_type_unchangeable_for_active_router(router)
+
+    router_steps.update_router(router, admin_state_up=False)
+    router_steps.update_router(router, distributed=True)
+    router_steps.update_router(router, admin_state_up=True)
+
+    server_host = getattr(server, config.SERVER_ATTR_HOST)
+    host_compute = os_faults_steps.get_node(fqdns=[server_host])
+    os_faults_steps.check_router_namespace_presence(
+        router, host_compute, timeout=config.ROUTER_NAMESPACE_TIMEOUT)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
