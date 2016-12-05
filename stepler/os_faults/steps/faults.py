@@ -906,7 +906,7 @@ class OsFaultsSteps(base.BaseSteps):
         """Step to retrieve nodes with `0` exit code for `cmd` executing.
 
         Args:
-            cmd (str): command to check should node be filtered of not. If
+            cmd (str): command to check should node be filtered or not. If
                 command exit code on node is not `0` - node will be skipped.
 
         Returns:
@@ -924,6 +924,22 @@ class OsFaultsSteps(base.BaseSteps):
             if node.ip in filtered_hosts_ips:
                 fqdns.append(node.fqdn)
         return self.get_nodes(fqdns=fqdns)
+
+    @steps_checker.step
+    def get_node_by_cmd(self, cmd):
+        """Step to retrieve one node with `0` exit code for `cmd` executing.
+
+        Args:
+            cmd (str): command to check should node be filtered or not. If
+                command exit code on node is not `0` - node will be skipped.
+
+        Returns:
+            obj: NodeCollection with one filtered random node
+
+        Raises:
+            AssertionError: if there are no nodes after filtering
+        """
+        return self.get_nodes_by_cmd(cmd).pick()
 
     @steps_checker.step
     def check_nodes_tcp_availability(self, nodes, must_available=True,
