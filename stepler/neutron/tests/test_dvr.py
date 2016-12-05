@@ -897,3 +897,91 @@ def test_check_ban_l3_agents_and_clear_one(
             server, proxy_cmd=proxy_cmd) as server_ssh:
         server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('149fad6f-a0c9-4434-a7d0-22902399851e')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_update_router_from_distributed_to_centralized(router, router_steps):
+    """**Scenario:** Check update router type from distributed to centralized.
+
+    This test checks that it's not possible to update distributed router to
+        centralized.
+
+    **Setup:**
+
+    #. Create distributed router
+
+    **Steps:**
+
+    #. Try to update router type to centralized and check that BadRequest with
+        correct exception message occurs
+
+    **Teardown:**
+
+    #. Delete router
+    """
+    router_steps.check_router_type_not_changed_to_centralized(router)
+
+
+@pytest.mark.idempotent_id('25e2f9f0-5e3d-439a-94d9-14b7bfec6171')
+@pytest.mark.parametrize('router', [dict(distributed=False)], indirect=True)
+def test_update_router_from_centralized_to_distributed(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        nova_floating_ip,
+        os_faults_steps,
+        router_steps,
+        server_steps):
+    """**Scenario:** Check update router type from centralized to distributed.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and centralized router.
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Try to update router type to distributed while router is in active state
+        and check that BadRequest with correct exception message occurs
+    #. Set admin state for router to down
+    #. Update router type to distributed
+    #. Set admin state for router to up
+    #. Check that namespace for router appeared on compute with server
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    _, _, router = net_subnet_router
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    router_steps.check_type_unchangeable_for_active_router(router)
+
+    router_steps.update_router(router, admin_state_up=False)
+    router_steps.update_router(router, distributed=True)
+    router_steps.update_router(router, admin_state_up=True)
+
+    server_host = getattr(server, config.SERVER_ATTR_HOST)
+    host_compute = os_faults_steps.get_node(fqdns=[server_host])
+    os_faults_steps.check_router_namespace_presence(
+        router, host_compute, timeout=config.ROUTER_NAMESPACE_TIMEOUT)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
