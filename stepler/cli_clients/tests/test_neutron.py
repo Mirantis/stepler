@@ -92,5 +92,5 @@ def test_create_distributed_router_with_member_user(
         username=new_user_with_project['username'],
         password=new_user_with_project['password'])
 
-    router_steps.check_router_attrs(router_name,
-                                    expected_attr_values={'distributed': True})
+    router_steps.check_router_attrs(router_name, distributed=True)
+

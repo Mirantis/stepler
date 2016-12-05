@@ -17,8 +17,9 @@ Router steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, equal_to,
-                      has_entries, is_in, is_not)  # noqa H301
+from hamcrest import (assert_that, calling, empty, equal_to,
+                      has_entries, is_in, is_not, raises)  # noqa H301
+from neutronclient.common import exceptions
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -212,24 +213,18 @@ class RouterSteps(base.BaseSteps):
         return routers
 
     @steps_checker.step
-    def check_router_attrs(self, name, expected_attr_values=None):
+    def check_router_attrs(self, name, **kwargs):
         """Step to check whether router has expected attributes or not.
 
         Args:
             name (str): name of the router
-            expected_attr_values (dict|None): expected attribute values.
-                If None, only check that elements of router output are
-                not empty.
+            **kwargs: attributes to check
 
         Raises:
             AssertionError: if check failed
         """
         router_attr = self.get_router(name=name)
-
-        assert_that(router_attr, is_not(empty()))
-        if expected_attr_values:
-            assert_that(router_attr,
-                        has_entries(**expected_attr_values))
+        assert_that(router_attr, has_entries(kwargs))
 
     @steps_checker.step
     def remove_router_from_l3_agent(self, router, l3_agent, check=True):
@@ -270,3 +265,58 @@ class RouterSteps(base.BaseSteps):
                            self._client.get_routers_on_l3_agent(
                                l3_agent['id'])]
             assert_that(router['id'], is_in(routers_ids))
+
+    @steps_checker.step
+    def update_router(self, router, check=True, **kwargs):
+        """Step to update router attributes.
+
+        Args:
+            router (dict): router dict
+            check (bool): flag whether to check step or not
+            **kwargs: attributes to pass to API
+
+        Raises:
+            AssertionError: if check failed
+        """
+        self._client.update(router['id'], **kwargs)
+
+        if check:
+            self.check_router_attrs(router['name'], **kwargs)
+
+    @steps_checker.step
+    def check_router_type_not_changed_to_centralized(self, router):
+        """Step to check router is not updated from distributed to centralized.
+
+        Args:
+            router (dict): router dict
+
+        Raises:
+            AssertionError: if BadRequest is not appeared or exception message
+                is unexpected.
+        """
+        exception_message = ("Migration from distributed router to "
+                             "centralized is not supported.")
+
+        assert_that(calling(self.update_router).with_args(
+            router=router, distributed=False, check=False),
+            raises(exceptions.BadRequest, exception_message))
+
+    @steps_checker.step
+    def check_change_type_of_active_router(self, router):
+        """Step to check that router type can't be changed for active router.
+
+        Args:
+            router (dict): router dict
+
+        Raises:
+            AssertionError: if BadRequest is not appeared or exception message
+                is unexpected.
+        """
+        exception_message = (
+            "Cannot upgrade active router to distributed. "
+            "Please set router admin_state_up to False prior to upgrade")
+
+        assert_that(
+            calling(self.update_router).with_args(
+                router=router, distributed=True, check=False),
+            raises(exceptions.BadRequest, exception_message))

@@ -122,6 +122,7 @@ __all__ = sorted([  # sort for documentation
     'subnet',
     'create_router',
     'router',
+    'routers_cleanup',
     'add_router_interfaces',
     'create_port',
     'neutron_client',
