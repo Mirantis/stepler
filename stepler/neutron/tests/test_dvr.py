@@ -1078,3 +1078,79 @@ def test_update_router_from_centralized_to_distributed(
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.destructive
+@pytest.mark.idempotent_id('4a9012bd-6fbb-43e2-b38c-c7825d03cd80')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+def test_connectivity_after_ban_l3_agent_many_times(
+        net_subnet_router,
+        server,
+        get_ssh_proxy_cmd,
+        agent_steps,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check North-South after ban/clear L3 agent on controller.
+
+    This test checks North-South connectivity without floating after ban and
+        clear l3 agent on controller with snat many times.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and centralized router.
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Check that ping from server to 8.8.8.8 is successful
+    #. Find node with SNAT for router
+    #. Ban all L3 agents on other controller
+    #. Ban and clear L3 agent on controller with snat 40 times
+    #. Wait for L3 agent becomes ACTIVE
+    #. Check that ping from server to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    _, _, router = net_subnet_router
+
+    proxy_cmd = get_ssh_proxy_cmd(server)
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
+
+    l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
+    current_l3_agent_node = os_faults_steps.get_nodes_for_agents([l3_agent])
+
+    l3_agents_nodes = os_faults_steps.get_nodes_with_services(
+        service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API])
+    other_l3_agents_nodes = l3_agents_nodes - current_l3_agent_node
+    os_faults_steps.terminate_service(service_name=config.NEUTRON_L3_SERVICE,
+                                      nodes=other_l3_agents_nodes)
+
+    for _ in range(40):
+        os_faults_steps.terminate_service(
+            service_name=config.NEUTRON_L3_SERVICE,
+            nodes=current_l3_agent_node)
+        os_faults_steps.start_service(
+            service_name=config.NEUTRON_L3_SERVICE,
+            nodes=current_l3_agent_node)
+
+    agent_steps.check_alive(
+        agents=[l3_agent], timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
