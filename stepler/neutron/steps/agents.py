@@ -261,12 +261,14 @@ class AgentSteps(base.BaseSteps):
         waiter.wait(_check_router_rescheduled, timeout_seconds=timeout)
 
     @steps_checker.step
-    def remove_network_from_dhcp_agent(self, dhcp_agent, network, check=True):
+    def remove_network_from_dhcp_agent(self, dhcp_agent, network, timeout=0,
+                                       check=True):
         """Step to remove network from DHCP agent.
 
         Args:
             dhcp_agent (dict): DHCP agent to remove network from
             network (dict): network to remove from DHCP agent
+            timeout (int): seconds to wait a result of check
             check (bool, optional): flag whether to check step or not
 
         Raises:
@@ -274,17 +276,20 @@ class AgentSteps(base.BaseSteps):
         """
         self._client.remove_network_from_dhcp_agent(dhcp_agent['id'],
                                                     network['id'])
-
         if check:
-            self.check_network_rescheduled(network, dhcp_agent)
+            self.check_network_rescheduled(network,
+                                           dhcp_agent,
+                                           timeout=timeout)
 
     @steps_checker.step
-    def add_network_to_dhcp_agent(self, dhcp_agent, network, check=True):
+    def add_network_to_dhcp_agent(self, dhcp_agent, network, timeout=0,
+                                  check=True):
         """Step to add network to DHCP agent.
 
         Args:
             dhcp_agent (dict): DHCP agent to add network to
             network (dict): network to add to DHCP agent
+            timeout (int): seconds to wait a result of check
             check (bool, optional): flag whether to check step or not
 
         Raises:
@@ -293,7 +298,9 @@ class AgentSteps(base.BaseSteps):
         self._client.add_network_to_dhcp_agent(dhcp_agent['id'], network['id'])
 
         if check:
-            self.check_network_is_on_agent(network, dhcp_agent)
+            self.check_network_is_on_agent(network,
+                                           dhcp_agent,
+                                           timeout=timeout)
 
     @steps_checker.step
     def reschedule_network_to_dhcp_agent(self,

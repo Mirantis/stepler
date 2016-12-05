@@ -402,3 +402,5 @@ TCPDUMP_LATENCY = 2
 
 # Check if current node is fuel primary controller
 FUEL_PRIMARY_CONTROLLER_CMD = "hiera roles | grep primary-controller"
+FUEL_NON_PRIMARY_CONTROLLERS_CMD = ("hiera roles | grep controller | "
+                                    "grep -v primary-controller")

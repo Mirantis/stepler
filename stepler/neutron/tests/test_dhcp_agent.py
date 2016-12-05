@@ -414,15 +414,25 @@ def test_ban_dhcp_agent_many_times(network,
 
 
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
-@pytest.mark.idempotent_id('d794afda-4e3e-422d-80be-525e6517d625')
-def test_destroy_primary_controller_check_dhcp(network,
-                                               server,
-                                               nova_floating_ip,
-                                               server_steps,
-                                               os_faults_steps,
-                                               network_steps,
-                                               agent_steps):
-    """**Scenario:** Destroy primary controller and check DHCP.
+@pytest.mark.idempotent_id(
+    'd794afda-4e3e-422d-80be-525e6517d625',
+    controller_cmd=config.FUEL_PRIMARY_CONTROLLER_CMD)
+@pytest.mark.idempotent_id(
+    '221c4299-4ba6-4257-9f65-b280e2b69eb4',
+    controller_cmd=config.FUEL_NON_PRIMARY_CONTROLLERS_CMD)
+@pytest.mark.parametrize('controller_cmd',
+                         [config.FUEL_PRIMARY_CONTROLLER_CMD,
+                          config.FUEL_NON_PRIMARY_CONTROLLERS_CMD],
+                         ids=['primary', 'non_primary'])
+def test_destroy_controller_check_dhcp(network,
+                                       server,
+                                       nova_floating_ip,
+                                       server_steps,
+                                       os_faults_steps,
+                                       network_steps,
+                                       agent_steps,
+                                       controller_cmd):
+    """**Scenario:** Destroy controller and check DHCP.
 
     **Setup:**
 
@@ -436,15 +446,16 @@ def test_destroy_primary_controller_check_dhcp(network,
     **Steps:**
 
     #. Assign floating ip to server
-    #. Get primary controller
-    #. Get DHCP agent for primary controller node
-    #. Reschedule network to DHCP agent on primary controller
-        if it is not there yet
+    #. Get primary/non primary controller
+    #. Get DHCP agent for primary/non primary controller node
+    #. Reschedule network to DHCP agent on primary/non primary
+        controller if it is not there yet
     #. Check DHCP with cirros-dhcpc command on server with sudo
-    #. Destroy primary controller
+    #. Destroy primary/non primary controller
     #. Wait for primary controller's DHCP agent becoming dead
     #. Check that dhcp-agent does not in dhcp-agents list for network
-    #. Check that all networks rescheduled from primary controller
+    #. Check that all networks rescheduled from primary/non primary
+        controller
     #. Check DHCP with cirros-dhcpc command on server with sudo
 
     **Teardown:**
@@ -457,16 +468,15 @@ def test_destroy_primary_controller_check_dhcp(network,
     #. Delete cirros image
     """
     server_steps.attach_floating_ip(server, nova_floating_ip)
-    primary_controller = os_faults_steps.get_nodes_by_cmd(
-        config.FUEL_PRIMARY_CONTROLLER_CMD)
-    dhcp_agent = agent_steps.get_agents(node=primary_controller,
+    controller = os_faults_steps.get_node_by_cmd(controller_cmd)
+    dhcp_agent = agent_steps.get_agents(node=controller,
                                         binary=config.NEUTRON_DHCP_SERVICE)[0]
     agent_steps.reschedule_network_to_dhcp_agent(
         dhcp_agent, network, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
     server_steps.check_dhcp_on_cirros_server(server)
 
-    os_faults_steps.poweroff_nodes(primary_controller)
+    os_faults_steps.poweroff_nodes(controller)
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
