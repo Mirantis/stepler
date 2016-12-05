@@ -26,7 +26,7 @@ import time
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
                       has_item, has_properties, is_, is_in, is_not,
-                      less_than_or_equal_to, raises)  # noqa H301
+                      less_than_or_equal_to, raises, greater_than)  # noqa H301
 
 from novaclient import exceptions as nova_exceptions
 import paramiko
@@ -809,14 +809,31 @@ class ServerSteps(base.BaseSteps):
         assert_that(result.received, equal_to(0))
 
     @steps_checker.step
+    def check_no_arping_for_ip(self, server_ssh, ip, iface="eth0", count=1):
+        """Verify step to check arping for ip.
+
+        Args:
+            server_ssh (SshClient): instance of ssh client
+            ip (str): ip address to ping
+            iface (str, optional): name of interface to arping
+            count (int, optional): count of packets to send
+
+        Raises:
+            AssertionError: if some of packets are unperlied
+        """
+        with arping.arping(ip, iface=iface,
+                           remote=server_ssh, count=count) as result:
+            pass
+        assert_that(result, has_entries(sent=greater_than(0), received=0))
+
+    @steps_checker.step
     @contextlib.contextmanager
     def check_arping_loss_context(self, server_ssh, ip, iface='eth0',
                                   max_loss=0):
         """Step to check that arping losses inside CM is less than max_loss.
 
         Args:
-            server_ssh (obj, optional): instance of
-                stepler.third_party.ssh.SshClient
+            server_ssh (SshClient): instance of ssh client
             ip (str): ip address to ping
             iface (str, optional): name of interface to arping
             max_loss (int): maximum allowed pings loss
