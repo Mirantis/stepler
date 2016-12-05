@@ -46,20 +46,21 @@ __all__ = [
 # predefined permitted calls
 PERMITTED_CALLS = [
     'append',
-    'list',
-    'next',
-    'iter',
-    'put',  # TODO(schipiga): update attrdict method
-    'range',
-    'sorted',
-    'set_trace',
-    'time',
-    'str',
     'embed',
     'format',
     'getattr',
-    'len',
+    'iter',
     'keys',
+    'len',
+    'list',
+    'min',
+    'next',
+    'put',  # TODO(schipiga): update attrdict method
+    'range',
+    'set_trace',
+    'sorted',
+    'str',
+    'time',
 ]
 
 # register utils

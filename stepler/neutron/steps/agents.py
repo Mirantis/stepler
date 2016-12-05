@@ -149,7 +149,7 @@ class AgentSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        dhcp_agents = self.get_dhcp_agents_for_net(network)
+        dhcp_agents = self.get_dhcp_agents_for_net(network, check=False)
         assert_that(dhcp_agents, has_length(expected_count))
 
     @steps_checker.step

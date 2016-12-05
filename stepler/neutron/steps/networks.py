@@ -134,6 +134,32 @@ class NetworkSteps(base.BaseSteps):
         return networks
 
     @steps_checker.step
+    def check_networks_are_accessible(self, must_be_accessible=True,
+                                      timeout=0):
+        """Step to check whether networks are accessible.
+
+        Args:
+            must_be_accessible (bool, optional): flag to wait for network
+                accessibility or inaccessibility
+            timeout (int): seconds to wait for result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+
+        def _check_networks_are_accessible():
+            try:
+                self.get_networks(check=False)
+                is_run = True
+            except Exception:
+                is_run = False
+
+            return waiter.expect_that(is_run, equal_to(must_be_accessible))
+
+        waiter.wait(_check_networks_are_accessible,
+                    timeout_seconds=timeout)
+
+    @steps_checker.step
     def get_network_id_by_mac(self, mac):
         """Step to get network ID by server MAC.
 
