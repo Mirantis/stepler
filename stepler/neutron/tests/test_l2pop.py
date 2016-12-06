@@ -115,3 +115,100 @@ def test_tunnels_establishing(
 
     os_faults_steps.check_ovs_tunnels(compute_3, compute_1 | compute_2)
     os_faults_steps.check_ovs_tunnels(compute_1 | compute_2, compute_3)
+
+
+@pytest.mark.requires("computes_count >= 2")
+@pytest.mark.idempotent_id('39c51366-ea33-418e-9761-5f332b7ba1da')
+def test_broadcast_traffic_for_single_network(
+        cirros_image,
+        flavor,
+        neutron_2_servers_diff_nets_with_floating,
+        server_steps,
+        port_steps,
+        os_faults_steps):
+    """**Scenario:** Check broadcast traffic for single network.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router
+    #. Create network_2 with subnet_2
+    #. Create server_1
+    #. Create server_3 on another compute and connect it to network_2
+    #. Create and attach floating IP for each server
+
+    **Steps:**
+
+    #. Create server_2 on same compute as server_3 and connect it to network_1
+    #. Start arping from server_1 to server_2
+    #. Start tcpdump on compute with server_2 with server_2 port tap device
+    #. Stop tcpdump
+    #. Check that there are some ARP packets from server_1 on pcap file
+    #. Start tcpdump on compute with server_2 with server_3 port tap device
+    #. Stop tcpdump
+    #. Check that there are no ARP packets from server_1 on pcap file
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete floating IPs
+    #. Delete networks, subnets, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_1, server_3 = neutron_2_servers_diff_nets_with_floating.servers
+    network_1 = neutron_2_servers_diff_nets_with_floating.networks[0]
+
+    # Boot server_2
+    server_2_compute_fqdn = getattr(server_3, config.SERVER_ATTR_HOST)
+    server_2_compute = os_faults_steps.get_nodes(fqdns=[server_2_compute_fqdn])
+    server_2 = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network_1],
+        availability_zone='nova:{}'.format(server_2_compute_fqdn))[0]
+
+    # Get servers' ports
+    server_2_port = port_steps.get_port(
+        device_owner=config.PORT_DEVICE_OWNER_SERVER, device_id=server_2.id)
+    server_3_port = port_steps.get_port(
+        device_owner=config.PORT_DEVICE_OWNER_SERVER, device_id=server_3.id)
+
+    # Get servers' fixed IP addresses
+    server_1_fixed_ip = server_steps.get_fixed_ip(server_1)
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
+
+    with server_steps.get_server_ssh(server_1) as server_ssh:
+        with server_steps.check_arping_loss_context(
+                server_ssh,
+                ip=server_2_fixed_ip,
+                max_loss=config.NEUTRON_OVS_RESTART_MAX_ARPING_LOSS):
+            # Capture traffic through server_2 tap iface
+            tcpdump_files = os_faults_steps.start_tcpdump(
+                server_2_compute,
+                args="-n src host {ip} -i tap{port}".format(
+                    ip=server_1_fixed_ip, port=server_2_port['id'][:11]))
+
+            os_faults_steps.stop_tcpdump(server_2_compute, tcpdump_files)
+            pcap_files = os_faults_steps.download_tcpdump_results(
+                server_2_compute, tcpdump_files)
+            pcap_file = pcap_files[server_2_compute_fqdn]
+            os_faults_steps.check_arp_traffic_from_ip(pcap_file,
+                                                      server_1_fixed_ip)
+
+            # Capture traffic through server_3 tap iface
+            tcpdump_files = os_faults_steps.start_tcpdump(
+                server_2_compute,
+                args="-n src host {ip} -i tap{port}".format(
+                    ip=server_1_fixed_ip, port=server_3_port['id'][:11]))
+
+            os_faults_steps.stop_tcpdump(server_2_compute, tcpdump_files)
+            pcap_files = os_faults_steps.download_tcpdump_results(
+                server_2_compute, tcpdump_files)
+            pcap_file = pcap_files[server_2_compute_fqdn]
+            os_faults_steps.check_arp_traffic_from_ip(pcap_file,
+                                                      server_1_fixed_ip,
+                                                      must_present=False)

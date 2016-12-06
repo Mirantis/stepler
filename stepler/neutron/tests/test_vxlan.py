@@ -216,5 +216,6 @@ def test_broadcast_traffic_propagation_with_l2pop(
                                                           tcpdump_files)
 
     pcap_file = pcap_files[server_2_compute_fqdn]
-    os_faults_steps.check_no_arp_traffic_from_ip(pcap_file, server_1_fixed_ip)
+    os_faults_steps.check_arp_traffic_from_ip(pcap_file, server_1_fixed_ip,
+                                              must_present=False)
     os_faults_steps.check_vxlan_icmp_traffic(pcap_file, server_1_fixed_ip)
