@@ -195,3 +195,26 @@ def test_modify_project_members_update_quotas(admin_role,
     project_steps.get_projects()
     role_steps.revoke_role(role=admin_role, project=project, group=group)
     project_steps.get_projects()
+
+
+@pytest.mark.idempotent_id('4a9badd2-9cb4-4fbd-b5ae-8751779569dd')
+def test_tenants(
+        tenant_steps
+        # user_steps
+):
+    """**Scenario:** Failed to modify project members and update project quotas.
+
+    **Setup:**
+
+    #. Get admin role
+
+    **Steps:**
+
+    #. Create project
+
+    **Teardown:**
+
+
+    """
+    # user_steps.get_users()
+    tenant_steps.get_tenants()

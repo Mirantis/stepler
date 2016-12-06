@@ -22,6 +22,7 @@ from .groups import *  # noqa
 from .keystone import *  # noqa
 from .projects import *  # noqa
 from .roles import *  # noqa
+from .tenants import *  # noqa
 from .tokens import *  # noqa
 from .users import *  # noqa
 
@@ -42,6 +43,12 @@ __all__ = sorted([  # sort for documentation
     'project_steps',
     'project',
     'current_project',
+
+    'create_tenant',
+    'get_tenant_steps',
+    'tenant_steps',
+    'tenant',
+    'current_tenant',
 
     'admin_role',
     'create_role',

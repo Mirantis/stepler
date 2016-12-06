@@ -53,4 +53,5 @@ def keystone_client(get_keystone_client):
     Returns:
         keystoneclient.client.Client: authenticated keystone client
     """
+    import ipdb; ipdb.set_trace()
     return get_keystone_client()
