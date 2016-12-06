@@ -1191,12 +1191,14 @@ class OsFaultsSteps(base.BaseSteps):
         assert_that(vnis, only_contains(network['provider:segmentation_id']))
 
     @steps_checker.step
-    def check_no_arp_traffic_from_ip(self, pcap_path, psrc):
-        """Check that pcap file doesn't contain ARP packets from psrc.
+    def check_arp_traffic_from_ip(self, pcap_path, psrc, must_present=True):
+        """Check that pcap file contains (or not) ARP packets from psrc.
 
         Args:
             pcap_path (path): path to pcap file
             psrc (str): source ip address
+            must_present (bool, optional): flag whether packets should to be in
+                pcap file or not
 
         Raises:
             AssertionError: if check failed
@@ -1206,7 +1208,8 @@ class OsFaultsSteps(base.BaseSteps):
                     packet.getlayer('ARP').psrc == psrc)
 
         packets = list(tcpdump.read_pcap(pcap_path, lfilter))
-        assert_that(packets, is_(empty()))
+        matcher = is_not(empty()) if must_present else is_(empty())
+        assert_that(packets, matcher)
 
     @steps_checker.step
     def check_vxlan_icmp_traffic(self, pcap_path, src):
