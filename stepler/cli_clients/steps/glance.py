@@ -18,7 +18,7 @@ Glance CLI client steps
 # limitations under the License.
 
 from hamcrest import (assert_that, contains_string, is_, is_in, is_not,
-                      empty, only_contains)  # noqa
+                      empty)  # noqa
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -404,9 +404,8 @@ class CliGlanceSteps(base.BaseCliSteps):
         assert_that(image[property_key], is_(property_value))
 
     @steps_checker.step
-    def check_images_filtered_by_name(self, images, property_filter,
-                                      api_version=config.
-                                      CURRENT_GLANCE_VERSION):
+    def check_images_filtered(self, images, property_filter,
+                              api_version=config.CURRENT_GLANCE_VERSION):
         """Step to check that images list is filtered.
 
         Args:
@@ -415,7 +414,10 @@ class CliGlanceSteps(base.BaseCliSteps):
             api_version (int): glance api version (1 or 2)
         """
         for image in images:
-            properties = property_filter + '=' + image['name']
+            if property_filter == 'name':
+                properties = property_filter + '=' + image['name']
+            elif property_filter == 'disk_format':
+                properties = property_filter + '=' + image['disk_format']
             filtered_images = self.list_images(property_filter=properties,
                                                api_version=api_version)
-            assert_that(filtered_images.values(), only_contains(image['name']))
+            assert_that(image['name'], is_in(filtered_images.values()))
