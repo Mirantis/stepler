@@ -260,7 +260,7 @@ class ServerSteps(base.BaseSteps):
         return chunk_serializer.load(meta, config.CREDENTIALS_PREFIX)
 
     @steps_checker.step
-    def get_server_ssh(self, server, ip=None, proxy_cmd=None,
+    def get_server_ssh(self, server, ip=None, proxy_cmd=None, credentials=None,
                        ssh_timeout=config.SSH_CLIENT_TIMEOUT, check=True):
         """Step to get SSH connect to server.
 
@@ -268,6 +268,7 @@ class ServerSteps(base.BaseSteps):
             server (object): nova server
             ip (str): ip of server
             proxy_cmd (str): ssh client proxy command
+            credentials (dict): dict with username, password and private_key
             ssh_timeout (int): timeout to establish ssh connection
             check (bool): flag whether to check step or not
 
@@ -283,7 +284,8 @@ class ServerSteps(base.BaseSteps):
             else:
                 ip = self.get_ips(server, 'fixed').keys()[0]
 
-        credentials = self.get_server_credentials(server)
+        if credentials is None:
+            credentials = self.get_server_credentials(server)
 
         server_ssh = ssh.SshClient(ip,
                                    pkey=credentials.get('private_key'),

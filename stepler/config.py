@@ -405,3 +405,6 @@ TCPDUMP_LATENCY = 2
 FUEL_PRIMARY_CONTROLLER_CMD = "hiera roles | grep primary-controller"
 FUEL_NON_PRIMARY_CONTROLLERS_CMD = ("hiera roles | grep controller | "
                                     "grep -v primary-controller")
+
+# Command to shutdown br-ex
+SHUTDOWN_BR_EX_CMD = "ip link set br-ex down"
