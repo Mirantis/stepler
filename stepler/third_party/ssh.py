@@ -20,6 +20,7 @@ SSH client
 import contextlib
 import logging
 import select
+import socket
 import time
 
 import paramiko
@@ -116,16 +117,24 @@ class SshClient(object):
         self._timeout = timeout
         self._username = username
         self._password = password
-        self._ssh = paramiko.SSHClient()
-        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._proxy_cmd = proxy_cmd
         self._sudo = False
+        self._ssh = None
+
+    @property
+    def closed(self):
+        return self._ssh is None
 
     def connect(self):
         """Connect to ssh server."""
+        if not self.closed:
+            raise RuntimeError('SSH is opened already')
+
         sock = paramiko.ProxyCommand(self._proxy_cmd) \
             if self._proxy_cmd else None
 
+        self._ssh = paramiko.SSHClient()
+        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._ssh.connect(
             self._host,
             self._port,
@@ -138,7 +147,20 @@ class SshClient(object):
 
     def close(self):
         """Close ssh connection."""
+        if self.closed:
+            raise RuntimeError('SSH is closed already')
         self._ssh.close()
+        self._ssh = None
+
+    def check(self):
+        """Check SSH connection."""
+        try:
+            self.connect()
+            return True
+        except (paramiko.SSHException, socket.error):
+            return False
+        finally:
+            self.close()
 
     def __enter__(self):
         self.connect()

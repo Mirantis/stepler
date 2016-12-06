@@ -21,7 +21,6 @@ import collections
 import contextlib
 import itertools
 import os
-import socket
 import time
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
@@ -29,7 +28,6 @@ from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
                       less_than_or_equal_to, raises, greater_than)  # noqa H301
 
 from novaclient import exceptions as nova_exceptions
-import paramiko
 from waiting import wait
 
 from stepler import base
@@ -292,32 +290,58 @@ class ServerSteps(base.BaseSteps):
                                    timeout=ssh_timeout,
                                    proxy_cmd=proxy_cmd)
         if check:
-            self.check_server_ssh_connect(server_ssh,
-                                          config.SSH_CONNECT_TIMEOUT)
+            self.check_ssh_connection_establishment(
+                server_ssh, timeout=config.SSH_CONNECT_TIMEOUT)
 
         return server_ssh
 
     @steps_checker.step
-    def check_server_ssh_connect(self, server_ssh, timeout=0):
-        """Step to check ssh connect to server.
+    def check_ssh_connection_establishment(self, server_ssh, must_work=True,
+                                           timeout=0):
+        """Step to check that ssh connection can be established.
 
         Args:
-            server_ssh (ssh.SshClient): ssh connection to nova server
+            server_ssh (ssh.SshClient): ssh connection
+            timeout (int, optional): seconds to wait a result of check
+
+        Raises:
+            RuntimeError: if `server_ssh` is not closed
+            TimeoutExpired: if check failed after timeout
+        """
+        if not server_ssh.closed:
+            raise RuntimeError(
+                '`server_shh` passed to check should be closed.')
+
+        def _check_ssh_connection_establishment():
+            return server_ssh.check() == must_work
+
+        waiter.wait(_check_ssh_connection_establishment,
+                    timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_ssh_connection(self, server_ssh, must_operable=True, timeout=0):
+        """Step to check active ssh connection.
+
+        Args:
+            server_ssh (ssh.SshClient): ssh connection
             timeout (int): seconds to wait a result of check
 
         Raises:
+            RuntimeError: if `server_ssh` is closed
             TimeoutExpired: if check failed after timeout
         """
-        def predicate():
-            try:
-                server_ssh.connect()
-                return True
-            except (paramiko.SSHException, socket.error):
-                return False
-            finally:
-                server_ssh.close()
+        if server_ssh.closed:
+            raise RuntimeError('`server_shh` passed to check is closed.')
 
-        wait(predicate, timeout_seconds=timeout)
+        def _check_ssh_connection():
+            try:
+                server_ssh.execute('hostname', timeout=timeout)
+                operable = True
+            except Exception:
+                operable = False
+            return waiter.expect_that(operable, equal_to(must_operable))
+
+        waiter.wait(_check_ssh_connection, timeout_seconds=timeout)
 
     @steps_checker.step
     def attach_floating_ip(self, server, floating_ip, check=True):
