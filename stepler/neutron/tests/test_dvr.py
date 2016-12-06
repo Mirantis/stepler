@@ -1154,3 +1154,63 @@ def test_connectivity_after_ban_l3_agent_many_times(
             server, proxy_cmd=proxy_cmd) as server_ssh:
         server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('802b2be3-70b2-460a-9ef1-1c7a8cb679c8')
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+@pytest.mark.destructive
+def test_north_south_floating_ip_shut_down_br_ex_on_controllers(
+        server,
+        nova_floating_ip,
+        os_faults_steps,
+        server_steps):
+    """**Scenario:** Check North-South connectivity after shut-downing br-ex.
+
+    This test checks North-South connectivity with floatingIP after
+        shut-downing br-ex on all controllers.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check that ping from server to 8.8.8.8 is successful
+    #. Shut down br-ex on all controllers
+    #. Connect to server using floating IP and check that ping from server to
+        8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_credentials = server_steps.get_server_credentials(server)
+
+    with server_steps.get_server_ssh(server) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+    nodes = os_faults_steps.get_nodes(service_names=[config.NOVA_API])
+    os_faults_steps.execute_cmd(nodes=nodes, cmd=config.SHUTDOWN_BR_EX_CMD)
+
+    with server_steps.get_server_ssh(
+            server,
+            ip=nova_floating_ip.ip,
+            credentials=server_credentials) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
