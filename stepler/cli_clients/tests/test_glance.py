@@ -368,7 +368,36 @@ def test_filter_names_in_images_list(glance_steps, cli_glance_steps,
     qcow_images = glance_steps.create_images(
         image_names=utils.generate_ids(count=3),
         image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
-    cli_glance_steps.check_images_filtered_by_name(
+    cli_glance_steps.check_images_filtered(
         images=qcow_images,
         property_filter='name',
+        api_version=api_version)
+
+
+# FIXME(anesterova): add test for api_version=1 when bug #1647598 will be fixed
+@pytest.mark.idempotent_id('183093de-d619-4ad4-83c2-842ba3c69162')
+def test_filter_disk_formats_in_images_list(glance_steps, cli_glance_steps,
+                                            api_version=2):
+    """**Scenario:** Check that created images are filtered.
+
+    **Steps:**
+
+    #. Create 3 images with disk format qcow2 with Glance API
+    #. Create 3 images with disk format ami with Glance API
+    #. Check that created images filtered with disk_format using CLI
+
+    **Teardown:**
+
+    #. Delete images
+    """
+    qcow_images = glance_steps.create_images(
+        image_names=utils.generate_ids(count=3),
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
+    ami_images = glance_steps.create_images(
+        image_names=utils.generate_ids(count=3),
+        disk_format='ami',
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
+    cli_glance_steps.check_images_filtered(
+        images=qcow_images + ami_images,
+        property_filter='disk_format',
         api_version=api_version)
