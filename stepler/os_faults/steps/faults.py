@@ -1190,6 +1190,27 @@ class OsFaultsSteps(base.BaseSteps):
 
         assert_that(vnis, only_contains(network['provider:segmentation_id']))
 
+    def _get_arp_traffic_from_ip(self, pcap_path, psrc):
+        def lfilter(packet):
+            return (packet.haslayer('ARP') and
+                    packet.getlayer('ARP').psrc == psrc)
+
+        return list(tcpdump.read_pcap(pcap_path, lfilter))
+
+    @steps_checker.step
+    def check_arp_traffic_from_ip(self, pcap_path, psrc):
+        """Check that pcap file contains ARP packets from psrc.
+
+        Args:
+            pcap_path (path): path to pcap file
+            psrc (str): source ip address
+
+        Raises:
+            AssertionError: if check failed
+        """
+        packets = self._get_arp_traffic_from_ip(pcap_path, psrc)
+        assert_that(packets, is_not(empty()))
+
     @steps_checker.step
     def check_no_arp_traffic_from_ip(self, pcap_path, psrc):
         """Check that pcap file doesn't contain ARP packets from psrc.
@@ -1201,11 +1222,7 @@ class OsFaultsSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        def lfilter(packet):
-            return (packet.haslayer('ARP') and
-                    packet.getlayer('ARP').psrc == psrc)
-
-        packets = list(tcpdump.read_pcap(pcap_path, lfilter))
+        packets = self._get_arp_traffic_from_ip(pcap_path, psrc)
         assert_that(packets, is_(empty()))
 
     @steps_checker.step
