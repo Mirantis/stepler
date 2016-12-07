@@ -143,23 +143,33 @@ def add_router_interfaces(router_steps):
     After the test remove added interfaces from router.
 
     Args:
-        router_steps (object): instantiated neutron steps
+        router_steps (object): instantiated router steps
 
     Returns:
         function: function to add interfaces to router
     """
-    _cleanup_data = []
+    _cleanup_subnet_data = []
+    _cleanup_port_data = []
 
-    def _add_router_interfaces(router, subnets=()):
-        _cleanup_data.append([router, subnets])
+    def _add_router_interfaces(router, subnets=(), ports=()):
+
+        _cleanup_subnet_data.append([router, subnets])
         for subnet in subnets:
             router_steps.add_subnet_interface(router, subnet)
 
+        _cleanup_port_data.append([router, ports])
+        for port in ports:
+            router_steps.add_port_interface(router, port)
+
     yield _add_router_interfaces
 
-    for router, subnets in _cleanup_data:
+    for router, subnets in _cleanup_subnet_data:
         for subnet in subnets:
             router_steps.remove_subnet_interface(router, subnet)
+
+    for router, ports in _cleanup_port_data:
+        for port in ports:
+            router_steps.remove_port_interface(router, port)
 
 
 @pytest.fixture
