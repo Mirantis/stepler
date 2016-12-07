@@ -17,7 +17,8 @@ Port steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, has_entries  # noqa H301
+from hamcrest import (assert_that, equal_to, 
+                      has_entries, is_not, empty)  # noqa H301
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -95,3 +96,33 @@ class PortSteps(base.BaseSteps):
         if check:
             assert_that(port, has_entries(kwargs))
         return port
+
+    @steps_checker.step
+    def get_ports(self, check=True, **kwargs):
+        """Step to retrieve all ports in current project.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: list of ports
+        """
+        ports = self._client.find_all(**kwargs)
+
+        if check:
+            assert_that(ports, is_not(empty()))
+
+        return ports
+
+    @steps_checker.step
+    def compare_ports(self, ports_1, ports_2, check=True):
+        """Step for comparing ports.
+
+        Args:
+            check(bool): flag whether to check step or not
+            ports_1(dict): dict of ports
+            ports_2(dict): dict  of another ports
+        """
+
+        if check:
+            assert_that(sorted(ports_1), equal_to(sorted(ports_2)))
