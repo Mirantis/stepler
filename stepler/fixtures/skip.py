@@ -200,3 +200,11 @@ class Predicates(object):
         """Define whether neutron configures with L2pop."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return os_faults_steps.get_neutron_l2pop()
+
+    @property
+    @_store_call
+    def cinder_nodes_count(self):
+        """Get count of cinder nodes."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(os_faults_steps.get_nodes(
+                   service_names=[config.CINDER_VOLUME]))

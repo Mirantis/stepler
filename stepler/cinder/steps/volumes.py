@@ -17,10 +17,13 @@ Volume steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
 import attrdict
 from cinderclient import exceptions
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
-                      has_properties, has_property, is_in, is_not, raises)  # noqa
+                      has_properties, has_property, is_in, is_not, raises,
+                      equal_to_ignoring_case, any_of)  # noqa
 
 from stepler import base
 from stepler import config
@@ -137,7 +140,7 @@ class VolumeSteps(base.BaseSteps):
             for volume in volumes:
                 self.check_volume_status(
                     volume,
-                    config.STATUS_AVAILABLE,
+                    [config.STATUS_AVAILABLE],
                     transit_statuses=(config.STATUS_CREATING,
                                       config.STATUS_DOWNLOADING,
                                       config.STATUS_UPLOADING),
@@ -169,6 +172,14 @@ class VolumeSteps(base.BaseSteps):
             check (bool): flag whether to check step or not
         """
         for volume in volumes:
+            self.check_volume_status(
+                volume,
+                statuses=[config.STATUS_AVAILABLE, config.STATUS_ERROR],
+                transit_statuses=[
+                    config.STATUS_CREATING, config.STATUS_DELETING,
+                    config.STATUS_UPDATING
+                ],
+                timeout=config.VOLUME_IN_USE_TIMEOUT)
             self._client.delete(volume.id, cascade=cascade)
 
         if check:
@@ -201,26 +212,30 @@ class VolumeSteps(base.BaseSteps):
         waiter.wait(_check_volume_presence, timeout_seconds=timeout)
 
     @steps_checker.step
-    def check_volume_status(self, volume, status, transit_statuses=(),
+    def check_volume_status(self, volume, statuses, transit_statuses=(),
                             timeout=0):
         """Check step volume status.
 
         Args:
             volume (object): cinder volume to check status
-            status (str): volume status name to check
+            statuses (list): list of statuses to check
             transit_statuses (tuple): possible volume transitional statuses
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired|AssertionError: if check failed after timeout
         """
+        transit_matchers = [equal_to_ignoring_case(status)
+                            for status in transit_statuses]
+
         def _check_volume_status():
             volume.get()
-            return waiter.expect_that(volume.status.lower(),
-                                      is_not(is_in(transit_statuses)))
+            return waiter.expect_that(volume.status,
+                                      is_not(any_of(*transit_matchers)))
 
         waiter.wait(_check_volume_status, timeout_seconds=timeout)
-        assert_that(volume.status.lower(), equal_to(status.lower()))
+        matchers = [equal_to_ignoring_case(status) for status in statuses]
+        assert_that(volume.status, any_of(*matchers))
 
     @steps_checker.step
     def get_volumes(self,
@@ -652,8 +667,7 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             AssertionError: if NotFound exception is not appeared
         """
-        wrong_volume = attrdict.AttrDict({'id': next(utils.generate_ids())})
-        assert_that(calling(self.delete_volumes).with_args([wrong_volume]),
+        assert_that(calling(self._client.delete).with_args(str(uuid.uuid4())),
                     raises(exceptions.NotFound))
 
     @steps_checker.step
