@@ -47,13 +47,14 @@ class PortSteps(base.BaseSteps):
 
     @steps_checker.step
     def delete(self, port, check=True):
-        """Step to create port.
+        """Step to delete port.
 
         Args:
             port (dict): port to delete
             check (bool): flag whether to check step or not
         """
-        self._client.delete(port['id'])
+        if self._client.find_all(id=port['id']):
+            self._client.delete(port['id'])
         if check:
             self.check_presence(port, must_present=False)
 
