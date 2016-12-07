@@ -58,6 +58,7 @@ PERMITTED_CALLS = [
     'put',  # TODO(schipiga): update attrdict method
     'range',
     'set_trace',
+    'sleep',
     'sorted',
     'str',
     'time',
