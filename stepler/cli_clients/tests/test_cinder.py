@@ -196,9 +196,9 @@ def test_volume_snapshot_non_unicode_name(volume, cli_cinder_steps,
     snapshot_name = next(utils.generate_ids(use_unicode=True))
     snapshot_dict = cli_cinder_steps.create_volume_snapshot(
         volume, name=snapshot_name)
-    snapshot_steps.check_snapshots_status(
-        [snapshot_dict['id']],
-        config.STATUS_AVAILABLE,
+    snapshot_steps.check_snapshot_status(
+        snapshot_dict['id'],
+        [config.STATUS_AVAILABLE],
         timeout=config.SNAPSHOT_AVAILABLE_TIMEOUT)
 
 
@@ -225,9 +225,9 @@ def test_volume_snapshot_non_unicode_description(volume, cli_cinder_steps,
     snapshot_description = next(utils.generate_ids(use_unicode=True))
     snapshot_dict = cli_cinder_steps.create_volume_snapshot(
         volume, description=snapshot_description)
-    snapshot_steps.check_snapshots_status(
-        [snapshot_dict['id']],
-        config.STATUS_AVAILABLE,
+    snapshot_steps.check_snapshot_status(
+        snapshot_dict['id'],
+        [config.STATUS_AVAILABLE],
         timeout=config.SNAPSHOT_AVAILABLE_TIMEOUT)
 
 
@@ -388,7 +388,7 @@ def test_create_volume_using_image_name(ubuntu_image,
     volume = volume_steps.get_volumes(name_prefix=volume_name)[0]
     volume_steps.check_volume_status(
         volume,
-        config.STATUS_AVAILABLE,
+        [config.STATUS_AVAILABLE],
         transit_statuses=(config.STATUS_CREATING,
                           config.STATUS_DOWNLOADING,
                           config.STATUS_UPLOADING),

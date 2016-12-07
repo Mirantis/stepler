@@ -17,7 +17,8 @@ Snapshot steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, has_entries, is_not, empty  # noqa
+from hamcrest import (assert_that, equal_to, is_not, empty,
+                      equal_to_ignoring_case, any_of)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -61,10 +62,10 @@ class SnapshotSteps(base.BaseSteps):
             snapshots.append(snapshot)
 
         if check:
-            self.check_snapshots_status(
-                snapshots,
-                config.STATUS_AVAILABLE,
-                timeout=config.SNAPSHOT_AVAILABLE_TIMEOUT)
+            for snapshot in snapshots:
+                self.check_snapshot_status(
+                    snapshot, [config.STATUS_AVAILABLE],
+                    timeout=config.SNAPSHOT_AVAILABLE_TIMEOUT)
             for snapshot in snapshots:
                 assert_that(snapshot.volume_id, equal_to(volume.id))
 
@@ -82,6 +83,10 @@ class SnapshotSteps(base.BaseSteps):
            TimeoutExpired: if check failed after timeout
         """
         for snapshot in snapshots:
+            self.check_snapshot_status(
+                snapshot,
+                statuses=[config.STATUS_AVAILABLE, config.STATUS_ERROR],
+                timeout=config.VOLUME_IN_USE_TIMEOUT)
             self._client.delete(snapshot=snapshot.id)
 
         if check:
@@ -121,28 +126,30 @@ class SnapshotSteps(base.BaseSteps):
         waiter.wait(_check_snapshots_presence, timeout_seconds=timeout)
 
     @steps_checker.step
-    def check_snapshots_status(self, snapshots, status, timeout=0):
+    def check_snapshot_status(self, snapshot, statuses, timeout=0):
         """Step to check snapshots status.
 
         Args:
-            snapshots (list): list of cinder volume snapshot objects
-                or their ids to check status
-            status (str): snapshot status name to check
+            snapshot (obj): cinder volume snapshot objects or id to check
+                status
+            statuses (list): list of statuses names to check
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        for snapshot in snapshots:
-            if not hasattr(snapshot, 'id'):
-                snapshot = self.get_snapshot_by_id(snapshot)
+        matchers = [equal_to_ignoring_case(status) for status in statuses]
 
-            def _check_snapshot_status():
-                snapshot.get()
-                return waiter.expect_that(snapshot.status.lower(),
-                                          equal_to(status.lower()))
+        def _check_snapshot_status():
 
-            waiter.wait(_check_snapshot_status, timeout_seconds=timeout)
+            if hasattr(snapshot, 'id'):
+                snapshot_id = snapshot.id
+            else:
+                snapshot_id = snapshot
+            status = self.get_snapshot_by_id(snapshot_id).status
+            return waiter.expect_that(status, any_of(*matchers))
+
+        waiter.wait(_check_snapshot_status, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_snapshots(self, all_projects=False, search_opts=None, check=True):
