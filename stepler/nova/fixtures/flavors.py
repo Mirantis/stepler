@@ -29,6 +29,7 @@ __all__ = [
     'flavor_steps',
     'tiny_flavor',
     'baremetal_flavor',
+    'public_flavor',
 ]
 
 
@@ -136,3 +137,19 @@ def baremetal_flavor(create_flavor):
                          ram=ram,
                          vcpus=vcpus,
                          disk=config.BAREMETAL_DISK)
+
+
+@pytest.fixture
+def public_flavor(create_flavor):
+    """Function fixture to create public flavor before test.
+
+     Args:
+        create_flavor (function): function to create flavor with options
+
+    Returns:
+        object: public flavor
+    """
+
+    flavor_params = dict(ram=512, vcpus=1, disk=2, is_public=True)
+    flavor_name = next(generate_ids('flavor'))
+    return create_flavor(flavor_name, **flavor_params)

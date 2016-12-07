@@ -17,6 +17,8 @@ Neutron OVS restart tests fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
+
 import attrdict
 import pytest
 
@@ -29,6 +31,7 @@ __all__ = [
     'neutron_2_servers_diff_nets_with_floating',
     'neutron_2_servers_same_network',
     'neutron_2_servers_iperf_different_networks',
+    'neutron_conntrack_2_projects_resources',
 ]
 
 
@@ -354,3 +357,163 @@ def neutron_2_servers_iperf_different_networks(
         servers=servers,
         networks=(network_1, network_2),
         router=router)
+
+
+@pytest.fixture
+def neutron_conntrack_2_projects_resources(
+        request,
+        conntrack_cirros_image,
+        public_flavor,
+        public_network,
+        sorted_hypervisors,
+        role_steps,
+        hypervisor_steps,
+        port_steps,
+        router_steps,
+        create_project,
+        create_user,
+        create_network,
+        create_subnet,
+        create_router,
+        add_router_interfaces,
+        create_floating_ip,
+        get_security_group_steps,
+        get_server_steps, ):
+    """Function fixture to prepare environment for conntrack tests.
+
+    This fixture:
+            * creates 2 projects;
+            * creates net, subnet, router in each project;
+            * creates security groups in each project;
+            * add ping + ssh rules for 1'st project's security group;
+            * add ssh rules for 2'nd project security group;
+            * creates 2 servers in 1'st project;
+            * creates 2 servers in 2'nd project with same fixed ip as for 1'st
+                project;
+            * add floating ips for one of servers in each project.
+
+        All created resources are to be deleted after test.
+
+
+    Args:
+        request (obj): py.test SubRequest
+        conntrack_cirros_image (obj): glance image for conntrack tests
+        public_flavor (obj): nova flavor with is_public=True attribute
+        public_network (dict): neutron public network
+        sorted_hypervisors (list): sorted hypervisors
+        role_steps (obj): instantiated role steps
+        hypervisor_steps (obj): instantiated nova hypervisor steps
+        port_steps (obj): instantiated port steps
+        router_steps (obj): instantiated router steps
+        create_project (function): function to create project
+        create_user (function): function to create user
+        create_network (function): function to create network
+        create_subnet (function): function to create subnet
+        create_router (function): function to create router
+        add_router_interfaces (function): function to add subnet interface to
+            router
+        create_floating_ip (function): function to create floating ip
+        get_security_group_steps (function): function to get security group
+            steps
+        get_server_steps (function): function to get server steps
+
+    Returns:
+        attrdict.AttrDict: created resources
+
+    Deleted Parameters:
+        cirros_image (obj): cirros image
+        flavor (obj): nova flavor
+        security_group (obj): nova security group
+        net_subnet_router (tuple): network, subnet, router
+        server (obj): nova server
+        server_steps (obj): instantiated nova server steps
+    """
+    base_name, = utils.generate_ids()
+
+    server_count = hypervisor_steps.get_hypervisor_capacity(
+        sorted_hypervisors[0], public_flavor)
+    if server_count < 4:
+        pytest.skip('Requires at least 4 servers with {flavor} to boot on '
+                    'single compute'.format(flavor=public_flavor))
+    hostname = sorted_hypervisors[0].hypervisor_hostname
+
+    resources = []
+    admin_role = role_steps.get_role(name=config.ROLE_ADMIN)
+    fixed_ip_1, fixed_ip_2 = config.LOCAL_IPS[20:22]
+
+    for i in range(2):
+        project_resources = attrdict.AttrDict()
+        name = "{}_{}".format(base_name, i)
+        servers = []
+        project = create_project(name)
+        user = create_user(user_name=name, password=name)
+        role_steps.grant_role(admin_role, user, project=project)
+
+        credentials = dict(
+            username=name, password=name, project_name=name)
+
+        security_group_steps = get_security_group_steps(**credentials)
+        security_group_name = "{}_{}".format(base_name, i)
+        security_group = security_group_steps.create_group(security_group_name)
+        request.addfinalizer(
+            functools.partial(security_group_steps.delete_group,
+                              security_group))
+        if i == 0:
+            security_group_steps.add_group_rules(
+                security_group, config.SECURITY_GROUP_SSH_PING_RULES)
+        else:
+            security_group_steps.add_group_rules(
+                security_group, config.SECURITY_GROUP_SSH_RULES)
+
+        network = create_network(name, project_id=project.id)
+        subnet = create_subnet(
+            name,
+            network=network,
+            project_id=project.id,
+            cidr=config.LOCAL_CIDR)
+        router = create_router(name, project_id=project.id)
+        router_steps.set_gateway(router, public_network)
+        add_router_interfaces(router, [subnet])
+
+        server_steps = get_server_steps(**credentials)
+        project_resources.server_steps = server_steps
+
+        server1 = server_steps.create_servers(
+            server_names=[name + "_1"],
+            image=conntrack_cirros_image,
+            flavor=public_flavor,
+            availability_zone='nova:{}'.format(hostname),
+            nics=[{
+                'net-id': network['id'],
+                'v4-fixed-ip': fixed_ip_1
+            }],
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME,
+            password=config.CIRROS_PASSWORD)[0]
+        request.addfinalizer(
+            functools.partial(server_steps.delete_servers, [server1]))
+        servers.append(server1)
+
+        server1_port = port_steps.get_port(
+            device_owner=config.PORT_DEVICE_OWNER_SERVER, device_id=server1.id)
+        create_floating_ip(
+            public_network, port=server1_port, project_id=project.id)
+
+        server2 = server_steps.create_servers(
+            server_names=[name + "_2"],
+            image=conntrack_cirros_image,
+            flavor=public_flavor,
+            availability_zone='nova:{}'.format(hostname),
+            nics=[{
+                'net-id': network['id'],
+                'v4-fixed-ip': fixed_ip_2
+            }],
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME,
+            password=config.CIRROS_PASSWORD)[0]
+        request.addfinalizer(
+            functools.partial(server_steps.delete_servers, [server2]))
+        servers.append(server2)
+        project_resources.servers = servers
+        resources.append(project_resources)
+    return attrdict.AttrDict(resources=resources, hostname=hostname)

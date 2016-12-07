@@ -46,8 +46,8 @@ def get_nova_client(get_session):
     Returns:
         function: function to get nova client
     """
-    def _get_nova_client():
-        return Client(version=2, session=get_session())
+    def _get_nova_client(**credentials):
+        return Client(version=2, session=get_session(**credentials))
 
     return _get_nova_client
 

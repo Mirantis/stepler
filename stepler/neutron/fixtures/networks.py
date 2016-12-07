@@ -78,8 +78,8 @@ def create_network(network_steps):
     """
     networks = []
 
-    def _create_network(network_name):
-        network = network_steps.create(network_name)
+    def _create_network(network_name, *args, **kwargs):
+        network = network_steps.create(network_name, *args, **kwargs)
         networks.append(network)
         return network
 

@@ -17,7 +17,8 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa
+from hamcrest import (assert_that, empty, is_not, equal_to, is_in,
+                      has_properties)  # noqa H310
 from glanceclient import exc
 
 from stepler import config
@@ -113,6 +114,21 @@ class GlanceStepsV2(BaseGlanceSteps):
                     image,
                     must_present=False,
                     timeout=config.IMAGE_AVAILABLE_TIMEOUT)
+
+    @steps_checker.step
+    def update_image(self, image, remove_props=None, check=True, **kwargs):
+        """Step to update image.
+
+        Args:
+            image (obj): glance image
+            remove_props (list): list of property names to remove
+            **kwargs: image attribute names and their new values
+        """
+        self._client.images.update(image.id, remove_props=remove_props,
+                                   **kwargs)
+        if check:
+            image = self._client.images.get(image.id)
+            assert_that(image, has_properties(**kwargs))
 
     @steps_checker.step
     def bind_project(self, image, project, check=True):

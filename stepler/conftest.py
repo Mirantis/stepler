@@ -92,6 +92,7 @@ __all__ = sorted([  # sort for documentation
     'glance_steps_v2',
     'ubuntu_image',
     'ubuntu_xenial_image',
+    'conntrack_cirros_image',
 
     'create_group',
     'create_domain',
@@ -166,6 +167,7 @@ __all__ = sorted([  # sort for documentation
     'disable_nova_config_drive',
     'live_migration_server',
     'generate_traffic',
+    'get_security_group_steps',
 
     'get_availability_zone_steps',
     'availability_zone_steps',

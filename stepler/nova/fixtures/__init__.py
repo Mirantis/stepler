@@ -41,6 +41,7 @@ __all__ = sorted([  # sort for documentation
     'flavor_steps',
     'tiny_flavor',
     'baremetal_flavor',
+    'public_flavor',
 
     'nova_create_floating_ip',
     'nova_floating_ip',
@@ -68,6 +69,7 @@ __all__ = sorted([  # sort for documentation
     'create_security_group',
     'security_group',
     'security_group_steps',
+    'get_security_group_steps',
 
     'nova_volume_steps',
     'attach_volume_to_server',

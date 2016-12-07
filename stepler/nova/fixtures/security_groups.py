@@ -19,20 +19,43 @@ Security group
 
 import pytest
 
-from stepler.nova.steps import SecurityGroupSteps
-from stepler.third_party.utils import generate_ids
+from stepler import config
+from stepler.nova import steps
+from stepler.third_party import utils
 
 __all__ = [
     'create_security_group',
     'security_group',
-    'security_group_steps'
+    'security_group_steps',
+    'get_security_group_steps',
 ]
 
 
+@pytest.fixture(scope='session')
+def get_security_group_steps(get_nova_client):
+    """Callable session fixture to get security groups steps.
+
+    Args:
+        get_nova_client (function): function to get nova client.
+
+    Returns:
+        function: function to get security groups steps.
+    """
+    def _get_security_group_steps(**credentials):
+        return steps.SecurityGroupSteps(get_nova_client(**credentials))
+
+    return _get_security_group_steps
+
+
 @pytest.fixture
-def security_group_steps(nova_client):
-    """Fixture to get security group steps."""
-    return SecurityGroupSteps(nova_client)
+def security_group_steps(get_security_group_steps):
+    """Fixture to get security group steps.
+
+    Args:
+        get_security_group_steps (function): function to get security groups
+            steps
+    """
+    return get_security_group_steps()
 
 
 @pytest.yield_fixture
@@ -75,25 +98,10 @@ def security_group(create_security_group, security_group_steps):
     Returns:
         object: security group
     """
-    group_name = next(generate_ids('security-group'))
+    group_name = next(utils.generate_ids('security-group'))
     group = create_security_group(group_name)
 
-    rules = [
-        {
-            # ssh
-            'ip_protocol': 'tcp',
-            'from_port': 22,
-            'to_port': 22,
-            'cidr': '0.0.0.0/0',
-        },
-        {
-            # ping
-            'ip_protocol': 'icmp',
-            'from_port': -1,
-            'to_port': -1,
-            'cidr': '0.0.0.0/0',
-        }
-    ]
-    security_group_steps.add_group_rules(group, rules)
+    security_group_steps.add_group_rules(group,
+                                         config.SECURITY_GROUP_SSH_PING_RULES)
 
     return group

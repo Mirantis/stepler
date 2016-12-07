@@ -18,6 +18,7 @@ Neutron client wrapper
 # limitations under the License.
 
 from stepler.neutron.client import agent
+from stepler.neutron.client import floating_ip
 from stepler.neutron.client import network
 from stepler.neutron.client import port
 from stepler.neutron.client import quota
@@ -33,6 +34,10 @@ class NeutronClient(object):
     @property
     def agents(self):
         return agent.AgentManager(self)
+
+    @property
+    def floating_ips(self):
+        return floating_ip.FloatingIPManager(self)
 
     @property
     def networks(self):

@@ -62,6 +62,8 @@ CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-d
 UBUNTU_ISO_URL = 'http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-amd64/current/images/netboot/mini.iso'  # noqa E501
 BAREMETAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/dib-user-image-dkms-grub.raw'  # noqa E501
 BAREMETAL_VIRTUAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/trusty-server-cloudimg-amd64.img'  # noqa E501
+CONNTRACK_CIRROS_IMAGE = 'https://github.com/gdyuldin/ping/raw/master/cirros-0.3.4-x86_64-disk.img'  # noqa E501
+CUSTOM_PING_COMMAND_PATH = '/usr/bin/fix_id_ping'
 
 FORCE_API = bool(os.environ.get('FORCE_API_USAGE'))
 
@@ -187,6 +189,8 @@ BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
                                              "file_system": "ext4",
                                              "size": 10000}]}]
 
+IMAGE_VISIBILITY_PUBLIC = 'public'
+
 
 # Nova
 CREDENTIALS_PREFIX = 'stepler_credentials_'
@@ -209,6 +213,7 @@ BAREMETAL_VIRTUAL_RAM = "3072"
 BAREMETAL_VIRTUAL_VCPUS = "1"
 
 ROLE_MEMBER = '_member_'
+ROLE_ADMIN = 'admin'
 
 PING_CALL_TIMEOUT = 5 * 60
 PING_BETWEEN_SERVERS_TIMEOUT = 5 * 60
@@ -268,6 +273,26 @@ SERVER_ATTR_INSTANCE_NAME = 'OS-EXT-SRV-ATTR:instance_name'
 IO_SPEC_LIMIT = 10240000
 IO_SPEC_LIMIT_METADATA = {'quota:disk_read_bytes_sec': str(IO_SPEC_LIMIT),
                           'quota:disk_write_bytes_sec': str(IO_SPEC_LIMIT)}
+
+SECURITY_GROUP_SSH_RULES = [
+    {
+        # ssh
+        'ip_protocol': 'tcp',
+        'from_port': 22,
+        'to_port': 22,
+        'cidr': '0.0.0.0/0',
+    }
+]
+
+SECURITY_GROUP_SSH_PING_RULES = SECURITY_GROUP_SSH_RULES + [
+    {
+        # ping
+        'ip_protocol': 'icmp',
+        'from_port': -1,
+        'to_port': -1,
+        'cidr': '0.0.0.0/0',
+    }
+]
 
 # Heat
 HEAT_VERSION = 1
@@ -374,6 +399,7 @@ HA_STATE_ACTIVE_ATTRS = {'ha_state': 'active'}
 ROUTER_AVAILABLE_TIMEOUT = 60
 
 LOCAL_CIDR = '192.168.3.0/24'
+LOCAL_IPS = ['192.168.3.{}'.format(i) for i in range(1, 254)]
 
 PORT_DEVICE_OWNER_ROUTER_GATEWAY = 'network:router_gateway'
 PORT_DEVICE_OWNER_SERVER = 'compute:nova'
