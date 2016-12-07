@@ -341,7 +341,7 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             str: path to backup file
         """
-        suffix = suffix or utils.generate_ids('backup', length=30)
+        suffix = suffix or next(utils.generate_ids('backup', length=30))
         backup_path = "{}.{}".format(file_path, suffix)
 
         task = {
@@ -852,6 +852,20 @@ class OsFaultsSteps(base.BaseSteps):
         """
         cmd = "grep -iP '^mechanism_drivers\s*=\s*.+l2population' {}".format(
             config.NEUTRON_ML2_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.NEUTRON_L3_SERVICE])
+        result = self.execute_cmd(nodes, cmd, check=False)
+        return all(node_result.status == config.STATUS_OK
+                   for node_result in result)
+
+    @steps_checker.step
+    def get_neutron_debug(self):
+        """Step to get debug mode in neutron config files.
+
+        Returns:
+            bool: debug mode
+        """
+        cmd = "grep -iP '^debug\s*=\s*True' {}".format(
+            config.NEUTRON_CONFIG_PATH)
         nodes = self.get_nodes(service_names=[config.NEUTRON_L3_SERVICE])
         result = self.execute_cmd(nodes, cmd, check=False)
         return all(node_result.status == config.STATUS_OK
