@@ -331,3 +331,92 @@ class AgentSteps(base.BaseSteps):
                                            network,
                                            timeout=timeout,
                                            check=check)
+
+    @steps_checker.step
+    def check_router_is_on_agent(self, router, l3_agent, timeout=0):
+        """Step to check that router is on L3 agent.
+
+        Args:
+            router (dict): router to check
+            l3_agent (dict): L3 agent to check
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_router_is_on_agent():
+            l3_agents = self.get_l3_agents_for_router(router, check=False)
+            return waiter.expect_that(l3_agent, is_in(l3_agents))
+
+        waiter.wait(_check_router_is_on_agent, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def remove_router_from_l3_agent(self, l3_agent, router, timeout=0,
+                                    check=True):
+        """Step to remove router from L3 agent.
+
+        Args:
+            l3_agent (dict): L3 agent to remove router from
+            router (dict): router to remove from L3 agent
+            timeout (int): seconds to wait a result of check
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        self._client.remove_router_from_l3_agent(l3_agent['id'],
+                                                 router['id'])
+        if check:
+            self.check_router_rescheduled(router,
+                                          l3_agent,
+                                          timeout=timeout)
+
+    @steps_checker.step
+    def add_router_to_l3_agent(self, l3_agent, router, timeout=0, check=True):
+        """Step to add router to L3 agent.
+
+        Args:
+            l3_agent (dict): L3 agent to add router to
+            router (dict): router to add to L3 agent
+            timeout (int): seconds to wait a result of check
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        self._client.add_router_to_l3_agent(l3_agent['id'], router['id'])
+
+        if check:
+            self.check_router_is_on_agent(router,
+                                          l3_agent,
+                                          timeout=timeout)
+
+    @steps_checker.step
+    def reschedule_router_to_l3_agent(self,
+                                      target_l3_agent,
+                                      router,
+                                      timeout=0,
+                                      check=True):
+        """Step to reschedule router's active L3 agent.
+
+        Args:
+            target_l3_agent (dict): L3 agent to reschedule router to
+            router (dict): router to be rescheduled
+            timeout (int): seconds to wait a result of check
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        active_agents = self.get_l3_agents_for_router(router)
+
+        if target_l3_agent not in active_agents:
+            agent_to_remove = active_agents[0]
+            self.remove_router_from_l3_agent(agent_to_remove,
+                                             router,
+                                             timeout=timeout,
+                                             check=check)
+            self.add_router_to_l3_agent(target_l3_agent,
+                                        router,
+                                        timeout=timeout,
+                                        check=check)

@@ -297,16 +297,10 @@ def test_north_south_connectivity_after_primary_controller_reset(
         binary=config.NEUTRON_L3_SERVICE,
         host=primary_controller.hosts[0].fqdn)[0]
 
-    current_agent = agent_steps.get_l3_agents_for_router(router)[0]
-    current_agent_node = os_faults_steps.get_nodes_for_agents([current_agent])
-
-    if current_agent_node.hosts[0] != primary_controller.hosts[0]:
-        router_steps.remove_router_from_l3_agent(router, current_agent)
-        router_steps.add_router_to_l3_agent(router, primary_controller_agent)
-        agent_steps.check_router_rescheduled(
-            router=router,
-            old_l3_agent=current_agent,
-            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    agent_steps.reschedule_router_to_l3_agent(
+        primary_controller_agent,
+        router,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
     os_faults_steps.reset_nodes(primary_controller)
 
