@@ -1211,3 +1211,91 @@ def test_north_south_floating_ip_shut_down_br_ex_on_controllers(
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.requires("neutron_debug and computes_count >= 2")
+@pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
+@pytest.mark.idempotent_id('f3ec53bb-63f9-4344-96a5-c9f7030d2519')
+def test_check_router_update_notification_for_l3_agents(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        nova_floating_ip,
+        server_steps,
+        os_faults_steps):
+    """**Scenario:** Check router update notifications for L3 agent.
+
+    This test checks that router update notification appear in log of L3 agent
+    after server creation and assigning/deleting floating ip but only in log on
+    compute node where server is hosted.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and DVR
+    #. Add network interface to router
+
+    **Steps:**
+
+    #. Get current sizes of log files of L3 agent on all computes
+    #. Create server
+    #. Assign floating ip to server
+    #. Delete floating ip from server
+    #. Check that 3 notifications have appeared in log of L3 agent on compute
+        with server
+    #. Check that no notifications have appeared in log of L3 agent on other
+        computes
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete cirros image
+    #. Delete security group
+    #. Delete flavor
+    #. Delete router
+    #. Delete subnet
+    #. Delete network
+    """
+    nodes = os_faults_steps.get_nodes_with_services(
+        service_names=[config.NOVA_COMPUTE, config.NEUTRON_L3_SERVICE])
+    host_names = [host.fqdn for host in nodes.hosts]
+    server_host_name = host_names[0]
+    other_host_names = host_names[1:]
+
+    log_file = config.AGENT_LOGS[config.NEUTRON_L3_SERVICE][1]
+
+    line_counts = {}
+    for host_name in host_names:
+        node = os_faults_steps.get_node(fqdns=[host_name])
+        line_counts[host_name] = os_faults_steps.get_file_line_count(
+            node, log_file)
+
+    network = net_subnet_router[0]
+    server = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        security_groups=[security_group],
+        availability_zone='nova:' + server_host_name,
+        username=config.CIRROS_USERNAME)[0]
+
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.detach_floating_ip(server, nova_floating_ip)
+
+    server_node = os_faults_steps.get_node(fqdns=[server_host_name])
+    os_faults_steps.check_string_in_file(
+        server_node, file_name=log_file,
+        keyword=config.STR_L3_AGENT_NOTIFICATION,
+        start_line_number=line_counts[server_host_name],
+        expected_count=3)
+
+    for host_name in other_host_names:
+        node = os_faults_steps.get_node(fqdns=[host_name])
+        os_faults_steps.check_string_in_file(
+            node, file_name=log_file,
+            keyword=config.STR_L3_AGENT_NOTIFICATION,
+            start_line_number=line_counts[host_name],
+            must_present=False)
