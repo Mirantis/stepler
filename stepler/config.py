@@ -348,6 +348,10 @@ AGENT_LOGS = {
 NEUTRON_ML2_CONFIG_PATH = '/etc/neutron/plugins/ml2/ml2_conf.ini'
 NEUTRON_CONFIG_PATH = '/etc/neutron/neutron.conf'
 NEUTRON_L3_CONFIG_PATH = '/etc/neutron/l3_agent.ini'
+STR_L3_AGENT_NOTIFICATION = 'Got routers updated notification'
+STR_ERROR_GATEWAY_PORT = 'Could not retrieve gateway port for subnet'
+
+ERROR_GATEWAY_PORT_CHECK_TIME = 30
 
 STR_ERROR = 'ERROR'
 STR_TRACE = 'TRACE'
