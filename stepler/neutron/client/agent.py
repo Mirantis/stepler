@@ -76,3 +76,23 @@ class AgentManager(base.BaseNeutronManager):
         """
         self._rest_client.add_network_to_dhcp_agent(dhcp_agent_id,
                                                     {'network_id': network_id})
+
+    def remove_router_from_l3_agent(self, l3_agent_id, router_id):
+        """Remove router from L3 agent.
+
+        Args:
+            l3_agent_id (str): L3 agent id to remove router from
+            router_id (str): router id to remove from L3 agent
+        """
+        self._rest_client.remove_router_from_l3_agent(l3_agent_id,
+                                                      router_id)
+
+    def add_router_to_l3_agent(self, l3_agent_id, router_id):
+        """Add router to L3 agent.
+
+        Args:
+            l3_agent_id (str): L3 agent id to add router to
+            router_id (str): router id to add to L3 agent
+        """
+        self._rest_client.add_router_to_l3_agent(l3_agent_id,
+                                                 {'router_id': router_id})

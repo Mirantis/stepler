@@ -60,4 +60,4 @@ class NetworkManager(base.BaseNeutronManager):
         """
         networks = self._rest_client.list_networks_on_dhcp_agent(
             dhcp_agent_id)
-        return networks['networks']
+        return networks[self.NAME + 's']
