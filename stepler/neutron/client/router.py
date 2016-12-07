@@ -84,6 +84,15 @@ class RouterManager(base.BaseNeutronManager):
         """Add router subnet interface."""
         self._add_interface(router_id=router_id, subnet_id=subnet_id)
 
+    def add_port_interface(self, router_id, port_id):
+        """Add router port interface.
+
+        Args:
+            router_id (str): router identifier
+            port_id (str): port identifier
+        """
+        self._add_interface(router_id=router_id, port_id=port_id)
+
     def _remove_interface(self, router_id, subnet_id=None, port_id=None):
         """Remove router interface base action."""
         body = {}
