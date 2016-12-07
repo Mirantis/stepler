@@ -60,6 +60,7 @@ PERMITTED_CALLS = [
     'getattr',
     'len',
     'keys',
+    'sleep',
 ]
 
 # register utils

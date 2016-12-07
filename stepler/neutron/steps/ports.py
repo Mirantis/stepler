@@ -47,7 +47,7 @@ class PortSteps(base.BaseSteps):
 
     @steps_checker.step
     def delete(self, port, check=True):
-        """Step to create port.
+        """Step to delete port.
 
         Args:
             port (dict): port to delete

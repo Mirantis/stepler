@@ -16,10 +16,12 @@ Neutron DVR tests
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import time
+
 import pytest
 
 from stepler import config
-
+from stepler.third_party import utils
 
 pytestmark = pytest.mark.requires('dvr')
 
@@ -1211,3 +1213,61 @@ def test_north_south_floating_ip_shut_down_br_ex_on_controllers(
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('849ce63d-6fe9-44ec-ad4a-d795c3fe0626')
+def test_add_router_interface_with_port_id(create_router,
+                                           port,
+                                           add_router_interfaces,
+                                           os_faults_steps):
+    """**Scenario:** Add router interface with port_id parameter.
+
+    This test checks that there are no error messages in logs when adding
+    router interface with port_id parameter.
+
+    **Setup:**
+
+    #. Create network with subnet and DVR
+    #. Create port
+
+    **Steps:**
+
+    #. Get current sizes of neutron log files on controllers
+    #. Create router of distributed type
+    #. Add port interface to router
+    #. Wait for 30 seconds
+    #. Check that message 'Could not retrieve gateway port for subnet'
+        did not appear in log files
+
+    **Teardown:**
+
+    #. Delete port interface
+    #. Delete port
+    #. Delete router
+    #. Delete subnet and network
+    """
+    nodes = os_faults_steps.get_nodes_with_services(
+        service_names=[config.NEUTRON_SERVER_SERVICE])
+    host_names = [host.fqdn for host in nodes.hosts]
+
+    log_file = config.AGENT_LOGS[config.NEUTRON_SERVER_SERVICE][0]
+
+    line_counts = {}
+    for host_name in host_names:
+        node = os_faults_steps.get_node(fqdns=[host_name])
+        line_counts[host_name] = os_faults_steps.get_file_line_count(
+            node, log_file)
+
+    router_name = next(utils.generate_ids('router'))
+    router = create_router(router_name, distributed=True)
+    add_router_interfaces(router, ports=[port])
+
+    time.sleep(config.ERROR_GATEWAY_PORT_CHECK_TIME)
+
+    for host_name in host_names:
+        node = os_faults_steps.get_node(fqdns=[host_name])
+        os_faults_steps.check_string_in_file(
+            node, file_name=log_file,
+            keyword=config.STR_ERROR_GATEWAY_PORT,
+            start_line_number=line_counts[host_name],
+            must_present=False)
