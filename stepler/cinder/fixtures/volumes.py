@@ -124,7 +124,7 @@ def cleanup_volumes(uncleanable):
     """Callable session fixture to cleanup volumes.
 
     Args:
-        uncleanable (AttrDict): Data structure with skipped resources.
+        uncleanable (AttrDict): Data structure with resources to skip cleanup.
     """
     def _cleanup_volumes(_volume_steps, limit=0, uncleanable_ids=None):
         uncleanable_ids = uncleanable_ids or uncleanable.volume_ids
