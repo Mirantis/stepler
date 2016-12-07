@@ -17,7 +17,7 @@ Cinder quota steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, greater_than, equal_to  # noqa
+from hamcrest import assert_that, greater_than, equal_to, instance_of  # noqa
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -42,9 +42,9 @@ class CinderQuotaSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        quota = self._client.get(project.id).gigabytes
+        quota = self._client.get(project.id).per_volume_gigabytes
         if check:
-            assert_that(quota, greater_than(0))
+            assert_that(quota, instance_of(int))
         return quota
 
     @steps_checker.step
@@ -59,7 +59,7 @@ class CinderQuotaSteps(base.BaseSteps):
         Raises:
             AssertionError: if check was False
         """
-        self._client.update(project.id, gigabytes=value)
+        self._client.update(project.id, per_volume_gigabytes=value)
         if check:
             new_quota = self.get_volume_size_quota(project)
             assert_that(value, equal_to(new_quota))
