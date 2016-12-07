@@ -1357,3 +1357,23 @@ class OsFaultsSteps(base.BaseSteps):
                     assert_that(tunnels_remotes, any_of(*matchers))
                 else:
                     assert_that(tunnels_remotes, is_not(any_of(*matchers)))
+
+    @steps_checker.step
+    def get_services_for_component(self, component, nodes):
+        """Step to get list of component services.
+
+        Args:
+            component (str): component name to filter out
+            nodes (NodeCollection): nodes to get services
+
+        Returns:
+            dict: node's fqdn -> list of services
+        """
+        cmd = "initctl list | grep running | grep {0}".format(component)
+        cmd += " | awk '{ print $1 }'"
+        services = {}
+        for fqdn in nodes.get_fqdns():
+            node = self.get_node(fqdns=[fqdn])
+            result = self.execute_cmd(nodes=node, cmd=cmd)
+            services[fqdn] = result[0].payload['stdout'].split('\n')
+        return services
