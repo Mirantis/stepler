@@ -605,3 +605,59 @@ def test_kill_check_dhcp_agents(network,
     agent_steps.check_alive(dhcp_agents,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
+
+
+@pytest.mark.idempotent_id('f103c8aa-b5b0-42bd-a173-55ca669193ee')
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+def test_manually_rescheduling_dhcp_agent(network,
+                                          nova_floating_ip,
+                                          server,
+                                          server_steps,
+                                          port_steps,
+                                          ports,
+                                          agent_steps):
+    """**Scenario:** Manually reschedule dhcp-agent.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet and router
+    #. Create floating ip
+    #. Create server
+
+    **Steps:**
+
+    #. Assign floating ip to server
+    #. Check DHCP on cirros-dhcpc command on server with sudo
+    #. Get node with DHCP agent for network
+    #. Check ports on net
+    #. Reschedule network from DHCP agent
+    #. Check that the network is moved from this dhcp-agent
+    #. Set network to another dhcp-agent
+    #. Check that the network moved to this dhcp-agent
+    #. Check that ports haven't been changed
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete floating ip
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.check_dhcp_on_cirros_server(server)
+    dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
+    dhcp_agent_second = agent_steps.get_dhcp_agents_not_hosting_net(network)[0]
+    ports = port_steps.get_ports(
+        device_owner=config.PORT_DEVICE_OWNER_DHCP, device_id=network['id'])
+    agent_steps.remove_network_from_dhcp_agent(network, dhcp_agent)
+    agent_steps.add_network_to_dhcp_agent(network, dhcp_agent_second)
+    agent_steps.check_network_is_on_agent(
+        network, dhcp_agent_second, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    new_ports = port_steps.get_ports(
+        device_owner=config.PORT_DEVICE_OWNER_DHCP, device_id=network['id'])
+    port_steps.check_equal_ports(ports_1=ports, ports_2=new_ports)
