@@ -44,6 +44,7 @@ __all__ = sorted([  # sort for documentation
     'port_steps',
     'neutron_client',
     'get_neutron_client',
+    'set_dhcp_agents_count_for_net',
     'network_steps',
     'get_network_steps',
     'router_steps',

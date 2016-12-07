@@ -341,12 +341,13 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             str: path to backup file
         """
-        suffix = suffix or utils.generate_ids('backup', length=30)
+        suffix = suffix or next(utils.generate_ids('backup', length=30))
         backup_path = "{}.{}".format(file_path, suffix)
 
         task = {
-            'command': 'cp "{path}" "{backup_path}"'.format(
-                path=file_path, backup_path=backup_path)
+            'command': 'cp --preserve=mode,ownership "{path}" '
+                       '"{backup_path}"'.format(path=file_path,
+                                                backup_path=backup_path)
         }
         nodes.run_task(task)
 
