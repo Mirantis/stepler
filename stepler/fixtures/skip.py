@@ -208,3 +208,10 @@ class Predicates(object):
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(os_faults_steps.get_nodes(
                    service_names=[config.CINDER_VOLUME]))
+
+    @property
+    @_store_call
+    def neutron_debug(self):
+        """Define whether neutron configures with debug mode."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_neutron_debug()
