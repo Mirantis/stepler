@@ -1,3 +1,9 @@
+"""
+------------
+Port manager
+------------
+"""
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -25,7 +31,11 @@ class PortManager(base.BaseNeutronManager):
     _resource_class = Port
 
     def delete(self, port_id):
-        """Delete port."""
+        """Delete a port.
+
+        Args:
+            port_id (str): port identifier
+        """
         port = self.get(port_id)
         if port['device_owner'] == 'network:router_interface':
             self.client.routers.remove_port_interface(

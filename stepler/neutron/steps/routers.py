@@ -18,7 +18,7 @@ Router steps
 # limitations under the License.
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
-                      has_length, is_not, raises)  # noqa H301
+                      has_length, is_in, is_not, raises)  # noqa H301
 from neutronclient.common import exceptions
 
 from stepler import base
@@ -90,6 +90,7 @@ class RouterSteps(base.BaseSteps):
         Args:
             router (dict): router
             network (dict): network
+            check (bool): flag whether to check step or not
         """
         self._client.set_gateway(router_id=router['id'],
                                  network_id=network['id'])
@@ -102,6 +103,7 @@ class RouterSteps(base.BaseSteps):
 
         Args:
             router (dict): router
+            check (bool): flag whether to check step or not
         """
         self._client.clear_gateway(router_id=router['id'])
         if check:
@@ -135,11 +137,12 @@ class RouterSteps(base.BaseSteps):
         Args:
             router (dict): router
             subnet (dict): subnet
+            check (bool): flag whether to check step or not
         """
         self._client.add_subnet_interface(router_id=router['id'],
                                           subnet_id=subnet['id'])
         if check:
-            self.check_interface_subnet_presence(router, subnet)
+            self.check_subnet_interface_presence(router, subnet)
 
     @steps_checker.step
     def remove_subnet_interface(self, router, subnet, check=True):
@@ -152,11 +155,11 @@ class RouterSteps(base.BaseSteps):
         self._client.remove_subnet_interface(router_id=router['id'],
                                              subnet_id=subnet['id'])
         if check:
-            self.check_interface_subnet_presence(
+            self.check_subnet_interface_presence(
                 router, subnet, must_present=False)
 
     @steps_checker.step
-    def check_interface_subnet_presence(self,
+    def check_subnet_interface_presence(self,
                                         router,
                                         subnet,
                                         must_present=True,
@@ -165,20 +168,78 @@ class RouterSteps(base.BaseSteps):
 
         Args:
             router (dict): router to check
-            subnet (dict): subnet to find in router interfaces
-            must_present (bool): flag whether router should contains interface
+            subnet (dict): subnet to be found in router interfaces
+            must_present (bool): flag whether router should contain interface
                 to subnet or not
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        def _check_interface_subnet_presence():
+        def _check_subnet_interface_presence():
             subnet_ids = self._client.get_interfaces_subnets_ids(router['id'])
             is_present = subnet['id'] in subnet_ids
             return waiter.expect_that(is_present, equal_to(must_present))
 
-        waiter.wait(_check_interface_subnet_presence, timeout_seconds=timeout)
+        waiter.wait(_check_subnet_interface_presence, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def add_port_interface(self, router, port, check=True):
+        """Step to add router port interface.
+
+        Args:
+            router (dict): router
+            port (dict): port
+            check (bool): flag whether to check step or not
+        """
+        self._client.add_port_interface(router_id=router['id'],
+                                        port_id=port['id'])
+        if check:
+            self.check_port_interface_presence(router, port)
+
+    @steps_checker.step
+    def remove_port_interface(self, router, port, check=True):
+        """Step to remove router port interface.
+
+        After this, port can be also deleted.
+
+        Args:
+            router (dict): router
+            port (dict): port
+            check (bool): flag whether to check step or not
+        """
+        self._client.remove_port_interface(router_id=router['id'],
+                                           port_id=port['id'])
+        if check:
+            self.check_port_interface_presence(
+                router, port, must_present=False)
+
+    @steps_checker.step
+    def check_port_interface_presence(self,
+                                      router,
+                                      port,
+                                      must_present=True,
+                                      timeout=0):
+        """Verify step to check port is in router interfaces.
+
+        Args:
+            router (dict): router to check
+            port (dict): port to be found in router interfaces
+            must_present (bool): flag whether router should contain interface
+                to port or not
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_port_interface_presence():
+            ports = self._client.get_interfaces_ports(router['id'])
+            matcher = is_in(ports)
+            if not must_present:
+                matcher = is_not(matcher)
+            return waiter.expect_that(port, matcher)
+
+        waiter.wait(_check_port_interface_presence, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_router(self, **kwargs):
