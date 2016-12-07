@@ -18,6 +18,7 @@ Neutron steps
 # limitations under the License.
 
 from .agents import *  # noqa
+from .floating_ips import *  # noqa
 from .networks import *  # noqa
 from .ports import *  # noqa
 from .quotas import *  # noqa
@@ -27,6 +28,7 @@ from .subnets import *  # noqa
 
 __all__ = [
     "AgentSteps",
+    "FloatingIPSteps",
     "NetworkSteps",
     "PortSteps",
     "QuotaSteps",

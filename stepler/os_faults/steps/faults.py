@@ -17,6 +17,7 @@ os_faults steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import os
 import re
 import tempfile
@@ -1408,3 +1409,48 @@ class OsFaultsSteps(base.BaseSteps):
                 if node_result.host == node.ip:
                     services[node.fqdn] = node_result.payload['stdout_lines']
         return services
+
+    @steps_checker.step
+    def check_zones_assigment_to_devices(self, node):
+        """Step to check conntack zones.
+
+        This step gets `conntrack` and `iptables` outputs and check that each
+        zone has 2 devices - tap and qvb.
+
+        Args:
+            node (NodeCollection): node to execute check
+
+        Raises:
+            AssertionError: if check failed
+        """
+        conntrack_output = self.execute_cmd(
+            node, 'conntrack -L -p icmp')[0].payload['stdout']
+        iptables_output = self.execute_cmd(
+            node, 'iptables -L -t raw')[0].payload['stdout_lines']
+
+        zones = re.findall(r'zone=(?P<zone>\d+)', conntrack_output)
+        zones = set(zones)
+
+        for start, line in enumerate(iptables_output):
+            if 'Chain neutron-openvswi-PREROUTING' in line:
+                break
+        start += 2
+        zones_devices = collections.defaultdict(list)
+
+        for line in iptables_output[start:]:
+            data = re.split('\s+', line, maxsplit=6)
+            if data[:-1] != [
+                    'CT', 'all', '--', 'anywhere', 'anywhere', 'PHYSDEV'
+            ]:
+                continue
+            dev_data = re.search(
+                r'match --physdev-in (?P<dev>.+?) CTzone (?P<zone>\d+)',
+                data[-1]).groupdict()
+            if dev_data['zone'] not in zones:
+                continue
+            zones_devices[dev_data['zone']].append(dev_data['dev'])
+
+        for devices in zones_devices.values():
+            assert_that(devices, has_length(2))
+            dev_types = {x[:3] for x in devices}
+            assert_that(dev_types, equal_to({'tap', 'qvb'}))

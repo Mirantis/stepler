@@ -42,6 +42,7 @@ __all__ = [
     'images_cleanup',
     'ubuntu_xenial_image',
     'baremetal_ubuntu_image',
+    'conntrack_cirros_image',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -304,6 +305,24 @@ def cirros_image(create_images_context):
     """
     with create_images_context(utils.generate_ids('cirros'),
                                config.CIRROS_QCOW2_URL) as images:
+        yield images[0]
+
+
+@pytest.fixture
+def conntrack_cirros_image(create_images_context, glance_steps):
+    """Function fixture to create cirros image with patches for conntrack.
+
+    Args:
+        create_images_context (function): function to create images as context
+        image_steps (obj): instantiated glance image steps
+
+    Returns:
+        object: public cirros glance image
+    """
+    with create_images_context(utils.generate_ids('cirros'),
+                               config.CONNTRACK_CIRROS_IMAGE) as images:
+        glance_steps.update_images(images,
+                                   visibility=config.IMAGE_VISIBILITY_PUBLIC)
         yield images[0]
 
 

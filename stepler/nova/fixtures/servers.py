@@ -80,7 +80,7 @@ def unexpected_servers_cleanup():
 
 
 @pytest.fixture(scope='session')
-def get_server_steps(request, get_nova_client):
+def get_server_steps(get_nova_client):
     """Callable session fixture to get server steps.
 
     Args:
@@ -89,8 +89,8 @@ def get_server_steps(request, get_nova_client):
     Returns:
         function: function to get server steps.
     """
-    def _get_server_steps():
-        return steps.ServerSteps(get_nova_client().servers)
+    def _get_server_steps(**credentials):
+        return steps.ServerSteps(get_nova_client(**credentials).servers)
 
     return _get_server_steps
 

@@ -161,3 +161,26 @@ class Pinger(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.cm.__exit__(exc_type, exc_value, traceback)
+
+
+class FixedIDPinger(Pinger):
+    """Pinger class to work with modified `ping` implementation.
+
+    Custom implementation allows to set ID for ICMP requests.
+    """
+
+    def __init__(self, ip_to_ping, remote, icmp_id, command_path='ping'):
+        """FixedIDPinger constructor.
+
+        Args:
+            ip_to_ping (str): ip address to ping
+            remote (object): instance of stepler.third_party.ssh.SshClient
+            icmp_id (int): desired ICMP id
+            command_path (str, optional): path to modified ping command
+        """
+        super(FixedIDPinger, self).__init__(ip_to_ping, remote)
+        self.icmp_id = str(icmp_id)
+        self.command_path = command_path
+
+    def _prepare_cmd(self, count=None):
+        return [self.command_path, self.ip_to_ping, self.icmp_id]

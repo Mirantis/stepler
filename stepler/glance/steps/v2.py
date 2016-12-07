@@ -17,7 +17,7 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa
+from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa H310
 from glanceclient import exc
 
 from stepler import config

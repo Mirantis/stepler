@@ -64,6 +64,7 @@ class ServerSteps(base.BaseSteps):
                        username=None,
                        password=None,
                        userdata=None,
+                       nics=None,
                        check=True):
         """Step to create servers.
 
@@ -82,6 +83,9 @@ class ServerSteps(base.BaseSteps):
             username (str): username to store with server metadata
             password (str): password to store with server metadata
             userdata (str): userdata (script) to execute on instance after boot
+            nics (list, optional): An ordered list of nics (dicts) to be added
+                to this servers, with information about connected networks,
+                fixed IPs, port etc.
             check (bool): flag whether to check step or not
 
         Returns:
@@ -91,7 +95,7 @@ class ServerSteps(base.BaseSteps):
         sec_groups = [s.id for s in security_groups or []]
         image_id = None if image is None else image.id
         keypair_id = None if keypair is None else keypair.id
-        nics = []
+        nics = nics or []
         for network in networks:
             nics.append({'net-id': network['id']})
         for port in ports:
@@ -469,6 +473,7 @@ class ServerSteps(base.BaseSteps):
         Raises:
             AssertionError: If no retrieved IPs.
         """
+        server.get()
         ips = {}
         for net_name, net_info in server.addresses.items():
             for net in net_info:
@@ -833,6 +838,62 @@ class ServerSteps(base.BaseSteps):
         """
         with ping.Pinger(ip_to_ping, remote=server_ssh) as result:
             yield
+        assert_that(result.received, equal_to(0))
+
+    @steps_checker.step
+    @contextlib.contextmanager
+    def check_fixed_id_ping_loss_context(self,
+                                         ip_to_ping,
+                                         icmp_id,
+                                         server,
+                                         max_loss=0):
+        """Step to check that ping losses inside CM is less than max_loss.
+
+        Note:
+            This method required ping binary which supports icmp_id parameter.
+
+        Args:
+            ip_to_ping (str): ip address to ping
+            icmp_id (int): desired id of icmp packets
+            server (obj): nova server
+            max_loss (int): maximum allowed pings loss
+
+        Raises:
+            AssertionError: if ping loss is greater than `max_loss`
+        """
+        with self.get_server_ssh(server) as server_ssh:
+            with ping.FixedIDPinger(
+                    ip_to_ping,
+                    remote=server_ssh,
+                    icmp_id=icmp_id,
+                    command_path=config.CUSTOM_PING_COMMAND_PATH) as result:
+                yield
+
+        assert_that(result.loss, less_than_or_equal_to(max_loss))
+
+    @steps_checker.step
+    @contextlib.contextmanager
+    def check_no_fixed_id_ping_context(self, ip_to_ping, icmp_id, server):
+        """Step to check that ping is not success inside CM.
+
+        Note:
+            This method required ping binary which supports icmp_id parameter.
+
+        Args:
+            ip_to_ping (str): ip address to ping
+            icmp_id (int): desired id of icmp packets
+            server (obj): nova server
+
+        Raises:
+            AssertionError: if ping received is not equal to 0
+        """
+        with self.get_server_ssh(server) as server_ssh:
+            with ping.FixedIDPinger(
+                    ip_to_ping,
+                    remote=server_ssh,
+                    icmp_id=icmp_id,
+                    command_path=config.CUSTOM_PING_COMMAND_PATH) as result:
+                yield
         assert_that(result.received, equal_to(0))
 
     @steps_checker.step

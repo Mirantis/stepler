@@ -81,8 +81,9 @@ def create_router(router_steps):
     """
     routers = []
 
-    def _create_router(router_name, distributed=False):
-        router = router_steps.create(router_name, distributed=distributed)
+    def _create_router(router_name, distributed=False, **kwargs):
+        router = router_steps.create(router_name, distributed=distributed,
+                                     **kwargs)
         routers.append(router)
         return router
 
