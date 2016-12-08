@@ -25,6 +25,7 @@ import time
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
                       only_contains, has_items, has_length, is_, equal_to,
                       contains_inanyorder, is_in, any_of)  # noqa H301
+from six import moves
 
 from stepler import base
 from stepler import config
@@ -854,6 +855,20 @@ class OsFaultsSteps(base.BaseSteps):
         cmd = "grep -iP '^mechanism_drivers\s*=\s*.+l2population' {}".format(
             config.NEUTRON_ML2_CONFIG_PATH)
         nodes = self.get_nodes(service_names=[config.NEUTRON_L3_SERVICE])
+        result = self.execute_cmd(nodes, cmd, check=False)
+        return all(node_result.status == config.STATUS_OK
+                   for node_result in result)
+
+    @steps_checker.step
+    def get_horizon_cinder_backups(self):
+        """Step to retrieve horizon cinder backup enabled or not.
+
+        Returns:
+            bool: is horizon cinder backup enabled
+        """
+        pattern = moves.shlex_quote('^\s+["\']enable_backup["\']\s*:\s*True')
+        cmd = "grep -P {} {}".format(pattern, config.HORIZON_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.HORIZON])
         result = self.execute_cmd(nodes, cmd, check=False)
         return all(node_result.status == config.STATUS_OK
                    for node_result in result)

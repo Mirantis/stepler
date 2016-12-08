@@ -19,13 +19,14 @@ Custom table
 
 import re
 
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import (assert_that, is_not, any_of,
+                      equal_to_ignoring_case)  # noqa H301
 import pom
 from pom import ui
 from selenium.webdriver.common.by import By
-from waiting import wait
 
 from stepler import config
+from stepler.third_party import waiter
 
 
 class Cell(ui.Block):
@@ -51,9 +52,15 @@ class Row(ui.Row):
         """Wait status value after transit statuses."""
         self.wait_for_presence()
         with self.cell('status') as cell:
-            wait(lambda: cell.value not in self.transit_statuses,
-                 timeout_seconds=timeout, sleep_seconds=0.1)
-            assert_that(cell.value.lower(), equal_to(status.lower()))
+
+            def _wait_cell_status():
+                matchers = [equal_to_ignoring_case(status)
+                            for status in self.transit_statuses]
+                return waiter.expect_that(cell.value, is_not(
+                    any_of(*matchers)))
+
+            waiter.wait(_wait_cell_status, timeout_seconds=timeout)
+            assert_that(cell.value, equal_to_ignoring_case(status))
 
 
 @ui.register_ui(

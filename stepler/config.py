@@ -26,7 +26,7 @@ import stepler.hacking  # noqa F401
 
 from stepler.third_party.utils import generate_ids
 
-STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:8]  # resources unique prefix
+STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:4]  # resources unique prefix
 # TODO(schipiga): inject STEPLER_PREFIX to prevent cross imports problem.
 generate_ids = functools.partial(generate_ids, _stepler_prefix=STEPLER_PREFIX)
 
@@ -98,6 +98,7 @@ NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
 IRONIC_API = 'ironic-api'
 IRONIC_CONDUCTOR = 'ironic-conductor'
+HORIZON = 'horizon'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
@@ -405,6 +406,10 @@ VOLUME_SOURCE = 'Volume'
 
 NODE_REBOOT_TIMEOUT = 5 * 60
 TCPDUMP_LATENCY = 2
+
+# Horizon
+HORIZON_CONFIG_PATH = os.environ.get(
+    'HORIZON_CONFIG_PATH', '/etc/openstack-dashboard/local_settings.py')
 
 # Cloud-specific variables
 

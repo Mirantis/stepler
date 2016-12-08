@@ -274,7 +274,7 @@ class TestUserOnly(object):
         """
         image = glance_steps.create_images(
             utils.get_file_path(config.CIRROS_QCOW2_URL),
-            image_names=utils.utils.generate_ids(length=20))[0]
+            image_names=utils.generate_ids(length=20))[0]
         images_steps.check_non_public_image_not_visible(image.name)
 
     # the following test is executed only for one user because of its long
@@ -294,7 +294,7 @@ class TestUserOnly(object):
 
         #. Delete image
         """
-        image_name = next(utils.utils.generate_ids(length=20))
+        image_name = next(utils.generate_ids(length=20))
         with utils.generate_file_context(
                 postfix='.qcow2', size=config.BIG_FILE_SIZE) as file_path:
             create_image(image_name, image_file=file_path, big_image=True)
