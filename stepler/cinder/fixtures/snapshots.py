@@ -85,11 +85,12 @@ def volume_snapshot(volume, snapshot_steps):
 
 
 @pytest.fixture(scope='session')
-def cleanup_snapshots(uncleanable):
+def cleanup_snapshots(uncleanable, get_volume_steps):
     """Callable function fixture to cleanup snapshots after test.
 
     Args:
         uncleanable (AttrDict): data structure with skipped resources
+        get_volume_steps (function): function to get volume steps
 
     Returns:
         function: function to cleanup snapshots
@@ -98,9 +99,14 @@ def cleanup_snapshots(uncleanable):
         uncleanable_ids = uncleanable_ids or uncleanable.snapshot_ids
         deleting_snapshots = []
 
+        _volume_steps = get_volume_steps(config.CURRENT_CINDER_VERSION,
+                                         is_api=False)
+        volumes_with_prefix_ids = _volume_steps.get_volumes_with_prefix_ids()
+
         for snapshot in _snapshot_steps.get_snapshots(all_projects=True,
                                                       check=False):
-            if snapshot.id not in uncleanable_ids:
+            if (snapshot.id not in uncleanable_ids and
+                    snapshot.volume_id in volumes_with_prefix_ids):
                 deleting_snapshots.append(snapshot)
 
         _snapshot_steps.delete_snapshots(deleting_snapshots)

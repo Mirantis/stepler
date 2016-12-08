@@ -23,6 +23,94 @@ from stepler import config
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('71b0b170-10c4-4877-bab8-93d8284c3c01')
+def test_create_volume_name_non_unicode(cli_cinder_steps,
+                                        volume_steps):
+    """**Scenario:** Create volume with non unicode symbols name.
+
+    **Steps:**
+
+    #. Create volume with non unicode symbols name using CLI
+    #. Check that volume status is available
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_name = next(utils.generate_ids(use_unicode=True))
+    volume_dict = cli_cinder_steps.create_volume(name=volume_name)
+    volume_steps.check_volume_status(volume_dict['id'],
+                                     [config.STATUS_AVAILABLE],
+                                     transit_statuses=(
+                                         config.STATUS_CREATING,
+                                         config.STATUS_DOWNLOADING,
+                                         config.STATUS_UPLOADING),
+                                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('54b0e3f6-1284-4ea8-a991-c8a6cd772f0e')
+def test_create_volume_description_non_unicode(cli_cinder_steps,
+                                               volume_steps):
+    """**Scenario:** Create volume with non unicode symbols description.
+
+    **Steps:**
+
+    #. Create volume with non unicode symbols description using CLI
+    #. Check that volume status is available
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_description = next(utils.generate_ids(use_unicode=True))
+    volume_dict = cli_cinder_steps.create_volume(
+        description=volume_description)
+    volume_steps.check_volume_status(volume_dict['id'],
+                                     [config.STATUS_AVAILABLE],
+                                     transit_statuses=(
+                                         config.STATUS_CREATING,
+                                         config.STATUS_DOWNLOADING,
+                                         config.STATUS_UPLOADING),
+                                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('453c8024-f801-4a2e-8d33-7ffe2d637fd3')
+def test_show_volume_non_unicode_name(volume_steps, cli_cinder_steps):
+    """**Scenario:** Show volume with non unicode name.
+
+    **Steps:**
+
+    #. Create volume with non unicode name using API
+    #. Check CLI command ``cinder show <volume id>``
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_name = next(utils.generate_ids(use_unicode=True))
+    volume = volume_steps.create_volumes(names=[volume_name])[0]
+    cli_cinder_steps.show_volume(volume)
+
+
+@pytest.mark.idempotent_id('c080b991-9704-455a-8085-0d4f368acc25')
+def test_show_volume_non_unicode_description(volume_steps,
+                                             cli_cinder_steps):
+    """**Scenario:** Show volume with non unicode description.
+
+    **Steps:**
+
+    #. Create volume with non unicode description using API
+    #. Check CLI command ``cinder show <volume id>``
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_description = next(utils.generate_ids(use_unicode=True))
+    volume = volume_steps.create_volumes(description=volume_description)[0]
+    cli_cinder_steps.show_volume(volume)
+
+
 @pytest.mark.idempotent_id('79d599b8-4b3c-4fc9-84bd-4b6353816d4d')
 def test_change_volume_name_non_unicode(volume,
                                         cli_cinder_steps,
@@ -359,7 +447,7 @@ def test_volume_transfer_non_unicode_name(volume,
     transfer_name = next(utils.generate_ids(use_unicode=True))
     cli_cinder_steps.create_volume_transfer(volume, name=transfer_name)
     volume_steps.check_volume_status(volume,
-                                     status=config.STATUS_AWAITING_TRANSFER,
+                                     [config.STATUS_AWAITING_TRANSFER],
                                      timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
 

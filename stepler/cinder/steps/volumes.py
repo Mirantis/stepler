@@ -122,6 +122,12 @@ class VolumeSteps(base.BaseSteps):
         names = names or utils.generate_ids()
         image_id = None if image is None else image.id
         volumes = []
+
+        metadata = metadata or {}
+        # Volume can have no name. Mark it as stepler-created via metadata.
+        # Metadata should contain only string values.
+        metadata[config.STEPLER_PREFIX] = config.STEPLER_PREFIX
+
         _volume_names = {}
 
         for name in names:
@@ -217,7 +223,7 @@ class VolumeSteps(base.BaseSteps):
         """Check step volume status.
 
         Args:
-            volume (object): cinder volume to check status
+            volume (object|str): cinder volume to check status or its id
             statuses (list): list of statuses to check
             transit_statuses (tuple): possible volume transitional statuses
             timeout (int): seconds to wait a result of check
@@ -227,6 +233,9 @@ class VolumeSteps(base.BaseSteps):
         """
         transit_matchers = [equal_to_ignoring_case(status)
                             for status in transit_statuses]
+
+        if not hasattr(volume, 'id'):
+            volume = self.get_volume_by_id(volume)
 
         def _check_volume_status():
             volume.get()
@@ -287,6 +296,49 @@ class VolumeSteps(base.BaseSteps):
             assert_that(volumes, is_not(empty()))
 
         return volumes
+
+    @steps_checker.step
+    def get_volumes_with_prefix_ids(self, check=True):
+        """Step to get ids of volumes with prefix.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: list of ids of volumes with prefix
+
+        Raises:
+            AssertionError: if check failed
+        """
+        volumes_with_preffix = self.get_volumes(
+            all_projects=True,
+            metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
+            check=check)
+        volumes_ids = [volume.id for volume in volumes_with_preffix]
+
+        return volumes_ids
+
+    @steps_checker.step
+    def get_volume_by_id(self, volume_id, check=True):
+        """Step to get volume object from cinder using volume id.
+
+        Args:
+            volume_id (str): volume id
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: volume
+
+        Raises:
+            exceptions.NotFound: if volume with volume_id doesn't exist
+            AssertionError: if check failed
+        """
+        volume = self._client.get(volume_id)
+
+        if check:
+            assert_that(volume.id, equal_to(volume_id))
+
+        return volume
 
     @steps_checker.step
     def check_volume_properties(self, volume, timeout=0, **properties):

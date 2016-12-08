@@ -59,12 +59,16 @@ def unexpected_volumes_cleanup(primary_volumes,
     It provides cleanup before and after test.
     """
     if config.CLEANUP_UNEXPECTED_BEFORE_TEST:
-        cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
+        cleanup_volumes(get_volume_steps(config.CURRENT_CINDER_VERSION,
+                                         is_api=False),
+                        config.UNEXPECTED_VOLUMES_LIMIT)
 
     yield
 
     if config.CLEANUP_UNEXPECTED_AFTER_TEST:
-        cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
+        cleanup_volumes(get_volume_steps(config.CURRENT_CINDER_VERSION,
+                                         is_api=False),
+                        config.UNEXPECTED_VOLUMES_LIMIT)
 
 
 @pytest.fixture
@@ -130,8 +134,12 @@ def cleanup_volumes(uncleanable):
         uncleanable_ids = uncleanable_ids or uncleanable.volume_ids
         deleting_volumes = []
 
-        for volume in _volume_steps.get_volumes(all_projects=True,
-                                                check=False):
+        volumes_with_prefix = _volume_steps.get_volumes(
+            all_projects=True,
+            metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
+            check=False)
+
+        for volume in volumes_with_prefix:
             if volume.id not in uncleanable_ids:
                 deleting_volumes.append(volume)
 
