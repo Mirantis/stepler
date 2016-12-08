@@ -30,6 +30,7 @@ from .tab_volumes import FormCreateSnapshot
     dropdown_menu=_ui.DropdownMenu())
 class RowSnapshot(_ui.Row):
     """Volume snapshot row of volume snapshots table."""
+    transit_statuses = ('Creating',)
 
 
 @ui.register_ui(

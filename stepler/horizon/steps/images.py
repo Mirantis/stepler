@@ -282,7 +282,7 @@ class ImagesSteps(BaseSteps):
             name=image_name).link_image.click()
 
         if check:
-            assert_that(self.app.page_image.info_image.label_name.value,
+            assert_that(self.app.page_image.image_info_main.label_name.value,
                         equal_to(image_name))
 
     @steps_checker.step
