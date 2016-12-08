@@ -643,3 +643,106 @@ def test_check_l3_agent_after_destroy_controller(
     }
     server_steps.check_ping_by_plan(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.requires("l3_agent_nodes_count >= 2")
+@pytest.mark.idempotent_id('bc45b59d-1870-4b62-b8c6-d4247cf7bbf1')
+@pytest.mark.parametrize('neutron_2_networks',
+                         ['different_routers'],
+                         indirect=True)
+def test_check_l3_agent_after_reset_primary_controller(
+        cirros_image,
+        flavor,
+        security_group,
+        neutron_2_servers_diff_nets_with_floating,
+        nova_create_floating_ip,
+        os_faults_steps,
+        agent_steps,
+        router_steps,
+        server_steps):
+    """**Scenario:** Reset controller and check L3 agent is alive.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1 and router_1
+    #. Create server_1
+    #. Create network_2 with subnet_2
+    #. Create server_2 on another compute and connect it to network_2
+    #. Assign floating ips to servers
+
+    **Steps:**
+
+    #. Get primary controller
+    #. Get L3 agent for primary controller node
+    #. Reschedule router_1 to L3 agent on primary controller
+        if it is not there yet
+    #. Ping server_1 and server_2 from each other with floatings ip
+    #. Check that ping from server_1 and server_2 to 8.8.8.8 is successful
+    #. Reset or reboot primary controller
+    #. Wait for L3 agent becoming dead
+    #. Check that all routers rescheduled from primary controller
+    #. Boot server_3 in network_1
+    #. Associate floating ip for server_3
+    #. Ping server_1 and server_3 from each other with both ips
+    #. Ping server_2 and server_3 from each other with floating ip
+    #. Check that ping from server_1 to 8.8.8.8 is successful
+    #. Check that ping from server_3 to 8.8.8.8 is successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete networks, subnets, routers
+    #. Delete floating IPs
+    #. Delete security group
+    #. Delete cirros image
+    #. Delete flavor
+    """
+    network_1, _ = neutron_2_servers_diff_nets_with_floating.networks
+    router_1, router_2 = neutron_2_servers_diff_nets_with_floating.routers
+    server_1, server_2 = neutron_2_servers_diff_nets_with_floating.servers
+
+    controller = os_faults_steps.get_node_by_cmd(
+        config.FUEL_PRIMARY_CONTROLLER_CMD)
+    l3_agent = agent_steps.get_agents(node=controller,
+                                      binary=config.NEUTRON_L3_SERVICE)[0]
+    agent_steps.reschedule_router_to_l3_agent(
+        l3_agent, router_1, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    ping_plan = {
+        server_1: [config.GOOGLE_DNS_IP, (server_2, config.FLOATING_IP)],
+        server_2: [config.GOOGLE_DNS_IP, (server_1, config.FLOATING_IP)]
+    }
+    server_steps.check_ping_by_plan(
+        ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    os_faults_steps.reset_nodes(controller)
+    agent_steps.check_alive([l3_agent],
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    for router in (router_1, router_2):
+        agent_steps.check_router_rescheduled(
+            router, l3_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    router_steps.check_routers_count_for_agent(l3_agent, expected_count=0)
+
+    server_3 = server_steps.create_servers(image=cirros_image,
+                                           flavor=flavor,
+                                           networks=[network_1],
+                                           security_groups=[security_group],
+                                           username=config.CIRROS_USERNAME,
+                                           password=config.CIRROS_PASSWORD)[0]
+    floating_ip = nova_create_floating_ip()
+    server_steps.attach_floating_ip(server_3, floating_ip)
+
+    ping_plan = {
+        server_1: [(server_2, config.FLOATING_IP), (server_3,
+                                                    config.FIXED_IP)],
+        server_2: [(server_1, config.FLOATING_IP),
+                   (server_3, config.FLOATING_IP)],
+        server_3: [(server_2, config.FLOATING_IP), (server_1, config.FIXED_IP)]
+    }
+    server_steps.check_ping_by_plan(
+        ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
