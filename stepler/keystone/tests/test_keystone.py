@@ -53,59 +53,74 @@ def test_keystone_permission_lose(admin,
 
 
 @pytest.mark.idempotent_id('76f823ac-5c8b-4617-a4cc-9e30257a679f')
-def test_restart_all_services(cirros_image,
-                              tiny_flavor,
-                              keypair,
-                              net_subnet_router,
-                              security_group,
-                              create_user,
-                              user_steps,
-                              os_faults_steps,
-                              server_steps):
+def test_restart_keystone_service(cirros_image,
+                                  tiny_flavor,
+                                  keypair,
+                                  net_subnet_router,
+                                  security_group,
+                                  server,
+                                  get_ssh_proxy_cmd,
+                                  user,
+                                  create_user,
+                                  user_steps,
+                                  os_faults_steps,
+                                  server_steps):
     """**Scenario:** Check that keystone works after restarting services.
 
     **Setup:**
 
     #. Create cirros image
     #. Create tiny flavor
-    #. Create key pair
+    #. Create keypair
     #. Create network with subnet and router
+    #. Create security group
+    #. Create server_1
+    #. Create user_1
 
     **Steps:**
 
-    #. Create new user 1
-    #. Check that user 1 is present in user list
+    #. Check that ping from server_1 to 8.8.8.8 is successful
     #. Restart keystone services
-    #. Check that user 1 is present in user list
-    #. Create new user 2
-    #. Check that user 2 is present in user list
-    #. Create VM
-    #. Check its status = ACTIVE
+    #. Check that user_1 is in user list
+    #. Create server_2 and check ping to 8.8.8.8 and to server_1 as well
+    #. Create user_2 and check its presence in user list
 
     **Teardown:**
 
-    #. Delete VM
+    #. Delete users
+    #. Delete servers
+    #. Delete security group
     #. Delete network, subnet, router
-    #. Delete users 1 and 2
-    #. Delete key pair
-    #. Delete tiny flavor
+    #. Delete keypair
+    #. Delete flavor
     #. Delete cirros image
     """
-    user_name = next(utils.generate_ids('user'))
-    user1 = create_user(user_name=user_name, password=user_name)
+    proxy_cmd = get_ssh_proxy_cmd(server)
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.restart_services([config.KEYSTONE])
 
-    user_steps.check_user_presence(user1)
-    user_name = next(utils.generate_ids('user'))
-    create_user(user_name=user_name, password=user_name)
+    user_steps.check_user_presence(user)
+    server_2 = server_steps.create_servers(image=cirros_image,
+                                           flavor=tiny_flavor,
+                                           networks=[net_subnet_router[0]],
+                                           keypair=keypair,
+                                           security_groups=[security_group],
+                                           username=config.CIRROS_USERNAME)[0]
+    proxy_cmd = get_ssh_proxy_cmd(server_2)
+    server_1_ip = server_steps.get_fixed_ip(server)
+    with server_steps.get_server_ssh(
+            server_2, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
+        server_steps.check_ping_for_ip(server_1_ip, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
 
-    network, _, _ = net_subnet_router
-    server_steps.create_servers(image=cirros_image,
-                                flavor=tiny_flavor,
-                                networks=[network],
-                                keypair=keypair,
-                                security_groups=[security_group])
+    name_2, password_2 = utils.generate_ids(count=2)
+    create_user(user_name=name_2, password=password_2)
 
 
 @pytest.mark.idempotent_id('14ed4331-c05e-4b9a-9723-eac8c6f3f26a')
