@@ -93,6 +93,9 @@ CURRENT_IRONIC_MICRO_VERSION = '1.9'
 
 # SERVICES
 CINDER_VOLUME = 'cinder-volume'
+GLANCE_API = 'glance-api'
+GLANCE_GLARE = 'glance-glare'
+GLANCE_REGISTRY = 'glance-registry'
 KEYSTONE = 'keystone'
 NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
@@ -222,6 +225,7 @@ REBOOT_SOFT = 'SOFT'
 REBOOT_HARD = 'HARD'
 
 NOVA_AVAILABILITY_TIMEOUT = 2 * 60
+GLANCE_AVAILABILITY_TIMEOUT = 15
 
 USERDATA_DONE_MARKER = 'userdata-done %s' % uuid.uuid4()
 
