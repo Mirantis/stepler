@@ -16,10 +16,12 @@ Neutron DVR tests
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import time
+
 import pytest
 
 from stepler import config
-
+from stepler.third_party import utils
 
 pytestmark = pytest.mark.requires('dvr')
 
@@ -1299,3 +1301,97 @@ def test_check_router_update_notification_for_l3_agents(
             keyword=config.STR_L3_AGENT_NOTIFICATION,
             start_line_number=line_counts[host_name],
             must_present=False)
+
+
+@pytest.mark.idempotent_id('11703a9c-2620-49c7-b834-0bffbed975d6')
+@pytest.mark.parametrize(
+    'change_neutron_quota', [dict(
+        network=50, router=50, subnet=50, port=150)],
+    indirect=True)
+@pytest.mark.usefixtures('change_neutron_quota')
+@pytest.mark.parametrize('flavor_name', [config.FLAVOR_MICRO])
+def test_instance_connectivity_after_l3_agent_restart(
+        cirros_image,
+        security_group,
+        public_network,
+        create_network,
+        create_subnet,
+        create_router,
+        add_router_interfaces,
+        nova_create_floating_ip,
+        router_steps,
+        flavor_steps,
+        server_steps,
+        hypervisor_steps,
+        os_faults_steps,
+        flavor_name):
+    """**Scenario:** Check instances connectivity after restarting l3 agent.
+
+    **Setup:**
+
+    #. Increase neutron quotas
+    #. Create cirros image
+    #. Create security group
+
+    **Steps:**
+
+    #. Create 10 networks, subnets and routers
+    #. Create 10 servers on one compute
+    #. For each server, create floating ip and attach it to server
+    #. Check that ping from one server to 8.8.8.8 is successful
+    #. Restart L3 agent on compute 60 times
+    #. Check that ping from all servers to 8.8.8.8 are successful
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete floating IPs
+    #. Delete networks, subnets, routers
+    #. Delete security group
+    #. Delete cirros image
+    #. Restore original neutron quotas
+    """
+    servers = []
+    host_name = hypervisor_steps.get_hypervisors()[0].hypervisor_hostname
+    flavor = flavor_steps.get_flavor(name=flavor_name)
+
+    for _ in range(10):
+
+        network = create_network(next(utils.generate_ids()))
+        subnet = create_subnet(
+            subnet_name=next(utils.generate_ids()),
+            network=network,
+            cidr=config.LOCAL_CIDR)
+        router = create_router(next(utils.generate_ids()), distributed=True)
+        router_steps.set_gateway(router, public_network)
+        add_router_interfaces(router, [subnet])
+
+        server = server_steps.create_servers(
+            image=cirros_image,
+            flavor=flavor,
+            networks=[network],
+            security_groups=[security_group],
+            availability_zone='nova:' + host_name,
+            username=config.CIRROS_USERNAME,
+            password=config.CIRROS_PASSWORD)[0]
+
+        floating_ip = nova_create_floating_ip()
+        server_steps.attach_floating_ip(server, floating_ip)
+
+        servers.append(server)
+
+    with server_steps.get_server_ssh(servers[0]) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh,
+            timeout=config.PING_CALL_TIMEOUT)
+
+    node = os_faults_steps.get_node(fqdns=[host_name])
+    for _ in range(60):
+        os_faults_steps.restart_services(names=[config.NEUTRON_L3_SERVICE],
+                                         nodes=node)
+
+    for server in servers:
+        with server_steps.get_server_ssh(server) as server_ssh:
+            server_steps.check_ping_for_ip(
+                config.GOOGLE_DNS_IP, server_ssh,
+                timeout=config.PING_CALL_TIMEOUT)
