@@ -316,3 +316,37 @@ class GlanceStepsV2(BaseGlanceSteps):
         image_md5_1 = utils.get_md5sum(image_path_1)
         image_md5_2 = utils.get_md5sum(image_path_2)
         assert_that(image_md5_1, equal_to(image_md5_2))
+
+    @steps_checker.step
+    def check_image_data_corresponds_to_source(self, image, file_path):
+        """Step to check that image data correspond to image source.
+
+        Args:
+            image (obj): image object
+            file_path (str): path to file image upload from
+
+        Raises:
+            AssertionError: if image checksum not equal to source file checksum
+        """
+        assert_that(image.checksum, equal_to(utils.get_md5sum(file_path)))
+
+    @steps_checker.step
+    def check_glance_service_available(self, should_be=True):
+        """Step to check glance service availability.
+
+        Args:
+            should_be (bool): flag whether glance should available or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_available():
+            try:
+                self.get_images(check=False)
+                is_available = True
+            except exc.HTTPServiceUnavailable:
+                is_available = False
+            return waiter.expect_that(is_available, equal_to(should_be))
+
+        waiter.wait(_check_available,
+                    timeout_seconds=config.GLANCE_AVAILABILITY_TIMEOUT)
