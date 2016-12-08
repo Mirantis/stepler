@@ -17,8 +17,8 @@ Router steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, calling, empty, equal_to,
-                      has_entries, is_in, is_not, raises)  # noqa H301
+from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
+                      has_length, is_not, raises)  # noqa H301
 from neutronclient.common import exceptions
 
 from stepler import base
@@ -227,40 +227,18 @@ class RouterSteps(base.BaseSteps):
         assert_that(router_attr, has_entries(kwargs))
 
     @steps_checker.step
-    def remove_router_from_l3_agent(self, router, l3_agent, check=True):
-        """Step to remove router from L3 agent.
+    def check_routers_count_for_agent(self, agent, expected_count):
+        """Step to check routers count for L3 agent.
 
         Args:
-            router (dict): router
-            l3_agent (dict): L3 agent
-            check (bool): flag whether to check step or not
+            agent (dict): neutron agent dict to check routers count
+            expected_count (int): expected routers count for L3 agent
 
         Raises:
-            AssertionError: if router is in agent routers list
+            AssertionError: if check failed
         """
-        self._client.remove_router_from_l3_agent(router_id=router['id'],
-                                                 l3_agent_id=l3_agent['id'])
-        if check:
-            routers = self._client.get_routers_on_l3_agent(l3_agent['id'])
-            assert_that(router, is_not(is_in(routers)))
-
-    @steps_checker.step
-    def add_router_to_l3_agent(self, router, l3_agent, check=True):
-        """Step to add router to L3 agent.
-
-        Args:
-            router (dict): router
-            l3_agent (dict): L3 agent
-            check (bool): flag whether to check step or not
-
-        Raises:
-            AssertionError: if router not in agent routers list
-        """
-        self._client.add_router_to_l3_agent(router_id=router['id'],
-                                            l3_agent_id=l3_agent['id'])
-        if check:
-            routers = self._client.get_routers_on_l3_agent(l3_agent['id'])
-            assert_that(router, is_in(routers))
+        routers = self._client.get_routers_on_l3_agent(agent['id'])
+        assert_that(routers, has_length(expected_count))
 
     @steps_checker.step
     def update_router(self, router, check=True, **kwargs):
