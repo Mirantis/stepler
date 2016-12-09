@@ -17,7 +17,8 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, is_not, equal_to, is_in  # noqa H310
+from hamcrest import (assert_that, empty, equal_to,
+                      has_items, is_not, is_in)  # noqa
 from glanceclient import exc
 
 from stepler import config
@@ -350,3 +351,26 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         waiter.wait(_check_available,
                     timeout_seconds=config.GLANCE_AVAILABILITY_TIMEOUT)
+
+    @steps_checker.step
+    def add_locations(self, image, urls, check=True):
+        """Step to add location to image.
+
+        Args:
+            image (obj): glance image
+            urls (list): urls for adding to image location
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if locations was not added
+        """
+        for url in urls:
+            self._client.images.add_location(
+                image.id,
+                url=url,
+                metadata={}
+            )
+        if check:
+            self._refresh_image(image)
+            locations = [loc['url'] for loc in image.locations]
+            assert_that(locations, has_items(*urls))
