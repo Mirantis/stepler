@@ -30,12 +30,14 @@ class CliCinderSteps(base.BaseCliSteps):
     """CLI cinder client steps."""
 
     @steps_checker.step
-    def create_volume(self, size=1, name=None, image=None, check=True):
+    def create_volume(self, size=1, name=None, description=None,
+                      image=None, check=True):
         """Step to create volume using CLI.
 
         Args:
             size(int): size of created volume (in GB)
             name (str): name of created volume
+            description (str): volume description
             image (str): glance image name or ID to create volume from
             metadata(str): volume metadata
             check (bool): flag whether to check step or not
@@ -50,12 +52,41 @@ class CliCinderSteps(base.BaseCliSteps):
             cmd += ' --image ' + image
         if name:
             cmd += ' --name ' + moves.shlex_quote(name)
+        if description is not None:
+            cmd += ' --description ' + moves.shlex_quote(description)
 
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.VOLUME_AVAILABLE_TIMEOUT, check=check)
         volume_table = output_parser.table(stdout)
         volume = {key: value for key, value in volume_table['values']}
         return volume
+
+    @steps_checker.step
+    def show_volume(self, volume, check=True):
+        """Step to show volume using CLI.
+
+        Args:
+            volume (object): cinder volume object to show
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        cmd = 'cinder show ' + volume.id
+
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.VOLUME_SHOW_TIMEOUT, check=check)
+
+        volume_table = output_parser.table(stdout)
+        show_result = {key: value for key, value in volume_table['values']}
+
+        if check:
+            assert_that(show_result['id'], is_(volume.id))
+            if volume.name:
+                assert_that(show_result['name'], is_(volume.name))
+            if volume.description:
+                assert_that(show_result['description'],
+                            is_(volume.description))
 
     @steps_checker.step
     def rename_volume(self, volume, name=None, description=None, check=True):
