@@ -94,11 +94,12 @@ def create_volume_transfer(transfer_steps):
 
 
 @pytest.fixture(scope='session')
-def cleanup_transfers(uncleanable):
+def cleanup_transfers(uncleanable, get_volume_steps):
     """Callable function fixture to clear created transfers after test.
 
     Args:
         uncleanable (AttrDict): data structure with skipped resources
+        get_volume_steps (function): function to get volume steps
 
     Returns:
         function: function to cleanup transfers
@@ -106,9 +107,14 @@ def cleanup_transfers(uncleanable):
     def _cleanup_transfers(_transfer_steps, uncleanable_ids=None):
         uncleanable_ids = uncleanable_ids or uncleanable.transfer_ids
 
+        _volume_steps = get_volume_steps(config.CURRENT_CINDER_VERSION,
+                                         is_api=False)
+        volumes_with_prefix_ids = _volume_steps.get_volumes_with_prefix_ids()
+
         for transfer in _transfer_steps.get_transfers(all_projects=True,
                                                       check=False):
-            if transfer.id not in uncleanable_ids:
+            if (transfer.id not in uncleanable_ids and
+                    transfer.volume_id in volumes_with_prefix_ids):
                 _transfer_steps.delete_volume_transfer(transfer)
 
     return _cleanup_transfers
