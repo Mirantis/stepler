@@ -418,3 +418,51 @@ class CliGlanceSteps(base.BaseCliSteps):
             filtered_images = self.list_images(property_filter=properties,
                                                api_version=api_version)
             assert_that(image['name'], is_in(filtered_images.values()))
+
+    @steps_checker.step
+    def remove_image_location(self, image, url, check=True):
+        """Step to remove image location.
+
+        Args:
+            image (obj): glance image
+            url (str): url for removing
+            check (bool): flag whether to check result or not
+
+        Returns:
+            tuple: execution result (exit_code, stdout, stderr)
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'glance location-delete --url {0} {1}'.format(url, image.id)
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, environ={'OS_IMAGE_API_VERSION': 2}, check=check)
+        return exit_code, stdout, stderr
+
+    @steps_checker.step
+    def check_image_location_isnot_removed(self, image):
+        """Step to check that user can't manipulate of image status
+           via removing image location.
+
+        Args:
+            image (obj): glance image
+
+        Raises:
+            AssertionError: if last image location was removed
+                with exit code=0 and stderr not correct
+        """
+        error_message = (
+            "403 Forbidden: Access was denied to this resource.: "
+            "Cannot remove last location in the image. (HTTP 403)")
+
+        urls = [loc['url'] for loc in image.locations]
+
+        # Remove all locations excluding last
+        for url in urls[:-1]:
+            self.remove_image_location(image, url)
+
+        exit_code, _, stderr = self.remove_image_location(
+            image, urls[-1],
+            check=False)
+        assert_that(exit_code, is_not(0))
+        assert_that(stderr, is_(error_message))

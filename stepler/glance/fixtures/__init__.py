@@ -40,4 +40,5 @@ __all__ = sorted([  # sort for documentation
     'images_cleanup',
     'ubuntu_xenial_image',
     'baremetal_ubuntu_image',
+    'enable_milti_locations'
 ])
