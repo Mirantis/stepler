@@ -377,6 +377,7 @@ LOCAL_CIDR = '192.168.3.0/24'
 
 PORT_DEVICE_OWNER_ROUTER_GATEWAY = 'network:router_gateway'
 PORT_DEVICE_OWNER_SERVER = 'compute:nova'
+PORT_DEVICE_OWNER_DHCP = 'network:dhcp'
 
 # Horizon
 BROWSER_WINDOW_SIZE = map(
