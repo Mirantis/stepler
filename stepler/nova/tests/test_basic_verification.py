@@ -353,13 +353,13 @@ def test_create_many_servers_boot_from_cinder(cirros_image,
 
 
 @pytest.mark.idempotent_id('4151cf32-9ffe-4cb2-bccb-a71aa8d993dc')
+@pytest.mark.usefixtures('disable_nova_use_cow_images')
 def test_image_access_host_device_when_resizing(
         ubuntu_image,
         net_subnet_router,
         security_group,
         keypair,
         nova_floating_ip,
-        patch_ini_file_and_restart_services,
         create_flavor,
         server_steps):
     """**Scenario:** Resize server after unmounting fs.
@@ -409,63 +409,56 @@ def test_image_access_host_device_when_resizing(
 
     network, _, _ = net_subnet_router
 
-    with patch_ini_file_and_restart_services(
-            [config.NOVA_COMPUTE],
-            file_path=config.NOVA_CONFIG_PATH,
-            option='use_cow_images',
-            value=0):
-        flavor_old = create_flavor(next(utils.generate_ids('flavor')),
-                                   ram=1024,
-                                   disk=5,
-                                   vcpus=1,
-                                   ephemeral=1)
-        flavor_new = create_flavor(next(utils.generate_ids('flavor')),
-                                   ram=2048,
-                                   disk=5,
-                                   vcpus=1,
-                                   ephemeral=1)
+    flavor_old = create_flavor(
+        next(utils.generate_ids('flavor')),
+        ram=1024,
+        disk=5,
+        vcpus=1,
+        ephemeral=1)
+    flavor_new = create_flavor(
+        next(utils.generate_ids('flavor')),
+        ram=2048,
+        disk=5,
+        vcpus=1,
+        ephemeral=1)
 
-        server = server_steps.create_servers(
-            image=ubuntu_image,
-            flavor=flavor_old,
-            keypair=keypair,
-            networks=[network],
-            security_groups=[security_group],
-            username=config.UBUNTU_USERNAME,
-            userdata=config.INSTALL_QEMU_UTILS_USERDATA)[0]
-        # wait for userdata being installed
-        server_steps.check_server_log_contains_record(
-            server,
-            config.USERDATA_DONE_MARKER,
-            timeout=config.USERDATA_EXECUTING_TIMEOUT)
+    server = server_steps.create_servers(
+        image=ubuntu_image,
+        flavor=flavor_old,
+        keypair=keypair,
+        networks=[network],
+        security_groups=[security_group],
+        username=config.UBUNTU_USERNAME,
+        userdata=config.INSTALL_QEMU_UTILS_USERDATA)[0]
+    # wait for userdata being installed
+    server_steps.check_server_log_contains_record(
+        server,
+        config.USERDATA_DONE_MARKER,
+        timeout=config.USERDATA_EXECUTING_TIMEOUT)
 
-        server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, nova_floating_ip)
 
-        with server_steps.get_server_ssh(server,
-                                         nova_floating_ip.ip) as server_ssh:
-            # save names of devices before unmounting
-            eph_dev = server_steps.get_block_device_by_mount(server_ssh,
-                                                             eph_fs)
-            root_dev = server_steps.get_block_device_by_mount(server_ssh,
-                                                              root_fs)
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        # save names of devices before unmounting
+        eph_dev = server_steps.get_block_device_by_mount(server_ssh, eph_fs)
+        root_dev = server_steps.get_block_device_by_mount(server_ssh, root_fs)
 
-            server_steps.create_empty_file_on_server(server_ssh, eph_fs)
-            server_steps.unmount_fs_for_server(server_ssh, eph_fs)
-            server_steps.create_qcow_image_for_server(server_ssh,
-                                                      eph_dev,
-                                                      root_dev,
-                                                      image_size)
+        server_steps.create_empty_file_on_server(server_ssh, eph_fs)
+        server_steps.unmount_fs_for_server(server_ssh, eph_fs)
+        server_steps.create_qcow_image_for_server(server_ssh, eph_dev,
+                                                  root_dev, image_size)
 
-        server_steps.resize(server, flavor_new)
-        server_steps.confirm_resize_servers([server])
+    server_steps.resize(server, flavor_new)
+    server_steps.confirm_resize_servers([server])
 
-        with server_steps.get_server_ssh(server,
-                                         nova_floating_ip.ip) as server_ssh:
-            server_steps.check_files_presence_for_fs(server_ssh, eph_fs,
-                                                     must_present=False)
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        server_steps.check_files_presence_for_fs(
+            server_ssh, eph_fs, must_present=False)
 
 
-# TODO(ssokolov) add check of condition 'is_ephemeral_ceph_enabled'
+@pytest.mark.requires('nova_ceph')
 @pytest.mark.idempotent_id('98c0f75f-9e59-44c3-bd74-56760e3648bf')
 def test_disk_io_qos_settings_for_rbd_backend(cirros_image,
                                               flavor,

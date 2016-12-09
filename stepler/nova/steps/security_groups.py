@@ -32,8 +32,20 @@ class SecurityGroupSteps(BaseSteps):
     """Security group steps."""
 
     @steps_checker.step
-    def create_group(self, group_name, description='', check=True):
-        """Step to create security group."""
+    def create_group(self, group_name, description='description', check=True):
+        """Step to create security group.
+
+        Args:
+            group_name (str): security group name
+            description (str, optional): security group description
+            check (bool, optional): flag whether to check this step or not
+
+        Returns:
+            obj: security group
+
+        Raises:
+            AssertionError: if check failed
+        """
         group = self._client.security_groups.create(group_name, description)
 
         if check:

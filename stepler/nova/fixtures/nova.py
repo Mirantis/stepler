@@ -29,6 +29,9 @@ __all__ = [
     'skip_live_migration_tests',
     'unlimited_live_migrations',
     'nova_ceph_enabled',
+    'disable_nova_use_cow_images',
+    'big_nova_reclaim_instance_interval',
+    'small_nova_reclaim_instance_interval',
 ]
 
 
@@ -62,58 +65,56 @@ def nova_client(get_nova_client):
     return get_nova_client()
 
 
-@pytest.yield_fixture(scope='module')
-def disable_nova_config_drive(patch_ini_file_and_restart_services,
-                              get_availability_zone_steps):
-    """Module fixture to disable nova config drive.
-
-    Note:
-        Workaround for bug https://bugs.launchpad.net/mos/+bug/1589460/
-        This should be removed in MOS 10.0
+def change_nova_config(option, value, scope='function', services=None):
+    """Fixtures to change nova config and restart nova factory.
 
     Args:
-        patch_ini_file_and_restart_services (function): callable fixture to
-            patch ini file and restart services
-        get_availability_zone_steps (function): callable fixture to get
-            availability zone steps
+        option (str): option to change
+        value (str|int): desired value
+        scope (str, optional): returned fixture scope. `function` by default
+        services (list, optional): list of services to restart. By default is
+            [config.NOVA_API, config.NOVA_COMPUTE]
+
+    Returns:
+        function: fixture
     """
-    with patch_ini_file_and_restart_services(
-            [config.NOVA_API, config.NOVA_COMPUTE],
-            file_path=config.NOVA_CONFIG_PATH,
-            option='force_config_drive',
-            value=False):
+    services = services or [config.NOVA_API, config.NOVA_COMPUTE]
+
+    @pytest.fixture(scope=scope)
+    def _change_nova_config(patch_ini_file_and_restart_services,
+                            get_availability_zone_steps):
+        with patch_ini_file_and_restart_services(
+                services,
+                file_path=config.NOVA_CONFIG_PATH,
+                option=option,
+                value=value):
+
+            zone_steps = get_availability_zone_steps()
+            zone_steps.check_all_active_hosts_available()
+
+            yield
+
         zone_steps = get_availability_zone_steps()
         zone_steps.check_all_active_hosts_available()
 
-        yield
-
-    zone_steps = get_availability_zone_steps()
-    zone_steps.check_all_active_hosts_available()
+    return _change_nova_config
 
 
-@pytest.yield_fixture(scope='module')
-def unlimited_live_migrations(patch_ini_file_and_restart_services,
-                              get_availability_zone_steps):
-    """Module fixture to allow unlimited live migration.
+# Workaround for bug https://bugs.launchpad.net/mos/+bug/1589460/
+# This should be removed in MOS 10.0
+disable_nova_config_drive = change_nova_config(
+    'force_config_drive', False, scope='module')
 
-    Args:
-        patch_ini_file_and_restart_services (function): callable fixture to
-            patch ini file and restart services
-        get_availability_zone_steps (function): callable fixture to get
-            availability zone steps
-    """
-    with patch_ini_file_and_restart_services(
-            [config.NOVA_API, config.NOVA_COMPUTE],
-            file_path=config.NOVA_CONFIG_PATH,
-            option='max_concurrent_live_migrations',
-            value=0):
-        zone_steps = get_availability_zone_steps()
-        zone_steps.check_all_active_hosts_available()
+disable_nova_use_cow_images = change_nova_config(
+    'use_cow_images', 0, services=[config.NOVA_COMPUTE])
 
-        yield
+big_nova_reclaim_instance_interval = change_nova_config(
+    'reclaim_instance_interval', config.BIG_RECLAIM_INTERVAL)
+small_nova_reclaim_instance_interval = change_nova_config(
+    'reclaim_instance_interval', config.SMALL_RECLAIM_INTERVAL)
 
-    zone_steps = get_availability_zone_steps()
-    zone_steps.check_all_active_hosts_available()
+unlimited_live_migrations = change_nova_config(
+    'max_concurrent_live_migrations', 0, scope='module')
 
 
 @pytest.fixture

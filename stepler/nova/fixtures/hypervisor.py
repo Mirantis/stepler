@@ -55,7 +55,8 @@ def sorted_hypervisors(hypervisor_steps, flavor):
     hypervisors = hypervisor_steps.get_hypervisors()
     suitable_hypervisors = []
     for hypervisor in hypervisors:
-        cap = hypervisor_steps.get_hypervisor_capacity(hypervisor, flavor)
+        cap = hypervisor_steps.get_hypervisor_capacity(hypervisor, flavor,
+                                                       check=False)
         suitable_hypervisors.append((cap, hypervisor))
     hypervisors = [hyp for _, hyp in reversed(sorted(suitable_hypervisors))]
     return hypervisors
