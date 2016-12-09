@@ -134,8 +134,12 @@ def cleanup_volumes(uncleanable):
         uncleanable_ids = uncleanable_ids or uncleanable.volume_ids
         deleting_volumes = []
 
-        for volume in _volume_steps.get_volumes(all_projects=True,
-                                                check=False):
+        volumes_with_prefix = _volume_steps.get_volumes(
+            all_projects=True,
+            metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
+            check=False)
+
+        for volume in volumes_with_prefix:
             if volume.id not in uncleanable_ids:
                 deleting_volumes.append(volume)
 

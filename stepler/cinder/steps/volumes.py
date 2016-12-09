@@ -124,6 +124,11 @@ class VolumeSteps(base.BaseSteps):
         volumes = []
         _volume_names = {}
 
+        metadata = metadata or {}
+        # Volume can have no name. Mark it as stepler-created via metadata.
+        # Metadata should contain only string values.
+        metadata[config.STEPLER_PREFIX] = config.STEPLER_PREFIX
+
         for name in names:
             volume = self._client.create(size,
                                          name=name,
@@ -290,6 +295,27 @@ class VolumeSteps(base.BaseSteps):
             assert_that(volumes, is_not(empty()))
 
         return volumes
+
+    @steps_checker.step
+    def get_volumes_with_prefix_ids(self, check=True):
+        """Step to get ids of volumes with prefix.
+
+        Args:
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: list of ids of volumes with prefix
+
+        Raises:
+            AssertionError: if check failed
+        """
+        volumes_with_preffix = self.get_volumes(
+            all_projects=True,
+            metadata={config.STEPLER_PREFIX: config.STEPLER_PREFIX},
+            check=check)
+        volumes_ids = [volume.id for volume in volumes_with_preffix]
+
+        return volumes_ids
 
     @steps_checker.step
     def get_volume_by_id(self, volume_id, check=True):

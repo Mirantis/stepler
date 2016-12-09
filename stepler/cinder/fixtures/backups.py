@@ -95,7 +95,7 @@ def create_backup(backup_steps):
 
 
 @pytest.fixture(scope='session')
-def cleanup_backups(uncleanable):
+def cleanup_backups(uncleanable, get_volume_steps):
     """Callable function fixture to clear created backups after test.
 
     It stores ids of all backups before test and remove all new backups
@@ -103,6 +103,7 @@ def cleanup_backups(uncleanable):
 
     Args:
         uncleanable (AttrDict): data structure with skipped resources
+        get_volume_steps (function): function to get volume steps
 
     Returns:
         function: function to cleanup backups
@@ -110,9 +111,14 @@ def cleanup_backups(uncleanable):
     def _cleanup_backups(_backup_steps, uncleanable_ids=None):
         uncleanable_ids = uncleanable_ids or uncleanable.backup_ids
 
+        _volume_steps = get_volume_steps(config.CURRENT_CINDER_VERSION,
+                                         is_api=False)
+        volumes_with_prefix_ids = _volume_steps.get_volumes_with_prefix_ids()
+
         for backup in _backup_steps.get_backups(all_projects=True,
                                                 check=False):
-            if backup.id not in uncleanable_ids:
+            if (backup.id not in uncleanable_ids and
+                    backup.volume_id in volumes_with_prefix_ids):
                 _backup_steps.delete_backup(backup)
 
     return _cleanup_backups
