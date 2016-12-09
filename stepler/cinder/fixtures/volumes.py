@@ -59,12 +59,16 @@ def unexpected_volumes_cleanup(primary_volumes,
     It provides cleanup before and after test.
     """
     if config.CLEANUP_UNEXPECTED_BEFORE_TEST:
-        cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
+        cleanup_volumes(get_volume_steps(config.CURRENT_CINDER_VERSION,
+                                         is_api=False),
+                        config.UNEXPECTED_VOLUMES_LIMIT)
 
     yield
 
     if config.CLEANUP_UNEXPECTED_AFTER_TEST:
-        cleanup_volumes(get_volume_steps(), config.UNEXPECTED_VOLUMES_LIMIT)
+        cleanup_volumes(get_volume_steps(config.CURRENT_CINDER_VERSION,
+                                         is_api=False),
+                        config.UNEXPECTED_VOLUMES_LIMIT)
 
 
 @pytest.fixture
