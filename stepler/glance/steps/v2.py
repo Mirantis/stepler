@@ -350,3 +350,14 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         waiter.wait(_check_available,
                     timeout_seconds=config.GLANCE_AVAILABILITY_TIMEOUT)
+
+    @steps_checker.step
+    def add_locations(self, image, urls, check=True):
+        """Step to add location to image
+
+        Args:
+            urls (list) urls for adding to image location
+        """
+        for url in urls:
+            self._client.images.add_location(image.id, url=url,
+                                             metadata={})
