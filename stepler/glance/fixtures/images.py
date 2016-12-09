@@ -42,6 +42,7 @@ __all__ = [
     'images_cleanup',
     'ubuntu_xenial_image',
     'baremetal_ubuntu_image',
+    'enable_milti_locations'
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -332,3 +333,27 @@ def baremetal_ubuntu_image(create_images_context):
                                hypervisor_type="baremetal",
                                fuel_disk_info=disk_info) as images:
         yield images[0]
+
+
+@pytest.yield_fixture(scope='module')
+def enable_milti_locations(patch_ini_file_and_restart_services,
+                           get_glance_steps):
+    """Session fixture to enable glance miltiple locations
+
+    Args:
+        patch_ini_file_and_restart_services (function): callable fixture to
+            patch ini file and restart services
+        get_glance_steps (function): Callable session fixture
+            to get glance steps.
+    """
+    with patch_ini_file_and_restart_services(
+            [config.GLANCE_API],
+            file_path=config.GLANCE_API_CONFIG_PATH,
+            option='show_multiple_locations', value=True):
+        glance_steps = get_glance_steps(version='2',
+                                        is_api=False)
+        glance_steps.check_glance_service_available()
+
+        yield
+
+    glance_steps.check_glance_service_available()
