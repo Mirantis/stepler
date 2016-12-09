@@ -185,6 +185,7 @@ BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
                                              "file_system": "ext4",
                                              "size": 10000}]}]
 
+GLANCE_API_CONFIG_PATH = os.environ.get('GLANCE_API_CONFIG_PATH', '/etc/glance/glance-api.conf')  # noqa E501
 
 # Nova
 CREDENTIALS_PREFIX = 'stepler_credentials_'
