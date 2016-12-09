@@ -59,8 +59,10 @@ def pytest_collection_modifyitems(config, items):
 
     opened_bugs = {}
     for test_id, bug_links in bugs.items():
-        opened_bugs[test_id] = {link for link, is_opened in bug_links.items()
-                                if is_opened}
+        opened_test_bugs = {link for link, is_opened in bug_links.items()
+                            if is_opened}
+        if opened_test_bugs:
+            opened_bugs[test_id] = opened_test_bugs
 
     for item in items:
         test_ids = [marker.args[0] for marker in
@@ -68,7 +70,8 @@ def pytest_collection_modifyitems(config, items):
 
         test_bugs = set()
         for test_id in test_ids:
-            test_bugs.update(opened_bugs[test_id])
+            if test_id in opened_bugs:
+                test_bugs.update(opened_bugs[test_id])
 
         if test_bugs:
             message = 'Skipped due to opened bug(s): ' + ', '.join(test_bugs)

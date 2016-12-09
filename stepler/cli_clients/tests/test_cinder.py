@@ -23,11 +23,97 @@ from stepler import config
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('71b0b170-10c4-4877-bab8-93d8284c3c01')
+def test_create_volume_with_unicode_name(cli_cinder_steps, volume_steps):
+    """**Scenario:** Create volume with unicode symbols name.
+
+    **Steps:**
+
+    #. Create volume with unicode symbols name using CLI
+    #. Check that volume status is available
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_name = next(utils.generate_ids(use_unicode=True))
+    volume_dict = cli_cinder_steps.create_volume(name=volume_name)
+    volume_steps.check_volume_status(volume_dict['id'],
+                                     [config.STATUS_AVAILABLE],
+                                     transit_statuses=(
+                                         config.STATUS_CREATING,
+                                         config.STATUS_DOWNLOADING,
+                                         config.STATUS_UPLOADING),
+                                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('54b0e3f6-1284-4ea8-a991-c8a6cd772f0e')
+def test_create_volume_with_unicode_description(cli_cinder_steps,
+                                                volume_steps):
+    """**Scenario:** Create volume with unicode symbols description.
+
+    **Steps:**
+
+    #. Create volume with unicode symbols description using CLI
+    #. Check that volume status is available
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_description = next(utils.generate_ids(use_unicode=True))
+    volume_dict = cli_cinder_steps.create_volume(
+        description=volume_description)
+    volume_steps.check_volume_status(volume_dict['id'],
+                                     [config.STATUS_AVAILABLE],
+                                     transit_statuses=(
+                                         config.STATUS_CREATING,
+                                         config.STATUS_DOWNLOADING,
+                                         config.STATUS_UPLOADING),
+                                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('453c8024-f801-4a2e-8d33-7ffe2d637fd3')
+def test_show_volume_with_unicode_name(volume_steps, cli_cinder_steps):
+    """**Scenario:** Show volume with unicode name.
+
+    **Steps:**
+
+    #. Create volume with unicode name using API
+    #. Check CLI command ``cinder show <volume id>``
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_name = next(utils.generate_ids(use_unicode=True))
+    volume = volume_steps.create_volumes(names=[volume_name])[0]
+    cli_cinder_steps.show_volume(volume)
+
+
+@pytest.mark.idempotent_id('c080b991-9704-455a-8085-0d4f368acc25')
+def test_show_volume_with_unicode_description(volume_steps, cli_cinder_steps):
+    """**Scenario:** Show volume with unicode description.
+
+    **Steps:**
+
+    #. Create volume with unicode description using API
+    #. Check CLI command ``cinder show <volume id>``
+
+    **Teardown:**
+
+    #. Delete volume
+    """
+    volume_description = next(utils.generate_ids(use_unicode=True))
+    volume = volume_steps.create_volumes(description=volume_description)[0]
+    cli_cinder_steps.show_volume(volume)
+
+
 @pytest.mark.idempotent_id('79d599b8-4b3c-4fc9-84bd-4b6353816d4d')
-def test_change_volume_name_non_unicode(volume,
-                                        cli_cinder_steps,
-                                        volume_steps):
-    """**Scenario:** Change volume name with non unicode symbols.
+def test_change_volume_name_with_unicode(volume,
+                                         cli_cinder_steps,
+                                         volume_steps):
+    """**Scenario:** Change volume name with unicode symbols.
 
     **Setup:**
 
@@ -35,7 +121,7 @@ def test_change_volume_name_non_unicode(volume,
 
     **Steps:**
 
-    #. Change volume name with non unicode symbols using CLI
+    #. Change volume name with unicode symbols using CLI
     #. Check that volume name was changed
 
     **Teardown:**
@@ -48,10 +134,10 @@ def test_change_volume_name_non_unicode(volume,
 
 
 @pytest.mark.idempotent_id('a57d8603-b46a-45df-bd75-ef4b6caa433e')
-def test_change_volume_description_non_unicode(volume,
-                                               cli_cinder_steps,
-                                               volume_steps):
-    """**Scenario:** Change volume description with non unicode symbols.
+def test_change_volume_description_with_unicode(volume,
+                                                cli_cinder_steps,
+                                                volume_steps):
+    """**Scenario:** Change volume description with unicode symbols.
 
     **Setup:**
 
@@ -59,7 +145,7 @@ def test_change_volume_description_non_unicode(volume,
 
     **Steps:**
 
-    #. Change volume description with non unicode symbols using CLI
+    #. Change volume description with unicode symbols using CLI
     #. Check that volume description was changed
 
     **Teardown:**
@@ -73,9 +159,9 @@ def test_change_volume_description_non_unicode(volume,
 
 
 @pytest.mark.idempotent_id('225d218b-6562-431d-bdf9-0ec0221c0f86')
-def test_volume_backup_non_unicode_name(volume, cli_cinder_steps,
-                                        backup_steps):
-    """**Scenario:** Create volume backup with non unicode symbols name.
+def test_create_backup_with_unicode_name(volume, cli_cinder_steps,
+                                         backup_steps):
+    """**Scenario:** Create volume backup with unicode symbols name.
 
     **Setup:**
 
@@ -83,7 +169,7 @@ def test_volume_backup_non_unicode_name(volume, cli_cinder_steps,
 
     **Steps:**
 
-    #. Create volume backup with non unicode symbols name using CLI
+    #. Create volume backup with unicode symbols name using CLI
     #. Check that backup status is available
 
     **Teardown:**
@@ -100,8 +186,9 @@ def test_volume_backup_non_unicode_name(volume, cli_cinder_steps,
 
 
 @pytest.mark.idempotent_id('c64aa74b-990b-43df-8030-4657556e72ee')
-def test_show_backup_non_unicode_name(volume, create_backup, cli_cinder_steps):
-    """**Scenario:** Show volume backup with non unicode name.
+def test_show_backup_with_unicode_name(volume, create_backup,
+                                       cli_cinder_steps):
+    """**Scenario:** Show volume backup with unicode name.
 
     **Setup:**
 
@@ -109,7 +196,7 @@ def test_show_backup_non_unicode_name(volume, create_backup, cli_cinder_steps):
 
     **Steps:**
 
-    #. Create volume backup with non unicode name using API
+    #. Create volume backup with unicode name using API
     #. Check CLI command ``cinder backup-show <backup id>``
 
     **Teardown:**
@@ -123,10 +210,10 @@ def test_show_backup_non_unicode_name(volume, create_backup, cli_cinder_steps):
 
 
 @pytest.mark.idempotent_id('3b6eea01-cd4e-4a6c-bb68-a260650c6dae')
-def test_show_backup_non_unicode_description(volume,
-                                             create_backup,
-                                             cli_cinder_steps):
-    """**Scenario:** Show volume backup with non unicode description.
+def test_show_backup_with_unicode_description(volume,
+                                              create_backup,
+                                              cli_cinder_steps):
+    """**Scenario:** Show volume backup with unicode description.
 
     **Setup:**
 
@@ -134,7 +221,7 @@ def test_show_backup_non_unicode_description(volume,
 
     **Steps:**
 
-    #. Create volume backup with non unicode description using API
+    #. Create volume backup with unicode description using API
     #. Check CLI command ``cinder backup-show <backup id>``
 
     **Teardown:**
@@ -148,9 +235,9 @@ def test_show_backup_non_unicode_description(volume,
 
 
 @pytest.mark.idempotent_id('07eb81c1-ca1f-4c65-93c4-f3378e62adfd')
-def test_volume_backup_non_unicode_description(volume, cli_cinder_steps,
-                                               backup_steps):
-    """**Scenario:** Create volume backup with non unicode symbols description.
+def test_create_backup_with_unicode_description(volume, cli_cinder_steps,
+                                                backup_steps):
+    """**Scenario:** Create volume backup with unicode symbols description.
 
     **Setup:**
 
@@ -158,7 +245,7 @@ def test_volume_backup_non_unicode_description(volume, cli_cinder_steps,
 
     **Steps:**
 
-    #. Create volume backup with non unicode symbols description using CLI
+    #. Create volume backup with unicode symbols description using CLI
     #. Check that backup status is available
 
     **Teardown:**
@@ -175,9 +262,9 @@ def test_volume_backup_non_unicode_description(volume, cli_cinder_steps,
 
 
 @pytest.mark.idempotent_id('107affa2-fc40-4c7e-8b11-cc1940bd7259')
-def test_volume_snapshot_non_unicode_name(volume, cli_cinder_steps,
-                                          snapshot_steps):
-    """**Scenario:** Create snapshot with non unicode symbols name.
+def test_create_snapshot_with_unicode_name(volume, cli_cinder_steps,
+                                           snapshot_steps):
+    """**Scenario:** Create snapshot with unicode symbols name.
 
     **Setup:**
 
@@ -185,7 +272,7 @@ def test_volume_snapshot_non_unicode_name(volume, cli_cinder_steps,
 
     **Steps:**
 
-    #. Create volume snapshot with non unicode symbols name using CLI
+    #. Create volume snapshot with unicode symbols name using CLI
     #. Check that snapshot status is available
 
     **Teardown:**
@@ -203,9 +290,9 @@ def test_volume_snapshot_non_unicode_name(volume, cli_cinder_steps,
 
 
 @pytest.mark.idempotent_id('98c66ba5-7932-45eb-86f9-9d76ae72851f')
-def test_volume_snapshot_non_unicode_description(volume, cli_cinder_steps,
-                                                 snapshot_steps):
-    """**Scenario:** Create snapshot with non unicode symbols description.
+def test_create_snapshot_with_unicode_description(volume, cli_cinder_steps,
+                                                  snapshot_steps):
+    """**Scenario:** Create snapshot with unicode symbols description.
 
     **Setup:**
 
@@ -213,7 +300,7 @@ def test_volume_snapshot_non_unicode_description(volume, cli_cinder_steps,
 
     **Steps:**
 
-    #. Create volume snapshot with non unicode symbols description
+    #. Create volume snapshot with unicode symbols description
         using CLI
     #. Check that snapshot status is available
 
@@ -232,9 +319,9 @@ def test_volume_snapshot_non_unicode_description(volume, cli_cinder_steps,
 
 
 @pytest.mark.idempotent_id('1237fdcd-abca-4976-aa44-d31fbb4e54c4')
-def test_show_snapshot_non_unicode_name(volume, snapshot_steps,
-                                        cli_cinder_steps):
-    """**Scenario:** Show volume snapshot with non unicode name.
+def test_show_snapshot_with_unicode_name(volume, snapshot_steps,
+                                         cli_cinder_steps):
+    """**Scenario:** Show volume snapshot with unicode name.
 
     **Setup:**
 
@@ -242,7 +329,7 @@ def test_show_snapshot_non_unicode_name(volume, snapshot_steps,
 
     **Steps:**
 
-    #. Create volume snapshot with non unicode name using API
+    #. Create volume snapshot with unicode name using API
     #. Check CLI command ``cinder snapshot-show <snapshot id>``
 
     **Teardown:**
@@ -257,9 +344,9 @@ def test_show_snapshot_non_unicode_name(volume, snapshot_steps,
 
 
 @pytest.mark.idempotent_id('d6816d3b-0035-463e-9980-432df0d65cad')
-def test_show_snapshot_non_unicode_description(volume, snapshot_steps,
-                                               cli_cinder_steps):
-    """**Scenario:** Show volume snapshot with non unicode description.
+def test_show_snapshot_with_unicode_description(volume, snapshot_steps,
+                                                cli_cinder_steps):
+    """**Scenario:** Show volume snapshot with unicode description.
 
     **Setup:**
 
@@ -267,7 +354,7 @@ def test_show_snapshot_non_unicode_description(volume, snapshot_steps,
 
     **Steps:**
 
-    #. Create volume snapshot with non unicode description using API
+    #. Create volume snapshot with unicode description using API
     #. Check CLI command ``cinder snapshot-show <snapshot id>``
 
     **Teardown:**
@@ -282,9 +369,9 @@ def test_show_snapshot_non_unicode_description(volume, snapshot_steps,
 
 
 @pytest.mark.idempotent_id('955c4976-ddc7-4d8d-b5c6-1c2bc991af39')
-def test_volume_backup_non_unicode_container(volume, cli_cinder_steps,
-                                             backup_steps):
-    """**Scenario:** Create volume backup with non unicode container name.
+def test_create_backup_with_unicode_container(volume, cli_cinder_steps,
+                                              backup_steps):
+    """**Scenario:** Create volume backup with unicode container name.
 
     **Setup:**
 
@@ -292,7 +379,7 @@ def test_volume_backup_non_unicode_container(volume, cli_cinder_steps,
 
     **Steps:**
 
-    #. Create volume backup with non unicode container name using CLI
+    #. Create volume backup with unicode container name using CLI
     #. Check that backup status is available
 
     **Teardown:**
@@ -309,10 +396,10 @@ def test_volume_backup_non_unicode_container(volume, cli_cinder_steps,
 
 
 @pytest.mark.idempotent_id('815f7bf8-05e7-4556-ac46-8df267c91c75')
-def test_show_backup_non_unicode_container_name(volume,
-                                                create_backup,
-                                                cli_cinder_steps):
-    """**Scenario:** Show volume backup with non unicode container name.
+def test_show_backup_with_unicode_container_name(volume,
+                                                 create_backup,
+                                                 cli_cinder_steps):
+    """**Scenario:** Show volume backup with unicode container name.
 
     **Setup:**
 
@@ -320,7 +407,7 @@ def test_show_backup_non_unicode_container_name(volume,
 
     **Steps:**
 
-    #. Create volume backup with non unicode container name using API
+    #. Create volume backup with unicode container name using API
     #. Check CLI command ``cinder backup-show <backup id>``
 
     **Teardown:**
@@ -334,11 +421,11 @@ def test_show_backup_non_unicode_container_name(volume,
 
 
 @pytest.mark.idempotent_id('ef21745a-6fdc-456b-8e2c-2533f24b5eae')
-def test_volume_transfer_non_unicode_name(volume,
-                                          transfer_steps,
-                                          cli_cinder_steps,
-                                          volume_steps):
-    """**Scenario:** Create volume transfer with non unicode name.
+def test_create_transfer_with_unicode_name(volume,
+                                           transfer_steps,
+                                           cli_cinder_steps,
+                                           volume_steps):
+    """**Scenario:** Create volume transfer with unicode name.
 
     Note: transfer_steps fixture is used for transfer cleanup.
 
@@ -348,7 +435,7 @@ def test_volume_transfer_non_unicode_name(volume,
 
     **Steps:**
 
-    #. Create volume transfer with non unicode name using CLI
+    #. Create volume transfer with unicode name using CLI
     #. Check that volume status is 'awaiting-transfer'
 
     **Teardown:**
@@ -359,7 +446,8 @@ def test_volume_transfer_non_unicode_name(volume,
     transfer_name = next(utils.generate_ids(use_unicode=True))
     cli_cinder_steps.create_volume_transfer(volume, name=transfer_name)
     volume_steps.check_volume_status(
-        volume, statuses=[config.STATUS_AWAITING_TRANSFER],
+        volume,
+        statuses=[config.STATUS_AWAITING_TRANSFER],
         timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
 
@@ -396,10 +484,10 @@ def test_create_volume_using_image_name(ubuntu_image,
 
 
 @pytest.mark.idempotent_id('c5ab08cf-6055-4940-9fff-f930bbcb1cbb')
-def test_show_volume_transfer_non_unicode_name(volume,
-                                               create_volume_transfer,
-                                               cli_cinder_steps):
-    """**Scenario:** Show volume transfer with non unicode name.
+def test_show_transfer_with_unicode_name(volume,
+                                         create_volume_transfer,
+                                         cli_cinder_steps):
+    """**Scenario:** Show volume transfer with unicode name.
 
     **Setup:**
 
@@ -407,7 +495,7 @@ def test_show_volume_transfer_non_unicode_name(volume,
 
     **Steps:**
 
-    #. Create volume transfer with non unicode name using API
+    #. Create volume transfer with unicode name using API
     #. Check CLI command ``cinder transfer-show <transfer id>``
 
     **Teardown:**
