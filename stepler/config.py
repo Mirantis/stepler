@@ -102,6 +102,7 @@ NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
 IRONIC_API = 'ironic-api'
 IRONIC_CONDUCTOR = 'ironic-conductor'
+GLANCE_API = 'glance-api'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
@@ -185,6 +186,7 @@ BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
                                              "file_system": "ext4",
                                              "size": 10000}]}]
 
+GLANCE_API_CONFIG_PATH = '/etc/glance/glance-api.conf'
 
 # Nova
 CREDENTIALS_PREFIX = 'stepler_credentials_'

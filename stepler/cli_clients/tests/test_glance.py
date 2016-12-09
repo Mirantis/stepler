@@ -401,3 +401,39 @@ def test_filter_disk_formats_in_images_list(glance_steps, cli_glance_steps,
         images=qcow_images + ami_images,
         property_filter='disk_format',
         api_version=api_version)
+
+
+@pytest.mark.idempotent_id('c2f62f44-bd37-11e6-8b37-77035d8240c7')
+def test_status_manipulation_via_locations(
+        patch_ini_file_and_restart_services,
+        glance_steps,
+        cli_glance_steps):
+    """**Scenatio:** Glance image status manipulation
+         through locations removal.
+
+    **Steps:**
+
+    #. Create glance image
+    #. Set `show_multiple_locations=True` in /etc/glance/glance-api.conf
+       and restart glance service.
+    #. Add 2 urls to image locations
+    #. Check that user cant manipulate of image status
+       through locations removal
+    """
+    image = glance_steps.create_images(
+        image_names=utils.generate_ids('test'),
+        image_path=utils.get_file_path(config.CIRROS_QCOW2_URL),
+        upload=False)[0]
+    patch_ini_file_and_restart_services(
+        [config.GLANCE_API],
+        file_path=config.GLANCE_API_CONFIG_PATH,
+        option='show_multiple_locations',
+        value=True,
+        section='DEFAULT'
+    )
+    glance_steps.add_locations(image, urls=[config.CIRROS_QCOW2_URL,
+                                            config.FEDORA_QCOW2_URL])
+    cli_glance_steps.check_remove_image_locations(
+        image,
+        urls=[config.CIRROS_QCOW2_URL,
+              config.FEDORA_QCOW2_URL])
