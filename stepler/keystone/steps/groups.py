@@ -74,9 +74,6 @@ class GroupSteps(base.BaseSteps):
 
         Args:
             group (object): the group to be deleted
-
-        Returns:
-            requests.models.Response: response object with 204 status
         """
         self._client.delete(group)
 
