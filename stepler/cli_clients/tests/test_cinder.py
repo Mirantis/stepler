@@ -358,9 +358,9 @@ def test_volume_transfer_non_unicode_name(volume,
     """
     transfer_name = next(utils.generate_ids(use_unicode=True))
     cli_cinder_steps.create_volume_transfer(volume, name=transfer_name)
-    volume_steps.check_volume_status(volume,
-                                     status=config.STATUS_AWAITING_TRANSFER,
-                                     timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+    volume_steps.check_volume_status(
+        volume, statuses=[config.STATUS_AWAITING_TRANSFER],
+        timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('0242150d-d187-46c0-94f8-36259989560d')
