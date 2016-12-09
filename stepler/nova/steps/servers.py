@@ -29,7 +29,6 @@ from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
 
 from novaclient import exceptions as nova_exceptions
 import paramiko
-from waiting import wait
 
 from stepler import base
 from stepler import config
@@ -217,7 +216,7 @@ class ServerSteps(base.BaseSteps):
                 except nova_exceptions.NotFound:
                     return not present
 
-        wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_server_status(self,
@@ -564,7 +563,7 @@ class ServerSteps(base.BaseSteps):
                 ip_to_ping, remote=remote_from).ping(count=ping_count)
             return result.loss == 0
 
-        wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_ping_to_server_floating(self, server, timeout=0):
@@ -792,7 +791,7 @@ class ServerSteps(base.BaseSteps):
             server_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
             return equal == (server_host == host)
 
-        wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     @contextlib.contextmanager
@@ -966,7 +965,7 @@ class ServerSteps(base.BaseSteps):
             console = server.get_console_output()
             return substring in console
 
-        wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
 
     @steps_checker.step
     def create_timestamps_on_root_and_ephemeral_disks(self,

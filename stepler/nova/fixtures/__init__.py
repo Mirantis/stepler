@@ -61,6 +61,9 @@ __all__ = sorted([  # sort for documentation
     'skip_live_migration_tests',
     'unlimited_live_migrations',
     'nova_ceph_enabled',
+    'disable_nova_use_cow_images',
+    'big_nova_reclaim_instance_interval',
+    'small_nova_reclaim_instance_interval',
 
     'create_security_group',
     'security_group',
