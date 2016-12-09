@@ -215,3 +215,10 @@ class Predicates(object):
         """Define whether neutron configures with debug mode."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return os_faults_steps.get_neutron_debug()
+
+    @property
+    @_store_call
+    def horizon_cinder_backup(self):
+        """Define whether horizon cinder backup enabled."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_horizon_cinder_backups()

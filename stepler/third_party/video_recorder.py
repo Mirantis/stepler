@@ -37,7 +37,7 @@ class VideoRecorder(object):
         # avconv -f x11grab -r 15 -s 1920x1080 -i :0.0 -codec libx264 out.mp4
         self._cmd = ['avconv', '-f', 'x11grab', '-r', str(frame_rate),
                      '-s', '{}x{}'.format(1920, 1080),
-                     '-i', os.environ['DISPLAY'],
+                     '-i', os.environ['DISPLAY'], '-an',
                      '-codec', 'libx264', self.file_path]
 
     def start(self):

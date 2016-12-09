@@ -90,5 +90,5 @@ def create_image(images_steps):
 @pytest.fixture
 def image(create_image):
     """Fixture to create image with default options before test."""
-    image_name = next(utils.generate_ids('image', length=20))
+    image_name = next(utils.generate_ids(length=20))
     return create_image(image_name)

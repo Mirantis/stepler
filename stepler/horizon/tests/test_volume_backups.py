@@ -21,6 +21,8 @@ import pytest
 
 from stepler.third_party import utils
 
+pytestmark = pytest.mark.requires('horizon_cinder_backup')
+
 
 @pytest.mark.usefixtures('any_one')
 class TestAnyOne(object):

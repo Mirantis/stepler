@@ -90,7 +90,7 @@ class TestAnyOne(object):
     def test_upload_volume_to_image(self, volume, images_steps,
                                     volumes_steps_ui):
         """Verify that user can upload volume to image."""
-        image_name = next(utils.generate_ids('image', length=20))
+        image_name = next(utils.generate_ids(length=20))
         volumes_steps_ui.upload_volume_to_image(volume.name, image_name)
         images_steps.check_image_present(image_name, timeout=30)
         images_steps.delete_image(image_name)
@@ -192,6 +192,7 @@ class TestAdminOnly(object):
                                          volume.name)
 
     @pytest.mark.idempotent_id('e585242-9443-4e78-a7fe-3ee6097459bb')
+    @pytest.mark.requires('cinder_nodes_count >= 2')
     def test_migrate_volume(self, volume, volumes_steps_ui):
         """Verify that admin can migrate volume between available hosts."""
         old_host, _ = volumes_steps_ui.migrate_volume(volume.name)
