@@ -193,6 +193,7 @@ BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
                                              "size": 10000}]}]
 
 IMAGE_VISIBILITY_PUBLIC = 'public'
+GLANCE_API_CONFIG_PATH = os.environ.get('GLANCE_API_CONFIG_PATH', '/etc/glance/glance-api.conf')  # noqa E501
 
 
 # Nova
