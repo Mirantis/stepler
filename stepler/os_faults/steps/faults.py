@@ -1033,7 +1033,7 @@ class OsFaultsSteps(base.BaseSteps):
                 nodes, timeout=config.NODE_REBOOT_TIMEOUT)
 
     @steps_checker.step
-    def reset_nodes(self, nodes, native=False, check=True, wait_reboot=True):
+    def reset_nodes(self, nodes, native=True, check=True, wait_reboot=True):
         """Step to reset nodes.
 
         Args:

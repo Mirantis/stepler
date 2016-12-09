@@ -147,9 +147,12 @@ class AgentSteps(base.BaseSteps):
             expected_count (int): expected DHCP agents count for network
 
         Raises:
+            TimeoutExpired: if agents are not alive
             AssertionError: if check failed
         """
         dhcp_agents = self.get_dhcp_agents_for_net(network, check=False)
+        if expected_count > 0 and len(dhcp_agents) > 0:
+            self.check_alive(dhcp_agents)
         assert_that(dhcp_agents, has_length(expected_count))
 
     @steps_checker.step
