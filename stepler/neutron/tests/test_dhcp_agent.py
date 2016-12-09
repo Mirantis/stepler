@@ -454,6 +454,7 @@ def test_destroy_controller_check_dhcp(network,
     #. Destroy primary/non-primary controller
     #. Wait for primary/non-primary controller's DHCP agent becoming dead
     #. Check that dhcp-agent does not in dhcp-agents list for network
+    #. Check that network is on 2 healthy agents
     #. Check that all networks rescheduled from primary/non-primary
         controller
     #. Check DHCP with cirros-dhcpc command on server with sudo
@@ -482,6 +483,8 @@ def test_destroy_controller_check_dhcp(network,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     agent_steps.check_network_rescheduled(
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    agent_steps.check_agents_count_for_net(network,
+                                           expected_count=2)
     network_steps.check_nets_count_for_agent(dhcp_agent,
                                              expected_count=0)
     server_steps.check_dhcp_on_cirros_server(server)
