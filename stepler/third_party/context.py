@@ -17,14 +17,11 @@ Custom context manager generator
 # See the License for the specific language governing permissions and
 # limitations under the License.from functools import wraps
 
-from functools import wraps
-
-import six
+import functools
 
 __all__ = ["context"]
 
 
-# TODO(schipiga): add unittests for that
 class ContextGenerator(object):
     """Helper for @context decorator."""
 
@@ -43,12 +40,13 @@ class ContextGenerator(object):
         except StopIteration:
             pass
         except Exception:
-            if not ext_type:
+            # TODO(gdyuldin): replace with raise from after moving to python3
+            if ext_type is None:
                 raise  # finalization error if no root cause error inside cm
         else:
             raise RuntimeError("generator didn't stop")
-        if ext_type:
-            six.reraise(ext_type, ext_val, ext_tb)
+        if ext_type is not None:
+            return False
 
 
 def context(func):
@@ -118,7 +116,7 @@ def context(func):
 
            ``Exception: error`` will be raise as root cause.
     """
-    @wraps(func)
+    @functools.wraps(func)
     def wrapper(*args, **kwgs):
         return ContextGenerator(func(*args, **kwgs))
 
