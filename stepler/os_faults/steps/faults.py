@@ -24,7 +24,8 @@ import time
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
                       only_contains, has_items, has_length, is_, equal_to,
-                      contains_inanyorder, is_in, any_of)  # noqa H301
+                      contains_inanyorder, is_in, any_of, all_of,
+                      contains_string)  # noqa H301
 from six import moves
 
 from stepler import base
@@ -777,10 +778,9 @@ class OsFaultsSteps(base.BaseSteps):
         """
         cmd = "ps aux | grep qemu | grep 'drive file=rbd'"
         stdout = self.execute_cmd(node, cmd)[0].payload['stdout']
-        expected_strings = ["bps_rd={}".format(limit),
-                            "bps_wr={}".format(limit)]
-        for expected_string in expected_strings:
-            assert_that(expected_string, is_in(stdout))
+        matchers = [contains_string(tpl.format(limit))
+                    for tpl in ("bps_rd={}", "bps_wr={}")]
+        assert_that(stdout, all_of(*matchers))
 
     @steps_checker.step
     def get_network_type(self):
@@ -1402,8 +1402,9 @@ class OsFaultsSteps(base.BaseSteps):
         cmd = "initctl list | grep running | grep {0}".format(component)
         cmd += " | awk '{ print $1 }'"
         services = {}
-        for fqdn in nodes.get_fqdns():
-            node = self.get_node(fqdns=[fqdn])
-            result = self.execute_cmd(nodes=node, cmd=cmd)
-            services[fqdn] = result[0].payload['stdout'].split('\n')
+        results = self.execute_cmd(nodes=nodes, cmd=cmd)
+        for node_result in results:
+            for node in nodes:
+                if node_result.host == node.ip:
+                    services[node.fqdn] = node_result.payload['stdout_lines']
         return services

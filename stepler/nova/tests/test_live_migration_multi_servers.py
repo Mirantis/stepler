@@ -226,7 +226,7 @@ def test_migration_with_network_workload(
     for server in live_migration_servers:
         with server_steps.get_server_ssh(server) as server_ssh:
             server_steps.server_network_listen(server_ssh, port=port)
-            floating_ip = next(iter(server_steps.get_ips(config.FLOATING_IP)))
+            floating_ip = server_steps.get_floating_ip(server)
             generate_traffic(floating_ip, port)
 
     server_steps.live_migrate(live_migration_servers,

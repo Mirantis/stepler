@@ -321,7 +321,8 @@ def live_migration_servers(request,
 
     hypervisor = sorted_hypervisors[1]
     servers_count = hypervisor_steps.get_hypervisor_capacity(hypervisor,
-                                                             flavor)
+                                                             flavor,
+                                                             check=False)
     volumes_quota = cinder_quota_steps.get_volumes_quota(current_project)
     if attach_volume or boot_from_volume:
         servers_count = min(servers_count, volumes_quota)

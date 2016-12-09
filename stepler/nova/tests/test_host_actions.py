@@ -26,8 +26,6 @@ def test_host_resources_info(cirros_image,
                              flavor,
                              network,
                              subnet,
-                             keypair,
-                             security_group,
                              server_steps,
                              hypervisor_steps,
                              host_steps):
@@ -38,8 +36,6 @@ def test_host_resources_info(cirros_image,
     #. Create cirros image
     #. Create flavor
     #. Create net and subnet
-    #. Create keypair
-    #. Create security group
 
     **Steps:**
 
@@ -58,8 +54,6 @@ def test_host_resources_info(cirros_image,
     **Teardown:**
 
     #. Delete instances
-    #. Delete security group
-    #. Delete keypair
     #. Delete net and subnet
     #. Delete flavor
     #. Delete cirros image
@@ -78,8 +72,6 @@ def test_host_resources_info(cirros_image,
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        keypair=keypair,
-        security_groups=[security_group],
         availability_zone='nova:' + host_name_1,
         username=config.CIRROS_USERNAME)
 
@@ -100,8 +92,6 @@ def test_host_resources_info(cirros_image,
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        keypair=keypair,
-        security_groups=[security_group],
         availability_zone='nova:' + host_name_2,
         username=config.CIRROS_USERNAME)
 
@@ -116,6 +106,7 @@ def test_host_resources_info(cirros_image,
 
 
 @pytest.mark.idempotent_id('ffc320c3-5688-4442-bcc5-05ae51788d2e')
+@pytest.mark.requires("computes_count >= 2")
 def test_migrate_instances(cirros_image,
                            network,
                            subnet,

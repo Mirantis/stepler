@@ -21,6 +21,9 @@ import pytest
 from stepler import config
 from stepler.third_party import utils
 
+pytestmark = pytest.mark.requires(
+    'computes_suitable_for_all_flavors_count >= 1')
+
 
 @pytest.mark.idempotent_id('e9ab1a51-9204-4760-8c3f-a7fdd8e2f185')
 def test_launch_server_from_image_using_all_flavors(

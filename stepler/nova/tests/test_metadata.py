@@ -24,13 +24,15 @@ from stepler.third_party import utils
 TEST_METADATA_INFO = {'key': next(utils.generate_ids('test_meta'))}
 
 SET_META_CMD_TEMPLATE = (
-    '{openrc_cmd}; nova host-meta {host} set {key}={value}'.format(
+    '/bin/bash -c '
+    '"{openrc_cmd}; nova host-meta {host} set {key}={value}"'.format(
         openrc_cmd=config.OPENRC_ACTIVATE_CMD,
         host='{host}',
         key=TEST_METADATA_INFO.keys()[0],
         value=TEST_METADATA_INFO.values()[0]))
 DEL_META_CMD_TEMPLATE = (
-    '{openrc_cmd}; nova host-meta {host} delete {key}'.format(
+    '/bin/bash -c '
+    '"{openrc_cmd}; nova host-meta {host} delete {key}"'.format(
         openrc_cmd=config.OPENRC_ACTIVATE_CMD,
         host='{host}',
         key=TEST_METADATA_INFO.keys()[0]))
@@ -88,12 +90,12 @@ def test_metadata_reach_all_booted_vm(
         server_steps.detach_floating_ip(server, nova_floating_ip)
 
 
-# TODO(akoryagin) need to add check that we have 2 or more computes
+@pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('2af40022-a2ca-4615-aff3-2c07354ce983')
 def test_put_metadata_on_instances_on_single_compute(
         security_group,
-        ubuntu_image,
-        keypair,
+        flavor,
+        cirros_image,
         network,
         subnet,
         nova_availability_zone_hosts,
@@ -107,14 +109,12 @@ def test_put_metadata_on_instances_on_single_compute(
     **Setup:**
 
     #. Create security group
-    #. Get Glance ubuntu image OR download and create it if ubuntu image is
-        not present.
-    #. Create keypair
+    #. Create flavor
+    #. Upload cirros image
     #. Create network and subnetwork
 
     **Steps:**
 
-    #. Get flavor ``m1.small``
     #. Get FQDNs of nova hosts
     #. Create 2 nova servers on host 1
     #. Create 2 nova servers on host 2
@@ -130,11 +130,9 @@ def test_put_metadata_on_instances_on_single_compute(
     **Teardown:**
 
     #. Delete servers
-    #. Delete keypair
     #. Delete security group
     #. Delete network and subnetwork
     """
-    flavor = flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
     host_1 = nova_availability_zone_hosts[0]
     host_2 = nova_availability_zone_hosts[1]
 
@@ -145,19 +143,17 @@ def test_put_metadata_on_instances_on_single_compute(
 
     host1_servers = server_steps.create_servers(
         count=2,
-        image=ubuntu_image,
+        image=cirros_image,
         flavor=flavor,
         networks=[network],
-        keypair=keypair,
         security_groups=[security_group],
         availability_zone='nova:{}'.format(host_1))
 
     host2_servers = server_steps.create_servers(
         count=2,
-        image=ubuntu_image,
+        image=cirros_image,
         flavor=flavor,
         networks=[network],
-        keypair=keypair,
         security_groups=[security_group],
         availability_zone='nova:{}'.format(host_2))
 
