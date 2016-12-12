@@ -74,16 +74,19 @@ class CommandResult(object):
         self.stderr_bytes += value
 
     def check_exit_code(self, expected=0):
-        """Check that exit_code is 0."""
+        """Check that exit code is expected."""
         if self.exit_code != expected:
-            raise Exception('Command {0.command!r} exit code is not 0'.format(
-                self))
+            msg = 'Command {0.command!r} exit code is not {1}'.format(self,
+                                                                      expected)
+            if self.stderr:
+                msg += ', stderr:\n{0.stderr}'.format(self)
+            raise RuntimeError(msg)
 
     def check_stderr(self):
         """Check that stderr is empty."""
         if self.stderr:
-            raise Exception('Command {0.command!r} stderr '
-                            'is not empty:\n{0.stderr}'.format(self))
+            raise RuntimeError('Command {0.command!r} stderr '
+                               'is not empty:\n{0.stderr}'.format(self))
 
 
 class SshClient(object):
