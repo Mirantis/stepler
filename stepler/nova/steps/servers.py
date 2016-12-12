@@ -347,6 +347,29 @@ class ServerSteps(base.BaseSteps):
         waiter.wait(_check_active_ssh_connection, timeout_seconds=timeout)
 
     @steps_checker.step
+    def execute_commands(self,
+                         server,
+                         commands,
+                         as_sudo=False,
+                         command_timeout=config.SSH_COMMAND_TIMEOUT,
+                         check=True):
+        """Step to execute commands on server via SSH."""
+        with self.get_server_ssh(server) as server_ssh:
+            for command in commands:
+
+                if as_sudo:
+                    with server_ssh.sudo():
+                        result = server_ssh.execute(command,
+                                                    timeout=command_timeout)
+                else:
+                    result = server_ssh.execute(command,
+                                                timeout=command_timeout)
+                if check:
+                    result.check_exit_code()
+
+        return result.stdout
+
+    @steps_checker.step
     def attach_floating_ip(self, server, floating_ip, check=True):
         # TODO(schipiga): expand documentation
         """Step to attach floating IP to server."""
