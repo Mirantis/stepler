@@ -38,6 +38,7 @@ __all__ = [
     'live_migration_servers',
     'live_migration_servers_with_volumes',
     'servers_cleanup',
+    'ubuntu_server',
     'unexpected_servers_cleanup',
 ]
 
@@ -231,7 +232,35 @@ def server(cirros_image,
                                        password=config.CIRROS_PASSWORD)[0]
 
 
-# TODO(schipiga): this fixture is rudiment of MOS. Will be changed in future.
+@pytest.fixture
+def ubuntu_server(ubuntu_image,
+                  flavor,
+                  keypair,
+                  security_group,
+                  net_subnet_router,
+                  server_steps):
+    """Function fixture to create ubuntu server with default options.
+
+    Args:
+        cirros_image (object): cirros image from glance
+        flavor (object): nova flavor
+        security_group (obj): nova security group
+        net_subnet_router (tuple): neutron network, subnet, router
+        server_steps (ServerSteps): instantiated server steps
+
+    Returns:
+        object: nova server
+    """
+    network, _, _ = net_subnet_router
+
+    return server_steps.create_servers(image=ubuntu_image,
+                                       flavor=flavor,
+                                       networks=[network],
+                                       security_groups=[security_group],
+                                       username=config.UBUNTU_USERNAME,
+                                       keypair=keypair)[0]
+
+
 @pytest.fixture
 def get_ssh_proxy_cmd(network_steps,
                       os_faults_steps,
@@ -257,8 +286,11 @@ def get_ssh_proxy_cmd(network_steps,
         dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
         dhcp_server_ip = [
             node.ip for node in os_faults_steps.get_node(fqdns=[dhcp_host])][0]
-        proxy_cmd = 'ssh root@{} ip netns exec {} netcat {} 22'.format(
-            dhcp_server_ip, dhcp_netns, server_ip)
+        proxy_cmd = ('ssh -o UserKnownHostsFile=/dev/null -o '
+                     'StrictHostKeyChecking=no root@{} ip netns '
+                     'exec {} netcat {} 22'.format(dhcp_server_ip,
+                                                   dhcp_netns,
+                                                   server_ip))
 
         return proxy_cmd
 
