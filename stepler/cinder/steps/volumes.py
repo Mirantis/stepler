@@ -746,3 +746,24 @@ class VolumeSteps(base.BaseSteps):
             if check:
                 raise LookupError("No available hosts to migrate volume from "
                                   "host {!r}".format(current_host))
+
+    @steps_checker.step
+    def check_cinder_available(self, must_be=True):
+        """Step to check cinder availability.
+
+        Args:
+            must_be (bool): flag whether cinder must be available or not
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_cinder_available():
+            try:
+                self.get_volumes(check=False)
+                is_available = True
+            except exceptions.NotAcceptable:
+                is_available = False
+            return waiter.expect_that(is_available, equal_to(must_be))
+
+        waiter.wait(_check_cinder_available,
+                    timeout_seconds=config.CINDER_AVAILABILITY_TIMEOUT)
