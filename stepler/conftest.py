@@ -166,6 +166,7 @@ __all__ = sorted([  # sort for documentation
     'disable_nova_config_drive',
     'live_migration_server',
     'generate_traffic',
+    'ubuntu_server',
 
     'get_availability_zone_steps',
     'availability_zone_steps',
