@@ -30,6 +30,9 @@ Cinder tests
 .. automodule:: stepler.cinder.tests.test_extend_volume
    :members:
 
+.. automodule:: stepler.cinder.tests.test_services
+   :members:
+
 .. automodule:: stepler.cinder.tests.test_volume_snapshots
    :members:
 
