@@ -325,6 +325,7 @@ NEUTRON_DHCP_SERVICE = 'neutron-dhcp-agent'
 NEUTRON_OVS_SERVICE = 'neutron-openvswitch-agent'
 NEUTRON_METADATA_SERVICE = 'neutron-metadata-agent'
 NEUTRON_SERVER_SERVICE = 'neutron-server'
+NEUTRON = 'neutron'
 
 DNSMASQ_SERVICE = 'dnsmasq'
 
