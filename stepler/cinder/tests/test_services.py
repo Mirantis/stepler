@@ -89,3 +89,80 @@ def test_restart_all_cinder_services(volume,
          'mount {} {}'.format(device_2, folder_2),
          'cp {0}/{2} {1}/{2}'.format(folder_1, folder_2, file_name)],
         with_sudo=True)
+
+
+@pytest.mark.idempotent_id('5c9b82f6-4a4e-4118-bf67-7a69718c61db')
+def test_stop_nova_and_cinder_services(ubuntu_server,
+                                       nova_floating_ip,
+                                       attach_volume_to_server,
+                                       detach_volume_from_server,
+                                       server_steps,
+                                       volume_steps,
+                                       os_faults_steps):
+    """**Scenario:** VM with volume is available if nova and cinder disabled.
+
+    **Setup:**
+
+    #. Create nova ubuntu server
+    #. Create nova floating IP
+
+    **Steps:**
+
+    #. Attach floating IP to ubuntu server
+    #. Check ubuntu server is pinged with floating IP
+    #. Create volume with size 10 Gb
+    #. Attach volume to ubuntu server
+    #. Via SSH create file on attached volume
+    #. Stop cinder-volume service
+    #. Stop nova-compute service
+    #. Via SSH copy file on attached volume and check that it's the same
+    #. Start nova-compute service
+    #. Start cinder-volume service
+    #. Detach volume from ubuntu server
+
+    **Teardown:**
+
+    #. Detach volume from ubuntu server
+    #. Delete volume
+    #. Delete floating IP
+    #. Delete ubuntu server
+    """
+    device = '/dev/vdc'
+    folder = '/mnt/volume'
+    file_name_1, file_name_2 = utils.generate_ids(count=2)
+
+    server_steps.attach_floating_ip(ubuntu_server, nova_floating_ip)
+
+    server_steps.check_ping_to_server_floating(
+        ubuntu_server, timeout=config.PING_CALL_TIMEOUT)
+
+    volume = volume_steps.create_volumes(size=10)[0]
+    attach_volume_to_server(ubuntu_server, volume, device=device)
+
+    server_steps.execute_commands(
+        ubuntu_server,
+        ['mkfs -t ext3 {}'.format(device),
+         'mkdir {}'.format(folder),
+         'mount {} {}'.format(device, folder),
+         'echo "test" > {}/{}'.format(folder, file_name_1)],
+        with_sudo=True)
+
+    cinder_nodes = os_faults_steps.get_nodes(
+        service_names=[config.CINDER_VOLUME])
+
+    nova_nodes = os_faults_steps.get_nodes(
+        service_names=[config.NOVA_COMPUTE])
+
+    os_faults_steps.terminate_service(config.CINDER_VOLUME, cinder_nodes)
+    os_faults_steps.terminate_service(config.NOVA_COMPUTE, nova_nodes)
+
+    server_steps.execute_commands(
+        ubuntu_server,
+        ['cp {0}/{1} {0}/{2}'.format(folder, file_name_1, file_name_2),
+         'diff {0}/{1} {0}/{2}'.format(folder, file_name_1, file_name_2)],
+        with_sudo=True)
+
+    os_faults_steps.start_service(config.NOVA_COMPUTE, nova_nodes)
+    os_faults_steps.start_service(config.CINDER_VOLUME, cinder_nodes)
+
+    detach_volume_from_server(ubuntu_server, volume)
