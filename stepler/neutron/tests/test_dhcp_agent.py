@@ -84,7 +84,7 @@ def test_ban_some_dhcp_agents(network,
                                           nodes=nodes_with_dhcp)
         agent_steps.check_alive([dhcp_agent],
                                 must_alive=False,
-                                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                                timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
         agent_steps.check_network_rescheduled(
             network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
@@ -165,7 +165,7 @@ def test_ban_all_dhcp_agents_restart_one(network,
                                           nodes=node_with_dhcp)
         agent_steps.check_alive([dhcp_agent],
                                 must_alive=False,
-                                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                                timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
 
     os_faults_steps.start_service(config.NEUTRON_DHCP_SERVICE,
                                   nodes=node_with_dhcp)
@@ -246,7 +246,7 @@ def test_ban_all_dhcp_agents_restart_first(network,
         signal=signal.SIGKILL)
     agent_steps.check_alive(free_agents,
                             must_alive=False,
-                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
 
     dhcp_agents_for_net = agent_steps.get_dhcp_agents_for_net(network)
     nodes_with_dhcp = os_faults_steps.get_nodes_for_agents(dhcp_agents_for_net)
@@ -258,7 +258,7 @@ def test_ban_all_dhcp_agents_restart_first(network,
         signal=signal.SIGKILL)
     agent_steps.check_alive(dhcp_agents_for_net,
                             must_alive=False,
-                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
 
     agent_to_clear = free_agents[0]
     banned_agents = free_agents[1:] + dhcp_agents_for_net
@@ -332,7 +332,7 @@ def test_dhcp_agent_after_drop_rabbit_port(network,
     os_faults_steps.add_rule_to_drop_port(nodes_with_dhcp, config.RABBIT_PORT)
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
-                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
     agent_steps.check_network_rescheduled(
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     agent_steps.check_agents_count_for_net(network, expected_count=2)
@@ -398,7 +398,7 @@ def test_ban_dhcp_agent_many_times(network,
                                       nodes=nodes_with_free_agents)
     agent_steps.check_alive(free_agents,
                             must_alive=False,
-                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
 
     node_with_dhcp = os_faults_steps.get_nodes_for_agents([agent_to_ban])
     for _ in range(40):
@@ -480,7 +480,7 @@ def test_destroy_controller_check_dhcp(network,
     os_faults_steps.poweroff_nodes(controller)
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
-                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
     agent_steps.check_network_rescheduled(
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     agent_steps.check_agents_count_for_net(network,
@@ -546,7 +546,7 @@ def test_dhcp_alive_after_primary_controller_reset(network,
     os_faults_steps.reset_nodes(primary_controller)
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
-                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
     agent_steps.check_network_rescheduled(
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     network_steps.check_nets_count_for_agent(dhcp_agent,
@@ -629,7 +629,7 @@ def test_change_default_dhcp_agents_count_for_net(
                                           nodes=node_with_dhcp)
         agent_steps.check_alive([dhcp_agent],
                                 must_alive=False,
-                                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                                timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
         agent_steps.check_network_rescheduled(
             network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
@@ -643,7 +643,7 @@ def test_change_default_dhcp_agents_count_for_net(
                                       nodes=node_with_dhcp)
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
-                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
 
     os_faults_steps.start_service(config.NEUTRON_DHCP_SERVICE,
                                   nodes=node_with_dhcp)
@@ -717,7 +717,6 @@ def test_manually_rescheduling_dhcp_agent(network,
                                           server,
                                           server_steps,
                                           port_steps,
-                                          ports,
                                           agent_steps):
     """**Scenario:** Manually reschedule dhcp-agent.
 
@@ -756,11 +755,84 @@ def test_manually_rescheduling_dhcp_agent(network,
     dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
     dhcp_agent_second = agent_steps.get_dhcp_agents_not_hosting_net(network)[0]
     ports = port_steps.get_ports(
-        device_owner=config.PORT_DEVICE_OWNER_DHCP, device_id=network['id'])
-    agent_steps.remove_network_from_dhcp_agent(network, dhcp_agent)
-    agent_steps.add_network_to_dhcp_agent(network, dhcp_agent_second)
+        device_owner=config.PORT_DEVICE_OWNER_DHCP, network_id=network['id'])
+    agent_steps.remove_network_from_dhcp_agent(dhcp_agent, network)
+    agent_steps.add_network_to_dhcp_agent(dhcp_agent_second, network)
     agent_steps.check_network_is_on_agent(
         network, dhcp_agent_second, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     new_ports = port_steps.get_ports(
-        device_owner=config.PORT_DEVICE_OWNER_DHCP, device_id=network['id'])
+        device_owner=config.PORT_DEVICE_OWNER_DHCP, network_id=network['id'])
     port_steps.check_equal_ports(ports_1=ports, ports_2=new_ports)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('3952df20-88df-4755-b6c6-3baad7686ec2')
+@pytest.mark.parametrize(
+    'change_neutron_quota', [dict(
+        network=50, router=50, subnet=50, port=150)],
+    indirect=True)
+@pytest.mark.usefixtures('change_neutron_quota')
+def test_check_port_binding_after_node_restart(
+        router,
+        create_max_networks_with_instances,
+        port_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Check port binding after node restart.
+
+    **Setup:**
+
+    #. Increase neutron quotas
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+
+    **Steps:**
+
+    #. Create max possible count of networks, connect all networks
+        to router with external network
+    #. Create and delete  server for each network
+    #. Check ports on the first network
+    #. Check host binding for all ports
+    #. Get DHCP agent for the first network
+    #. Get node with DHCP agent for network
+    #. Destroy node with DHCP agent
+    #. Wait for DHCP agent becoming dead
+    #. Start node with DHCP agent
+    #. Wait for DHCP agent becoming alive
+    #. Check ports on network
+    #. Check that ports ids are the same as before destroying node
+    #. Check that network rescheduled from one DHCP agent to another
+         and only one host binding changed after restart.
+
+    **Teardown:**
+
+    #. Delete all created networks, subnets and router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    networks = create_max_networks_with_instances(router)
+    network = networks[0]
+
+    ports_before = port_steps.get_ports(
+        device_owner=config.PORT_DEVICE_OWNER_DHCP, network_id=network['id'])
+
+    dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
+    os_faults_steps.poweroff_nodes(nodes_with_dhcp)
+    agent_steps.check_alive([dhcp_agent],
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
+
+    os_faults_steps.poweron_nodes(nodes_with_dhcp)
+    agent_steps.check_alive([dhcp_agent],
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    ports_after = port_steps.get_ports(
+        device_owner=config.PORT_DEVICE_OWNER_DHCP, network_id=network['id'])
+    port_steps.check_ports_ids_equal(ports_before, ports_after)
+    port_steps.check_ports_binding_difference(ports_before,
+                                              ports_after,
+                                              expected_removed_count=1,
+                                              expected_added_count=1)
