@@ -196,18 +196,22 @@ class OsFaultsSteps(base.BaseSteps):
             assert_that(services, is_not(empty()))
 
     @steps_checker.step
-    def terminate_service(self, service_name, nodes, check=True):
+    def terminate_service(self, service_name, nodes=None, check=True):
         """Step to terminate service.
 
         Args:
             service_name (str): service name
-            nodes (obj): NodeCollection instance to terminate service on it
+            nodes (NodeCollection, optional): nodes where should terminate
+                service
             check (bool): flag whether to check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors
         """
         service = self._client.get_service(service_name)
+        if not nodes:
+            nodes = self.get_nodes(service_names=[service_name])
+
         service.terminate(nodes)
         if check:
             self.check_service_state(
@@ -217,18 +221,21 @@ class OsFaultsSteps(base.BaseSteps):
                 timeout=config.SERVICE_TERMINATE_TIMEOUT)
 
     @steps_checker.step
-    def start_service(self, service_name, nodes, check=True):
+    def start_service(self, service_name, nodes=None, check=True):
         """Step to start service.
 
         Args:
             service_name (str): service name
-            nodes (obj): NodeCollection instance to start service on it
+            nodes (NodeCollection, optional): nodes where should start service
             check (bool): flag whether to check step or not
 
         Raises:
             ServiceError: if wrong service name or other errors
         """
         service = self._client.get_service(service_name)
+        if not nodes:
+            nodes = self.get_nodes(service_names=[service_name])
+
         service.start(nodes)
         if check:
             self.check_service_state(
