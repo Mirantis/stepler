@@ -103,6 +103,8 @@ NOVA_COMPUTE = 'nova-compute'
 IRONIC_API = 'ironic-api'
 IRONIC_CONDUCTOR = 'ironic-conductor'
 HORIZON = 'horizon'
+NEUTRON_DHCP = 'neutron-dhcp-agent'
+NEUTRON_OPENSWITCH = 'neutron-openvswitch-agent'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
