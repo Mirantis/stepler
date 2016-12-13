@@ -18,9 +18,10 @@ Port steps
 # limitations under the License.
 
 from hamcrest import (assert_that, equal_to, empty,
-                      has_entries, is_not)  # noqa H301
+                      has_entries, has_length, is_, is_not)  # noqa H301
 
 from stepler import base
+from stepler import config
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
@@ -131,3 +132,59 @@ class PortSteps(base.BaseSteps):
             AssertionError: if lists are not equal
         """
         assert_that(sorted(ports_1), equal_to(sorted(ports_2)))
+
+    @steps_checker.step
+    def check_ports_ids_equal(self, ports_1, ports_2):
+        """Step for comparing ports ids.
+
+        Args:
+            ports_1 (list): first list of ports for comparing ids
+            ports_2 (list): second list of ports for comparing ids
+
+        Raises:
+            AssertionError: if ports ids of two lists are not equal
+        """
+        ports_ids_1 = [port['id'] for port in ports_1]
+        ports_ids_2 = [port['id'] for port in ports_2]
+
+        assert_that(sorted(ports_ids_1), equal_to(sorted(ports_ids_2)))
+
+    @steps_checker.step
+    def check_ports_binding_difference(self,
+                                       ports_before,
+                                       ports_after,
+                                       expected_removed_count=None,
+                                       expected_added_count=None):
+        """Step for comparing ports bindings.
+
+        Args:
+            ports_before (list): first list of ports for comparing bindings
+            ports_after (list): second list of ports for comparing bindings
+            expected_removed_count (int): expected count of removed
+                ports bindings
+            expected_added_count (int): expected count of new
+                ports bindings
+
+        Raises:
+            AssertionError: if actual removed or added count of bindings
+                doesn't equal to their expected values
+        """
+        err_msg = ("At least one of `expected_removed_count` or "
+                   "`expected_added_count` should be passed.")
+        assert_that(any([expected_removed_count, expected_added_count]),
+                    is_(True),
+                    err_msg)
+
+        ports_binding_before = {port[config.PORT_BINDING_HOST_ID]
+                                for port in ports_before}
+        ports_binding_after = {port[config.PORT_BINDING_HOST_ID]
+                               for port in ports_after}
+
+        if expected_removed_count is not None:
+            actual_removed_count = ports_binding_before - ports_binding_after
+            assert_that(actual_removed_count,
+                        has_length(expected_removed_count))
+
+        if expected_added_count is not None:
+            actual_added_count = ports_binding_after - ports_binding_before
+            assert_that(actual_added_count, has_length(expected_added_count))
