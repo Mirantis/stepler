@@ -20,6 +20,7 @@ Neutron OVS restart tests fixtures
 import functools
 
 import attrdict
+from neutronclient.common import exceptions
 import pytest
 
 from stepler import config
@@ -32,6 +33,7 @@ __all__ = [
     'neutron_2_servers_same_network',
     'neutron_2_servers_iperf_different_networks',
     'neutron_conntrack_2_projects_resources',
+    'create_max_networks_with_instances',
 ]
 
 
@@ -517,3 +519,79 @@ def neutron_conntrack_2_projects_resources(
         project_resources.servers = servers
         resources.append(project_resources)
     return attrdict.AttrDict(resources=resources, hostname=hostname)
+
+
+@pytest.fixture
+def create_max_networks_with_instances(cirros_image,
+                                       flavor,
+                                       security_group,
+                                       sorted_hypervisors,
+                                       create_network,
+                                       create_subnet,
+                                       add_router_interfaces,
+                                       hypervisor_steps,
+                                       server_steps):
+    """Callable fixture to create max networks, boot and delete servers.
+
+    This fixture returns fuction to create max count of networks,
+    subnet for each network, connect networks to router, boot
+    nova server with cirros on each network and then delete
+    created servers.
+
+    Args:
+        cirros_image (obj): cirros image
+        flavor (obj): nova flavor
+        security_group (obj): nova security group
+        sorted_hypervisors (list): nova hypervisors list
+        create_network (function): function to create network
+        create_subnet (function): function to create subnet with options
+        add_router_interfaces (function): function to add router interfaces to
+            subnets
+        hypervisor_steps (obj): instantiated nova hypervisor steps
+        server_steps (obj): instantiated nova server steps
+
+    Returns:
+        function: function to create max count of networks
+    """
+    def _create_max_networks_with_instances(router):
+        max_instances = 0
+        for hypervisor in sorted_hypervisors:
+            max_instances += hypervisor_steps.get_hypervisor_capacity(
+                hypervisor, flavor, check=False)
+
+        net_list = []
+        servers = []
+        i = 1
+        try:
+            # only about 34 nets can be created for one tenant during
+            # implementation so we need to create networks until we get
+            # ServiceUnavailable or OverQuotaClient errors as we don't know
+            # the exact max possible count of networks to be created
+            while True:
+                network = create_network(next(utils.generate_ids()))
+                # TODO(agromov): fix it if we can create more than 255 subnets
+                subnet = create_subnet(next(utils.generate_ids()),
+                                       network,
+                                       cidr="192.168.{0}.0/24".format(i))
+                add_router_interfaces(router, [subnet])
+                net_list.append(network)
+
+                if len(servers) >= max_instances:
+                    server_steps.delete_servers(servers)
+                    servers = []
+
+                server = server_steps.create_servers(
+                    image=cirros_image,
+                    flavor=flavor,
+                    networks=[network],
+                    security_groups=[security_group])[0]
+                servers.append(server)
+                i += 1
+        except (exceptions.ServiceUnavailable, exceptions.OverQuotaClient):
+            pass
+
+        server_steps.delete_servers(servers)
+
+        return net_list
+
+    return _create_max_networks_with_instances
