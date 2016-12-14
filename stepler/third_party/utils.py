@@ -21,6 +21,7 @@ import email.utils
 import hashlib
 import inspect
 import logging
+from multiprocessing import dummy as mp
 import os
 import random
 import tempfile
@@ -49,6 +50,8 @@ __all__ = [
     'get_unwrapped_func',
     'is_iterable',
     'slugify',
+    'background',
+    'join_process',
 ]
 
 
@@ -380,3 +383,28 @@ def get_md5sum(file_path, size=4096):
         for chunk in iter(lambda: file.read(size), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+
+def background(f, *args, **kwargs):
+    """Run function in separate thread.
+
+    Args:
+        f (function): function to call in background
+        *args: function args
+        **kwargs: function kwargs
+
+    Returns:
+        Process: started process instance
+    """
+    p = mp.Process(target=f, args=args, kwargs=kwargs)
+    p.start()
+    return p
+
+
+def join_process(process):
+    """Wait until process to be done.
+
+    Args:
+        process (Process): process
+    """
+    process.join()
