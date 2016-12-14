@@ -22,6 +22,7 @@ import os
 import re
 import tempfile
 import time
+import warnings
 
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
                       only_contains, has_items, has_length, is_, equal_to,
@@ -152,6 +153,23 @@ class OsFaultsSteps(base.BaseSteps):
         return service
 
     @steps_checker.step
+    def get_services_names(self, name_prefix, check=True):
+        """Step to get services names by name_prefix.
+
+        Args:
+            name_prefix (str): services name prefix
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: service names
+        """
+        names = self._client.list_supported_services()
+        names = [name for name in names if name.startswith(name_prefix)]
+        if check:
+            assert_that(names, is_not(empty()))
+        return names
+
+    @steps_checker.step
     def check_service_state(self, service_name, nodes, must_run=True,
                             timeout=0):
         """Verify step to check that service is running or not on nodes.
@@ -176,6 +194,28 @@ class OsFaultsSteps(base.BaseSteps):
         waiter.wait(_check_service_state, timeout_seconds=timeout)
 
     @steps_checker.step
+    def restart_service(self, name, nodes=None, check=True):
+        """Step to restart service.
+
+        Args:
+            names (str): service name
+            nodes (obj): NodeCollection instance to restart service on it
+            check (bool): flag whether to check step or not
+
+        Raises:
+            ServiceError: if wrong service name or other errors
+            AssertionError: if nodes don't contains service
+        """
+        nodes = nodes or self._client.get_nodes()
+        service = self._client.get_service(name=name)
+        running_nodes = service.get_nodes()
+        to_restart_nodes = running_nodes & nodes
+        if check:
+            assert_that(to_restart_nodes, is_not(empty()))
+        if to_restart_nodes:
+            service.restart(nodes=to_restart_nodes)
+
+    @steps_checker.step
     def restart_services(self, names, nodes=None, check=True):
         """Step to restart services.
 
@@ -187,14 +227,8 @@ class OsFaultsSteps(base.BaseSteps):
         Raises:
             ServiceError: if wrong service name or other errors
         """
-        services = []
         for name in names:
-            service = self._client.get_service(name=name)
-            services.append(service)
-            service.restart(nodes=nodes)
-        if check:
-            # TODO(gdyuldin): make normal check
-            assert_that(services, is_not(empty()))
+            self.restart_service(name, nodes, check=check)
 
     @steps_checker.step
     def terminate_service(self, service_name, nodes, check=True):
@@ -1400,6 +1434,8 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             dict: node's fqdn -> list of services
         """
+        warnings.warn("This method will be deleted in future. You should use "
+                      "`get_services_names` instesd", DeprecationWarning)
         cmd = "initctl list | grep running | grep {0}".format(component)
         cmd += " | awk '{ print $1 }'"
         services = {}
