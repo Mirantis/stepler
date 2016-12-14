@@ -152,6 +152,23 @@ class OsFaultsSteps(base.BaseSteps):
         return service
 
     @steps_checker.step
+    def get_services_names(self, name_prefix, check=True):
+        """Step to get services names by name_prefix.
+
+        Args:
+            name_prefix (str): services name prefix
+            check (bool): flag whether check step or not
+
+        Returns:
+            list: service names
+        """
+        names = self._client.list_supported_services()
+        names = [name for name in names if name.startswith(name_prefix)]
+        if check:
+            assert_that(names, is_not(empty()))
+        return names
+
+    @steps_checker.step
     def check_service_state(self, service_name, nodes, must_run=True,
                             timeout=0):
         """Verify step to check that service is running or not on nodes.
@@ -187,11 +204,15 @@ class OsFaultsSteps(base.BaseSteps):
         Raises:
             ServiceError: if wrong service name or other errors
         """
+        nodes = nodes or self._client.get_nodes()
         services = []
         for name in names:
             service = self._client.get_service(name=name)
-            services.append(service)
-            service.restart(nodes=nodes)
+            running_nodes = service.get_nodes()
+            to_restart_nodes = running_nodes & nodes
+            if to_restart_nodes:
+                service.restart(nodes=to_restart_nodes)
+                services.append(service)
         if check:
             # TODO(gdyuldin): make normal check
             assert_that(services, is_not(empty()))
@@ -1388,27 +1409,6 @@ class OsFaultsSteps(base.BaseSteps):
                     assert_that(tunnels_remotes, any_of(*matchers))
                 else:
                     assert_that(tunnels_remotes, is_not(any_of(*matchers)))
-
-    @steps_checker.step
-    def get_services_for_component(self, component, nodes):
-        """Step to get list of component services.
-
-        Args:
-            component (str): component name to filter out
-            nodes (NodeCollection): nodes to get services
-
-        Returns:
-            dict: node's fqdn -> list of services
-        """
-        cmd = "initctl list | grep running | grep {0}".format(component)
-        cmd += " | awk '{ print $1 }'"
-        services = {}
-        results = self.execute_cmd(nodes=nodes, cmd=cmd)
-        for node_result in results:
-            for node in nodes:
-                if node_result.host == node.ip:
-                    services[node.fqdn] = node_result.payload['stdout_lines']
-        return services
 
     @steps_checker.step
     def check_zones_assigment_to_devices(self, node):

@@ -22,8 +22,7 @@ from stepler import config
 
 
 @pytest.mark.idempotent_id('03c7bd50-0f78-4dd2-888f-a1e647f8c20e')
-def test_restart_all_nova_services(ubuntu_image,
-                                   keypair,
+def test_restart_all_nova_services(cirros_image,
                                    flavor,
                                    security_group,
                                    net_subnet_router,
@@ -34,8 +33,7 @@ def test_restart_all_nova_services(ubuntu_image,
 
     **Setup:**
 
-    #. Create ubuntu image
-    #. Create keypair
+    #. Create cirros image
     #. Create flavor
     #. Create security group
     #. Create network_1 with subnet_1 and router_1
@@ -59,42 +57,35 @@ def test_restart_all_nova_services(ubuntu_image,
     #. Delete network, subnet, router
     #. Delete floating IPs
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
-    #. Delete ubuntu image
+    #. Delete cirros image
 
     """
     net, _, _ = net_subnet_router
     controllers = os_faults_steps.get_nodes(service_names=[config.NOVA_API])
     computes = os_faults_steps.get_nodes(service_names=[config.NOVA_COMPUTE])
 
+    server_create_args = dict(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[net],
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME,
+        password=config.CIRROS_PASSWORD)
+
     # Boot server_1 and check ping
-    server_1 = server_steps.create_servers(image=ubuntu_image,
-                                           flavor=flavor,
-                                           networks=[net],
-                                           security_groups=[security_group],
-                                           username=config.UBUNTU_USERNAME,
-                                           keypair=keypair)[0]
+    (server_1, ) = server_steps.create_servers(**server_create_args)
     server_steps.attach_floating_ip(server_1, nova_create_floating_ip())
     with server_steps.get_server_ssh(server_1) as server_ssh:
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
 
+    nova_services = os_faults_steps.get_services_names(name_prefix='nova')
     # Restart nova services on controllers
-    services_on_controllers = os_faults_steps.get_services_for_component(
-        component='nova', nodes=controllers)
-    for host in controllers:
-        node = os_faults_steps.get_node(fqdns=[host.fqdn])
-        os_faults_steps.restart_services(
-            names=services_on_controllers[host.fqdn], nodes=node)
+    os_faults_steps.restart_services(names=nova_services, nodes=controllers)
 
-    server_2 = server_steps.create_servers(image=ubuntu_image,
-                                           flavor=flavor,
-                                           networks=[net],
-                                           security_groups=[security_group],
-                                           username=config.UBUNTU_USERNAME,
-                                           keypair=keypair)[0]
+    (server_2, ) = server_steps.create_servers(**server_create_args)
     server_steps.attach_floating_ip(server_2, nova_create_floating_ip())
     ping_plan = {
         server_1: [config.GOOGLE_DNS_IP, (server_2, config.FLOATING_IP)],
@@ -103,19 +94,9 @@ def test_restart_all_nova_services(ubuntu_image,
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     # Restart nova services on computes
-    services_on_computes = os_faults_steps.get_services_for_component(
-        component='nova', nodes=computes)
-    for host in computes:
-        node = os_faults_steps.get_node(fqdns=[host.fqdn])
-        os_faults_steps.restart_services(names=services_on_computes[host.fqdn],
-                                         nodes=node)
+    os_faults_steps.restart_services(names=nova_services, nodes=computes)
 
-    server_3 = server_steps.create_servers(image=ubuntu_image,
-                                           flavor=flavor,
-                                           networks=[net],
-                                           security_groups=[security_group],
-                                           username=config.UBUNTU_USERNAME,
-                                           keypair=keypair)[0]
+    (server_3, ) = server_steps.create_servers(**server_create_args)
     server_steps.attach_floating_ip(server_3, nova_create_floating_ip())
     ping_plan = {server_1: [config.GOOGLE_DNS_IP,
                             (server_2, config.FLOATING_IP),
@@ -130,12 +111,8 @@ def test_restart_all_nova_services(ubuntu_image,
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     # Restart all nova services
-    all_services = os_faults_steps.get_services_for_component(
-        component='nova', nodes=controllers + computes)
-    for host in (controllers + computes):
-        node = os_faults_steps.get_node(fqdns=[host.fqdn])
-        os_faults_steps.restart_services(names=all_services[host.fqdn],
-                                         nodes=node)
+    os_faults_steps.restart_services(names=nova_services,
+                                     nodes=controllers | computes)
     server_steps.check_ping_by_plan(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
