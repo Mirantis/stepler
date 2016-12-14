@@ -835,3 +835,69 @@ def test_check_port_binding_after_node_restart(
                                               ports_after,
                                               expected_removed_count=1,
                                               expected_added_count=1)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('5bc6c902-961a-4bd4-9fd4-0471dddd6f1c')
+@pytest.mark.parametrize(
+    'change_neutron_quota', [dict(
+        network=50, router=50, subnet=50, port=150)],
+    indirect=True)
+@pytest.mark.usefixtures('change_neutron_quota')
+def test_check_dhcp_agents_for_net_after_restart(
+        router,
+        create_max_networks_with_instances,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Check dhcp-agents assinged to network after restart.
+
+    **Setup:**
+
+    #. Increase neutron quotas
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+
+    **Steps:**
+
+    #. Create max possible count of networks, connect all networks
+        to router with external network
+    #. Create and delete server for each network
+    #. Check DHCP agents count for the first network
+    #. Get all nodes with DHCP agents
+    #. Disable all DHCP agents
+    #. Wait for DHCP agents becoming dead
+    #. Enable all DHCP agents
+    #. Wait for DHCP agents becoming alive
+    #. Check that DHCP agents count is the same for the first network
+
+    **Teardown:**
+
+    #. Delete all created networks, subnets and router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    network = create_max_networks_with_instances(router)[0]
+    net_dhcp_agents = agent_steps.get_dhcp_agents_for_net(network)
+    initial_count = len(net_dhcp_agents)
+
+    agent_steps.check_agents_count_for_net(network,
+                                           expected_count=initial_count)
+
+    all_dhcp_agents = agent_steps.get_agents(
+        binary=config.NEUTRON_DHCP_SERVICE)
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents(all_dhcp_agents)
+    os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=nodes_with_dhcp)
+    agent_steps.check_alive(all_dhcp_agents,
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
+
+    os_faults_steps.start_service(config.NEUTRON_DHCP_SERVICE,
+                                  nodes=nodes_with_dhcp)
+    agent_steps.check_alive(all_dhcp_agents,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    agent_steps.check_agents_count_for_net(network,
+                                           expected_count=initial_count)
