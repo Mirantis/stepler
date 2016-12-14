@@ -18,6 +18,7 @@ Glance fixtures
 # limitations under the License.
 
 from .clients import *  # noqa
+from .glance import *  # noqa
 from .images import *  # noqa
 
 __all__ = sorted([  # sort for documentation
@@ -41,5 +42,7 @@ __all__ = sorted([  # sort for documentation
     'ubuntu_xenial_image',
     'baremetal_ubuntu_image',
     'conntrack_cirros_image',
-    'enable_multi_locations'
+
+    'set_glance_storage_to_file_with_quota',
+    'enable_multi_locations',
 ])
