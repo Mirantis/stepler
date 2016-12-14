@@ -61,6 +61,25 @@ class PortSteps(base.BaseSteps):
             self.check_presence(port, must_present=False)
 
     @steps_checker.step
+    def update(self, port, check=True, **kwargs):
+        """Step to update port attributes.
+
+        Args:
+            port (dict): port dict
+            check (bool): flag whether to check step or not
+            **kwargs: attributes to pass to API
+
+        Raises:
+            AssertionError: if check failed
+        """
+        assert_that(kwargs, is_not(empty()))
+        self._client.update(port['id'], **kwargs)
+
+        if check:
+            port = self.get_port(id=port['id'])
+            assert_that(port, has_entries(kwargs))
+
+    @steps_checker.step
     def check_presence(self, port, must_present=True, timeout=0):
         """Verify step to check port is present.
 

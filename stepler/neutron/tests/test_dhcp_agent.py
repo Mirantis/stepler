@@ -869,7 +869,8 @@ def test_check_dhcp_agents_for_net_after_restart(
     #. Wait for DHCP agents becoming dead
     #. Enable all DHCP agents
     #. Wait for DHCP agents becoming alive
-    #. Check that DHCP agents count is the same for the first network
+    #. Check that DHCP agents count for the first network is the same
+        as before restart
 
     **Teardown:**
 
@@ -901,3 +902,77 @@ def test_check_dhcp_agents_for_net_after_restart(
 
     agent_steps.check_agents_count_for_net(network,
                                            expected_count=initial_count)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('6890121c-73b6-42e5-b358-ed7037b36184')
+@pytest.mark.parametrize(
+    'change_neutron_quota', [dict(
+        network=50, router=50, subnet=50, port=150)],
+    indirect=True)
+@pytest.mark.usefixtures('change_neutron_quota')
+def test_check_tap_interfaces_for_net_after_restart(
+        router,
+        create_max_networks_with_instances,
+        port_steps,
+        agent_steps,
+        os_faults_steps):
+    """**Scenario:** Check all taps ids are unique after DHCP agents restart.
+
+    **Setup:**
+
+    #. Increase neutron quotas
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+
+    **Steps:**
+
+    #. Create max possible count of networks, connect all networks
+        to router with external network
+    #. Create and delete server for each network
+    #. Get all DHCP ports
+    #. Get all nodes with DHCP agents
+    #. Disable all DHCP agents
+    #. Wait for DHCP agents becoming dead
+    #. Make all DHCP ports 'reserved_dhcp_port'
+    #. Enable all DHCP agents
+    #. Wait for DHCP agents becoming alive
+    #. Check all taps ids are unique for all networks on all controllers
+
+    **Teardown:**
+
+    #. Delete all created networks, subnets and router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    networks = create_max_networks_with_instances(router)
+    controller = os_faults_steps.get_node(
+        service_names=[config.NEUTRON_DHCP_SERVICE])
+    dhcp_ports = port_steps.get_ports(
+        device_owner=config.PORT_DEVICE_OWNER_DHCP)
+
+    all_dhcp_agents = agent_steps.get_agents(
+        binary=config.NEUTRON_DHCP_SERVICE)
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents(all_dhcp_agents)
+
+    os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=nodes_with_dhcp)
+    agent_steps.check_alive(all_dhcp_agents,
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
+
+    os_faults_steps.delete_ports_bindings_for_dhcp_agents(controller)
+    for dhcp_port in dhcp_ports:
+        port_steps.update(dhcp_port,
+                          device_id=config.PORT_DEVICE_ID_RESERVED_DHCP)
+
+    os_faults_steps.start_service(config.NEUTRON_DHCP_SERVICE,
+                                  nodes=nodes_with_dhcp)
+    agent_steps.check_alive(all_dhcp_agents,
+                            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+
+    for network in networks:
+        os_faults_steps.check_tap_interfaces_are_unique(
+            nodes_with_dhcp, network, timeout=config.TAP_INTERFACE_UP_TIMEOUT)
