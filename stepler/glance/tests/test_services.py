@@ -1,7 +1,7 @@
 """
----------------------------
-Restart all glance services
----------------------------
+--------------------
+Glance service tests
+--------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -20,6 +20,8 @@ import pytest
 
 from stepler import config
 from stepler.third_party import utils
+
+pytestmark = pytest.mark.destructive
 
 
 @pytest.mark.idempotent_id('85adec8d-bf7c-41a7-ba0f-818d39410cfe')
@@ -95,3 +97,24 @@ def test_restart_all_glance_services(cirros_image,
             server_2, proxy_cmd=proxy_cmd) as server_ssh:
         server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.requires("l3_ha")
+@pytest.mark.idempotent_id("683bd20b-4adc-4a51-a855-f4950acd782f",
+                           controller_cmd=config.FUEL_PRIMARY_CONTROLLER_CMD)
+@pytest.mark.parametrize('controller_cmd',
+                         [config.FUEL_PRIMARY_CONTROLLER_CMD],
+                         ids=['primary'])
+def test_shutdown_controller(os_faults_steps,
+                             glance_steps,
+                             controller_cmd):
+    """**Scenario:** Image uploads successfully after controller shutdown.
+
+    **Steps:**
+
+    #. Shutdown controller node.
+    #. Upload image to glance.
+    """
+    controller_node = os_faults_steps.get_nodes_by_cmd(controller_cmd)
+    os_faults_steps.poweroff_nodes(controller_node)
+    glance_steps.create_images(utils.get_file_path(config.CIRROS_QCOW2_URL))
