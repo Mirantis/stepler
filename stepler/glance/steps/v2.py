@@ -17,6 +17,9 @@ Glance steps v2
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
+import logging
+
 from hamcrest import (assert_that, empty, equal_to,
                       has_items, is_not, is_in)  # noqa H310
 from glanceclient import exc
@@ -374,3 +377,29 @@ class GlanceStepsV2(BaseGlanceSteps):
             self._refresh_image(image)
             locations = [loc['url'] for loc in image.locations]
             assert_that(locations, has_items(*urls))
+
+    @steps_checker.step
+    def check_image_content(self, image, path):
+        """Step to compare image content with file content.
+
+        Args:
+            image (obj): glance image
+            path (str): path to file to compare image with
+
+        Raises:
+            AssertionError: if check failed
+        """
+        # Decrease logging level to prevent logging image content
+        keystone_logger = logging.getLogger('keystoneauth.session')
+        original_log_level = keystone_logger.level
+        keystone_logger.setLevel(logging.INFO)
+
+        try:
+            with open(path) as f:
+                for chunk in self._client.images.data(image.id,
+                                                      do_checksum=False):
+                    expected = f.read(len(chunk))
+                    assert_that(hashlib.md5(chunk).digest(),
+                                equal_to(hashlib.md5(expected).digest()))
+        finally:
+            keystone_logger.setLevel(original_log_level)
