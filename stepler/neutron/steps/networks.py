@@ -18,7 +18,7 @@ Network steps
 # limitations under the License.
 
 from hamcrest import (assert_that, empty, equal_to, has_entries,
-                      has_length, is_not)  # noqa
+                      has_length, is_, is_not, less_than)  # noqa
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -181,6 +181,25 @@ class NetworkSteps(base.BaseSteps):
         return nodes[0]['host']
 
     @steps_checker.step
+    def get_networks_for_dhcp_agent(self, agent, check=True):
+        """Step to get networks list for DHCP agent.
+
+        Args:
+            agent (dict): neutron agent dict to check status
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            list: list of networks for agent
+
+        Raises:
+            AssertionError: if check failed
+        """
+        networks = self._client.get_networks_for_dhcp_agent(agent['id'])
+        if check:
+            assert_that(networks, is_not(empty()))
+        return networks
+
+    @steps_checker.step
     def check_nets_count_for_agent(self, agent, expected_count):
         """Step to check networks count for DHCP agent.
 
@@ -191,5 +210,41 @@ class NetworkSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        networks = self._client.get_networks_for_dhcp_agent(agent['id'])
+        networks = self.get_networks_for_dhcp_agent(agent, check=False)
         assert_that(networks, has_length(expected_count))
+
+    @steps_checker.step
+    def check_nets_count_difference_for_agents(self, dhcp_agents,
+                                               max_difference_in_percent):
+        """Step to check networks count for DHCP agent.
+
+        This step verifies that the difference between max and min
+        networks count for all DHCP agents is less than max allowed percent.
+        Max networks count is considered to be 100%.
+
+        Args:
+            dhcp_agents (list): list of neutron agents dicts
+            max_percentage_difference (int): max allowed percentage for
+                difference between max and min nets counts for agents
+
+        Raises:
+            AssertionError: if check failed
+        """
+
+        def _count_percent_difference(min_val, max_val):
+            diff = max_val - min_val
+            result = (100 * diff) / float(max_val)
+            return round(result)
+
+        networks_count_on_agent = []
+
+        for dhcp_agent in dhcp_agents:
+            agent_networks = self.get_networks_for_dhcp_agent(dhcp_agent)
+            networks_count_on_agent.append(len(agent_networks))
+
+        min_count = min(networks_count_on_agent)
+        max_count = max(networks_count_on_agent)
+        actual_percentage_difference = _count_percent_difference(min_count,
+                                                                 max_count)
+        assert_that(actual_percentage_difference,
+                    is_(less_than(max_difference_in_percent)))
