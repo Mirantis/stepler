@@ -201,11 +201,12 @@ GLANCE_API_CONFIG_PATH = os.environ.get('GLANCE_API_CONFIG_PATH',
 
 # Nova
 CREDENTIALS_PREFIX = 'stepler_credentials_'
-ROOT_DISK_TIMESTAMP_FILE = '/timestamp.txt'
-EPHEMERAL_DISK_TIMESTAMP_FILE = '/mnt/timestamp.txt'
+EPHEMERAL_MNT_FS_PATH = '/mnt/'
+DISK_TIMESTAMP_FILE = 'timestamp.txt'
+DISK_TIMESTAMP_FILE_FULL_PATH = '%s%s' % (EPHEMERAL_MNT_FS_PATH,
+                                          DISK_TIMESTAMP_FILE)
 NOVA_API_LOG_FILE = '/var/log/nova/nova-api.log'
 NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
-EPHEMERAL_MNT_FS_PATH = '/mnt'
 EPHEMERAL_ROOT_FS_PATH = '/'
 DEFAULT_QCOW_IMAGE_SIZE = '20G'
 
