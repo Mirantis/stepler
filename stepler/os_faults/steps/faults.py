@@ -923,6 +923,19 @@ class OsFaultsSteps(base.BaseSteps):
                    for node_result in result)
 
     @steps_checker.step
+    def get_default_glance_backend(self):
+        """Step to retrieve default glance backend name.
+
+        Returns:
+            str: default glance backend name
+        """
+        cmd = "awk -F'=' '/^default_store/{{ print $2 }}' {}".format(
+            config.GLANCE_API_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.GLANCE_API]).pick()
+        result = self.execute_cmd(nodes, cmd, check=False)
+        return result[0].payload['stdout'].strip()
+
+    @steps_checker.step
     def check_router_namespace_presence(self, router, node, must_present=True,
                                         timeout=0):
         """Step to check router namespace presence on compute node.

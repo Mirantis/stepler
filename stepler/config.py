@@ -111,6 +111,7 @@ NOVA_COMPUTE = 'nova-compute'
 IRONIC_API = 'ironic-api'
 IRONIC_CONDUCTOR = 'ironic-conductor'
 HORIZON = 'horizon'
+SWIFT = 'swift'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
