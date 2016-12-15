@@ -332,11 +332,15 @@ class GlanceStepsV2(BaseGlanceSteps):
         assert_that(image.checksum, equal_to(utils.get_md5sum(file_path)))
 
     @steps_checker.step
-    def check_glance_service_available(self, should_be=True):
+    def check_glance_service_available(
+            self,
+            should_be=True,
+            timeout=config.GLANCE_AVAILABILITY_TIMEOUT):
         """Step to check glance service availability.
 
         Args:
             should_be (bool): flag whether glance should available or not
+            timeout (int): seconds to wait glance availability status
 
         Raises:
             TimeoutExpired: if check failed after timeout
@@ -349,8 +353,7 @@ class GlanceStepsV2(BaseGlanceSteps):
                 is_available = False
             return waiter.expect_that(is_available, equal_to(should_be))
 
-        waiter.wait(_check_available,
-                    timeout_seconds=config.GLANCE_AVAILABILITY_TIMEOUT)
+        waiter.wait(_check_available, timeout_seconds=timeout)
 
     @steps_checker.step
     def add_locations(self, image, urls, check=True):
