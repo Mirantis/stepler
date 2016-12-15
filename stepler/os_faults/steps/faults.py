@@ -923,6 +923,20 @@ class OsFaultsSteps(base.BaseSteps):
                    for node_result in result)
 
     @steps_checker.step
+    def get_glance_swift(self):
+        """Step to retrieve swift for glance enabled or not.
+
+        Returns:
+            bool: is swift for glance enabled
+        """
+        cmd = "grep -iP '^default_store\s*=\s*swift' {}".format(
+            config.GLANCE_API_CONFIG_PATH)
+        nodes = self.get_nodes(service_names=[config.GLANCE_API])
+        result = self.execute_cmd(nodes, cmd, check=False)
+        return all(node_result.status == config.STATUS_OK
+                   for node_result in result)
+
+    @steps_checker.step
     def check_router_namespace_presence(self, router, node, must_present=True,
                                         timeout=0):
         """Step to check router namespace presence on compute node.

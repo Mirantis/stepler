@@ -204,6 +204,13 @@ class Predicates(object):
 
     @property
     @_store_call
+    def glance_swift(self):
+        """Define whether neutron configures with swift."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_glance_swift()
+
+    @property
+    @_store_call
     def cinder_nodes_count(self):
         """Get count of cinder nodes."""
         os_faults_steps = self._get_fixture('os_faults_steps')
