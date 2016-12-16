@@ -22,6 +22,7 @@ from keystoneclient import exceptions
 
 from stepler.base import BaseSteps
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = [
@@ -33,7 +34,7 @@ class RoleSteps(BaseSteps):
     """Role steps."""
 
     @steps_checker.step
-    def create_role(self, role_name, check=True):
+    def create_role(self, role_name=None, check=True):
         """Step to create role.
 
         Args:
@@ -46,6 +47,8 @@ class RoleSteps(BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
+        if role_name is None:
+            role_name = next(utils.generate_ids('role'))
         role = self._client.create(role_name)
 
         if check:
