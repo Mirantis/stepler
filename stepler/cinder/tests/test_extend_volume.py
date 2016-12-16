@@ -63,24 +63,25 @@ def test_positive_extend_volume(volume, volume_steps):
 
 
 @pytest.mark.idempotent_id('0cdc2fd5-eb07-4930-b004-077d16200091')
-def test_negative_extend_volume_more_than_limit(session,
+def test_negative_extend_volume_more_than_limit(volume_size_quota,
                                                 volume,
-                                                cinder_quota_steps,
-                                                project_steps,
                                                 volume_steps):
     """**Scenario:** Verify negative cases of volume extend (size > limit).
 
+    **Setup:**
+
+    #. Set required max volume size quota
+    #. Create cinder volume
+
     **Steps:**
 
-    #. Create cinder volume
     #. Try to extend volume to size which is more than quota
     #. Check that volume extending was not performed
 
     **Teardown:**
 
     #. Delete cinder volume
-
+    #. Set max volume size quota to its initial value
     """
-    current_project = project_steps.get_current_project(session)
-    size = cinder_quota_steps.get_volume_size_quota(current_project) + 1
+    size = volume_size_quota + 1
     volume_steps.check_volume_extend_failed_size_more_than_limit(volume, size)
