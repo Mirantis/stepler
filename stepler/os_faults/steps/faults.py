@@ -26,7 +26,7 @@ import time
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
                       only_contains, has_items, has_length, is_, equal_to,
                       contains_inanyorder, is_in, any_of, all_of,
-                      contains_string)  # noqa H301
+                      contains_string, less_than_or_equal_to)  # noqa H301
 from six import moves
 
 from stepler import base
@@ -1454,3 +1454,20 @@ class OsFaultsSteps(base.BaseSteps):
             assert_that(devices, has_length(2))
             dev_types = {x[:3] for x in devices}
             assert_that(dev_types, equal_to({'tap', 'qvb'}))
+
+    @steps_checker.step
+    def check_glance_fs_usage(self, nodes, quota):
+        """Step check that glance summary FS usage is not more than quota.
+
+        Args:
+            nodes (NodeCollection): nodes to get glance FS usage
+            quota (int): maximum allowed glance FS usage
+
+        Raises:
+            AssertionError: if glance disk usage is greater than quota
+        """
+        cmd = "du -s {} | awk '{{print $1}}'".format(config.GLANCE_IMAGES_PATH)
+        results = self.execute_cmd(nodes, cmd)
+        for node_result in results:
+            assert_that(int(node_result.payload['stdout']),
+                        less_than_or_equal_to(quota))

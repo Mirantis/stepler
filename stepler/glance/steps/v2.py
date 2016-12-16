@@ -64,56 +64,35 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         Returns:
             list: glance images
+
+        Raises:
+            AssertionError: if check failed
         """
-        image_names = image_names or utils.generate_ids()
-
-        images = []
-
-        for image_name in image_names:
-
-            image = self._client.images.create(
-                name=image_name,
-                disk_format=disk_format,
-                container_format=container_format,
-                visibility=visibility,
-                **kwargs)
-
-            if upload:
-                self._client.images.upload(image.id, open(image_path, 'rb'))
-            images.append(image)
-
-        if check:
-            for image in images:
-                if upload:
-                    self.check_image_status(
-                        image,
-                        config.STATUS_ACTIVE,
-                        timeout=config.IMAGE_AVAILABLE_TIMEOUT)
-                else:
-                    self.check_image_status(
-                        image,
-                        config.STATUS_QUEUED,
-                        timeout=config.IMAGE_QUEUED_TIMEOUT)
-
-        return images
+        kwargs['visibility'] = visibility
+        return super(GlanceStepsV2, self).create_images(
+            image_path, image_names, disk_format, container_format, upload,
+            check, **kwargs)
 
     @steps_checker.step
-    def delete_images(self, images, check=True):
-        """Step to delete images.
+    def upload_image(self, image, image_path, check=True):
+        """Step to upload image.
 
         Args:
-            images (object): glance images
-            check (bool): flag whether to check step or not
+            image (obj): glance image
+            image_path (str): path image file
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
         """
-        for image in images:
-            self._client.images.delete(image.id)
+        with open(image_path, 'rb') as f:
+            self._client.images.upload(image.id, f)
 
         if check:
-            for image in images:
-                self.check_image_presence(
-                    image,
-                    must_present=False,
-                    timeout=config.IMAGE_AVAILABLE_TIMEOUT)
+            self.check_image_status(
+                image,
+                config.STATUS_ACTIVE,
+                timeout=config.IMAGE_AVAILABLE_TIMEOUT)
 
     @steps_checker.step
     def bind_project(self, image, project, check=True):
@@ -196,48 +175,6 @@ class GlanceStepsV2(BaseGlanceSteps):
 
         images = self.get_images(check=check, **kwargs)
         return images[0]
-
-    @steps_checker.step
-    def check_image_presence(self, image, must_present=True, timeout=0):
-        """Check step image presence status.
-
-        Args:
-            image (object): glance image to check presence status
-            must_present (bool): flag whether image should present or not
-            timeout (int): seconds to wait a result of check
-
-        Raises:
-            TimeoutExpired: if check failed after timeout
-        """
-        def _check_image_presence():
-            try:
-                self._refresh_image(image)
-                is_present = True
-            except exc.NotFound:
-                is_present = False
-
-            return waiter.expect_that(is_present, equal_to(must_present))
-
-        waiter.wait(_check_image_presence, timeout_seconds=timeout)
-
-    @steps_checker.step
-    def check_image_status(self, image, status, timeout=0):
-        """Check step image status.
-
-        Args:
-            image (object): glance image to check status
-            status (str): image status name to check
-            timeout (int): seconds to wait a result of check
-
-        Raises:
-            TimeoutExpired: if check failed after timeout
-        """
-        def _check_image_status():
-            self._refresh_image(image)
-            return waiter.expect_that(image.status.lower(),
-                                      equal_to(status.lower()))
-
-        waiter.wait(_check_image_status, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_image_bind_status(self,

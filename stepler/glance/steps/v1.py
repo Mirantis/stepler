@@ -17,12 +17,36 @@ Glance steps v1
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base import BaseGlanceSteps
+from stepler import config
+from stepler.glance.steps import base
+from stepler.third_party import steps_checker
+
 
 __all__ = [
     'GlanceStepsV1',
 ]
 
 
-class GlanceStepsV1(BaseGlanceSteps):
+class GlanceStepsV1(base.BaseGlanceSteps):
     """Glance steps for v1."""
+
+    @steps_checker.step
+    def upload_image(self, image, image_path, check=True):
+        """Step to upload image.
+
+        Args:
+            image (obj): glance image
+            image_path (str): path image file
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        with open(image_path, 'rb') as f:
+            self._client.images.update(image.id, data=f)
+
+        if check:
+            self.check_image_status(
+                image,
+                config.STATUS_ACTIVE,
+                timeout=config.IMAGE_AVAILABLE_TIMEOUT)
