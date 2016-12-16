@@ -17,3 +17,7 @@ Glance tests
 
 .. automodule:: stepler.glance.tests.test_restart_services
    :members:
+
+.. automodule:: stepler.glance.tests.test_security
+   :members:
+
