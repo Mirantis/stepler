@@ -43,8 +43,8 @@ def get_user_steps(get_keystone_client):
     Returns:
         function: function to get users steps.
     """
-    def _get_steps():
-        return steps.UserSteps(get_keystone_client().users)
+    def _get_steps(**credentials):
+        return steps.UserSteps(get_keystone_client(**credentials).users)
 
     return _get_steps
 
@@ -122,7 +122,7 @@ def user(create_user):
 
 
 @pytest.yield_fixture
-def new_user_with_project(project_steps, user_steps, role_steps):
+def new_user_with_project(request, project_steps, user_steps, role_steps):
     """Fixture to create new project with new '_member_' user.
 
     Args:
@@ -137,10 +137,16 @@ def new_user_with_project(project_steps, user_steps, role_steps):
     password = next(utils.generate_ids('password'))
     project_name = next(utils.generate_ids('project'))
 
+    if getattr(request, 'param')['with_role']:
+        role = role_steps.create_role()
+        role_to_delete = True
+    else:
+        role = role_steps.get_role(name=config.ROLE_MEMBER)
+        role_to_delete = False
+
     user = user_steps.create_user(user_name=user_name, password=password)
     user_project = project_steps.create_project(project_name)
-    member_role = role_steps.get_role(name=config.ROLE_MEMBER)
-    role_steps.grant_role(member_role, user, project=user_project)
+    role_steps.grant_role(role, user, project=user_project)
 
     yield {'username': user_name,
            'password': password,
@@ -148,3 +154,5 @@ def new_user_with_project(project_steps, user_steps, role_steps):
 
     user_steps.delete_user(user)
     project_steps.delete_project(user_project)
+    if role_to_delete:
+        role_steps.delete_role(role)
