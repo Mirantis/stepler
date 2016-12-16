@@ -454,7 +454,8 @@ class VolumeSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         error_message = (
-            "Requested volume or snapshot exceeds allowed gigabytes quota.")
+            "VolumeSizeExceedsLimit: Requested volume size {} is larger "
+            "than maximum allowed limit").format(size)
         assert_that(
             calling(self.create_volumes).with_args(
                 names=[None], size=size, check=False),
