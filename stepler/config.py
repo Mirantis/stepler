@@ -200,6 +200,9 @@ BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
 IMAGE_VISIBILITY_PUBLIC = 'public'
 GLANCE_API_CONFIG_PATH = os.environ.get('GLANCE_API_CONFIG_PATH',
                                         '/etc/glance/glance-api.conf')
+GLANCE_SWIFT_CONFIG_PATH = os.environ.get('GLANCE_SWIFT_CONFIG_PATH',
+                                          '/etc/glance/glance-swift.conf')
+GLANCE_USER = 'glance'
 
 
 # Nova

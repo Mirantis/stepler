@@ -20,10 +20,12 @@ Glance fixtures
 import pytest
 
 from stepler import config
+from stepler.third_party import utils
 
 __all__ = [
     'set_glance_storage_to_file_with_quota',
     'enable_multi_locations',
+    'change_glance_credentials',
 ]
 
 
@@ -84,4 +86,51 @@ def enable_multi_locations(patch_ini_file_and_restart_services,
 
         yield
 
+    glance_steps.check_glance_service_available()
+
+
+@pytest.fixture
+def change_glance_credentials(os_faults_steps, glance_steps, user_steps):
+    """Function fixture to change glance credentials in config and keystone.
+
+    Original credentials will be restored after test.
+
+    Args:
+        os_faults_steps (obj): instantiated os-faults steps
+        glance_steps (obj): instantiated glance steps
+        user_steps (obj): instantiated user-steps
+    """
+
+    glance_user = user_steps.get_user(config.GLANCE_USER)
+    old_password = os_faults_steps.get_glance_password()
+
+    glance_nodes = os_faults_steps.get_nodes(service_names=[config.GLANCE_API])
+
+    new_password, = utils.generate_ids()
+    user_steps.update_user(glance_user, password=new_password)
+    api_backup_path = os_faults_steps.patch_ini_file(
+        glance_nodes,
+        config.GLANCE_API_CONFIG_PATH,
+        section='keystone_authtoken',
+        option='password',
+        value=new_password)
+    swift_backup_path = os_faults_steps.patch_ini_file(
+        glance_nodes,
+        config.GLANCE_SWIFT_CONFIG_PATH,
+        section='ref1',
+        option='key',
+        value=new_password)
+
+    os_faults_steps.restart_services([config.GLANCE_API])
+    glance_steps.check_glance_service_available()
+
+    yield
+
+    os_faults_steps.restore_backup(
+        glance_nodes, config.GLANCE_SWIFT_CONFIG_PATH, swift_backup_path)
+    os_faults_steps.restore_backup(glance_nodes, config.GLANCE_API_CONFIG_PATH,
+                                   api_backup_path)
+
+    user_steps.update_user(glance_user, password=old_password)
+    os_faults_steps.restart_services([config.GLANCE_API])
     glance_steps.check_glance_service_available()
