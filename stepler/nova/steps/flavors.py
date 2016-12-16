@@ -194,3 +194,17 @@ class FlavorSteps(BaseSteps):
 
         if check:
             assert_that(flavor.get_keys(), has_entries(metadata))
+
+    @steps_checker.step
+    def check_flavor_params(self, flavor, **kwargs):
+        """Step to update flavor.
+
+        Args:
+            flavor (object): nova flavor
+            **kwargs: arguments to pass to API
+
+        Raises:
+            AssertionError: if check failed
+        """
+        flavor.get()
+        assert_that(flavor.to_dict(), has_entries(kwargs))

@@ -518,3 +518,20 @@ def test_disk_io_qos_settings_for_rbd_backend(cirros_image,
                                                      limit)
 
     os_faults_steps.check_io_limits_in_ps(node, limit)
+
+
+@pytest.mark.idempotent_id('acea91d1-6752-456d-99c2-fae6d873149c')
+def test_create_update_delete_flavor(flavor_steps):
+    """**Scenario:** Check flavor creation and deletion.
+
+    **Steps:**
+
+    #. Create flavor
+    #. Check flavor params: ram, vcpus, disk
+    #. Delete flavor
+    """
+    name = next(utils.generate_ids())
+    params = {'ram': 1024, 'vcpus': 1, 'disk': 5}
+    flavor = flavor_steps.create_flavor(name, **params)
+    flavor_steps.check_flavor_params(flavor, **params)
+    flavor_steps.delete_flavor(flavor)
