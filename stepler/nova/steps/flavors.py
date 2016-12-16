@@ -74,6 +74,9 @@ class FlavorSteps(BaseSteps):
                                      is_public=is_public)
         if check:
             self.check_flavor_presence(flavor)
+            assert_that(flavor.to_dict(), has_entries({'ram': ram,
+                                                       'vcpus': vcpus,
+                                                       'disk': disk}))
 
         return flavor
 
