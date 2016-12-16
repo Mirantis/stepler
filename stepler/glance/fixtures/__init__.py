@@ -45,4 +45,5 @@ __all__ = sorted([  # sort for documentation
 
     'set_glance_storage_to_file_with_quota',
     'enable_multi_locations',
+    'change_glance_credentials',
 ])

@@ -193,6 +193,8 @@ class UserSteps(BaseSteps):
             # user.get()  https://bugs.launchpad.net/keystone/+bug/1637530
             # workaround
             user._add_details(updated_user._info)
+            # Password is not returned
+            kwargs.pop('password', None)
             assert_that(user.to_dict(), has_entries(kwargs))
 
     @steps_checker.step

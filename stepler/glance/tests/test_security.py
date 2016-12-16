@@ -74,3 +74,28 @@ def test_user_storage_quota_bypass(get_glance_steps,
         utils.join_process(p)
     os_faults_steps.check_glance_fs_usage(
         glance_nodes, quota=config.GLANCE_USER_STORAGE_QUOTA)
+
+
+@pytest.mark.idempotent_id('46e8a669-1204-4427-a2e3-bbe21a87333d')
+@pytest.mark.requires('glance_swift')
+def test_change_glance_credentials(request, cirros_image, glance_steps):
+    """**Scenario:** Check image available after changing glance credentials.
+
+    **Setup:**
+
+    #. Create cirros image
+
+    **Steps:**
+
+    #. Change glance credentials on keystone and glance_api.conf
+    #. Download cirros image
+    #. Delete cirros image
+
+    **Teardown:**
+
+    #. Restore glance credentials
+    #. Delete cirros image
+    """
+    request.getfixturevalue('change_glance_credentials')
+    glance_steps.check_image_content(
+        cirros_image, utils.get_file_path(config.CIRROS_QCOW2_URL))

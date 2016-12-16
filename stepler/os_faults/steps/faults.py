@@ -1571,3 +1571,15 @@ class OsFaultsSteps(base.BaseSteps):
             return waiter.expect_that(sorted(tap_ids), sorted(set(tap_ids)))
 
         waiter.wait(_check_tap_interfaces_are_unique, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def get_glance_password(self):
+        """Step to retrieve glance password.
+
+        Returns:
+            str: glance password
+        """
+        cmd = ("awk '/^password=/{split($1,val,\"=\"); print val[2]}' " +
+               config.GLANCE_API_CONFIG_PATH)
+        glance_nodes = self._client.get_service(config.GLANCE_API).get_nodes()
+        return self.execute_cmd(glance_nodes.pick(), cmd)[0].payload['stdout']

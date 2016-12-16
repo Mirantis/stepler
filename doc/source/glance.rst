@@ -20,3 +20,7 @@ Glance tests
 
 .. automodule:: stepler.glance.tests.test_security
    :members:
+
+.. automodule:: stepler.glance.tests.test_security
+   :members:
+
