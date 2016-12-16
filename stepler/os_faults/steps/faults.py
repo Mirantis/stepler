@@ -27,7 +27,7 @@ import warnings
 from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
                       only_contains, has_items, has_length, is_, equal_to,
                       contains_inanyorder, is_in, any_of, all_of,
-                      contains_string, less_than_or_equal_to)  # noqa H301
+                      contains_string, greater_than, less_than_or_equal_to)  # noqa H301
 from six import moves
 
 from stepler import base
@@ -1507,3 +1507,54 @@ class OsFaultsSteps(base.BaseSteps):
         for node_result in results:
             assert_that(int(node_result.payload['stdout']),
                         less_than_or_equal_to(quota))
+
+    @steps_checker.step
+    def delete_ports_bindings_for_dhcp_agents(self, node, check=True):
+        """Step to delete ports bindings for all DHCP agents.
+
+        Args:
+            node (NodeCollection): controller to execute command for deleting
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True
+        """
+        cmd = ('mysql --database="neutron" -e '
+               '"delete from networkdhcpagentbindings;"')
+
+        self.execute_cmd(node, cmd, check=check)
+
+    @steps_checker.step
+    def check_tap_interfaces_are_unique(self, nodes, network, timeout=0):
+        """Step to check that tap interfaces ids for net are unique on nodes.
+
+        Args:
+            nodes (NodeCollection): nodes to check tap interfaces ids
+            network (dict): network dict
+            timeout (int, optional): seconds to wait for a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+
+        def _parse_tap_id(output):
+            tap_id = re.findall(r'(?:\d+): (tap[^:]+)', output)
+            assert_that(tap_id, has_length(1))
+            return tap_id[0]
+
+        def _check_tap_interfaces_are_unique():
+            cmd = "ip netns exec qdhcp-{} ip a | grep tap".format(
+                network['id'])
+            results = self.execute_cmd(nodes, cmd, check=False)
+            nodes_stdout = [result.payload['stdout'] for result in results
+                            if result.status == config.STATUS_OK]
+            # tap interfaces for net should exist on more than 1 controller
+            # according to developers
+            waiter.expect_that(nodes_stdout, has_length(greater_than(1)))
+
+            tap_ids = [_parse_tap_id(stdout) for stdout in nodes_stdout]
+
+            return waiter.expect_that(sorted(tap_ids), sorted(set(tap_ids)))
+
+        waiter.wait(_check_tap_interfaces_are_unique, timeout_seconds=timeout)

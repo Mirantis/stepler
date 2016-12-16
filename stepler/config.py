@@ -384,6 +384,8 @@ SERVICE_START_TIMEOUT = 60
 AGENT_RESCHEDULING_TIMEOUT = 3 * 60
 FLOATING_IP_DETACH_TIMEOUT = 30
 
+TAP_INTERFACE_UP_TIMEOUT = 3 * 60
+
 AGENT_LOGS = {
     # logs on controllers and computes
     NEUTRON_L3_SERVICE: ['/var/log/neutron/l3-agent.log',  # controller
@@ -423,6 +425,7 @@ LOCAL_IPS = ['192.168.3.{}'.format(i) for i in range(1, 254)]
 PORT_DEVICE_OWNER_ROUTER_GATEWAY = 'network:router_gateway'
 PORT_DEVICE_OWNER_SERVER = 'compute:nova'
 PORT_DEVICE_OWNER_DHCP = 'network:dhcp'
+PORT_DEVICE_ID_RESERVED_DHCP = 'reserved_dhcp_port'
 
 PORT_BINDING_HOST_ID = 'binding:host_id'
 
