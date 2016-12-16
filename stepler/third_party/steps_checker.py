@@ -62,6 +62,7 @@ PERMITTED_CALLS = [
     'sorted',
     'str',
     'time',
+    'dict',
 ]
 
 # register utils
