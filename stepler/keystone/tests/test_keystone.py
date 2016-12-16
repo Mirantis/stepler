@@ -210,3 +210,44 @@ def test_modify_project_members_update_quotas(admin_role,
     project_steps.get_projects()
     role_steps.revoke_role(role=admin_role, project=project, group=group)
     project_steps.get_projects()
+
+
+@pytest.mark.idempotent_id('06bf8aba-9fa2-45e6-ac71-622fe0440541')
+def test_user_list(user_steps):
+    """**Scenario:** Request list of users.
+
+    **Steps:**
+
+    #. Get list of users
+    """
+    user_steps.get_users()
+
+
+@pytest.mark.idempotent_id('9a306d49-a3ad-4632-bf5d-ef11b0a07995')
+@pytest.mark.parametrize('new_user_with_project',
+                         [{'with_role': True}], indirect=True)
+def test_create_user_and_authenticate(new_user_with_project,
+                                      get_server_steps):
+    """**Scenario:** Create new user
+
+    **Setup:**
+
+    #. Create new user
+    #. Create new project
+    #. Create new user role
+    #. Grant role to user for project
+
+    **Steps:**
+
+    #. Perform user authentication
+    #. Get list of servers
+
+    **Teardown:**
+
+    #. Delete user role
+    #. Delete project
+    #. Delete user
+    """
+
+    server_steps = get_server_steps(**new_user_with_project)
+    server_steps.get_servers(check=False)
