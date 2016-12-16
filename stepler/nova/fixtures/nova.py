@@ -17,6 +17,7 @@ Nova fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from novaclient.api_versions import APIVersion
 from novaclient.client import Client
 import pytest
 
@@ -47,7 +48,13 @@ def get_nova_client(get_session):
         function: function to get nova client
     """
     def _get_nova_client(**credentials):
-        return Client(version=2, session=get_session(**credentials))
+        client = Client(version=config.CURRENT_NOVA_VERSION,
+                        session=get_session(**credentials))
+
+        current_microversion = client.versions.get_current().version
+        client.api_version = APIVersion(current_microversion)
+
+        return client
 
     return _get_nova_client
 
