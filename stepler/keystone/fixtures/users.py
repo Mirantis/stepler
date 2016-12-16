@@ -43,8 +43,8 @@ def get_user_steps(get_keystone_client):
     Returns:
         function: function to get users steps.
     """
-    def _get_steps():
-        return steps.UserSteps(get_keystone_client().users)
+    def _get_steps(**kwargs):
+        return steps.UserSteps(get_keystone_client(**kwargs).users)
 
     return _get_steps
 
