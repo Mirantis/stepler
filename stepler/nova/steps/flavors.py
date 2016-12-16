@@ -74,6 +74,17 @@ class FlavorSteps(BaseSteps):
                                      is_public=is_public)
         if check:
             self.check_flavor_presence(flavor)
+            assert_that(flavor.name, equal_to(flavor_name))
+            assert_that(flavor.ram, equal_to(ram))
+            assert_that(flavor.vcpus, equal_to(vcpus))
+            assert_that(flavor.disk, equal_to(disk))
+            assert_that(flavor.ephemeral, equal_to(ephemeral))
+            assert_that(flavor.rxtx_factor, equal_to(rxtx_factor))
+            assert_that(flavor.is_public, equal_to(is_public))
+            if flavorid is not 'auto':
+                assert_that(flavor.id, equal_to(flavorid))
+            if swap:
+                assert_that(flavor.swap, equal_to(swap))
 
         return flavor
 
