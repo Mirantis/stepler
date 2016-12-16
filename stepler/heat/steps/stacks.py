@@ -112,12 +112,16 @@ class StackSteps(base.BaseSteps):
             TimeoutExpired: if check was failed after timeout
         """
 
-        value = self._get_property(
-            stack,
-            'stack_status',
-            transit_values=transit_statuses,
-            timeout=timeout)
-        assert_that(value.lower(), equal_to(status.lower()))
+        def _check_stack_status():
+            stack.get()
+            value = self._get_property(
+                stack,
+                'stack_status',
+                transit_values=transit_statuses,
+                timeout=timeout)
+            return waiter.expect_that(value.lower(), equal_to(status.lower()))
+
+        waiter.wait(_check_stack_status, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_stacks(self, check=True):
@@ -167,18 +171,15 @@ class StackSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         if hasattr(stack, 'id'):
-            get_stack = lambda: stack.get()
-        else:
-            get_stack = lambda: self._client.stacks.get(stack)
+            stack = stack.id
 
         def _check_presence():
-            try:
-                get_stack()
-                is_present = True
-            except exc.NotFound:
-                is_present = False
+            stacks = list(self._client.stacks.list(id=stack))
+            matcher = empty()
+            if must_present:
+                matcher = is_not(matcher)
 
-            return waiter.expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(stacks, matcher)
 
         waiter.wait(_check_presence, timeout_seconds=timeout)
 
