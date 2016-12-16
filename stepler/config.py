@@ -90,6 +90,7 @@ UBUNTU_USERNAME = 'ubuntu'
 CIRROS_ENV_PATH = 'PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'  # noqa
 
 # CURRENT API VERSIONS
+CURRENT_NOVA_VERSION = '2'
 CURRENT_GLANCE_VERSION = '2'
 CURRENT_CINDER_VERSION = '2'
 CURRENT_IRONIC_VERSION = '1'
