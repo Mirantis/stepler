@@ -766,6 +766,54 @@ def test_manually_rescheduling_dhcp_agent(network,
 
 
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('1ea3a2e0-f46f-4d10-b37f-27631bb8a1e2')
+@pytest.mark.parametrize(
+    'change_neutron_quota', [dict(
+        network=50, router=50, subnet=50, port=150)],
+    indirect=True)
+@pytest.mark.usefixtures('change_neutron_quota')
+def test_check_nets_count_for_agents_nearly_equals(
+        router,
+        create_max_networks_with_instances,
+        network_steps,
+        agent_steps):
+    """**Scenario:** Check that nets count for DHCP agents nearly equals.
+
+    **Setup:**
+
+    #. Increase neutron quotas
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+
+    **Steps:**
+
+    #. Create max possible count of networks, connect all networks
+        to router with external network
+    #. Create and delete server for each network
+    #. Check that quantity of nets on DHCP agents is nearly the same
+
+    **Teardown:**
+
+    #. Delete all created networks, subnets and router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    create_max_networks_with_instances(router)
+
+    # max difference between max and min values for nets count
+    # for agents 50% is OK according to the author of scenario
+    max_difference_in_percent = 50
+    all_dhcp_agents = agent_steps.get_agents(
+        binary=config.NEUTRON_DHCP_SERVICE)
+
+    network_steps.check_nets_count_difference_for_agents(
+        all_dhcp_agents,
+        max_difference_in_percent)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('3952df20-88df-4755-b6c6-3baad7686ec2')
 @pytest.mark.parametrize(
     'change_neutron_quota', [dict(
