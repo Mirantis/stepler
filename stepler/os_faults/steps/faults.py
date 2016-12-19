@@ -672,13 +672,13 @@ class OsFaultsSteps(base.BaseSteps):
         else:
             cmd = "cat {}".format(file_name)
         if expected_count == 0 or expected_count is None:
-            cmd += " | grep -q '{}'; echo $?".format(keyword)
+            cmd += " | grep -q {}; echo $?".format(moves.shlex_quote(keyword))
             if must_present:
                 expected_value = 0
             else:
                 expected_value = 1
         else:
-            cmd += " | grep '{}' | wc -l".format(keyword)
+            cmd += " | grep {} | wc -l".format(moves.shlex_quote(keyword))
             expected_value = expected_count
         result = self.execute_cmd(node, cmd)
         value = int(result[0].payload['stdout'])
