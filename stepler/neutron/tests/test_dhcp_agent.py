@@ -768,8 +768,8 @@ def test_manually_rescheduling_dhcp_agent(network,
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('1ea3a2e0-f46f-4d10-b37f-27631bb8a1e2')
 @pytest.mark.parametrize(
-    'change_neutron_quota', [dict(
-        network=50, router=50, subnet=50, port=150)],
+    'change_neutron_quota',
+    [dict(network=50, router=50, subnet=50, port=150)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_nets_count_for_agents_nearly_equals(
@@ -816,8 +816,8 @@ def test_check_nets_count_for_agents_nearly_equals(
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('3952df20-88df-4755-b6c6-3baad7686ec2')
 @pytest.mark.parametrize(
-    'change_neutron_quota', [dict(
-        network=50, router=50, subnet=50, port=150)],
+    'change_neutron_quota',
+    [dict(network=50, router=50, subnet=50, port=150)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_port_binding_after_node_restart(
@@ -827,6 +827,9 @@ def test_check_port_binding_after_node_restart(
         agent_steps,
         os_faults_steps):
     """**Scenario:** Check port binding after node restart.
+
+    **Note:**
+        This test verifies bug #1501070
 
     **Setup:**
 
@@ -888,8 +891,8 @@ def test_check_port_binding_after_node_restart(
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('5bc6c902-961a-4bd4-9fd4-0471dddd6f1c')
 @pytest.mark.parametrize(
-    'change_neutron_quota', [dict(
-        network=50, router=50, subnet=50, port=150)],
+    'change_neutron_quota',
+    [dict(network=50, router=50, subnet=50, port=150)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_dhcp_agents_for_net_after_restart(
@@ -898,6 +901,9 @@ def test_check_dhcp_agents_for_net_after_restart(
         agent_steps,
         os_faults_steps):
     """**Scenario:** Check dhcp-agents assinged to network after restart.
+
+    **Note:**
+        This test verifies bug #1506198
 
     **Setup:**
 
@@ -955,8 +961,8 @@ def test_check_dhcp_agents_for_net_after_restart(
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('6890121c-73b6-42e5-b358-ed7037b36184')
 @pytest.mark.parametrize(
-    'change_neutron_quota', [dict(
-        network=50, router=50, subnet=50, port=150)],
+    'change_neutron_quota',
+    [dict(network=50, router=50, subnet=50, port=150)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_tap_interfaces_for_net_after_restart(
@@ -966,6 +972,9 @@ def test_check_tap_interfaces_for_net_after_restart(
         agent_steps,
         os_faults_steps):
     """**Scenario:** Check all taps ids are unique after DHCP agents restart.
+
+    **Note:**
+        This test verifies bug #1499914
 
     **Setup:**
 
@@ -1024,3 +1033,104 @@ def test_check_tap_interfaces_for_net_after_restart(
     for network in networks:
         os_faults_steps.check_tap_interfaces_are_unique(
             nodes_with_dhcp, network, timeout=config.TAP_INTERFACE_UP_TIMEOUT)
+
+
+@pytest.mark.requires("dhcp_agent_nodes_count >= 3",
+                      "l3_agent_nodes_count >= 3")
+@pytest.mark.idempotent_id('ce6dcbbe-583e-495e-b41a-084ccc8dff94')
+@pytest.mark.parametrize(
+    'change_neutron_quota',
+    [dict(network=50, router=50, subnet=50, port=150)],
+    indirect=True)
+@pytest.mark.usefixtures('change_neutron_quota')
+def test_ban_two_dhcp_and_two_l3_agents(router,
+                                        create_max_networks_with_instances,
+                                        agent_steps,
+                                        os_faults_steps):
+    """**Scenario:** Ban two DHCP and L3 agents and check logs.
+
+    **Note:**
+        This test verifies bug #1493754 and #1651442
+
+    **Setup:**
+
+    #. Increase neutron quotas
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+
+    **Steps:**
+
+    #. Get all controllers
+    #. Get the last line number for neutron server log for all controllers
+    #. Create max possible count of networks, connect all networks
+        to router with external network
+    #. Create and delete server for each network
+    #. Get nodes with DHCP agents for network
+    #. Ban DHCP agents for nodes with pcs
+    #. Wait for DHCP agents becoming dead
+    #. Check that banned dhcp-agents don't in dhcp-agents list
+        for network
+    #. Get node with l3 agent for router
+    #. Ban l3 agent for the node with pcs
+    #. Wait for l3 agent becoming dead
+    #. Repeat last 3 steps once
+    #. Check that router rescheduled from l3 agents
+    #. Check there are no new ERROR logs in neutron-server log files
+
+    **Teardown:**
+
+    #. Delete all created networks, subnets and router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    dhcp_agents = agent_steps.get_agents(binary=config.NEUTRON_DHCP_SERVICE)
+    controllers = os_faults_steps.get_nodes_for_agents(dhcp_agents)
+
+    log_file = config.AGENT_LOGS[config.NEUTRON_SERVER_SERVICE][0]
+    lines_for_hosts = {}
+    for host in controllers:
+        node = os_faults_steps.get_node(fqdns=[host.fqdn])
+        lines_count = os_faults_steps.get_file_line_count(node, log_file)
+        lines_for_hosts[host.fqdn] = lines_count
+
+    network = create_max_networks_with_instances(router)[0]
+
+    net_dhcp_agents = agent_steps.get_dhcp_agents_for_net(network)
+    nodes_with_dhcp = os_faults_steps.get_nodes_for_agents(net_dhcp_agents)
+    os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
+                                      nodes=nodes_with_dhcp)
+    agent_steps.check_alive(net_dhcp_agents,
+                            must_alive=False,
+                            timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
+    for dhcp_agent in net_dhcp_agents:
+        agent_steps.check_network_rescheduled(
+            network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    l3_agents = []
+    for _ in range(2):
+        l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
+        node_with_l3 = os_faults_steps.get_nodes_for_agents([l3_agent])
+
+        os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE,
+                                          nodes=node_with_l3)
+        agent_steps.check_alive([l3_agent],
+                                must_alive=False,
+                                timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
+        l3_agents.append(l3_agent)
+    for l3_agent in l3_agents:
+        agent_steps.check_router_rescheduled(
+            router,
+            l3_agent,
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+
+    for host in controllers:
+        node = os_faults_steps.get_node(fqdns=[host.fqdn])
+        os_faults_steps.check_string_in_file(
+            node,
+            file_name=log_file,
+            keyword=config.STR_ERROR,
+            non_matching=config.STR_NEUTRON_API_V2_ERROR,
+            start_line_number=lines_for_hosts[host.fqdn],
+            must_present=False)
