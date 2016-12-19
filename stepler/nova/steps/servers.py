@@ -1087,8 +1087,8 @@ class ServerSteps(base.BaseSteps):
                 'echo "{timestamp}" | '
                 'tee "{root_ts_file}" "{ephemeral_ts_file}"'.format(
                     timestamp=timestamp,
-                    root_ts_file=config.ROOT_DISK_TIMESTAMP_FILE,
-                    ephemeral_ts_file=config.EPHEMERAL_DISK_TIMESTAMP_FILE))
+                    root_ts_file=config.DISK_TIMESTAMP_FILE,
+                    ephemeral_ts_file=config.DISK_TIMESTAMP_FILE_FULL_PATH))
         if check:
             self.check_timestamps_on_root_and_ephemeral_disks(server_ssh,
                                                               timestamp)
@@ -1107,11 +1107,11 @@ class ServerSteps(base.BaseSteps):
         """
         with server_ssh.sudo():
             root_result = server_ssh.check_call('cat "{root_ts_file}"'.format(
-                root_ts_file=config.ROOT_DISK_TIMESTAMP_FILE))
+                root_ts_file=config.DISK_TIMESTAMP_FILE))
 
             ephemeral_result = server_ssh.check_call(
                 'cat "{ephemeral_ts_file}"'.format(
-                    ephemeral_ts_file=config.EPHEMERAL_DISK_TIMESTAMP_FILE))
+                    ephemeral_ts_file=config.DISK_TIMESTAMP_FILE_FULL_PATH))
 
         assert_that(root_result.stdout, equal_to(ephemeral_result.stdout))
         assert_that(timestamp, equal_to(root_result.stdout))
