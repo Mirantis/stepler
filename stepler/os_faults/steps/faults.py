@@ -471,12 +471,14 @@ class OsFaultsSteps(base.BaseSteps):
         return backup_path
 
     @steps_checker.step
-    def execute_cmd(self, nodes, cmd, check=True):
+    def execute_cmd(self, nodes, cmd,
+                    timeout=config.ANSIBLE_EXECUTION_MAX_TIMEOUT, check=True):
         """Execute provided bash command on nodes.
 
         Args:
             nodes (NodeCollection): nodes to execute command on them
             cmd (str): bash command to execute
+            timeout (int): seconds to wait command executed
             check (bool): flag whether check step or not
 
         Raises:
@@ -486,7 +488,11 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             list: AnsibleExecutionRecord(s)
         """
-        task = {'shell': cmd}
+        cmd = (u"timeout {timeout} "
+               u"bash -c {cmd}").format(timeout=timeout,
+                                        cmd=moves.shlex_quote(cmd))
+
+        task = {'shell': cmd.encode('utf-8')}
         result = nodes.run_task(task, raise_on_error=check)
 
         if check:
