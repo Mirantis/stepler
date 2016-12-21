@@ -136,7 +136,8 @@ def cleanup_volumes(uncleanable):
 
         for volume in _volume_steps.get_volumes(all_projects=True,
                                                 check=False):
-            if volume.id not in uncleanable_ids:
+            if (volume.id not in uncleanable_ids and
+                    volume.status != config.STATUS_DELETING):
                 deleting_volumes.append(volume)
 
         if len(deleting_volumes) > limit:
