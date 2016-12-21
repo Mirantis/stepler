@@ -357,7 +357,6 @@ IMAGE_DOWNLOAD_TIMEOUT = 60
 # For DevStack cmd should looks like `source devstack/openrc admin admin`
 OPENRC_ACTIVATE_CMD = os.environ.get('OPENRC_ACTIVATE_CMD', 'source /root/openrc')  # noqa E501
 
-
 CLEANUP_UNEXPECTED_BEFORE_TEST = bool(
     os.environ.get('CLEANUP_UNEXPECTED_BEFORE_TEST', False))
 
@@ -453,10 +452,6 @@ LONG_EVENT_TIMEOUT = 60 * 60 * 3  # 3 hours (timeout for 'Saving')
 
 OS_DASHBOARD_URL = os.environ.get('OS_DASHBOARD_URL')  # should be defined!
 VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')
-
-DEFAULT_ADMIN_NAME = 'admin'
-DEFAULT_ADMIN_PASSWD = 'admin'
-DEFAULT_ADMIN_PROJECT = 'admin'
 
 ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT = list(generate_ids('admin', count=3))
 USER_NAME, USER_PASSWD, USER_PROJECT = list(generate_ids('user', count=3))

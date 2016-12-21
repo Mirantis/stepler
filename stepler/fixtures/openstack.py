@@ -24,19 +24,24 @@ import pytest
 from requests.packages import urllib3
 
 from stepler import config
+from stepler.third_party import context
 
 __all__ = [
     'get_session',
     'session',
+    'os_credentials',
     'uncleanable',
 ]
 
 
 @pytest.fixture(scope='session')
-def get_session():
+def get_session(os_credentials):
     """Callable session fixture to get keystone session.
 
     Can be called several times during a test to regenerate keystone session.
+
+    Args:
+        os_credentials (AttrDict): data structure with credentials to be used
 
     Returns:
         function: function to get session.
@@ -83,12 +88,14 @@ def get_session():
                      user_domain_name=None,
                      project_domain_name=None,
                      cert=None):
-        auth_url = auth_url or config.AUTH_URL
-        username = username or config.USERNAME
-        password = password or config.PASSWORD
-        project_name = project_name or config.PROJECT_NAME
-        user_domain_name = user_domain_name or config.USER_DOMAIN_NAME
-        project_domain_name = project_domain_name or config.PROJECT_DOMAIN_NAME
+        auth_url = auth_url or os_credentials.auth_url
+        username = username or os_credentials.username
+        password = password or os_credentials.password
+        project_name = project_name or os_credentials.project_name
+        user_domain_name = (user_domain_name or
+                            os_credentials.user_domain_name)
+        project_domain_name = (project_domain_name or
+                               os_credentials.project_domain_name)
 
         if config.KEYSTONE_API_VERSION == 3:
 
@@ -129,12 +136,57 @@ def session(get_session):
         get_session (function): Function to get keystone session.
 
     Returns:
-      Session: Keystone session.
+        Session: Keystone session.
 
     See also:
         :func:`get_session`
     """
     return get_session()
+
+
+@pytest.fixture(scope='session')
+def os_credentials():
+    """Session fixture to get data structure with current credentials to use.
+
+    These fixture initialises default credentials variables which are
+    used in get_session fixture. If new created project should be used
+    in tests, credentials should be changed using 'change' context manager.
+    After that new sessions should be created for all steps.
+    For example if project_steps should be used with new credentials,
+    get_project_steps should be used for its recreation.
+
+    Returns:
+        AttrDict: contains vars which will be used in get_session
+    """
+    credentials = attrdict.AttrDict()
+    credentials.auth_url = config.AUTH_URL
+    credentials.project_name = config.PROJECT_NAME
+    credentials.username = config.USERNAME
+    credentials.password = config.PASSWORD
+    credentials.user_domain_name = config.USER_DOMAIN_NAME
+    credentials.project_domain_name = config.PROJECT_DOMAIN_NAME
+
+    @context.context
+    def _change_credentials(project_name, username, password):
+        old_credentials = None
+
+        if (credentials.project_name != project_name or
+                credentials.username != username):
+            old_credentials = attrdict.AttrDict(credentials.copy())
+            credentials.project_name = project_name
+            credentials.username = username
+            credentials.password = password
+
+        yield
+
+        if old_credentials is not None:
+            credentials.project_name = old_credentials.project_name
+            credentials.username = old_credentials.username
+            credentials.password = old_credentials.password
+
+    credentials.change = _change_credentials
+
+    return credentials
 
 
 @pytest.fixture(scope='session')

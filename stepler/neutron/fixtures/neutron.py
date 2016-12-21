@@ -42,8 +42,8 @@ def get_neutron_client(get_session):
     Returns:
         function: function to get instantiated neutron client wrapper
     """
-    def _get_client():
-        rest_client = Client(session=get_session())
+    def _get_client(**credentials):
+        rest_client = Client(session=get_session(**credentials))
         return client.NeutronClient(rest_client)
 
     return _get_client

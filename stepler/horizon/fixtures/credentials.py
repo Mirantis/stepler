@@ -31,7 +31,7 @@ __all__ = [
 
 
 @pytest.fixture(params=('admin', 'user'), scope="session")
-def any_one(request):
+def any_one(request, test_env):
     """Define user to log in account."""
     if request.param == 'admin':
         os.environ['OS_LOGIN'] = config.ADMIN_NAME
@@ -44,7 +44,7 @@ def any_one(request):
 
 
 @pytest.fixture
-def admin_only():
+def admin_only(test_env):
     """Set admin credentials for test."""
     os.environ['OS_LOGIN'] = config.ADMIN_NAME
     os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
@@ -52,7 +52,7 @@ def admin_only():
 
 
 @pytest.fixture
-def user_only():
+def user_only(test_env):
     """Set user credentials for test."""
     os.environ['OS_LOGIN'] = config.USER_NAME
     os.environ['OS_PASSWD'] = config.USER_PASSWD

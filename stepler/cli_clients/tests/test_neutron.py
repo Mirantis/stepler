@@ -86,10 +86,10 @@ def test_create_distributed_router_with_member_user(
     #. Delete project
     """
     router_name = next(utils.generate_ids())
-    cli_neutron_steps.create_router(
+    router, _, _, _ = cli_neutron_steps.create_router(
         name=router_name,
         project=new_user_with_project['project_name'],
         username=new_user_with_project['username'],
         password=new_user_with_project['password'])
 
-    router_steps.check_router_attrs(router_name, distributed=True)
+    router_steps.check_router_attrs(router, distributed=True)

@@ -274,17 +274,17 @@ class RouterSteps(base.BaseSteps):
         return routers
 
     @steps_checker.step
-    def check_router_attrs(self, name, **kwargs):
+    def check_router_attrs(self, router, **kwargs):
         """Step to check whether router has expected attributes or not.
 
         Args:
-            name (str): name of the router
+            router (dict): router dict
             **kwargs: attributes to check
 
         Raises:
             AssertionError: if check failed
         """
-        router_attr = self.get_router(name=name)
+        router_attr = self.get_router(id=router['id'])
         assert_that(router_attr, has_entries(kwargs))
 
     @steps_checker.step
@@ -316,7 +316,7 @@ class RouterSteps(base.BaseSteps):
         self._client.update(router['id'], **kwargs)
 
         if check:
-            self.check_router_attrs(router['name'], **kwargs)
+            self.check_router_attrs(router, **kwargs)
 
     @steps_checker.step
     def check_router_type_not_changed_to_centralized(self, router):
