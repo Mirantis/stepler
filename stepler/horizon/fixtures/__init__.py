@@ -55,6 +55,7 @@ __all__ = sorted([  # sort for documentation
     'report_dir',
     'video_capture',
     'virtual_display',
+    'user_project_resources',
     'test_env',
 
     'create_container',

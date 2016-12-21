@@ -482,6 +482,45 @@ class OsFaultsSteps(base.BaseSteps):
         return backup_path
 
     @steps_checker.step
+    def create_project_openrc(self, nodes, vars_to_use, check=True):
+        """Step to create additional openrc for project.
+
+        Args:
+            nodes (NodeCollection): nodes to create openrc on them
+            vars_to_use (dict): env vars and their values to be added
+                to new openrc as "export var=value"
+            check (bool): flag whether check step or not
+
+        Returns:
+            str: path to created additional openrc for project
+
+        Raises:
+            AssertionError|AnsibleExecutionException: if command execution
+                failed in case of check=True
+        """
+        dest = tempfile.mktemp()
+
+        lines = []
+        for key, value in vars_to_use.items():
+            lines.append("export {0}={1}".format(key, value))
+
+        task = {
+            'blockinfile': {
+                'create': True,
+                'dest': dest,
+                'block': "\n".join(lines),
+            }
+        }
+        nodes.run_task(task, raise_on_error=check)
+
+        if check:
+            self.check_file_exists(nodes, dest)
+            for line in lines:
+                self.check_file_contains_line(nodes, dest, line)
+
+        return dest
+
+    @steps_checker.step
     def execute_cmd(self, nodes, cmd,
                     timeout=config.ANSIBLE_EXECUTION_MAX_TIMEOUT, check=True):
         """Execute provided bash command on nodes.

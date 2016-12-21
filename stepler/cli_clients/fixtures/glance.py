@@ -28,13 +28,13 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_glance_steps(remote_executor):
+def cli_glance_steps(remote_executor, os_credentials):
     """Function fixture to glance CLI steps.
 
     Returns:
         CliGlanceSteps: instantiated glance CLI steps
     """
-    return steps.CliGlanceSteps(remote_executor)
+    return steps.CliGlanceSteps(remote_executor, os_credentials.openrc_path)
 
 
 @pytest.fixture

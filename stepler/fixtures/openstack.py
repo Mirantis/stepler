@@ -23,19 +23,24 @@ from keystoneauth1 import session as _session
 import pytest
 
 from stepler import config
+from stepler.third_party import context
 
 __all__ = [
     'get_session',
     'session',
+    'os_credentials',
     'uncleanable',
 ]
 
 
 @pytest.fixture(scope='session')
-def get_session():
+def get_session(os_credentials):
     """Callable session fixture to get keystone session.
 
     Can be called several times during a test to regenerate keystone session.
+
+    Args:
+        os_credentials (AttrDict): data structure with credentials to be used
 
     Returns:
         function: function to get session.
@@ -82,12 +87,14 @@ def get_session():
                      user_domain_name=None,
                      project_domain_name=None,
                      cert=None):
-        auth_url = auth_url or config.AUTH_URL
-        username = username or config.USERNAME
-        password = password or config.PASSWORD
-        project_name = project_name or config.PROJECT_NAME
-        user_domain_name = user_domain_name or config.USER_DOMAIN_NAME
-        project_domain_name = project_domain_name or config.PROJECT_DOMAIN_NAME
+        auth_url = auth_url or os_credentials.auth_url
+        username = username or os_credentials.username
+        password = password or os_credentials.password
+        project_name = project_name or os_credentials.project_name
+        user_domain_name = (user_domain_name or
+                            os_credentials.user_domain_name)
+        project_domain_name = (project_domain_name or
+                               os_credentials.project_domain_name)
 
         if config.KEYSTONE_API_VERSION == 3:
 
@@ -127,12 +134,71 @@ def session(get_session):
         get_session (function): Function to get keystone session.
 
     Returns:
-      Session: Keystone session.
+        Session: Keystone session.
 
     See also:
         :func:`get_session`
     """
     return get_session()
+
+
+@pytest.fixture(scope='session')
+def os_credentials(os_faults_steps):
+    """Session fixture to get data structure with current credentials to use.
+
+    These fixture initialises default credentials variables which are
+    used in get_session fixture. If new created project should be used
+    in tests, credentials should be changed using 'change' context manager.
+
+    Args:
+        os_faults_steps (object): instantiated os_faults steps
+
+    Returns:
+        AttrDict: contains vars which will be used in get_session and
+            also path to openrc file with env vars to be updated
+    """
+    credentials = attrdict.AttrDict()
+    credentials.auth_url = config.AUTH_URL
+    credentials.project_name = config.PROJECT_NAME
+    credentials.username = config.USERNAME
+    credentials.password = config.PASSWORD
+    credentials.user_domain_name = config.USER_DOMAIN_NAME
+    credentials.project_domain_name = config.PROJECT_DOMAIN_NAME
+    credentials.openrc_path = None
+
+    @context.context
+    def _change_credentials(project_name, username, password):
+        old_credentials = None
+
+        if (credentials.project_name != project_name or
+                credentials.username != username):
+            old_credentials = attrdict.AttrDict(credentials.copy())
+            credentials.project_name = project_name
+            credentials.username = username
+            credentials.password = password
+
+            controllers = os_faults_steps.get_nodes(
+                service_names=[config.NEUTRON_DHCP_SERVICE])
+            vars_to_use = {
+                'OS_PROJECT_NAME': credentials.project_name,
+                'OS_TENANT_NAME': credentials.project_name,
+                'OS_USERNAME': credentials.username,
+                'OS_PASSWORD': credentials.password
+            }
+            credentials.openrc_path = os_faults_steps.create_project_openrc(
+                controllers, vars_to_use)
+
+        yield
+
+        if old_credentials is not None:
+            credentials.project_name = old_credentials.project_name
+            credentials.username = old_credentials.username
+            credentials.password = old_credentials.password
+            credentials.openrc_path = old_credentials.openrc_path
+
+    credentials.change = _change_credentials
+
+    return credentials
 
 
 @pytest.fixture(scope='session')

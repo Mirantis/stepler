@@ -27,7 +27,7 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_nova_steps(remote_executor):
+def cli_nova_steps(remote_executor, os_credentials):
     """Function fixture to nova CLI steps.
 
     Args:
@@ -36,4 +36,4 @@ def cli_nova_steps(remote_executor):
     Returns:
         CliNovaSteps: instantiated nova CLI steps.
     """
-    return steps.CliNovaSteps(remote_executor)
+    return steps.CliNovaSteps(remote_executor, os_credentials.openrc_path)

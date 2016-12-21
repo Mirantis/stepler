@@ -27,10 +27,10 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_cinder_steps(remote_executor):
+def cli_cinder_steps(remote_executor, os_credentials):
     """Function fixture to cinder CLI steps.
 
     Returns:
         CliCinderSteps: instantiated cinder CLI steps
     """
-    return steps.CliCinderSteps(remote_executor)
+    return steps.CliCinderSteps(remote_executor, os_credentials.openrc_path)

@@ -27,10 +27,10 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_ironic_steps(remote_executor):
+def cli_ironic_steps(remote_executor, os_credentials):
     """Function fixture to Ironic CLI steps.
 
     Returns:
         CliIronicSteps: instantiated Ironic CLI steps
     """
-    return steps.CliIronicSteps(remote_executor)
+    return steps.CliIronicSteps(remote_executor, os_credentials.openrc_path)

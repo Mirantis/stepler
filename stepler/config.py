@@ -354,7 +354,6 @@ IMAGE_DOWNLOAD_TIMEOUT = 60
 # For DevStack cmd should looks like `source devstack/openrc admin admin`
 OPENRC_ACTIVATE_CMD = os.environ.get('OPENRC_ACTIVATE_CMD', 'source /root/openrc')  # noqa E501
 
-
 CLEANUP_UNEXPECTED_BEFORE_TEST = bool(
     os.environ.get('CLEANUP_UNEXPECTED_BEFORE_TEST', False))
 

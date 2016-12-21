@@ -25,6 +25,9 @@ from stepler import config
 
 class BaseCliSteps(base.BaseSteps):
     """Base CLI client steps."""
+    def __init__(self, client, openrc_path):
+        super(BaseCliSteps, self).__init__(client)
+        self.openrc_path = openrc_path
 
     def execute_command(self,
                         cmd,
@@ -50,6 +53,8 @@ class BaseCliSteps(base.BaseSteps):
         """
         if use_openrc:
             source_cmd = config.OPENRC_ACTIVATE_CMD + ";"
+            if self.openrc_path:
+                source_cmd += " source {};".format(self.openrc_path)
         else:
             source_cmd = ""
 

@@ -27,7 +27,7 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_neutron_steps(remote_executor):
+def cli_neutron_steps(remote_executor, os_credentials):
     """Function fixture to neutron CLI steps.
 
     Args:
@@ -36,4 +36,4 @@ def cli_neutron_steps(remote_executor):
     Returns:
         CliNeutronSteps: instantiated neutron CLI steps
     """
-    return steps.CliNeutronSteps(remote_executor)
+    return steps.CliNeutronSteps(remote_executor, os_credentials.openrc_path)

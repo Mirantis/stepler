@@ -28,7 +28,7 @@ __all__ = [
 
 
 @pytest.fixture
-def cli_heat_steps(remote_executor):
+def cli_heat_steps(remote_executor, os_credentials):
     """Function fixture to get heat CLI steps.
 
     Args:
@@ -37,7 +37,7 @@ def cli_heat_steps(remote_executor):
     Returns:
         object: initialized heat CLI steps
     """
-    return steps.CliHeatSteps(remote_executor)
+    return steps.CliHeatSteps(remote_executor, os_credentials.openrc_path)
 
 
 @pytest.yield_fixture
