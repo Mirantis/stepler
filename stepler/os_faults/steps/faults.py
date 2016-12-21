@@ -361,10 +361,9 @@ class OsFaultsSteps(base.BaseSteps):
 
     @steps_checker.step
     def make_backup(self, nodes, file_path, suffix=None, check=True):
-        """Step to make backup of file with `path`.
+        """Step to make backup of file with **path** on remote nodes.
 
-        This step makes a copy of file to new file with `suffix` in same
-            folder.
+        It makes a copy of file to new file with **suffix** in same folder.
 
         Args:
             nodes (obj): nodes to backup file on them
@@ -377,6 +376,9 @@ class OsFaultsSteps(base.BaseSteps):
 
         Returns:
             str: path to backup file
+
+        See also:
+            :meth:`restore_backup`
         """
         suffix = suffix or next(utils.generate_ids('backup', length=30))
         backup_path = "{}.{}".format(file_path, suffix)
@@ -395,9 +397,9 @@ class OsFaultsSteps(base.BaseSteps):
 
     @steps_checker.step
     def restore_backup(self, nodes, file_path, backup_path, check=True):
-        """Step to restore file with `path` from backup.
+        """Step to restore file with **path** from backup on remote nodes.
 
-        This step restore file from backup with `suffix` placed in same folder.
+        It restores file from backup with **suffix** placed in same folder.
 
         Args:
             nodes (obj): nodes to restore file on them
@@ -408,6 +410,9 @@ class OsFaultsSteps(base.BaseSteps):
 
         Raises:
             AssertionError: if backup file exists after step.
+
+        See also:
+            :meth:`make_backup`
         """
         task = {
             'command': 'mv "{backup_path}" "{path}"'.format(
@@ -453,6 +458,12 @@ class OsFaultsSteps(base.BaseSteps):
 
         Returns:
             str: path to original file
+
+        Raises:
+            AssertionError: if file doesn't contain changes after patching
+
+        See also:
+            :meth:`make_backup`
         """
         backup_path = self.make_backup(nodes, file_path)
         task = {
