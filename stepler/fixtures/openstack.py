@@ -33,12 +33,44 @@ __all__ = [
 
 @pytest.fixture(scope='session')
 def get_session():
-    """Callable session fixture to get session.
+    """Callable session fixture to get keystone session.
 
     Can be called several times during a test to regenerate keystone session.
 
     Returns:
         function: function to get session.
+
+    **Returned function description:**
+
+    Args:
+        auth_url (str, optional): Keystone auth URL. By default retrieved
+            from config. Can be managed via environment variable `OS_AUTH_URL`.
+        username (str, optional): Keystone username. By default retrieved
+            from config. Can be managed via environment variable `OS_USERNAME`.
+        password (str, optional): Keystone password. By default retrieved
+            from config. Can be managed via environment variable `OS_PASSWORD`.
+        project_name (str, optional): Keystone project name. By default it's
+            retrieved from config. Can be managed via environment variable
+            `OS_PROJECT_NAME`.
+        user_domain_name (str, optional): Keystone user domain name. For
+            keystone **v3** only. By default retrieved from config. Can be
+            managed via environment variable `OS_USER_DOMAIN_NAME`.
+        project_domain_name (str, optional): Keystone project domain name. For
+            keystone **v3** only. By default retrieved via environment
+            variable `OS_PROJECT_DOMAIN_NAME`.
+        cert(str, tuple, optional): Either a single filename containing both
+            the certificate and key or a tuple containing the path to the
+            certificate then a path to the key.
+
+    Returns:
+        Session: Keystone auth session. According to environment variable
+        `OS_AUTH_URL` uses `v3` or `v2.0` API version.
+
+    Raises:
+        ValueError: If keystone API version in config is neither v2.0 no v3.
+
+    See also:
+        :func:`session`
     """
     assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
 
@@ -88,10 +120,16 @@ def get_session():
 
 @pytest.fixture
 def session(get_session):
-    """Function fixture to get session.
+    """Function fixture to get keystone session with default options.
+
+    Args:
+        get_session (function): Function to get keystone session.
 
     Returns:
-      keystoneauth1.session.Session: instantiated keystone session
+      Session: Keystone session.
+
+    See also:
+        :func:`get_session`
     """
     return get_session()
 
