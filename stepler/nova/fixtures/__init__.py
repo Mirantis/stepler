@@ -28,6 +28,7 @@ from .nova import *  # noqa
 from .nova_volumes import *  # noqa
 from .security_groups import *  # noqa
 from .servers import *  # noqa
+from .services import *  # noqa
 
 
 __all__ = sorted([  # sort for documentation
@@ -89,4 +90,6 @@ __all__ = sorted([  # sort for documentation
     'generate_traffic',
     'ubuntu_server',
     'unexpected_servers_cleanup',
+
+    'nova_service_steps',
 ])
