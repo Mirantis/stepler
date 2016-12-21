@@ -31,20 +31,31 @@ __all__ = [
 
 
 @pytest.fixture(params=('admin', 'user'), scope="session")
-def any_one(request):
+def any_one(request,
+            credentials,
+            test_env,
+            user_project_resources):
     """Define user to log in account."""
+
     if request.param == 'admin':
+        # TODO(agromov): replace 'os.environ' usage with 'credentials' fixture
         os.environ['OS_LOGIN'] = config.ADMIN_NAME
         os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
         os.environ['OS_PROJECT'] = config.ADMIN_PROJECT
+        yield
+
     if request.param == 'user':
         os.environ['OS_LOGIN'] = config.USER_NAME
         os.environ['OS_PASSWD'] = config.USER_PASSWD
         os.environ['OS_PROJECT'] = config.USER_PROJECT
 
+        creds_alias = user_project_resources.alias
+        with credentials.change(creds_alias):
+            yield
+
 
 @pytest.fixture
-def admin_only():
+def admin_only(test_env):
     """Set admin credentials for test."""
     os.environ['OS_LOGIN'] = config.ADMIN_NAME
     os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
@@ -52,8 +63,14 @@ def admin_only():
 
 
 @pytest.fixture
-def user_only():
+def user_only(credentials,
+              test_env,
+              user_project_resources):
     """Set user credentials for test."""
     os.environ['OS_LOGIN'] = config.USER_NAME
     os.environ['OS_PASSWD'] = config.USER_PASSWD
     os.environ['OS_PROJECT'] = config.USER_PROJECT
+
+    creds_alias = user_project_resources.alias
+    with credentials.change(creds_alias):
+        yield

@@ -32,7 +32,8 @@ def cli_heat_steps(remote_executor):
     """Function fixture to get heat CLI steps.
 
     Args:
-        remote_executor (callable): function to execute command on remote node
+        remote_executor (callable): function to execute command on
+            controller nodes
 
     Returns:
         object: initialized heat CLI steps

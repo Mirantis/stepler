@@ -31,7 +31,8 @@ def cli_neutron_steps(remote_executor):
     """Function fixture to neutron CLI steps.
 
     Args:
-        remote_executor (callable): function to execute command on remote node
+        remote_executor (callable): function to execute command on
+            controller nodes
 
     Returns:
         CliNeutronSteps: instantiated neutron CLI steps

@@ -121,38 +121,28 @@ def user(create_user):
     return create_user(user_name, password)
 
 
-@pytest.yield_fixture
-def new_user_with_project(request, project_steps, user_steps, role_steps):
+@pytest.fixture
+def new_user_with_project(request, create_user_with_project):
     """Fixture to create new project with new '_member_' user.
 
     Args:
-        project_steps (object): instantiated project steps
-        user_steps (object): instantiated user steps
-        role_steps (object): instantiated role steps
+        request (obj): pytest SubRequest instance
+        create_user_with_project (function): function to create
+            project resources
 
     Yields:
         dict: dict with username, password and project_name
     """
-    user_name = next(utils.generate_ids('user'))
-    password = next(utils.generate_ids('password'))
-    project_name = next(utils.generate_ids('project'))
-
+    creds_alias, = utils.generate_ids()
     with_role = getattr(request, 'param', {}).get('with_role')
 
     if with_role:
-        role = role_steps.create_role()
+        role_type = None
     else:
-        role = role_steps.get_role(name=config.ROLE_MEMBER)
+        role_type = config.ROLE_MEMBER
 
-    user = user_steps.create_user(user_name=user_name, password=password)
-    user_project = project_steps.create_project(project_name)
-    role_steps.grant_role(role, user, project=user_project)
-
-    yield {'username': user_name,
-           'password': password,
-           'project_name': project_name}
-
-    user_steps.delete_user(user)
-    project_steps.delete_project(user_project)
-    if with_role:
-        role_steps.delete_role(role)
+    with create_user_with_project(creds_alias,
+                                  role_type=role_type) as resource:
+        yield {'username': resource.user.name,
+               'password': resource.password,
+               'project_name': resource.project.name}

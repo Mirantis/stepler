@@ -17,8 +17,10 @@ Common fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .credentials import *  # noqa
 from .env_dependent import *  # noqa
 from .openstack import *  # noqa
+from .project_resources import *  # noqa
 from .report import *  # noqa
 from .skip import *  # noqa
 
@@ -35,4 +37,9 @@ __all__ = sorted([  # sort for documentation
     'report_dir',
 
     'skip_test',
+
+    'credentials',
+    'create_user_with_project',
+    'admin_project_resources',
+    'user_project_resources',
 ])

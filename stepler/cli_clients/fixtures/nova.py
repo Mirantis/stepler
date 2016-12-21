@@ -31,7 +31,8 @@ def cli_nova_steps(remote_executor):
     """Function fixture to nova CLI steps.
 
     Args:
-        remote_executor (callable): function to execute command on remote node
+        remote_executor (callable): function to execute command on
+            controller nodes
 
     Returns:
         CliNovaSteps: instantiated nova CLI steps.

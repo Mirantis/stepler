@@ -30,6 +30,10 @@ __all__ = [
 def cli_cinder_steps(remote_executor):
     """Function fixture to cinder CLI steps.
 
+    Args:
+        remote_executor (callable): function to execute command on
+            controller nodes
+
     Returns:
         CliCinderSteps: instantiated cinder CLI steps
     """

@@ -31,7 +31,8 @@ def cli_openstack_steps(remote_executor):
     """Function fixture to openstack CLI steps.
 
     Args:
-        remote_executor (callable): function to execute command on remote node
+        remote_executor (callable): function to execute command on
+            controller nodes
 
     Returns:
         CliOpenstackSteps: instantiated openstack CLI steps.
