@@ -19,6 +19,7 @@ Config
 
 import functools
 import os
+import re
 import socket
 import uuid
 
@@ -114,6 +115,8 @@ IRONIC_API = 'ironic-api'
 IRONIC_CONDUCTOR = 'ironic-conductor'
 HORIZON = 'horizon'
 SWIFT = 'swift'
+RABBITMQ = 'rabbitmq'
+MYSQL = 'mysql'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
@@ -487,3 +490,14 @@ FUEL_NON_PRIMARY_CONTROLLERS_CMD = ("hiera roles | grep controller | "
 
 # Command to shutdown br-ex
 SHUTDOWN_BR_EX_CMD = "ip link set br-ex down"
+
+# In TCP clouds, controller holding VIP is found via OS_AUTH_URL
+# http://10.109.4.6:5000/v3 -> 10.109.4.6
+VIP = re.findall("//(.+):", os.environ.get('OS_AUTH_URL'))[0]
+TCP_VIP_CONTROLLER_CMD = "ip a | grep {}".format(VIP)
+
+NODE_REBOOT_CMD = '/sbin/shutdown -r now'
+NODE_SHUTDOWN_CMD = '/sbin/shutdown now'
+
+NODE_SHUTDOWN_TIMEOUT = 3 * 60
+NOVA_SERVICES_UP_TIMEOUT = 5 * 60
