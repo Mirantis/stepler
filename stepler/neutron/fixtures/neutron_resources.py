@@ -529,6 +529,8 @@ def create_max_networks_with_instances(cirros_image,
                                        create_network,
                                        create_subnet,
                                        add_router_interfaces,
+                                       current_project,
+                                       neutron_quota_steps,
                                        hypervisor_steps,
                                        server_steps):
     """Callable fixture to create max networks, boot and delete servers.
@@ -561,13 +563,15 @@ def create_max_networks_with_instances(cirros_image,
 
         net_list = []
         servers = []
-        i = 1
+        neutron_quotas = neutron_quota_steps.get(current_project)
+        max_networks_count = neutron_quotas['network']
         try:
             # only about 34 nets can be created for one tenant during
-            # implementation so we need to create networks until we get
+            # implementation so we need to create either
+            # max_networks_count of networks or until we get
             # ServiceUnavailable or OverQuotaClient errors as we don't know
             # the exact max possible count of networks to be created
-            while True:
+            for i in range(1, max_networks_count + 1):
                 network = create_network(next(utils.generate_ids()))
                 # TODO(agromov): fix it if we can create more than 255 subnets
                 subnet = create_subnet(next(utils.generate_ids()),
@@ -586,7 +590,6 @@ def create_max_networks_with_instances(cirros_image,
                     networks=[network],
                     security_groups=[security_group])[0]
                 servers.append(server)
-                i += 1
         except (exceptions.ServiceUnavailable, exceptions.OverQuotaClient):
             pass
 

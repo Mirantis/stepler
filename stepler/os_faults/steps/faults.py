@@ -659,8 +659,13 @@ class OsFaultsSteps(base.BaseSteps):
             time.sleep(delay)
 
     @steps_checker.step
-    def check_string_in_file(self, node, file_name, keyword,
-                             start_line_number=None, must_present=True,
+    def check_string_in_file(self,
+                             node,
+                             file_name,
+                             keyword,
+                             non_matching=None,
+                             start_line_number=None,
+                             must_present=True,
                              expected_count=None):
         """Step to check number of keywords in a textual file on a single node.
 
@@ -668,6 +673,7 @@ class OsFaultsSteps(base.BaseSteps):
             node (NodeCollection): node
             file_name (str): name of textual file
             keyword (str): string to search
+            non_matching (str|None): string to be absent in result
             start_line_number (int|None): number of first line for searching
             must_present (bool): flag that keyword must be present or not
             expected_count (int|None): expected count of lines containing
@@ -678,22 +684,24 @@ class OsFaultsSteps(base.BaseSteps):
                 failed in case of check=True or real count of lines with
                 keyword is not equal to expected one
         """
-        if start_line_number:
-            cmd = "tail -n +{0} {1}".format(start_line_number, file_name)
-        else:
-            cmd = "cat {}".format(file_name)
-        if expected_count == 0 or expected_count is None:
-            cmd += " | grep -q '{}'; echo $?".format(keyword)
+        start_line_number = start_line_number or 0
+        cmd = "tail -n +{0} {1} | grep {2}".format(start_line_number,
+                                                   file_name,
+                                                   moves.shlex_quote(keyword))
+        if non_matching:
+            cmd += " | grep -v {0}".format(moves.shlex_quote(non_matching))
+        cmd += " | wc -l"
+
+        if expected_count is None:
             if must_present:
-                expected_value = 0
+                matcher = is_(greater_than(0))
             else:
-                expected_value = 1
+                matcher = is_(0)
         else:
-            cmd += " | grep '{}' | wc -l".format(keyword)
-            expected_value = expected_count
+            matcher = is_(expected_count)
         result = self.execute_cmd(node, cmd)
         value = int(result[0].payload['stdout'])
-        assert_that(value, is_(expected_value))
+        assert_that(value, matcher)
 
     @steps_checker.step
     def get_ovs_flows_cookies(self, node, check=True):
