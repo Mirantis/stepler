@@ -17,9 +17,9 @@ Base CLI fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import functools
-
 import pytest
+
+from stepler import config
 
 __all__ = [
     'remote_executor',
@@ -27,14 +27,39 @@ __all__ = [
 
 
 @pytest.fixture
-def remote_executor(nova_api_node, os_faults_steps):
+def remote_executor(nova_api_node, os_faults_steps, resource_manager):
     """Function fixture to get remote command executor.
 
     Args:
         nova_api_node (obj): controller (node with nova-api service)
-        os_faults_steps (obj): initialized os-faults steps
+        os_faults_steps (object): instantiated os_faults steps
+        resource_manager (obj): ProjectResources instance
 
     Returns:
         callable: function to execute command on `nova_api_node`
     """
-    return functools.partial(os_faults_steps.execute_cmd, nodes=nova_api_node)
+    def _execute_cli(cmd, use_openrc=True, environ=None, **kwargs):
+        environ = environ or {}
+
+        if use_openrc:
+            source_cmd = config.OPENRC_ACTIVATE_CMD + ";"
+
+            current_resources = resource_manager.current_project
+            environ['OS_PROJECT_NAME'] = current_resources.project_name
+            environ['OS_TENANT_NAME'] = current_resources.project_name
+            environ['OS_USERNAME'] = current_resources.username
+            environ['OS_PASSWORD'] = current_resources.password
+        else:
+            source_cmd = ""
+
+        environ_string = ' '.join("{0}='{1}'".format(*item)
+                                  for item in environ.items())
+
+        cmd = u"{source_cmd} {env} {command}".format(source_cmd=source_cmd,
+                                                     env=environ_string,
+                                                     command=cmd)
+
+        return os_faults_steps.execute_cmd(nodes=nova_api_node, cmd=cmd,
+                                           **kwargs)
+
+    return _execute_cli

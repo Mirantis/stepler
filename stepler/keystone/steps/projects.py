@@ -18,7 +18,7 @@ Project steps
 # limitations under the License.
 
 from hamcrest import (assert_that, empty, equal_to, calling,
-                      raises, is_not)  # noqa
+                      raises, is_not, has_length)  # noqa
 from keystoneclient import exceptions
 
 from stepler.base import BaseSteps
@@ -57,6 +57,25 @@ class ProjectSteps(BaseSteps):
             assert_that(project.domain_id, equal_to(domain_id))
 
         return project
+
+    @steps_checker.step
+    def get_project(self, project_name, domain='default', check=True):
+        """Step to get project.
+
+        Args:
+            project_name (str): project name
+            domain (str or object): domain
+            check (bool): flag whether to check step or not
+
+        Returns:
+            object: project
+        """
+        project = self._client.list(domain=domain, name=project_name)
+
+        if check:
+            assert_that(project, has_length(1))
+
+        return project[0]
 
     @steps_checker.step
     def delete_project(self, project, check=True):

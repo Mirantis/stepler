@@ -18,12 +18,7 @@ Openstack fixtures
 # limitations under the License.
 
 import attrdict
-from keystoneauth1 import identity
-from keystoneauth1 import session as _session
 import pytest
-from requests.packages import urllib3
-
-from stepler import config
 
 __all__ = [
     'get_session',
@@ -33,90 +28,19 @@ __all__ = [
 
 
 @pytest.fixture(scope='session')
-def get_session():
+def get_session(resource_manager):
     """Callable session fixture to get keystone session.
 
-    Can be called several times during a test to regenerate keystone session.
+    Args:
+        resource_manager (obj): ProjectResources instance which can
+            create keystone session object for current project
 
     Returns:
         function: function to get session.
-
-    **Returned function description:**
-
-    Args:
-        auth_url (str, optional): Keystone auth URL. By default retrieved
-            from config. Can be managed via environment variable `OS_AUTH_URL`.
-        username (str, optional): Keystone username. By default retrieved
-            from config. Can be managed via environment variable `OS_USERNAME`.
-        password (str, optional): Keystone password. By default retrieved
-            from config. Can be managed via environment variable `OS_PASSWORD`.
-        project_name (str, optional): Keystone project name. By default it's
-            retrieved from config. Can be managed via environment variable
-            `OS_PROJECT_NAME`.
-        user_domain_name (str, optional): Keystone user domain name. For
-            keystone **v3** only. By default retrieved from config. Can be
-            managed via environment variable `OS_USER_DOMAIN_NAME`.
-        project_domain_name (str, optional): Keystone project domain name. For
-            keystone **v3** only. By default retrieved via environment
-            variable `OS_PROJECT_DOMAIN_NAME`.
-        cert(str, tuple, optional): Either a single filename containing both
-            the certificate and key or a tuple containing the path to the
-            certificate then a path to the key.
-
-    Returns:
-        Session: Keystone auth session. According to environment variable
-        `OS_AUTH_URL` uses `v3` or `v2.0` API version.
-
-    Raises:
-        AssertionError: If environment variable `OS_AUTH_URL` isn't specified.
-        ValueError: If keystone API version in config is neither v2.0 no v3.
-
-    See also:
-        :func:`session`
     """
-    assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
 
-    def _get_session(auth_url=None,
-                     username=None,
-                     password=None,
-                     project_name=None,
-                     user_domain_name=None,
-                     project_domain_name=None,
-                     cert=None):
-        auth_url = auth_url or config.AUTH_URL
-        username = username or config.USERNAME
-        password = password or config.PASSWORD
-        project_name = project_name or config.PROJECT_NAME
-        user_domain_name = user_domain_name or config.USER_DOMAIN_NAME
-        project_domain_name = project_domain_name or config.PROJECT_DOMAIN_NAME
-
-        if config.KEYSTONE_API_VERSION == 3:
-
-            auth = identity.v3.Password(
-                auth_url=auth_url,
-                username=username,
-                user_domain_name=user_domain_name,
-                password=password,
-                project_name=project_name,
-                project_domain_name=project_domain_name)
-
-        elif config.KEYSTONE_API_VERSION == 2:
-
-            auth = identity.v2.Password(
-                auth_url=auth_url,
-                username=username,
-                password=password,
-                tenant_name=project_name)
-
-        else:
-            raise ValueError("Unexpected keystone API version: {}".format(
-                config.KEYSTONE_API_VERSION))
-
-        if cert is None:
-            urllib3.disable_warnings()
-            return _session.Session(auth=auth, cert=cert, verify=False)
-        else:
-            return _session.Session(auth=auth, cert=cert)
+    def _get_session(**credentials):
+        return resource_manager.get_session(**credentials)
 
     return _get_session
 
@@ -129,7 +53,7 @@ def session(get_session):
         get_session (function): Function to get keystone session.
 
     Returns:
-      Session: Keystone session.
+        Session: Keystone session.
 
     See also:
         :func:`get_session`
