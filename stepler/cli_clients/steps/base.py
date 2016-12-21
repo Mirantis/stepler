@@ -20,7 +20,6 @@ Base CLI client steps
 from hamcrest import assert_that, is_  # noqa
 
 from stepler import base
-from stepler import config
 
 
 class BaseCliSteps(base.BaseSteps):
@@ -48,18 +47,9 @@ class BaseCliSteps(base.BaseSteps):
         Raises:
             AssertionError: if result check was failed
         """
-        if use_openrc:
-            source_cmd = config.OPENRC_ACTIVATE_CMD + ";"
-        else:
-            source_cmd = ""
-
-        environ = environ or {}
-        environ_string = ' '.join("{0}='{1}'".format(*item)
-                                  for item in environ.items())
-        cmd = u"{source_cmd} {env} {command}".format(source_cmd=source_cmd,
-                                                     env=environ_string,
-                                                     command=cmd)
         result = self._client(cmd=cmd,
+                              use_openrc=use_openrc,
+                              environ=environ,
                               timeout=timeout,
                               check=check)
         payload = result[0].payload

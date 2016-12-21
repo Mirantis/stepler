@@ -31,8 +31,13 @@ __all__ = [
 
 
 @pytest.fixture(params=('admin', 'user'), scope="session")
-def any_one(request):
+def any_one(request,
+            resource_manager,
+            test_env,
+            user_project_resources):
     """Define user to log in account."""
+    old_credentials = resource_manager.current_credentials
+
     if request.param == 'admin':
         os.environ['OS_LOGIN'] = config.ADMIN_NAME
         os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
@@ -42,9 +47,16 @@ def any_one(request):
         os.environ['OS_PASSWD'] = config.USER_PASSWD
         os.environ['OS_PROJECT'] = config.USER_PROJECT
 
+        old_credentials = resource_manager.current_credentials
+        resource_manager.set_current_credentials(user_project_resources)
+
+    yield
+
+    resource_manager.set_current_credentials(old_credentials)
+
 
 @pytest.fixture
-def admin_only():
+def admin_only(test_env):
     """Set admin credentials for test."""
     os.environ['OS_LOGIN'] = config.ADMIN_NAME
     os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
@@ -52,8 +64,17 @@ def admin_only():
 
 
 @pytest.fixture
-def user_only():
+def user_only(resource_manager,
+              test_env,
+              user_project_resources):
     """Set user credentials for test."""
     os.environ['OS_LOGIN'] = config.USER_NAME
     os.environ['OS_PASSWD'] = config.USER_PASSWD
     os.environ['OS_PROJECT'] = config.USER_PROJECT
+
+    old_credentials = resource_manager.current_credentials
+    resource_manager.set_current_credentials(user_project_resources)
+
+    yield
+
+    resource_manager.set_current_credentials(old_credentials)
