@@ -174,6 +174,7 @@ __all__ = sorted([  # sort for documentation
     'availability_zone_steps',
     'nova_availability_zone',
     'nova_availability_zone_hosts',
+    'nova_service_steps',
 
     'os_faults_client',
     'os_faults_steps',
