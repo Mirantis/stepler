@@ -47,7 +47,8 @@ def get_session():
                      password=None,
                      project_name=None,
                      user_domain_name=None,
-                     project_domain_name=None):
+                     project_domain_name=None,
+                     cert=None):
         auth_url = auth_url or config.AUTH_URL
         username = username or config.USERNAME
         password = password or config.PASSWORD
@@ -77,7 +78,10 @@ def get_session():
             raise ValueError("Unexpected keystone API version: {}".format(
                 config.KEYSTONE_API_VERSION))
 
-        return _session.Session(auth=auth)
+        if cert is None:
+            return _session.Session(auth=auth, cert=cert, verify=False)
+        else:
+            return _session.Session(auth=auth, cert=cert)
 
     return _get_session
 
