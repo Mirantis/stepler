@@ -30,6 +30,9 @@ __all__ = [
 def cli_ironic_steps(remote_executor):
     """Function fixture to Ironic CLI steps.
 
+    Args:
+        remote_executor (callable): function to execute command on remote node
+
     Returns:
         CliIronicSteps: instantiated Ironic CLI steps
     """

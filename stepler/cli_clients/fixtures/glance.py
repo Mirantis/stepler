@@ -31,6 +31,9 @@ __all__ = [
 def cli_glance_steps(remote_executor):
     """Function fixture to glance CLI steps.
 
+    Args:
+        remote_executor (callable): function to execute command on remote node
+
     Returns:
         CliGlanceSteps: instantiated glance CLI steps
     """

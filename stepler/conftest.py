@@ -36,6 +36,9 @@ __all__ = sorted([  # sort for documentation
     'get_session',
     'session',
     'skip_test',
+    'credentials',
+    'create_user_with_project',
+    'admin_project_resources',
     'uncleanable',
     'report_log',
     'report_dir',
@@ -210,6 +213,7 @@ __all__ = sorted([  # sort for documentation
 
 _plugins = [
     'bugs_file',
+    'default_project',
     'destructive_dispatcher',
     'idempotent_id',
     'reports_cleaner',

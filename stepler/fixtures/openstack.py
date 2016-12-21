@@ -33,10 +33,13 @@ __all__ = [
 
 
 @pytest.fixture(scope='session')
-def get_session():
+def get_session(credentials):
     """Callable session fixture to get keystone session.
 
     Can be called several times during a test to regenerate keystone session.
+
+    Args:
+        credentials (object): CredentialsManager instance
 
     Returns:
         function: function to get session.
@@ -84,11 +87,12 @@ def get_session():
                      project_domain_name=None,
                      cert=None):
         auth_url = auth_url or config.AUTH_URL
-        username = username or config.USERNAME
-        password = password or config.PASSWORD
-        project_name = project_name or config.PROJECT_NAME
-        user_domain_name = user_domain_name or config.USER_DOMAIN_NAME
-        project_domain_name = project_domain_name or config.PROJECT_DOMAIN_NAME
+        username = username or credentials.username
+        password = password or credentials.password
+        project_name = project_name or credentials.project_name
+        user_domain_name = user_domain_name or credentials.user_domain_name
+        project_domain_name = (project_domain_name or
+                               credentials.project_domain_name)
 
         if config.KEYSTONE_API_VERSION == 3:
 
@@ -129,7 +133,7 @@ def session(get_session):
         get_session (function): Function to get keystone session.
 
     Returns:
-      Session: Keystone session.
+        Session: Keystone session.
 
     See also:
         :func:`get_session`
