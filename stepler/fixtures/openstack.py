@@ -21,6 +21,7 @@ import attrdict
 from keystoneauth1 import identity
 from keystoneauth1 import session as _session
 import pytest
+from requests.packages import urllib3
 
 from stepler import config
 
@@ -112,6 +113,7 @@ def get_session():
                 config.KEYSTONE_API_VERSION))
 
         if cert is None:
+            urllib3.disable_warnings()
             return _session.Session(auth=auth, cert=cert, verify=False)
         else:
             return _session.Session(auth=auth, cert=cert)
