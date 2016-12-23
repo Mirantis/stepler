@@ -211,6 +211,7 @@ _plugins = [
     'bugs_file',
     'destructive_dispatcher',
     'idempotent_id',
+    'platform',
     'reports_cleaner',
     'steps_checker',
 ]
