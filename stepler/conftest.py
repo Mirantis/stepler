@@ -213,6 +213,7 @@ _plugins = [
     'idempotent_id',
     'reports_cleaner',
     'steps_checker',
+    'supported_platforms',
 ]
 
 pytest_plugins = map(lambda plugin: 'stepler.third_party.' + plugin, _plugins)

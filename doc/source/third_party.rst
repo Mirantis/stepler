@@ -32,6 +32,9 @@ Third party modules
 .. automodule:: stepler.third_party.ping
    :members:
 
+.. automodule:: stepler.third_party.supported_platforms
+   :members:
+
 .. automodule:: stepler.third_party.process_mutex
    :members:
 
