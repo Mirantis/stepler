@@ -56,8 +56,17 @@ def create_instance(instances_steps):
 
 
 @pytest.fixture
-def instances_steps(login, horizon):
-    """Get instances steps."""
+def instances_steps(setup_network, login, horizon):
+    """Function fixture to get instances steps.
+
+    Args:
+        setup_network (None): Should set up network before steps using.
+        login (None): Should log in horizon before steps using.
+        horizon (Horizon): Instantiated horizon web application.
+
+    Returns:
+        InstancesSteps: Instantiated instances steps.
+    """
     return InstancesSteps(horizon)
 
 

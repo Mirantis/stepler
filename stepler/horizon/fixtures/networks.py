@@ -31,8 +31,17 @@ __all__ = [
 
 
 @pytest.fixture
-def networks_steps(login, horizon):
-    """Fixture to get networks steps."""
+def networks_steps(setup_network, login, horizon):
+    """Functional fixture to get UI networks steps.
+
+    Args:
+        setup_network (None): Should set up network before steps using.
+        login (None): Should log in horizon before steps using.
+        horizon (Horizon): Instantiated horizon web application.
+
+    Returns:
+        NetworkSteps: Instantiated UI network steps.
+    """
     return NetworksSteps(horizon)
 
 
