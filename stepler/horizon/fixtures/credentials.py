@@ -17,8 +17,6 @@ Fixtures for credentials
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import pytest
 
 from stepler import config
@@ -32,28 +30,59 @@ __all__ = [
 
 @pytest.fixture(params=('admin', 'user'), scope="session")
 def any_one(request):
-    """Define user to log in account."""
+    """Session fixture to define user to log in horizon.
+
+    Args:
+        request (object): pytest request parametrized with values ``admin``
+            and ``user``.
+
+    Note:
+        It should be used only in test and never in other fixture in order to
+        avoid undefined behavior.
+
+    See also:
+        :func:`admin_only`
+        :func:`user_only`
+    """
     if request.param == 'admin':
-        os.environ['OS_LOGIN'] = config.ADMIN_NAME
-        os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
-        os.environ['OS_PROJECT'] = config.ADMIN_PROJECT
+        config.CURRENT_UI_USERNAME = config.ADMIN_NAME
+        config.CURRENT_UI_PASSWORD = config.ADMIN_PASSWD
+        config.CURRENT_UI_PROJECT_NAME = config.ADMIN_PROJECT
     if request.param == 'user':
-        os.environ['OS_LOGIN'] = config.USER_NAME
-        os.environ['OS_PASSWD'] = config.USER_PASSWD
-        os.environ['OS_PROJECT'] = config.USER_PROJECT
+        config.CURRENT_UI_USERNAME = config.USER_NAME
+        config.CURRENT_UI_PASSWORD = config.USER_PASSWD
+        config.CURRENT_UI_PROJECT_NAME = config.USER_PROJECT
 
 
 @pytest.fixture
 def admin_only():
-    """Set admin credentials for test."""
-    os.environ['OS_LOGIN'] = config.ADMIN_NAME
-    os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
-    os.environ['OS_PROJECT'] = config.ADMIN_PROJECT
+    """Function fixture to set admin credentials to log in horizon.
+
+    Note:
+        It should be used only in test and never in other fixture in order to
+        avoid undefined behavior.
+
+    See also:
+        :func:`any_one`
+        :func:`user_only`
+    """
+    config.CURRENT_UI_USERNAME = config.ADMIN_NAME
+    config.CURRENT_UI_PASSWORD = config.ADMIN_PASSWD
+    config.CURRENT_UI_PROJECT_NAME = config.ADMIN_PROJECT
 
 
 @pytest.fixture
 def user_only():
-    """Set user credentials for test."""
-    os.environ['OS_LOGIN'] = config.USER_NAME
-    os.environ['OS_PASSWD'] = config.USER_PASSWD
-    os.environ['OS_PROJECT'] = config.USER_PROJECT
+    """Function fixture to set user credentials to log in horizon.
+
+    Note:
+        It should be used only in test and never in other fixture in order to
+        avoid undefined behavior.
+
+    See also:
+        :func:`admin_only`
+        :func:`any_one`
+    """
+    config.CURRENT_UI_USERNAME = config.USER_NAME
+    config.CURRENT_UI_PASSWORD = config.USER_PASSWD
+    config.CURRENT_UI_PROJECT_NAME = config.USER_PROJECT

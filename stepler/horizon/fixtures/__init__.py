@@ -52,6 +52,7 @@ __all__ = sorted([  # sort for documentation
     'login',
 
     'logger',
+    'network_setup',
     'report_dir',
     'video_capture',
     'virtual_display',
