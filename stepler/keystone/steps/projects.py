@@ -17,7 +17,7 @@ Project steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, equal_to, calling,
+from hamcrest import (assert_that, empty, equal_to, calling, has_properties,
                       raises, is_not)  # noqa
 from keystoneclient import exceptions
 
@@ -98,19 +98,53 @@ class ProjectSteps(BaseSteps):
         waiter.wait(_check_project_presence, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_projects(self, check=True):
-        """Step to get projects.
+    def get_projects(self, all_names=None, any_names=None, check=True):
+        """Step to retrieve projects.
 
         Args:
+            all_names (list, optional): Find projects for all names in
+                sequence.
+            any_names (list, optional): Find projects with any name in
+                sequence. Omitted if ``all_names`` is specified.
             check (bool): flag whether to check step or not
 
         Returns:
-            projects (list): list of projects
+            projects (list): List of projects.
 
         Raises:
-            AssertionError: if no projects found
+            AssertionError: If no projects are found.
+            LookupError: If no projects are found with any name of sequence
+                ``all_names``.
+
+        See alse:
+            :meth:`get_current_project`
         """
         projects = list(self._client.list())
+
+        if all_names:
+            all_names = set(all_names)
+            found_names = set()
+            filtered = []
+
+            for project in projects:
+                if project.name in found_names:
+                    filtered.append(project)
+
+                elif project.name in all_names:
+                    filtered.append(project)
+                    all_names.remove(project.name)
+                    found_names.add(project.name)
+
+            if all_names:
+                raise LookupError(
+                    "No projects with name(s): " + ", ".join(all_names))
+            projects = filtered
+
+        elif any_names:
+            any_names = set(any_names)
+            projects = [project for project in projects
+                        if project.name in any_names]
+
         if check:
             assert_that(projects, is_not(empty()))
 
@@ -139,7 +173,7 @@ class ProjectSteps(BaseSteps):
 
     @steps_checker.step
     def check_get_projects_requires_authentication(self):
-        """Step to check unauthorized request returns (HTTP 401)
+        """Step to check unauthorized request returns (HTTP 401).
 
         Raises:
             AssertionError: if check failed

@@ -17,8 +17,6 @@ Fixtures to run horizon, login, create demo user, etc
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import pytest
 
 from stepler.horizon.app import Horizon
@@ -53,8 +51,12 @@ def login(auth_steps):
 
     Majority of tests requires user login. Logs out after test.
     """
-    auth_steps.login(os.environ['OS_LOGIN'], os.environ['OS_PASSWD'])
-    auth_steps.switch_project(os.environ['OS_PROJECT'])
+    assert config.CURRENT_UI_USERNAME
+    assert config.CURRENT_UI_PASSWORD
+    assert config.CURRENT_UI_PROJECT_NAME
+
+    auth_steps.login(config.CURRENT_UI_USERNAME, config.CURRENT_UI_PASSWORD)
+    auth_steps.switch_project(config.CURRENT_UI_PROJECT_NAME)
 
     yield
     # reload page to be sure that modal form doesn't prevent to logout
