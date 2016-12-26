@@ -17,11 +17,7 @@ Fixtures for credentials
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import pytest
-
-from stepler import config
 
 __all__ = [
     'admin_only',
@@ -33,44 +29,58 @@ __all__ = [
 @pytest.fixture(params=('admin', 'user'), scope="session")
 def any_one(request,
             credentials,
-            test_env,
+            admin_project_resources,
             user_project_resources):
-    """Define user to log in account."""
+    """Session fixture to define user to log in horizon.
 
-    if request.param == 'admin':
-        # TODO(agromov): replace 'os.environ' usage with 'credentials' fixture
-        os.environ['OS_LOGIN'] = config.ADMIN_NAME
-        os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
-        os.environ['OS_PROJECT'] = config.ADMIN_PROJECT
+    Args:
+        request (object): pytest request parametrized with values ``admin``
+            and ``user``.
+
+    Note:
+        It should be used only in test and never in other fixture in order to
+        avoid undefined behavior.
+
+    See also:
+        * :func:`admin_only`
+        * :func:`user_only`
+    """
+    resources = {
+        'admin': admin_project_resources,
+        'user': user_project_resources,
+    }[request.param]
+
+    with credentials.change(resources.alias):
         yield
 
-    if request.param == 'user':
-        os.environ['OS_LOGIN'] = config.USER_NAME
-        os.environ['OS_PASSWD'] = config.USER_PASSWD
-        os.environ['OS_PROJECT'] = config.USER_PROJECT
 
-        creds_alias = user_project_resources.alias
-        with credentials.change(creds_alias):
-            yield
+@pytest.fixture
+def admin_only(credentials, admin_project_resources):
+    """Function fixture to set admin credentials to log in horizon.
+
+    Note:
+        It should be used only in test and never in other fixture in order to
+        avoid undefined behavior.
+
+    See also:
+        * :func:`any_one`
+        * :func:`user_only`
+    """
+    with credentials.change(admin_project_resources.alias):
+        yield
 
 
 @pytest.fixture
-def admin_only(test_env):
-    """Set admin credentials for test."""
-    os.environ['OS_LOGIN'] = config.ADMIN_NAME
-    os.environ['OS_PASSWD'] = config.ADMIN_PASSWD
-    os.environ['OS_PROJECT'] = config.ADMIN_PROJECT
+def user_only(credentials, user_project_resources):
+    """Function fixture to set user credentials to log in horizon.
 
+    Note:
+        It should be used only in test and never in other fixture in order to
+        avoid undefined behavior.
 
-@pytest.fixture
-def user_only(credentials,
-              test_env,
-              user_project_resources):
-    """Set user credentials for test."""
-    os.environ['OS_LOGIN'] = config.USER_NAME
-    os.environ['OS_PASSWD'] = config.USER_PASSWD
-    os.environ['OS_PROJECT'] = config.USER_PROJECT
-
-    creds_alias = user_project_resources.alias
-    with credentials.change(creds_alias):
+    See also:
+        * :func:`admin_only`
+        * :func:`any_one`
+    """
+    with credentials.change(user_project_resources.alias):
         yield

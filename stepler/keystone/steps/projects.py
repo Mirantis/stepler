@@ -139,7 +139,7 @@ class ProjectSteps(BaseSteps):
 
     @steps_checker.step
     def check_get_projects_requires_authentication(self):
-        """Step to check unauthorized request returns (HTTP 401)
+        """Step to check unauthorized request returns (HTTP 401).
 
         Raises:
             AssertionError: if check failed
