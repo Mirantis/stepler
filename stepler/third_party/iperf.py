@@ -100,7 +100,7 @@ def iperf(remote, ip, time=80, interval=20, port=5002, udp=False, latency=2):
 
     yield result
 
-    remote.wait_process_done(pid, timeout=latency)
+    remote.wait_process_done(pid, timeout=latency * 3)
 
     # Check stderr is empty
     stderr = remote.check_call('cat {path}'.format(path=stderr_path)).stdout
