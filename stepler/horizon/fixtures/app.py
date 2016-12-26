@@ -17,8 +17,6 @@ Fixtures to run horizon, login, create demo user, etc
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import pytest
 
 from stepler.horizon.app import Horizon
@@ -33,9 +31,15 @@ __all__ = [
 ]
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def horizon():
-    """Initial fixture to start."""
+    """Function fixture to launch browser and open horizon page.
+
+    It launches browser before tests and closes after.
+
+    Yields:
+        Horizon: Instantiated horizon web application.
+    """
     app = Horizon(config.OS_DASHBOARD_URL)
     yield app
     app.quit()
@@ -43,19 +47,29 @@ def horizon():
 
 @pytest.fixture
 def auth_steps(horizon):
-    """Get auth steps to login or logout in horizon."""
+    """Function fixture to get auth steps.
+
+    Args:
+        horizon (object): Instantiated horizon web application.
+
+    Returns:
+        AuthSteps: instantiated auth steps.
+    """
     return AuthSteps(horizon)
 
 
-@pytest.yield_fixture
-def login(auth_steps):
-    """Login to horizon.
+@pytest.fixture
+def login(auth_steps, credentials):
+    """Function fixture to log in horizon.
 
-    Majority of tests requires user login. Logs out after test.
+    Logs in horizon UI before test.
+    Logs out after test.
+
+    Args:
+        auth_steps (AuthSteps): instantiated auth steps.
     """
-    auth_steps.login(os.environ['OS_LOGIN'], os.environ['OS_PASSWD'])
-    auth_steps.switch_project(os.environ['OS_PROJECT'])
-
+    auth_steps.login(credentials.username, credentials.password)
+    auth_steps.switch_project(credentials.project_name)
     yield
     # reload page to be sure that modal form doesn't prevent to logout
     auth_steps.app.current_page.refresh()
