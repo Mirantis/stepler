@@ -31,7 +31,7 @@ __all__ = [
 
 
 @pytest.fixture
-def networks_steps(login, horizon):
+def networks_steps(setup_network, login, horizon):
     """Fixture to get networks steps."""
     return NetworksSteps(horizon)
 

@@ -56,7 +56,7 @@ def create_instance(instances_steps):
 
 
 @pytest.fixture
-def instances_steps(login, horizon):
+def instances_steps(setup_network, login, horizon):
     """Get instances steps."""
     return InstancesSteps(horizon)
 
