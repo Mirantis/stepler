@@ -30,8 +30,17 @@ __all__ = [
 
 
 @pytest.fixture
-def floating_ips_steps(login, horizon):
-    """Fixture to get floating IPs steps."""
+def floating_ips_steps(network_setup, login, horizon):
+    """Fixture to get floating IPs steps.
+
+    Args:
+        network_setup (None): Should set up network before steps using.
+        login (None): Should log in horizon before steps using.
+        horizon (Horizon): Instantiated horizon web application.
+
+    Returns:
+        FloatingIPsSteps: Instantiated floating IP steps.
+    """
     return FloatingIPsSteps(horizon)
 
 
