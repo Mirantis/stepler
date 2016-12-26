@@ -458,7 +458,8 @@ VIRTUAL_DISPLAY = os.environ.get('VIRTUAL_DISPLAY')
 ADMIN_NAME, ADMIN_PASSWD, ADMIN_PROJECT = list(generate_ids('admin', count=3))
 USER_NAME, USER_PASSWD, USER_PROJECT = list(generate_ids('user', count=3))
 
-FLOATING_NETWORK_NAME = 'admin_floating_net'
+FLOATING_NETWORK_NAME = os.environ.get('OS_FLOATING_NETWORK',
+                                       'admin_floating_net')
 INTERNAL_NETWORK_NAME = next(generate_ids('internal_net'))
 INTERNAL_SUBNET_NAME = next(generate_ids('internal_subnet'))
 ROUTER_NAME = next(generate_ids('router'))
