@@ -35,6 +35,9 @@ class ContextGenerator(object):
             raise RuntimeError("generator didn't yield")
 
     def __exit__(self, ext_type, ext_val, ext_tb):
+        # Check for fixture finalization cancelation
+        if ext_type is GeneratorExit:
+            return
         try:
             self._generator.next()
         except StopIteration:
