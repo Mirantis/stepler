@@ -51,11 +51,12 @@ __all__ = sorted([  # sort for documentation
     'horizon',
     'login',
 
+    'horizon_autouse',
     'logger',
+    'network_setup',
     'report_dir',
     'video_capture',
     'virtual_display',
-    'test_env',
 
     'create_container',
     'container',
