@@ -67,7 +67,7 @@ def _parse(output):
 
 
 @contextlib.contextmanager
-def iperf(remote, ip, time=80, interval=20, port=5002, udp=False, latency=2):
+def iperf(remote, ip, time=80, interval=20, port=5002, udp=False, latency=10):
     """Non-blocking context manager for run iperf client on backgroud.
 
     Args:

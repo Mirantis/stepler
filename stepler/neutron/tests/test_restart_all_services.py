@@ -122,7 +122,7 @@ def test_restart_all_neutron_services(cirros_image,
     add_router_interfaces(router_2, [subnet_2])
     server_3 = server_steps.create_servers(image=cirros_image,
                                            flavor=flavor,
-                                           networks=network_2,
+                                           networks=[network_2],
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
