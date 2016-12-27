@@ -67,7 +67,7 @@ def _parse(output):
 
 
 @contextlib.contextmanager
-def iperf(remote, ip, time=80, interval=20, port=5002, udp=False, latency=10):
+def iperf(remote, ip, time=80, interval=20, port=5002, udp=False):
     """Non-blocking context manager for run iperf client on backgroud.
 
     Args:
@@ -77,7 +77,6 @@ def iperf(remote, ip, time=80, interval=20, port=5002, udp=False, latency=10):
         interval (int, optional): interval to periodic report
         port (int, optional): iperf server port
         udp (bool, optional): flag whether use TCP or UDP protocol
-        latency (int, optional):  time to wait before iperf will be terminated
 
     Returns:
         dict: iperf parsed result. Contains ``intervals`` list and ``summary``
@@ -100,7 +99,7 @@ def iperf(remote, ip, time=80, interval=20, port=5002, udp=False, latency=10):
 
     yield result
 
-    remote.wait_process_done(pid, timeout=latency)
+    remote.wait_process_done(pid, timeout=time)
 
     # Check stderr is empty
     stderr = remote.check_call('cat {path}'.format(path=stderr_path)).stdout
