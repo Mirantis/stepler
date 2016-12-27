@@ -33,6 +33,7 @@ __all__ = sorted([  # sort for documentation
     'admin_ssh_key_path',
     'auth_url',
     'ip_by_host',
+    'F',
     'get_session',
     'session',
     'skip_test',
