@@ -8,7 +8,7 @@ Third party modules
 .. automodule:: stepler.third_party.bugs_file
    :members:
 
-.. automodule:: stepler.third_party.check_serializer
+.. automodule:: stepler.third_party.chunk_serializer
    :members:
 
 .. automodule:: stepler.third_party.context

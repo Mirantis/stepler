@@ -118,7 +118,6 @@ def servers_cleanup(uncleanable, get_server_steps):
     Args:
         uncleanable (AttrDict): data structure with skipped resources
     """
-
     server_steps = get_server_steps()
 
     def _get_servers():
@@ -321,12 +320,14 @@ def live_migration_servers(request,
     All created resources will be deleted after test.
 
     Example:
-        @pytest.mark.parametrized('live_migration_servers', [
-                {'boot_from_volume': True},
-                {'boot_from_volume': False}
-            ], indirect=True)
-        def test_foo(live_migration_servers):
-            pass
+        .. code:: python
+
+            @pytest.mark.parametrized('live_migration_servers', [
+                    {'boot_from_volume': True},
+                    {'boot_from_volume': False}
+                ], indirect=True)
+            def test_foo(live_migration_servers):
+                pass
 
     Args:
         request (obj): pytest SubRequest instance
@@ -454,12 +455,14 @@ def live_migration_server(request,
     Default is boot from image.
 
     Example:
-        @pytest.mark.parametrized('live_migration_server', [
-                {'boot_from_volume': True},
-                {'boot_from_volume': False}
-            ], indirect=True)
-        def test_foo(live_migration_server):
-            pass
+        .. code:: python
+
+            @pytest.mark.parametrized('live_migration_server', [
+                    {'boot_from_volume': True},
+                    {'boot_from_volume': False}
+                ], indirect=True)
+            def test_foo(live_migration_server):
+                pass
 
     Args:
         request (obj): pytest SubRequest instance
@@ -525,12 +528,14 @@ def servers_to_evacuate(request,
     All created resources will be deleted after test.
 
     Example:
-        @pytest.mark.parametrize('servers_to_evacuate', [
-                {'boot_from_volume': True},
-                {'boot_from_volume': False}
-            ], indirect=True)
-        def test_foo(servers_to_evacuate):
-            pass
+        .. code:: python
+
+            @pytest.mark.parametrize('servers_to_evacuate', [
+                    {'boot_from_volume': True},
+                    {'boot_from_volume': False}
+                ], indirect=True)
+            def test_foo(servers_to_evacuate):
+                pass
 
     Args:
         request (obj): pytest SubRequest instance
