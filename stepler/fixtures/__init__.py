@@ -18,6 +18,7 @@ Common fixtures
 # limitations under the License.
 
 from .env_dependent import *  # noqa
+from .fixture_retriever import *  # noqa
 from .openstack import *  # noqa
 from .report import *  # noqa
 from .skip import *  # noqa
@@ -26,6 +27,8 @@ __all__ = sorted([  # sort for documentation
     'admin_ssh_key_path',
     'auth_url',
     'ip_by_host',
+
+    'F',
 
     'get_session',
     'session',
