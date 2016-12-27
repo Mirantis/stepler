@@ -110,5 +110,7 @@ Deep to structure
    keystone
    neutron
    nova
+   swift
    os_faults
+   cli_clients
    third_party

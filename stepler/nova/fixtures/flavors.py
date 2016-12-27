@@ -83,12 +83,14 @@ def flavor(request, create_flavor):
 
 
     Example:
-        @pytest.mark.parametrize('flavor', [
-            dict(ram=2048, vcpus=2),
-            dict(ram=512, disk=1),
-        ], indirect=['flavor'])
-        def test_foo(instance):
-            # Instance will created with different flavors
+        .. code:: python
+
+            @pytest.mark.parametrize('flavor', [
+                dict(ram=2048, vcpus=2),
+                dict(ram=512, disk=1),
+            ], indirect=['flavor'])
+            def test_foo(instance):
+                # Instance will created with different flavors
 
     Args:
         request (obj): py.test SubRequest

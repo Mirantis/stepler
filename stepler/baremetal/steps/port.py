@@ -40,8 +40,7 @@ class IronicPortSteps(base.BaseSteps):
                      count=1,
                      check=True,
                      **kwargs):
-        """Step to create ironic ports based on a kwargs dictionary
-        of attributes.
+        """Step to create ironic ports with kwargs dictionary of attributes.
 
         Args:
             addresses (list): MAC addresses for ports
@@ -50,13 +49,14 @@ class IronicPortSteps(base.BaseSteps):
             check (bool): For checking ports were created correct
                 with correct addresses
             kwargs: Optional. A dictionary containing the attributes
-            of the resource that will be created:
-               extra (dictionary)- Extra node parameters
-               local_link_connection (dictionary)-
-                    Contains the port binding profile
-               pxe_enabled (bool)- Indicates whether
-                    PXE is enabled for the port
-               uuid (str)- The uuid of the port
+                of the resource that will be created:
+
+                * extra (dictionary) - Extra node parameters
+                * local_link_connection (dictionary) - Contains the port
+                  binding profile
+                * pxe_enabled (bool) - Indicates whether PXE is enabled
+                  for the port
+                * uuid (str) - The uuid of the port
 
         Return:
             ports (list): list of created ironic ports

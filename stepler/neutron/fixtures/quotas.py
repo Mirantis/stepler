@@ -39,7 +39,6 @@ def get_neutron_quota_steps(get_neutron_client):
     Returns:
         function: function to get instantiated neutron quota steps
     """
-
     def _get_steps(**credentials):
         return steps.QuotaSteps(get_neutron_client(**credentials).quotas)
 
@@ -70,14 +69,16 @@ def change_neutron_quota(request, current_project, neutron_quota_steps):
         This fixture should be parametrized.
 
     Example:
-        @pytest.mark.parametrize('change_neutron_quota', [{
-                    'network': 30,
-                    'router': 30,
-                    'subnet': 30,
-                    'port': 90}
-        ], indirect=True)
-        def test_foo(change_neutron_quota):
-            # test logic
+        .. code:: python
+
+            @pytest.mark.parametrize('change_neutron_quota', [{
+                        'network': 30,
+                        'router': 30,
+                        'subnet': 30,
+                        'port': 90}
+            ], indirect=True)
+            def test_foo(change_neutron_quota):
+                # test logic
 
     Args:
         request (obj): py.test's SubRequest
