@@ -353,6 +353,7 @@ def test_create_many_servers_boot_from_cinder(cirros_image,
 
 
 @pytest.mark.idempotent_id('4151cf32-9ffe-4cb2-bccb-a71aa8d993dc')
+@pytest.mark.requires('nova_ceph')
 @pytest.mark.usefixtures('disable_nova_use_cow_images')
 def test_image_access_host_device_when_resizing(
         ubuntu_image,
