@@ -71,7 +71,7 @@ class HypervisorSteps(base.BaseSteps):
         """
         if hypervisor.vcpus < flavor.vcpus:
             capacity = 0
-        if flavor.disk > 0:
+        elif flavor.disk > 0:
             capacity = min(
                 hypervisor.disk_available_least // flavor.disk,
                 hypervisor.free_ram_mb // flavor.ram)

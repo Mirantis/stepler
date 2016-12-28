@@ -131,6 +131,7 @@ def test_migration_with_cpu_workload(live_migration_servers,
 
 @pytest.mark.idempotent_id('77dcf03f-20d3-4d71-96f5-8fb1343f906a')
 @pytest.mark.parametrize('block_migration', [True])
+@pytest.mark.destructive
 def test_migration_with_disk_workload(live_migration_servers,
                                       server_steps,
                                       block_migration):
@@ -196,7 +197,7 @@ def test_migration_with_network_workload(
     #. Create network with subnet and router
     #. Create security group with allow ping rule
     #. Create flavor
-    #. Boot maximum allowed number of servers from image
+    #. Boot maximum allowed number of servers from image or volume
     #. Assign floating ips to servers
 
     **Steps:**
@@ -236,11 +237,16 @@ def test_migration_with_network_workload(
             server, timeout=config.PING_CALL_TIMEOUT)
 
 
-@pytest.mark.idempotent_id('fdcec5a2-75d8-4f76-ae28-aba865c6e778')
+@pytest.mark.idempotent_id('00495cbf-7476-4143-91fc-37e23626d548',
+                           block_migration=True)
+@pytest.mark.idempotent_id('fdcec5a2-75d8-4f76-ae28-aba865c6e778',
+                           block_migration=False)
 @pytest.mark.parametrize(
     'live_migration_servers, block_migration', [
-        (dict(boot_from_volume=True, attach_volume=True), False)],
-    ids=['boot_from_volume'],
+        (dict(boot_from_volume=False, attach_volume=True), True),
+        (dict(boot_from_volume=True, attach_volume=True), False)
+    ],
+    ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_servers'])
 def test_migration_with_attached_volume(live_migration_servers_with_volumes,
                                         server_steps,
@@ -253,7 +259,7 @@ def test_migration_with_attached_volume(live_migration_servers_with_volumes,
     #. Create network with subnet and router
     #. Create security group with allow ping rule
     #. Create flavor
-    #. Boot maximum allowed number of servers from volume
+    #. Boot maximum allowed number of servers from image or volume
     #. Attach volume to each server
     #. Assign floating ips to servers
 
@@ -312,7 +318,7 @@ def test_migration_with_large_flavors(live_migration_servers,
     #. Create network with subnet and router
     #. Create security group with allow ping rule
     #. Create flavor
-    #. Boot maximum allowed number of servers from volume
+    #. Boot maximum allowed number of servers from image or volume
     #. Attach volume to each server
     #. Assign floating ips to servers
 

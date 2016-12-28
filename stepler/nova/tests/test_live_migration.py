@@ -37,8 +37,7 @@ def test_network_connectivity_to_vm_during_live_migration(
         live_migration_server,
         server_steps,
         block_migration):
-    """**Scenario:** Verify network connectivity to the VM during live
-    migration.
+    """**Scenario:** Verify connectivity to the VM during live migration.
 
     **Setup:**
 
@@ -143,7 +142,7 @@ def test_server_migration_with_cpu_workload(live_migration_server,
 def test_server_migration_with_memory_workload(live_migration_server,
                                                nova_floating_ip, server_steps,
                                                block_migration):
-    """**Scenario:** LM of instance under workload.
+    """**Scenario:** LM of instance under memory workload.
 
     **Setup:**
 
@@ -193,6 +192,7 @@ def test_server_migration_with_memory_workload(live_migration_server,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
+@pytest.mark.destructive
 def test_server_migration_with_disk_workload(live_migration_server,
                                              nova_floating_ip, server_steps,
                                              block_migration):
