@@ -63,6 +63,7 @@ PERMITTED_CALLS = [
     'str',
     'time',
     'dict',
+    'set',
     'getfixturevalue',
 ]
 

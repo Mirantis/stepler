@@ -146,6 +146,11 @@ def test_ban_all_dhcp_agents_restart_one(network,
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
 
+    networks_on_agents = set()
+    for agent in agent_steps.get_agents(binary=config.NEUTRON_DHCP_SERVICE):
+        networks_on_agents.update(
+            network_steps.get_networks_for_dhcp_agent(agent))
+
     dhcp_agents_count = len(
         agent_steps.get_agents(binary=config.NEUTRON_DHCP_SERVICE))
 
@@ -172,11 +177,11 @@ def test_ban_all_dhcp_agents_restart_one(network,
     agent_steps.check_alive([dhcp_agent],
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
-    agent_steps.check_agents_count_for_net(network, expected_count=1)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=1, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
 
-    networks_count = len(
-        network_steps.get_networks(**{config.EXTERNAL_ROUTER: False}))
+    networks_count = len(networks_on_agents)
     network_steps.check_nets_count_for_agent(dhcp_agent,
                                              expected_count=networks_count)
 
@@ -236,6 +241,10 @@ def test_ban_all_dhcp_agents_restart_first(network,
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
 
+    networks_on_agents = set()
+    for agent in agent_steps.get_agents(binary=config.NEUTRON_DHCP_SERVICE):
+        networks_on_agents.update(
+            network_steps.get_networks_for_dhcp_agent(agent))
     free_agents = agent_steps.get_dhcp_agents_not_hosting_net(network)
     nodes_with_free_agents = os_faults_steps.get_nodes_for_agents(free_agents)
     os_faults_steps.terminate_service(config.NEUTRON_DHCP_SERVICE,
@@ -272,9 +281,9 @@ def test_ban_all_dhcp_agents_restart_first(network,
         agent_steps.check_network_rescheduled(
             network, banned_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
-    agent_steps.check_agents_count_for_net(network, expected_count=1)
-    networks_count = len(
-        network_steps.get_networks(**{config.EXTERNAL_ROUTER: False}))
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=1, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+    networks_count = len(networks_on_agents)
     network_steps.check_nets_count_for_agent(agent_to_clear,
                                              expected_count=networks_count)
     server_steps.check_dhcp_on_cirros_server(server)
@@ -335,7 +344,8 @@ def test_dhcp_agent_after_drop_rabbit_port(network,
                             timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
     agent_steps.check_network_rescheduled(
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
-    agent_steps.check_agents_count_for_net(network, expected_count=2)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=2, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
 
     os_faults_steps.remove_rule_to_drop_port(nodes_with_dhcp,
@@ -409,7 +419,8 @@ def test_ban_dhcp_agent_many_times(network,
 
     agent_steps.check_alive([agent_to_ban],
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
-    agent_steps.check_agents_count_for_net(network, expected_count=2)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=2, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
 
 
@@ -483,8 +494,8 @@ def test_destroy_controller_check_dhcp(network,
                             timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
     agent_steps.check_network_rescheduled(
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
-    agent_steps.check_agents_count_for_net(network,
-                                           expected_count=2)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=2, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     network_steps.check_nets_count_for_agent(dhcp_agent,
                                              expected_count=0)
     server_steps.check_dhcp_on_cirros_server(server)
@@ -616,8 +627,9 @@ def test_change_default_dhcp_agents_count_for_net(
     """
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
-    agent_steps.check_agents_count_for_net(network,
-                                           expected_count=agents_count_for_net)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=agents_count_for_net,
+        timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
     dhcp_agents_count = len(
         agent_steps.get_agents(binary=config.NEUTRON_DHCP_SERVICE))
@@ -634,8 +646,9 @@ def test_change_default_dhcp_agents_count_for_net(
             network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
         expected_count = min(agents_count_for_net, free_agents_count - 1)
-        agent_steps.check_agents_count_for_net(network,
-                                               expected_count=expected_count)
+        agent_steps.check_agents_count_for_net(
+            network, expected_count=expected_count,
+            timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
     dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
     node_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
@@ -650,7 +663,8 @@ def test_change_default_dhcp_agents_count_for_net(
     agent_steps.check_alive([dhcp_agent],
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
-    agent_steps.check_agents_count_for_net(network, expected_count=1)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=1, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
 
 
@@ -703,7 +717,8 @@ def test_kill_check_dhcp_agents(network,
                                            signal=signal.SIGKILL)
     agent_steps.check_alive([dhcp_agent],
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
-    agent_steps.check_agents_count_for_net(network, expected_count=2)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=2, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     dhcp_agents = agent_steps.get_dhcp_agents_for_net(network)
     agent_steps.check_alive(dhcp_agents,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
@@ -937,8 +952,9 @@ def test_check_dhcp_agents_for_net_after_restart(
     net_dhcp_agents = agent_steps.get_dhcp_agents_for_net(network)
     initial_count = len(net_dhcp_agents)
 
-    agent_steps.check_agents_count_for_net(network,
-                                           expected_count=initial_count)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=initial_count,
+        timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
     all_dhcp_agents = agent_steps.get_agents(
         binary=config.NEUTRON_DHCP_SERVICE)
@@ -954,8 +970,9 @@ def test_check_dhcp_agents_for_net_after_restart(
     agent_steps.check_alive(all_dhcp_agents,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
-    agent_steps.check_agents_count_for_net(network,
-                                           expected_count=initial_count)
+    agent_steps.check_agents_count_for_net(
+        network, expected_count=initial_count,
+        timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
 
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
@@ -1036,7 +1053,8 @@ def test_check_tap_interfaces_for_net_after_restart(
 
 
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3",
-                      "l3_agent_nodes_count >= 3")
+                      "l3_agent_nodes_count >= 3",
+                      "not l3_ha and not dvr")
 @pytest.mark.idempotent_id('ce6dcbbe-583e-495e-b41a-084ccc8dff94')
 @pytest.mark.parametrize(
     'change_neutron_quota',
@@ -1089,11 +1107,8 @@ def test_ban_two_dhcp_and_two_l3_agents(router,
     controllers = os_faults_steps.get_nodes_for_agents(dhcp_agents)
 
     log_file = config.AGENT_LOGS[config.NEUTRON_SERVER_SERVICE][0]
-    lines_for_hosts = {}
-    for host in controllers:
-        node = os_faults_steps.get_node(fqdns=[host.fqdn])
-        lines_count = os_faults_steps.get_file_line_count(node, log_file)
-        lines_for_hosts[host.fqdn] = lines_count
+    line_count_file_path = os_faults_steps.store_file_line_count(controllers,
+                                                                 log_file)
 
     network = create_max_networks_with_instances(router)[0]
 
@@ -1125,12 +1140,10 @@ def test_ban_two_dhcp_and_two_l3_agents(router,
             l3_agent,
             timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
-    for host in controllers:
-        node = os_faults_steps.get_node(fqdns=[host.fqdn])
-        os_faults_steps.check_string_in_file(
-            node,
-            file_name=log_file,
-            keyword=config.STR_ERROR,
-            non_matching=config.STR_NEUTRON_API_V2_ERROR,
-            start_line_number=lines_for_hosts[host.fqdn],
-            must_present=False)
+    os_faults_steps.check_string_in_file(
+        controllers,
+        file_name=log_file,
+        keyword=config.STR_ERROR,
+        non_matching=config.STR_NEUTRON_API_V2_ERROR,
+        start_line_number_file=line_count_file_path,
+        must_present=False)

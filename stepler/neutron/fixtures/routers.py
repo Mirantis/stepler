@@ -186,7 +186,8 @@ def reschedule_router_active_l3_agent(os_faults_steps, agent_steps):
 
     def _reschedule_router(router, target_nodes):
         active_agent = agent_steps.get_l3_agents_for_router(
-            router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+            router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
+            timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
         if active_agent['host'] not in target_nodes.get_fqdns():
             agents = agent_steps.get_l3_agents_for_router(router)
             agents_nodes = os_faults_steps.get_nodes_for_agents(

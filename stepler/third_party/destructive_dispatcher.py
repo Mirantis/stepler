@@ -22,6 +22,7 @@ Destructive scenarios are marked via decorator ``@pytest.mark.destructive``.
 # limitations under the License.
 
 import logging
+import time
 
 import pytest
 
@@ -43,6 +44,9 @@ def pytest_addoption(parser):
                      default=False,
                      help="Force run destructive tests even no "
                           "`--snapshot-name` passed")
+    parser.addoption("--revert-timeout", '-R', action="store", type=int,
+                     default=2,
+                     help="Time to wait for cloud to be operable after revert")
 
 
 @pytest.hookimpl(trylast=True)
@@ -118,6 +122,7 @@ def pytest_runtest_teardown(item, nextitem):
 
     if do_revert:
         revert_environment(destructor, snapshot_name)
+        time.sleep(item.session.config.option.revert_timeout * 60)
 
 
 def revert_environment(destructor, snapshot_name):

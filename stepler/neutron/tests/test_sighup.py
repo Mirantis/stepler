@@ -55,7 +55,8 @@ def test_restart_agent_controller_with_sighup(agent_steps,
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][0]
-    line_count = os_faults_steps.get_file_line_count(node, log_file)
+    line_count_file_path = os_faults_steps.store_file_line_count(node,
+                                                                 log_file)
 
     pid = os_faults_steps.get_process_pid(node, agent_name)
 
@@ -68,18 +69,25 @@ def test_restart_agent_controller_with_sighup(agent_steps,
     os_faults_steps.check_process_pid(node, process_name=agent_name,
                                       expected_pid=pid)
 
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_ERROR,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_TRACE,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_SIGHUP,
-                                         start_line_number=line_count,
-                                         expected_count=1)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_ERROR,
+        non_matching='ERROR %(name)s',
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_TRACE,
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_SIGHUP,
+        start_line_number_file=line_count_file_path,
+        expected_count=1)
 
 
 @pytest.mark.idempotent_id('336891a3-d68b-4069-be17-93431fe9b901',
@@ -105,7 +113,8 @@ def test_restart_neutron_server_with_sighup(os_faults_steps,
         service_names=[config.NOVA_API, config.NEUTRON_SERVER_SERVICE])
 
     log_file = config.AGENT_LOGS[config.NEUTRON_SERVER_SERVICE][0]
-    line_count = os_faults_steps.get_file_line_count(node, log_file)
+    line_count_file_path = os_faults_steps.store_file_line_count(node,
+                                                                 log_file)
 
     pid = os_faults_steps.get_process_pid(node, config.NEUTRON_SERVER_SERVICE,
                                           get_parent=is_parent)
@@ -120,26 +129,35 @@ def test_restart_neutron_server_with_sighup(os_faults_steps,
                                       check_parent=is_parent,
                                       expected_pid=pid)
 
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_ERROR,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_TRACE,
-                                         start_line_number=line_count,
-                                         must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_ERROR,
+        non_matching='ERROR %(name)s',
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_TRACE,
+        start_line_number_file=line_count_file_path,
+        must_present=False)
 
     # TODO(ssokolov) find a way to remove `if`-statement from test
     if is_parent:
-        os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                             keyword=config.STR_SIGHUP,
-                                             start_line_number=line_count,
-                                             must_present=True)
+        os_faults_steps.check_string_in_file(
+            node,
+            file_name=log_file,
+            keyword=config.STR_SIGHUP,
+            start_line_number_file=line_count_file_path,
+            must_present=True)
     else:
-        os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                             keyword=config.STR_SIGHUP,
-                                             start_line_number=line_count,
-                                             expected_count=1)
+        os_faults_steps.check_string_in_file(
+            node,
+            file_name=log_file,
+            keyword=config.STR_SIGHUP,
+            start_line_number_file=line_count_file_path,
+            expected_count=1)
 
 
 @pytest.mark.idempotent_id('7e1a9733-df65-49af-9557-06274dd65bf4',
@@ -168,7 +186,8 @@ def test_restart_metadata_agent_controller_with_sighup(agent_steps,
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][0]
-    line_count = os_faults_steps.get_file_line_count(node, log_file)
+    line_count_file_path = os_faults_steps.store_file_line_count(node,
+                                                                 log_file)
 
     pid = os_faults_steps.get_process_pid(node, agent_name,
                                           get_parent=is_parent)
@@ -183,18 +202,25 @@ def test_restart_metadata_agent_controller_with_sighup(agent_steps,
                                       check_parent=is_parent,
                                       expected_pid=pid)
 
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_ERROR,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_TRACE,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_SIGHUP,
-                                         start_line_number=line_count,
-                                         expected_count=1)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_ERROR,
+        non_matching='ERROR %(name)s',
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_TRACE,
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_SIGHUP,
+        start_line_number_file=line_count_file_path,
+        expected_count=1)
 
 
 @pytest.mark.requires("dvr")
@@ -224,7 +250,8 @@ def test_restart_metadata_agent_compute_with_sighup(agent_steps,
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][1]
-    line_count = os_faults_steps.get_file_line_count(node, log_file)
+    line_count_file_path = os_faults_steps.store_file_line_count(node,
+                                                                 log_file)
 
     pid = os_faults_steps.get_process_pid(node, agent_name,
                                           get_parent=is_parent)
@@ -239,18 +266,25 @@ def test_restart_metadata_agent_compute_with_sighup(agent_steps,
                                       check_parent=is_parent,
                                       expected_pid=pid)
 
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_ERROR,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_TRACE,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_SIGHUP,
-                                         start_line_number=line_count,
-                                         expected_count=1)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_ERROR,
+        non_matching='ERROR %(name)s',
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_TRACE,
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_SIGHUP,
+        start_line_number_file=line_count_file_path,
+        expected_count=1)
 
 
 @pytest.mark.requires("dvr")
@@ -275,7 +309,8 @@ def test_restart_l3_agent_compute_with_sighup(agent_steps,
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][1]
-    line_count = os_faults_steps.get_file_line_count(node, log_file)
+    line_count_file_path = os_faults_steps.store_file_line_count(node,
+                                                                 log_file)
 
     pid = os_faults_steps.get_process_pid(node, agent_name)
 
@@ -288,15 +323,22 @@ def test_restart_l3_agent_compute_with_sighup(agent_steps,
     os_faults_steps.check_process_pid(node, process_name=agent_name,
                                       expected_pid=pid)
 
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_ERROR,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_TRACE,
-                                         start_line_number=line_count,
-                                         must_present=False)
-    os_faults_steps.check_string_in_file(node, file_name=log_file,
-                                         keyword=config.STR_SIGHUP,
-                                         start_line_number=line_count,
-                                         expected_count=1)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_ERROR,
+        non_matching='ERROR %(name)s',
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_TRACE,
+        start_line_number_file=line_count_file_path,
+        must_present=False)
+    os_faults_steps.check_string_in_file(
+        node,
+        file_name=log_file,
+        keyword=config.STR_SIGHUP,
+        start_line_number_file=line_count_file_path,
+        expected_count=1)

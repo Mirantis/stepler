@@ -439,6 +439,8 @@ PORT_DEVICE_ID_RESERVED_DHCP = 'reserved_dhcp_port'
 
 PORT_BINDING_HOST_ID = 'binding:host_id'
 
+HA_L3_AGENT_APPEARING_TIMEOUT = 60
+
 # Horizon
 BROWSER_WINDOW_SIZE = map(
     int, (os.environ.get('BROWSER_WINDOW_SIZE', ('1920,1080'))).split(','))

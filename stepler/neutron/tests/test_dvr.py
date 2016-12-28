@@ -1257,17 +1257,12 @@ def test_check_router_update_notification_for_l3_agents(
     """
     nodes = os_faults_steps.get_nodes_with_services(
         service_names=[config.NOVA_COMPUTE, config.NEUTRON_L3_SERVICE])
-    host_names = [host.fqdn for host in nodes.hosts]
-    server_host_name = host_names[0]
-    other_host_names = host_names[1:]
+    server_host_name = next(host.fqdn for host in nodes.hosts)
 
     log_file = config.AGENT_LOGS[config.NEUTRON_L3_SERVICE][1]
 
-    line_counts = {}
-    for host_name in host_names:
-        node = os_faults_steps.get_node(fqdns=[host_name])
-        line_counts[host_name] = os_faults_steps.get_file_line_count(
-            node, log_file)
+    line_count_file_path = os_faults_steps.store_file_line_count(nodes,
+                                                                 log_file)
 
     network = net_subnet_router[0]
     server = server_steps.create_servers(
@@ -1285,16 +1280,14 @@ def test_check_router_update_notification_for_l3_agents(
     os_faults_steps.check_string_in_file(
         server_node, file_name=log_file,
         keyword=config.STR_L3_AGENT_NOTIFICATION,
-        start_line_number=line_counts[server_host_name],
+        start_line_number_file=line_count_file_path,
         expected_count=3)
 
-    for host_name in other_host_names:
-        node = os_faults_steps.get_node(fqdns=[host_name])
-        os_faults_steps.check_string_in_file(
-            node, file_name=log_file,
-            keyword=config.STR_L3_AGENT_NOTIFICATION,
-            start_line_number=line_counts[host_name],
-            must_present=False)
+    os_faults_steps.check_string_in_file(
+        nodes - server_node, file_name=log_file,
+        keyword=config.STR_L3_AGENT_NOTIFICATION,
+        start_line_number_file=line_count_file_path,
+        must_present=False)
 
 
 @pytest.mark.idempotent_id('11703a9c-2620-49c7-b834-0bffbed975d6')
@@ -1424,15 +1417,11 @@ def test_add_router_interface_with_port_id(create_router,
     """
     nodes = os_faults_steps.get_nodes_with_services(
         service_names=[config.NEUTRON_SERVER_SERVICE])
-    host_names = [host.fqdn for host in nodes.hosts]
 
     log_file = config.AGENT_LOGS[config.NEUTRON_SERVER_SERVICE][0]
 
-    line_counts = {}
-    for host_name in host_names:
-        node = os_faults_steps.get_node(fqdns=[host_name])
-        line_counts[host_name] = os_faults_steps.get_file_line_count(
-            node, log_file)
+    line_count_file_path = os_faults_steps.store_file_line_count(nodes,
+                                                                 log_file)
 
     router_name = next(utils.generate_ids())
     router = create_router(router_name, distributed=True)
@@ -1440,10 +1429,8 @@ def test_add_router_interface_with_port_id(create_router,
 
     time.sleep(config.ERROR_GATEWAY_PORT_CHECK_TIME)
 
-    for host_name in host_names:
-        node = os_faults_steps.get_node(fqdns=[host_name])
-        os_faults_steps.check_string_in_file(
-            node, file_name=log_file,
-            keyword=config.STR_ERROR_GATEWAY_PORT,
-            start_line_number=line_counts[host_name],
-            must_present=False)
+    os_faults_steps.check_string_in_file(
+        nodes, file_name=log_file,
+        keyword=config.STR_ERROR_GATEWAY_PORT,
+        start_line_number_file=line_count_file_path,
+        must_present=False)
