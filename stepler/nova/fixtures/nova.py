@@ -17,11 +17,14 @@ Nova fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import is_
 from novaclient.api_versions import APIVersion
 from novaclient.client import Client
+from novaclient import exceptions as exc
 import pytest
 
 from stepler import config
+from stepler.third_party import waiter
 
 __all__ = [
     'get_nova_client',
@@ -57,6 +60,31 @@ def get_nova_client(get_session):
         return client
 
     return _get_nova_client
+
+
+def wait_nova_available(get_availability_zone_steps):
+    """Function to wait for nova availability.
+
+    Args:
+        get_availability_zone_steps (function): function to get availability
+            zone steps.
+
+    Raises:
+        AssertionError: if not all hosts are active
+        TimeoutExpired: if nova is not available after timeout
+    """
+    def _check_available():
+        try:
+            get_availability_zone_steps()
+            is_available = True
+        except exc.ClientException:
+            is_available = False
+        return waiter.expect_that(is_available, is_(True))
+
+    waiter.wait(_check_available,
+                timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT)
+    zone_steps = get_availability_zone_steps()
+    zone_steps.check_all_active_hosts_available()
 
 
 @pytest.fixture
@@ -95,14 +123,11 @@ def change_nova_config(option, value, scope='function', services=None):
                 file_path=config.NOVA_CONFIG_PATH,
                 option=option,
                 value=value):
-
-            zone_steps = get_availability_zone_steps()
-            zone_steps.check_all_active_hosts_available()
+            wait_nova_available(get_availability_zone_steps)
 
             yield
 
-        zone_steps = get_availability_zone_steps()
-        zone_steps.check_all_active_hosts_available()
+        wait_nova_available(get_availability_zone_steps)
 
     return _change_nova_config
 
