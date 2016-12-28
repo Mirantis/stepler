@@ -19,9 +19,11 @@ Nova fixtures
 
 from novaclient.api_versions import APIVersion
 from novaclient.client import Client
+from novaclient import exceptions as exc
 import pytest
 
 from stepler import config
+from stepler.third_party import waiter
 
 __all__ = [
     'get_nova_client',
@@ -47,9 +49,22 @@ def get_nova_client(get_session):
     Returns:
         function: function to get nova client
     """
+
+    def _check_nova_available(client):
+        try:
+            client.versions.get_current()
+            is_available = True
+        except exc.ClientException:
+            is_available = False
+        return waiter.expect_that(is_available)
+
     def _get_nova_client(**credentials):
         client = Client(version=config.CURRENT_NOVA_VERSION,
                         session=get_session(**credentials))
+
+        waiter.wait(_check_nova_available,
+                    args=(client,),
+                    timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT)
 
         current_microversion = client.versions.get_current().version
         client.api_version = APIVersion(current_microversion)
@@ -95,7 +110,6 @@ def change_nova_config(option, value, scope='function', services=None):
                 file_path=config.NOVA_CONFIG_PATH,
                 option=option,
                 value=value):
-
             zone_steps = get_availability_zone_steps()
             zone_steps.check_all_active_hosts_available()
 

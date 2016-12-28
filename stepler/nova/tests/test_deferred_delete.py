@@ -278,10 +278,13 @@ def test_force_delete_server_before_deferred_cleanup(
         attach_volume_to_server(server_1, volume)
 
         server_steps.delete_servers([server_1], soft=True, check_status=True)
+        volume_steps.check_volume_status(volume,
+                                         [config.STATUS_INUSE])
 
     volume_steps.check_volume_status(
         volume,
         [config.STATUS_AVAILABLE],
+        transit_statuses=[config.STATUS_INUSE],
         timeout=config.VOLUME_AVAILABLE_TIMEOUT)
     volume_steps.check_volume_attachments(volume, server_ids=None)
 
