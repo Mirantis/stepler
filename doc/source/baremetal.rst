@@ -12,19 +12,19 @@ Ironic
 Ironic node tests
 -----------------
 
-.. automodule:: stepler.baremetal.tests.test_node_create
-   :members:
-
-.. automodule:: stepler.baremetal.tests.test_node_set_maintenance
-   :members:
-
 .. automodule:: stepler.baremetal.tests.test_baremetal_node
+   :members:
+
+.. automodule:: stepler.baremetal.tests.test_boot_baremetal_server
+   :members:
+
+.. automodule:: stepler.baremetal.tests.test_ironic_services
    :members:
 
 --------------------
 Ironic chassis tests
 --------------------
 
-.. automodule:: stepler.baremetal.tests.test_chassis_create
+.. automodule:: stepler.baremetal.tests.test_baremetal_chassis
    :members:
 

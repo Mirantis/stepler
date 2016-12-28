@@ -134,21 +134,21 @@ class FlavorSteps(BaseSteps):
 
         Args:
             check (bool): flag whether to check step or not
+            **kwgs (dict, optional): could be:
 
-        kwgs could be:
-            name (str): Descriptive name of the flavor
-            ram (int): Memory in MB for the flavor
-            vcpus (int): Number of VCPUs for the flavor
-            disk (int): Size of local disk in GB
-            id (str): ID for the flavor (optional). You can use the reserved
-                value ``"auto"`` to have Nova generate a UUID for the flavor
-                in cases where you cannot simply pass ``None``.
-            OS-FLV-EXT-DATA (int): Ephemeral space in MB
-            swap (int): Swap space in MB
-            rxtx_factor (float): RX/TX factor
-            os-flavor-access (bool): flag whether flavor should be
-                public or not
-            check (bool): flag whether to check step or not
+                * name (str): Descriptive name of the flavor
+                * ram (int): Memory in MB for the flavor
+                * vcpus (int): Number of VCPUs for the flavor
+                * disk (int): Size of local disk in GB
+                * id (str): ID for the flavor (optional). You can use the
+                  reserved value ``"auto"`` to have Nova generate a UUID for
+                  the flavor in cases where you cannot simply pass ``None``.
+                * OS-FLV-EXT-DATA (int): Ephemeral space in MB
+                * swap (int): Swap space in MB
+                * rxtx_factor (float): RX/TX factor
+                * os-flavor-access (bool): flag whether flavor should be
+                  public or not
+                * check (bool): flag whether to check step or not
 
         Returns:
             object: nova flavor
@@ -165,21 +165,21 @@ class FlavorSteps(BaseSteps):
 
         Args:
             check (bool): flag whether to check step or not
+            **kwgs (dict, optional): could be:
 
-        kwgs could be:
-            name (str): Descriptive name of the flavor
-            ram (int): Memory in MB for the flavor
-            vcpus (int): Number of VCPUs for the flavor
-            disk (int): Size of local disk in GB
-            id (str): ID for the flavor (optional). You can use the reserved
-                value ``"auto"`` to have Nova generate a UUID for the flavor
-                in cases where you cannot simply pass ``None``.
-            OS-FLV-EXT-DATA (int): Ephemeral space in MB
-            swap (int): Swap space in MB
-            rxtx_factor (float): RX/TX factor
-            os-flavor-access (bool): flag whether flavor should be
-                public or not
-            check (bool): flag whether to check step or not
+                * name (str): Descriptive name of the flavor
+                * ram (int): Memory in MB for the flavor
+                * vcpus (int): Number of VCPUs for the flavor
+                * disk (int): Size of local disk in GB
+                * id (str): ID for the flavor (optional). You can use the
+                  reserved value ``"auto"`` to have Nova generate a UUID for
+                  the flavor in cases where you cannot simply pass ``None``.
+                * OS-FLV-EXT-DATA (int): Ephemeral space in MB
+                * swap (int): Swap space in MB
+                * rxtx_factor (float): RX/TX factor
+                * os-flavor-access (bool): flag whether flavor should be
+                  public or not
+                * check (bool): flag whether to check step or not
 
         Returns:
             list: nova flavor object(s)
