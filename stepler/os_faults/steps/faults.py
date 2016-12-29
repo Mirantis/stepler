@@ -530,11 +530,11 @@ class OsFaultsSteps(base.BaseSteps):
             result, only_contains(has_properties(status=config.STATUS_FAILED)))
 
     @steps_checker.step
-    def get_file_line_count(self, node, file_name, check=True):
-        """Step to get line count in a textual file on a single node.
+    def store_file_line_count(self, node, file_name, check=True):
+        """Step to store line count in a textual file on nodes.
 
         Args:
-            node (NodeCollection): node
+            node (NodeCollection): nodes
             file_name (str): name of textual file
             check (bool): flag whether check step or not
 
@@ -543,11 +543,12 @@ class OsFaultsSteps(base.BaseSteps):
                 failed in case of check=True
 
         Returns:
-            int: line count
+            str: path to file with stored lines counts
         """
-        cmd = "cat {} | wc -l".format(file_name)
-        result = self.execute_cmd(node, cmd, check=check)
-        return int(result[0].payload['stdout'])
+        file_to_store = tempfile.mktemp()
+        cmd = "cat {} | wc -l > {}".format(file_name, file_to_store)
+        self.execute_cmd(node, cmd, check=check)
+        return file_to_store
 
     @steps_checker.step
     def get_process_pid(self, node, process_name, get_parent=True,
@@ -664,17 +665,18 @@ class OsFaultsSteps(base.BaseSteps):
                              file_name,
                              keyword,
                              non_matching=None,
-                             start_line_number=None,
+                             start_line_number_file=None,
                              must_present=True,
                              expected_count=None):
         """Step to check number of keywords in a textual file on a single node.
 
         Args:
-            node (NodeCollection): node
+            node (NodeCollection): nodes
             file_name (str): name of textual file
             keyword (str): string to search
             non_matching (str|None): string to be absent in result
-            start_line_number (int|None): number of first line for searching
+            start_line_number_file (str|None): file path with number of first
+                line for searching
             must_present (bool): flag that keyword must be present or not
             expected_count (int|None): expected count of lines containing
                 keyword
@@ -684,24 +686,27 @@ class OsFaultsSteps(base.BaseSteps):
                 failed in case of check=True or real count of lines with
                 keyword is not equal to expected one
         """
-        start_line_number = start_line_number or 0
-        cmd = "tail -n +{0} {1} | grep {2}".format(start_line_number,
-                                                   file_name,
-                                                   moves.shlex_quote(keyword))
+        if start_line_number_file:
+            start_line_number_cmd = 'cat ' + start_line_number_file
+        else:
+            start_line_number_cmd = 'echo 0'
+        cmd = "tail -n +$({0}) {1} | grep {2}".format(
+            start_line_number_cmd, file_name,
+            moves.shlex_quote(keyword))
         if non_matching:
             cmd += " | grep -v {0}".format(moves.shlex_quote(non_matching))
-        cmd += " | wc -l"
 
         if expected_count is None:
             if must_present:
-                matcher = is_(greater_than(0))
+                matcher = greater_than(0)
             else:
-                matcher = is_(0)
+                matcher = 0
         else:
-            matcher = is_(expected_count)
-        result = self.execute_cmd(node, cmd)
-        value = int(result[0].payload['stdout'])
-        assert_that(value, matcher)
+            matcher = expected_count
+        result = self.execute_cmd(node, cmd, check=False)
+        for node_result in result:
+            lines = node_result.payload['stdout_lines']
+            assert_that(lines, has_length(matcher))
 
     @steps_checker.step
     def get_ovs_flows_cookies(self, node, check=True):

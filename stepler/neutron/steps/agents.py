@@ -139,21 +139,28 @@ class AgentSteps(base.BaseSteps):
         return free_agents
 
     @steps_checker.step
-    def check_agents_count_for_net(self, network, expected_count):
+    def check_agents_count_for_net(self, network, expected_count, timeout=0):
         """Step to check DHCP agents count for network.
 
         Args:
             network (dict): network to check
             expected_count (int): expected DHCP agents count for network
+            timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if agents are not alive
             AssertionError: if check failed
         """
-        dhcp_agents = self.get_dhcp_agents_for_net(network, check=False)
+        def _get_expected_dhcp_agents_count():
+            dhcp_agents = self.get_dhcp_agents_for_net(network, check=False)
+            waiter.expect_that(dhcp_agents, has_length(expected_count))
+            return dhcp_agents
+
+        dhcp_agents = waiter.wait(_get_expected_dhcp_agents_count,
+                                  timeout_seconds=timeout)
+
         if expected_count and dhcp_agents:
             self.check_alive(dhcp_agents)
-        assert_that(dhcp_agents, has_length(expected_count))
 
     @steps_checker.step
     def check_network_rescheduled(self, network, old_dhcp_agent, timeout=0):
@@ -196,7 +203,8 @@ class AgentSteps(base.BaseSteps):
         waiter.wait(_check_network_is_on_agent, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_l3_agents_for_router(self, router, filter_attrs=None, check=True):
+    def get_l3_agents_for_router(self, router, filter_attrs=None, check=True,
+                                 timeout=0):
         """Step to retrieve router L3 agents dicts list.
 
         Args:
@@ -204,6 +212,7 @@ class AgentSteps(base.BaseSteps):
             filter_attrs (dict, optional): filter attrs dict to return only
                 matched l3_agents
             check (bool, optional): flag whether to check step or not
+            timeout (int): seconds to wait a result of check
 
         Returns:
             list: list of L3 agents dicts for router
@@ -212,14 +221,21 @@ class AgentSteps(base.BaseSteps):
             AssertionError: if list of agents is empty
         """
         filter_attrs = filter_attrs or {}
-        l3_agents = self._client.get_l3_agents_for_router(router['id'])
-        for key, prop in filter_attrs.items():
-            l3_agents = [agent for agent in l3_agents if agent[key] == prop]
-        if check:
-            assert_that(l3_agents, is_not(empty()))
-            if filter_attrs:
-                assert_that(l3_agents, only_contains(
-                    has_entries(**filter_attrs)))
+
+        l3_agents = []
+
+        def _get_l3_agents_for_router():
+            agents = self._client.get_l3_agents_for_router(router['id'])
+            for key, prop in filter_attrs.items():
+                agents = [agent for agent in agents if agent[key] == prop]
+            if check:
+                waiter.expect_that(agents, is_not(empty()))
+            l3_agents[:] = agents
+            return True
+
+        waiter.wait(_get_l3_agents_for_router, timeout_seconds=timeout)
+        if check and filter_attrs:
+            assert_that(l3_agents, only_contains(has_entries(**filter_attrs)))
 
         return l3_agents
 

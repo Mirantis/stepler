@@ -135,7 +135,8 @@ def test_ban_l3_agent_with_ping_public_ip(
     #. Delete flavor
     """
     agent = agent_steps.get_l3_agents_for_router(
-        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
+        timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
     agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -189,7 +190,8 @@ def test_delete_ns_for_router_on_node_with_active_ha_state(
     #. Delete flavor
     """
     agent = agent_steps.get_l3_agents_for_router(
-        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
+        timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
     agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -585,7 +587,8 @@ def test_ping_routing_during_l3_agent_ban(
     server_steps.attach_floating_ip(server, nova_floating_ip)
 
     old_agent = agent_steps.get_l3_agents_for_router(
-        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
+        timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
     old_agent_node = os_faults_steps.get_nodes_for_agents([old_agent])
     router_port = port_steps.get_port(
         device_owner=config.PORT_DEVICE_OWNER_ROUTER_GATEWAY,
@@ -659,7 +662,8 @@ def test_move_router_ha_interface_to_down_state(
     server_steps.attach_floating_ip(server, nova_floating_ip)
 
     agent = agent_steps.get_l3_agents_for_router(
-        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+        router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
+        timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
     agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
     with server_steps.check_ping_loss_context(
