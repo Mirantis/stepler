@@ -24,6 +24,7 @@ from .projects import *  # noqa
 from .roles import *  # noqa
 from .tokens import *  # noqa
 from .users import *  # noqa
+from .services import *  # noqa
 
 __all__ = [
     'DomainSteps',
@@ -32,4 +33,5 @@ __all__ = [
     'RoleSteps',
     'UserSteps',
     'TokenSteps',
+    'ServiceSteps'
 ]
