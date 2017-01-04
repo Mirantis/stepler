@@ -250,3 +250,46 @@ def test_create_user_and_authenticate(new_user_with_project,
     """
     server_steps = get_server_steps(**new_user_with_project)
     server_steps.get_servers(check=False)
+
+
+services_list = [
+    "ceilometer",
+    "cinder",
+    "cinderv2",
+    "glance",
+    "heat",
+    "heat-cfn",
+    "keystone",
+    "neutron",
+    "nova",
+    "nova-ec2",
+    "nova20"
+]
+
+
+@pytest.mark.idempotent_id('1304cc00-4797-48ee-9b36-fa2997ba96d6',
+                           service_name='ceilometer')
+@pytest.mark.idempotent_id('993d7997-43c9-4fa0-9bb2-82e138022574',
+                           service_name='cinder')
+@pytest.mark.idempotent_id('2c48707f-863b-4849-8b3f-f39643abf23c',
+                           service_name='cinderv2')
+@pytest.mark.idempotent_id('ebeea432-7045-4f95-bcf7-eceea9ab874a',
+                           service_name='glance')
+@pytest.mark.idempotent_id('220a4390-64d1-49d1-8b39-a07b96cfa47f',
+                           service_name='heat')
+@pytest.mark.idempotent_id('6a0cc9ee-e102-4754-8adc-041ccad86a53',
+                           service_name='heat-cfn')
+@pytest.mark.idempotent_id('ee5acce0-ca90-43d5-9167-4df322bece79',
+                           service_name='keystone')
+@pytest.mark.idempotent_id('93d319d2-2faf-47df-8026-9bee641bf859',
+                           service_name='neutron')
+@pytest.mark.idempotent_id('64ce7134-de41-48cd-a015-2e4c4f687e9f',
+                           service_name='nova')
+@pytest.mark.idempotent_id('ce7eed04-b057-4076-aac7-f5042b50b8e6',
+                           service_name='nova-ec2')
+@pytest.mark.idempotent_id('8274b37e-6dca-4fdc-9725-e07fdf185047',
+                           service_name='nova20')
+@pytest.mark.parametrize('service_name', services_list)
+def test_service_list(service_steps, service_name):
+    service = service_steps.get_service(service_name)
+    service_steps.check_service_presence(service)
