@@ -100,15 +100,21 @@ CURRENT_IRONIC_VERSION = '1'
 CURRENT_IRONIC_MICRO_VERSION = '1.9'
 
 # SERVICES
+CINDER = 'cinder'
+CINDERV2 = 'cinderv2'
 CINDER_API = 'cinder-api'
 CINDER_SCHEDULER = 'cinder-scheduler'
 CINDER_VOLUME = 'cinder-volume'
 CINDER_SERVICES = (CINDER_API, CINDER_SCHEDULER, CINDER_VOLUME)
+GLANCE = 'glance'
 GLANCE_API = 'glance-api'
 GLANCE_GLARE = 'glance-glare'
 GLANCE_REGISTRY = 'glance-registry'
 GLANCE_SERVICES = (GLANCE_API, GLANCE_GLARE, GLANCE_REGISTRY)
 KEYSTONE = 'keystone'
+NOVA = 'nova'
+NOVA20 = 'nova20'
+NOVA_EC2 = 'nova-ec2'
 NOVA_API = 'nova-api'
 NOVA_COMPUTE = 'nova-compute'
 IRONIC_API = 'ironic-api'
@@ -117,6 +123,9 @@ HORIZON = 'horizon'
 SWIFT = 'swift'
 RABBITMQ = 'rabbitmq'
 MYSQL = 'mysql'
+CEILOMETER = 'ceilometer'
+HEAT = 'heat'
+HEAT_CNF = 'heat-cfn'
 
 # STATUSES
 STATUS_ACTIVE = 'active'
