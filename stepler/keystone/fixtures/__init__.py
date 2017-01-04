@@ -24,6 +24,7 @@ from .projects import *  # noqa
 from .roles import *  # noqa
 from .tokens import *  # noqa
 from .users import *  # noqa
+from .services import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_domain',
@@ -57,4 +58,7 @@ __all__ = sorted([  # sort for documentation
     'new_user_with_project',
 
     'token_steps',
+
+    'get_service_steps',
+    'service_steps'
 ])
