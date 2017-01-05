@@ -101,6 +101,7 @@ Deep to structure
    :maxdepth: 1
 
    steps_concept
+   launcher_params
    common_fixtures
    cinder
    baremetal
