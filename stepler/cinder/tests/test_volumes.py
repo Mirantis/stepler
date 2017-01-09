@@ -325,3 +325,29 @@ def test_migrate_volume(volume, volume_steps, os_faults_steps):
         service_names=[config.CINDER_VOLUME])
     migration_host = volume_steps.get_volume_migrate_host(volume, cinder_nodes)
     volume_steps.migrate_volume(volume, migration_host)
+
+
+@pytest.mark.idempotent_id('96d79d15-21a5-43a7-90c2-64a9e902939f')
+def test_create_extend_delete_volume(volume_steps):
+    """**Scenario:** Test to create / extend / delete volume
+
+    **Steps:**
+
+    #. Create volume with size 1 Gb
+    #. Update volume size to 2 Gb
+    #. Delete volume
+    """
+    volume = volume_steps.create_volumes(size=1)[0]
+    volume_steps.volume_extend(volume, size=2)
+    volume_steps.delete_volumes([volume])
+
+
+@pytest.mark.idempotent_id('2f740550-479e-4a23-a710-7d330382b140')
+def test_volumes_list(volume_steps):
+    """**Scenario:** Request list of volumes.
+
+    **Steps:**
+
+    #. Get list of volumes
+    """
+    volume_steps.get_volumes(check=False)
