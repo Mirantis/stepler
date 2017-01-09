@@ -540,6 +540,40 @@ def test_flavors_list(flavor_steps):
     **Steps:**
 
     #. Get list of flavors
-
     """
     flavor_steps.get_flavors()
+
+
+@pytest.mark.idempotent_id('dc5fd8d1-7fb3-4c9e-a826-e4d4902ef260')
+def test_create_delete_keypair(keypair_steps):
+    """**Scenario:** Test to create / delete keypair.
+
+    **Steps:**
+
+    #. Create keypair
+    #. Delete keypair
+    """
+    keypair = keypair_steps.create_keypairs()[0]
+    keypair_steps.delete_keypairs([keypair])
+
+
+@pytest.mark.idempotent_id('93654355-69b3-41c8-adfc-e3e7033789c7')
+def test_instances_list(server_steps):
+    """**Scenario:** Request list of instances.
+
+    **Steps:**
+
+    #. Get list of instances
+    """
+    server_steps.get_servers(check=False)
+
+
+@pytest.mark.idempotent_id('b8d7c80c-0c29-42f9-b14d-bc5f5fb3e969')
+def test_absolute_limits_list(limit_steps):
+    """**Scenario:** Request list of absolute limits.
+
+    **Steps:**
+
+    #. Get list of absolute limits
+    """
+    limit_steps.get_absolute_limits()
