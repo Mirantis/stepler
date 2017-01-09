@@ -25,7 +25,12 @@ from stepler.third_party.supported_platforms import platform
 
 
 @platform.mk2x
-@pytest.mark.idempotent_id('6d8cfa5c-c927-4916-940e-5dd57c8e8977')
+@pytest.mark.idempotent_id('6d8cfa5c-c927-4916-940e-5dd57c8e8977',
+                           os_workload=False)
+@pytest.mark.idempotent_id('2afbfd6f-d087-47db-81af-dea23b8c47ad',
+                           os_workload=True)
+@pytest.mark.parametrize('os_workload', [False, True],
+                         ids=['without workload', 'with workload'])
 def test_shutdown_vip_controller(cirros_image,
                                  keypair,
                                  flavor,
@@ -36,8 +41,12 @@ def test_shutdown_vip_controller(cirros_image,
                                  attach_volume_to_server,
                                  server_steps,
                                  nova_service_steps,
-                                 os_faults_steps):
+                                 os_faults_steps,
+                                 generate_os_workload,
+                                 os_workload):
     """**Scenario:** Check functionality after shutdown of controller with VIP
+
+    This test has two modes: with and without Openstack workload
 
     **Setup:**
 
@@ -51,6 +60,7 @@ def test_shutdown_vip_controller(cirros_image,
 
     **Steps:**
 
+    #. Start Openstack workload generation (optional)
     #. Get current states of Nova services, RabbitMQ and Galera
     #. Shutdown controller holding VIP
     #. Wait until basic OpenStack operations start working
@@ -63,6 +73,7 @@ def test_shutdown_vip_controller(cirros_image,
 
     **Teardown:**
 
+    #. Stop Openstack workload generation (optional)
     #. Delete volume
     #. Delete server
     #. Delete network, subnet, router
@@ -72,6 +83,9 @@ def test_shutdown_vip_controller(cirros_image,
     #. Delete keypair
     #. Delete cirros image
     """
+    if os_workload:
+        generate_os_workload()
+
     nova_services_init = nova_service_steps.get_services()
 
     rabbit_nodes = os_faults_steps.get_nodes(service_names=[config.RABBITMQ])
@@ -206,7 +220,12 @@ def test_network_outage(cirros_image,
 
 
 @platform.mk2x
-@pytest.mark.idempotent_id('8544c689-481c-4c1c-9163-3fad0803813a')
+@pytest.mark.idempotent_id('8544c689-481c-4c1c-9163-3fad0803813a',
+                           os_workload=False)
+@pytest.mark.idempotent_id('3cd46899-528e-4c58-9841-2189bb23f7ba',
+                           os_workload=True)
+@pytest.mark.parametrize('os_workload', [False, True],
+                         ids=['without workload', 'with workload'])
 def test_reboot_vip_controller(cirros_image,
                                keypair,
                                flavor,
@@ -217,8 +236,12 @@ def test_reboot_vip_controller(cirros_image,
                                attach_volume_to_server,
                                server_steps,
                                nova_service_steps,
-                               os_faults_steps):
+                               os_faults_steps,
+                               generate_os_workload,
+                               os_workload):
     """**Scenario:** Check functionality after reboot of controller with VIP
+
+    This test has two modes: with and without Openstack workload
 
     **Setup:**
 
@@ -232,6 +255,7 @@ def test_reboot_vip_controller(cirros_image,
 
     **Steps:**
 
+    #. Start Openstack workload generation (optional)
     #. Get current states of nova services, RabbitMQ and Galera
     #. Reboot controller holding VIP
     #. Wait until basic OpenStack operations start working
@@ -242,6 +266,7 @@ def test_reboot_vip_controller(cirros_image,
 
     **Teardown:**
 
+    #. Stop Openstack workload generation (optional)
     #. Delete volume
     #. Delete server
     #. Delete floating IP
@@ -251,6 +276,9 @@ def test_reboot_vip_controller(cirros_image,
     #. Delete keypair
     #. Delete cirros image
     """
+    if os_workload:
+        generate_os_workload()
+
     nova_services_init = nova_service_steps.get_services()
 
     rabbit_nodes = os_faults_steps.get_nodes(service_names=[config.RABBITMQ])
