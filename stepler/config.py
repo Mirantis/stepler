@@ -480,6 +480,8 @@ TCPDUMP_LATENCY = 2
 HORIZON_CONFIG_PATH = os.environ.get(
     'HORIZON_CONFIG_PATH', '/etc/openstack-dashboard/local_settings.py')
 
+DELAY_AFTER_OS_WORKLOAD_START = 15
+
 # Cloud-specific variables
 
 # Check if current node is fuel primary controller
