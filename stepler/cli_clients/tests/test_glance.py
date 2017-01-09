@@ -232,7 +232,7 @@ def test_delete_image_member(cirros_image,
     glance_steps.bind_project(cirros_image, project)
     cli_glance_steps.delete_image_member(cirros_image, project,
                                          api_version=api_version)
-    glance_steps.check_image_bind_status(cirros_image, project, bound=False)
+    glance_steps.check_image_bind_status(cirros_image, project, must_bound=False)
 
 
 @pytest.mark.idempotent_id('9290e363-0607-45be-be0a-1e832da59b94',
