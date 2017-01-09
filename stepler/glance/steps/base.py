@@ -18,7 +18,7 @@ Glance base steps
 # limitations under the License.
 
 import glanceclient.v1.images
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, equal_to, has_entries  # noqa
 import warlock.model
 
 from stepler import base
@@ -77,6 +77,7 @@ class BaseGlanceSteps(base.BaseSteps):
         if check:
             for image in images:
                 self._refresh_image(image)
+                assert_that(image, has_entries(kwargs))
                 if status:
                     assert_that(image.status, equal_to(status))
 
@@ -127,6 +128,7 @@ class BaseGlanceSteps(base.BaseSteps):
 
         if check:
             for image in images:
+                assert_that(image, has_entries(kwargs))
                 if upload:
                     self.check_image_status(
                         image,

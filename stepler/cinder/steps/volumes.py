@@ -562,6 +562,7 @@ class VolumeSteps(base.BaseSteps):
             update_data['name'] = new_name
         if new_description:
             update_data['description'] = new_description
+        import pdb; pdb.set_trace()
         self._client.update(volume, **update_data)
 
         if check:

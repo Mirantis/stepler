@@ -147,6 +147,9 @@ __all__ = sorted([  # sort for documentation
     'flavor_steps',
     'tiny_flavor',
 
+    'limit_steps',
+    'absolute_limits',
+
     'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
