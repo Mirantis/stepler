@@ -27,6 +27,7 @@ from .limits import *  # noqa
 from .network_workload import *  # noqa
 from .nova import *  # noqa
 from .nova_volumes import *  # noqa
+from .os_workload import *  # noqa
 from .security_groups import *  # noqa
 from .servers import *  # noqa
 from .services import *  # noqa
@@ -69,6 +70,8 @@ __all__ = sorted([  # sort for documentation
     'disable_nova_use_cow_images',
     'big_nova_reclaim_instance_interval',
     'small_nova_reclaim_instance_interval',
+
+    'generate_os_workload',
 
     'create_security_group',
     'security_group',

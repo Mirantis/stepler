@@ -501,6 +501,12 @@ TCPDUMP_LATENCY = 2
 HORIZON_CONFIG_PATH = os.environ.get(
     'HORIZON_CONFIG_PATH', '/etc/openstack-dashboard/local_settings.py')
 
+# Openstack workload
+OS_LOAD_SCRIPTS_DIR = os.path.join(os.path.dirname(__file__),
+                                   'workload_scripts')
+OS_LOAD_GENERATOR = 'os_load_generator.py'
+DELAY_AFTER_OS_WORKLOAD_START = 15
+
 # Cloud-specific variables
 
 TCP_CLOUD = 'tcpcloud'

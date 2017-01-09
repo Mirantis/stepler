@@ -160,6 +160,7 @@ __all__ = sorted([  # sort for documentation
     'keypair_steps',
     'nova_client',
     'get_nova_client',
+    'generate_os_workload',
     'create_security_group',
     'security_group',
     'security_group_steps',
