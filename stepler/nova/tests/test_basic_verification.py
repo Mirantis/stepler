@@ -522,7 +522,7 @@ def test_disk_io_qos_settings_for_rbd_backend(cirros_image,
 
 @pytest.mark.idempotent_id('acea91d1-6752-456d-99c2-fae6d873149c')
 def test_create_delete_flavor(flavor_steps):
-    """**Scenario:** Test to create / delete flavor.
+    """**Scenario:** Check flavor can be created and deleted.
 
     **Steps:**
 
@@ -540,6 +540,38 @@ def test_flavors_list(flavor_steps):
     **Steps:**
 
     #. Get list of flavors
-
     """
     flavor_steps.get_flavors()
+
+
+@pytest.mark.idempotent_id('dc5fd8d1-7fb3-4c9e-a826-e4d4902ef260')
+def test_create_delete_keypair(keypair):
+    """**Scenario:** Check that keypair can be created and deleted.
+
+    **Steps:**
+
+    #. Create keypair
+    #. Delete keypair
+    """
+
+
+@pytest.mark.idempotent_id('93654355-69b3-41c8-adfc-e3e7033789c7')
+def test_instances_list(server_steps):
+    """**Scenario:** Request list of instances.
+
+    **Steps:**
+
+    #. Get list of instances
+    """
+    server_steps.get_servers(check=False)
+
+
+@pytest.mark.idempotent_id('b8d7c80c-0c29-42f9-b14d-bc5f5fb3e969')
+def test_absolute_limits_list(nova_limit_steps):
+    """**Scenario:** Request list of absolute limits.
+
+    **Steps:**
+
+    #. Get list of absolute limits
+    """
+    nova_limit_steps.get_absolute_limits()

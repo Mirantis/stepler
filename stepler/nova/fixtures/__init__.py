@@ -23,6 +23,7 @@ from .floating_ips import *  # noqa
 from .hosts import *  # noqa
 from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
+from .limits import *  # noqa
 from .network_workload import *  # noqa
 from .nova import *  # noqa
 from .nova_volumes import *  # noqa
@@ -92,4 +93,6 @@ __all__ = sorted([  # sort for documentation
     'unexpected_servers_cleanup',
 
     'nova_service_steps',
+    'nova_limit_steps',
+    'nova_absolute_limits',
 ])
