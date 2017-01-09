@@ -62,3 +62,14 @@ def test_create_multiple_snapshots(volume,
     snapshot_steps.check_snapshots_presence(
         snapshots + snapshots2, must_present=False,
         timeout=10 * config.SNAPSHOT_DELETE_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('618cacba-0b25-41b1-9334-976b12e51652')
+def test_snapshot_list(snapshot_steps):
+    """**Scenario:** Request list of snapshots.
+
+    **Steps:**
+
+    #. Get list of snapshots
+    """
+    snapshot_steps.get_snapshots(check=False)

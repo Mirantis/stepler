@@ -23,10 +23,12 @@ from .floating_ips import *  # noqa
 from .hosts import *  # noqa
 from .hypervisor import *  # noqa
 from .keypairs import *  # noqa
+from .limits import *  # noqa
 from .nova_volumes import *  # noqa
 from .security_groups import *  # noqa
 from .servers import *  # noqa
 from .services import *  # noqa
+
 
 __all__ = [
     'AvailabilityZoneSteps',
@@ -39,4 +41,5 @@ __all__ = [
     'NovaVolumeSteps',
     'ServerSteps',
     'NovaServiceSteps',
+    'NovaLimitSteps',
 ]

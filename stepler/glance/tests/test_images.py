@@ -75,3 +75,32 @@ def test_change_image_status_directly(glance_steps, api_glance_steps_v1):
                                       status=config.STATUS_QUEUED,
                                       check=False)
     glance_steps.check_image_status(images[0], config.STATUS_ACTIVE)
+
+
+@pytest.mark.idempotent_id('72a67bfb-c6cc-4be8-b135-e61c66a96577')
+def test_create_update_delete_image(glance_steps):
+    """**Scenario:** Check that image can be created, updated and deleted.
+
+    **Steps:**
+
+    #. Create cirros image with min-ram 512 and min-disk 1
+    #. Update image ram size
+    #. Delete image
+    """
+    images = glance_steps.create_images(
+        utils.get_file_path(config.CIRROS_QCOW2_URL),
+        min_ram=512, min_disk=1)
+
+    glance_steps.update_images(images, min_ram=1024)
+    glance_steps.delete_images(images)
+
+
+@pytest.mark.idempotent_id('7abe9edc-f9df-419a-afd1-ea17c09a9154')
+def test_images_list(glance_steps):
+    """**Scenario:** Request list of images.
+
+    **Steps:**
+
+    #. Get list of images
+    """
+    glance_steps.get_images(check=False)

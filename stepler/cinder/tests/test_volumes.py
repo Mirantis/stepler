@@ -325,3 +325,14 @@ def test_migrate_volume(volume, volume_steps, os_faults_steps):
         service_names=[config.CINDER_VOLUME])
     migration_host = volume_steps.get_volume_migrate_host(volume, cinder_nodes)
     volume_steps.migrate_volume(volume, migration_host)
+
+
+@pytest.mark.idempotent_id('2f740550-479e-4a23-a710-7d330382b140')
+def test_volumes_list(volume_steps):
+    """**Scenario:** Request list of volumes.
+
+    **Steps:**
+
+    #. Get list of volumes
+    """
+    volume_steps.get_volumes(check=False)
