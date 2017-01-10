@@ -1031,6 +1031,8 @@ class OsFaultsSteps(base.BaseSteps):
         for node in nodes:
             if node.ip in filtered_hosts_ips:
                 fqdns.append(node.fqdn)
+        # TODO(ssokolov) if filtered_hosts_ips is empty, fqdns = []
+        # and get_nodes returns all nodes
         return self.get_nodes(fqdns=fqdns)
 
     @steps_checker.step
