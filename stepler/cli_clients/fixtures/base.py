@@ -49,11 +49,14 @@ def remote_executor(nova_api_node, os_faults_steps, credentials):
             environ['OS_TENANT_NAME'] = credentials.project_name
             environ['OS_USERNAME'] = credentials.username
             environ['OS_PASSWORD'] = credentials.password
+
+            environ['PYTHONIOENCODING'] = 'utf-8'
         else:
             source_cmd = ""
 
         environ_string = ' '.join("{0}={1}".format(key,
-                                                   moves.shlex_quote(value))
+                                                   moves.shlex_quote(
+                                                       str(value)))
                                   for key, value in environ.items())
 
         cmd = u"{source_cmd} {env} {command}".format(source_cmd=source_cmd,

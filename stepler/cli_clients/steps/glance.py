@@ -112,7 +112,8 @@ class CliGlanceSteps(base.BaseCliSteps):
 
         if check:
             self.execute_command(  # check image size is non-zero
-                '[[ -s {} ]] && exit 0 || exit 1'.format(file_path))
+                cmd="[[ -s {} ]]".format(file_path),
+                use_openrc=False)
 
         return file_path
 
