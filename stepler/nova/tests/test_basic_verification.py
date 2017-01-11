@@ -543,3 +543,18 @@ def test_flavors_list(flavor_steps):
 
     """
     flavor_steps.get_flavors()
+
+
+@pytest.mark.idempotent_id('b160b749-9894-4b06-90a4-4fecef371ae6')
+def test_nova_services(os_faults_steps):
+    """**Scenario:** Check that nova services are alive.
+
+    **Steps:**
+
+    #. Get list of nova services
+    #. Check all services are running
+    """
+    nova_services = os_faults_steps.get_services_names(name_prefix='nova')
+    for service in nova_services:
+        nodes = os_faults_steps.get_nodes(service_names=[service])
+        os_faults_steps.check_service_state(service, nodes=nodes)
