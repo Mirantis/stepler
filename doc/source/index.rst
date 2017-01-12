@@ -51,6 +51,8 @@ Make following commands in terminal::
 How to run tests
 ----------------
 
+More information about options to launch is in :doc:`launcher_params`.
+
 *If you know how to launch tests with py.test, you may skip this section.*
 
 Before launching you should export some openstack environment variables:
