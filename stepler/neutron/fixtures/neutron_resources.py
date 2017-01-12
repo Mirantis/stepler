@@ -33,6 +33,8 @@ __all__ = [
     'neutron_2_servers_same_network',
     'neutron_2_servers_iperf_different_networks',
     'neutron_conntrack_2_projects_resources',
+    'neutron_2_projects_resources',
+    'neutron_2_nets_diff_tenants',
     'create_max_networks_with_instances',
 ]
 
@@ -363,24 +365,16 @@ def neutron_2_servers_iperf_different_networks(
 
 @pytest.fixture
 def neutron_conntrack_2_projects_resources(
-        request,
+        request, neutron_2_nets_diff_tenants,
         conntrack_cirros_image,
         public_flavor,
         public_network,
         sorted_hypervisors,
-        role_steps,
         hypervisor_steps,
         port_steps,
-        router_steps,
-        create_project,
-        create_user,
-        create_network,
-        create_subnet,
-        create_router,
-        add_router_interfaces,
         create_floating_ip,
         get_security_group_steps,
-        get_server_steps, ):
+        get_server_steps):
     """Function fixture to prepare environment for conntrack tests.
 
     This fixture:
@@ -440,19 +434,15 @@ def neutron_conntrack_2_projects_resources(
     hostname = sorted_hypervisors[0].hypervisor_hostname
 
     resources = []
-    admin_role = role_steps.get_role(name=config.ROLE_ADMIN)
     fixed_ip_1, fixed_ip_2 = config.LOCAL_IPS[20:22]
 
     for i in range(2):
         project_resources = attrdict.AttrDict()
         name = "{}_{}".format(base_name, i)
         servers = []
-        project = create_project(name)
-        user = create_user(user_name=name, password=name)
-        role_steps.grant_role(admin_role, user, project=project)
-
-        credentials = dict(
-            username=name, password=name, project_name=name)
+        credentials = neutron_2_nets_diff_tenants.resources[i].credentials
+        network, router = neutron_2_nets_diff_tenants.resources[i].net_router
+        project_id = neutron_2_nets_diff_tenants.resources[i].project_id
 
         security_group_steps = get_security_group_steps(**credentials)
         security_group_name = "{}_{}".format(base_name, i)
@@ -466,16 +456,6 @@ def neutron_conntrack_2_projects_resources(
         else:
             security_group_steps.add_group_rules(
                 security_group, config.SECURITY_GROUP_SSH_RULES)
-
-        network = create_network(name, project_id=project.id)
-        subnet = create_subnet(
-            name,
-            network=network,
-            project_id=project.id,
-            cidr=config.LOCAL_CIDR)
-        router = create_router(name, project_id=project.id)
-        router_steps.set_gateway(router, public_network)
-        add_router_interfaces(router, [subnet])
 
         server_steps = get_server_steps(**credentials)
         project_resources.server_steps = server_steps
@@ -499,7 +479,7 @@ def neutron_conntrack_2_projects_resources(
         server1_port = port_steps.get_port(
             device_owner=config.PORT_DEVICE_OWNER_SERVER, device_id=server1.id)
         create_floating_ip(
-            public_network, port=server1_port, project_id=project.id)
+            public_network, port=server1_port, project_id=project_id)
 
         server2 = server_steps.create_servers(
             server_names=[name + "_2"],
@@ -598,3 +578,94 @@ def create_max_networks_with_instances(cirros_image,
         return net_list
 
     return _create_max_networks_with_instances
+
+
+@pytest.fixture
+def neutron_2_projects_resources(request, neutron_2_nets_diff_tenants,
+                                 sorted_hypervisors, public_network,
+                                 cirros_image, public_flavor, port_steps,
+                                 get_security_group_steps, get_server_steps,
+                                 create_floating_ip):
+    base_name, = utils.generate_ids()
+    resources = []
+    hostname = sorted_hypervisors[0].hypervisor_hostname
+
+    for i in range(2):
+        project_resources = attrdict.AttrDict()
+        servers = []
+        credentials = neutron_2_nets_diff_tenants.resources[i].credentials
+        network, router = neutron_2_nets_diff_tenants.resources[i].net_router
+        project_id = neutron_2_nets_diff_tenants.resources[i].project_id
+
+        # Create security group with ssh and ping rules
+        security_group_steps = get_security_group_steps(**credentials)
+        security_group_name = "{}_{}".format(base_name, i)
+        security_group = security_group_steps.create_group(security_group_name)
+        request.addfinalizer(
+            functools.partial(security_group_steps.delete_group,
+                              security_group))
+        security_group_steps.add_group_rules(
+                security_group, config.SECURITY_GROUP_SSH_PING_RULES)
+
+        # Create servers
+        server_steps = get_server_steps(**credentials)
+        project_resources.server_steps = server_steps
+        server = server_steps.create_servers(
+            image=cirros_image,
+            flavor=public_flavor,
+            availability_zone='nova:{}'.format(hostname),
+            nics=[{'net-id': network['id']}],
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME,
+            password=config.CIRROS_PASSWORD)[0]
+        request.addfinalizer(
+            functools.partial(server_steps.delete_servers, [server]))
+        servers.append(server)
+
+        # Attach floating ips to servers
+        server1_port = port_steps.get_port(
+            device_owner=config.PORT_DEVICE_OWNER_SERVER, device_id=server.id)
+        create_floating_ip(public_network, port=server1_port,
+                           project_id=project_id)
+
+        project_resources.servers = servers
+        resources.append(project_resources)
+
+    return attrdict.AttrDict(resources=resources)
+
+
+@pytest.fixture
+def neutron_2_nets_diff_tenants(request, role_steps, create_project,
+                                create_user, create_network, create_subnet,
+                                create_router, router_steps,
+                                add_router_interfaces, public_network):
+    base_name, = utils.generate_ids()
+    resources = []
+    admin_role = role_steps.get_role(name=config.ROLE_ADMIN)
+
+    for i in range(2):
+        project_resources = attrdict.AttrDict()
+        name = "{}_{}".format(base_name, i)
+        # Create projects with users
+        project = create_project(name)
+        user = create_user(user_name=name, password=name)
+        role_steps.grant_role(admin_role, user, project=project)
+        credentials = dict(
+            username=name, password=name, project_name=name)
+
+        # Create network with subnet and router
+        network = create_network(name, project_id=project.id)
+        subnet = create_subnet(
+            name,
+            network=network,
+            project_id=project.id,
+            cidr=config.LOCAL_CIDR)
+        router = create_router(name, project_id=project.id)
+        router_steps.set_gateway(router, public_network)
+        add_router_interfaces(router, [subnet])
+        project_resources.credentials = credentials
+        project_resources.net_router = [network, router]
+        project_resources.project_id = project.id
+        resources.append(project_resources)
+
+    return attrdict.AttrDict(resources=resources)

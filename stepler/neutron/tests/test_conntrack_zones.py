@@ -122,3 +122,22 @@ def test_connectivity_with_different_tenants(
                 server=project_2_resources.servers[0]):
             time.sleep(2)
             os_faults_steps.check_zones_assigment_to_devices(compute)
+
+
+def test_test(neutron_2_projects_resources):
+    import pdb; pdb.set_trace()
+    (proj_1_resources, proj_2_resources) = neutron_2_projects_resources.resources
+    proj_1_server_steps = proj_1_resources.server_steps
+    proj_2_server_steps = proj_1_resources.server_steps
+    server1 = proj_1_resources.servers[0]
+    server2 = proj_2_resources.servers[0]
+    server1_floating_ip = proj_1_server_steps.get_floating_ip(server1)
+    server2_floating_ip = proj_1_server_steps.get_floating_ip(server2)
+    with proj_1_server_steps.get_server_ssh(server1) as server_ssh:
+        proj_1_server_steps.check_ping_for_ip(
+            server2_floating_ip, server_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+    with proj_2_server_steps.get_server_ssh(server2) as server_ssh:
+        proj_2_server_steps.check_ping_for_ip(
+            server1_floating_ip, server_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
