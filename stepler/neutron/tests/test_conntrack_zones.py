@@ -122,3 +122,53 @@ def test_connectivity_with_different_tenants(
                 server=project_2_resources.servers[0]):
             time.sleep(2)
             os_faults_steps.check_zones_assigment_to_devices(compute)
+
+
+@pytest.mark.idempotent_id('6bf26f12-cc33-4aad-bb58-8461c8268808')
+def test_connectivity_by_floating_diff_tenants(
+        neutron_2_servers_2_nets_diff_tenants):
+    """**Scenario:** Check connectivity between servers in different tenants.
+
+    This test checks connectivity between servers in different tenants by
+    floating ips.
+
+    **Setup:**
+
+    #. Create 2 projects
+    #. Create net, subnet, router in each project
+    #. Create security groups in each project
+    #. Add ping + ssh rules for each security group
+    #. Create instance in each project on the same compute
+    #. Add floating ip for instance in each project
+
+    **Steps:**
+
+    #. Ping server in 2'nd project from server in 1'st project by floating ip
+    #. Ping server in 1'st project from server in 2'nd project by floating ip
+
+    **Teardown:**
+
+    #. Delete floating ips
+    #. Delete servers
+    #. Delete security groups
+    #. Delete networks, subnets, routers
+    #. Delete projects
+    """
+    (prj_1_resources,
+     prj_2_resources) = neutron_2_servers_2_nets_diff_tenants.resources
+    server1 = prj_1_resources.server
+    server2 = prj_2_resources.server
+    prj_1_server_steps = prj_1_resources.server_steps
+    prj_2_server_steps = prj_2_resources.server_steps
+    server1_floating_ip = prj_1_server_steps.get_floating_ip(server1)
+    server2_floating_ip = prj_2_server_steps.get_floating_ip(server2)
+
+    with prj_1_server_steps.get_server_ssh(server1) as server_ssh:
+        prj_1_server_steps.check_ping_for_ip(
+            server2_floating_ip, server_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    with prj_2_server_steps.get_server_ssh(server2) as server_ssh:
+        prj_2_server_steps.check_ping_for_ip(
+            server1_floating_ip, server_ssh,
+            timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
