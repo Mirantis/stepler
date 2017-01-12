@@ -114,9 +114,11 @@ def admin_project_resources(credentials, create_user_with_project):
     """
     creds_alias = 'admin'
     admin_credentials = {
-        'username': config.ADMIN_NAME,
-        'password': config.ADMIN_PASSWD,
-        'project_name': config.ADMIN_PROJECT,
+        'username': config.USERNAME,
+        'password': config.PASSWORD,
+        'project_name': config.PROJECT_NAME,
+        'user_domain_name': config.USER_DOMAIN_NAME,
+        'project_domain_name': config.PROJECT_DOMAIN_NAME,
         'role_type': config.ROLE_ADMIN
     }
     with create_user_with_project(creds_alias,
