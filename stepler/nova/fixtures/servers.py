@@ -35,6 +35,7 @@ __all__ = [
     'server',
     'server_steps',
     'servers_to_evacuate',
+    'servers_with_volumes_to_evacuate',
     'live_migration_server',
     'live_migration_servers',
     'live_migration_servers_with_volumes',
@@ -515,16 +516,16 @@ def servers_to_evacuate(request,
                         flavor,
                         net_subnet_router,
                         keypair,
+                        nova_create_floating_ip,
                         hypervisor_steps,
                         volume_steps,
                         server_steps):
     """Fixture to create servers for nova evacuate tests.
 
-    This fixture creates amount of servers defined in config file and
-    schedules them against dedicated compute node. It can boot servers from
-    cirros image or cirros-based volume with parametrization.
-    Default is boot from image.
-
+    This fixture creates amount of servers defined in config file,
+    schedules them against dedicated compute node and attaches floating IP to
+    every created server. It can boot servers from cirros image or
+    cirros-based volume with parametrization. Default is boot from image.
     All created resources will be deleted after test.
 
     Example:
@@ -539,11 +540,12 @@ def servers_to_evacuate(request,
 
     Args:
         request (obj): pytest SubRequest instance
-        keypair (obj): keypair
-        flavor (obj): flavor
-        security_group (obj): security group
         cirros_image (obj): cirros image
+        security_group (obj): security group
+        flavor (obj): flavor
+        keypair (obj): keypair
         net_subnet_router (tuple): neutron network, subnet and router
+        nova_create_floating_ip (function): function to create floating IP
         hypervisor_steps (obj): instantiated hypervisor steps
         volume_steps (obj): instantiated volume steps
         server_steps (obj): instantiated server steps
@@ -584,4 +586,28 @@ def servers_to_evacuate(request,
             availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
             **kwargs)[0]
         servers.append(server)
+
+    for server in servers:
+        server_steps.attach_floating_ip(server, nova_create_floating_ip())
     return servers
+
+
+@pytest.fixture
+def servers_with_volumes_to_evacuate(servers_to_evacuate,
+                                     attach_volume_to_server,
+                                     volume_steps):
+    """Fixture to create servers witch volumes for nova evacuate tests.
+
+    Args:
+        servers_to_evacuate (list): list of nova servers
+        attach_volume_to_server (function): function to attach volume to server
+
+    Returns:
+        list: nova servers with volumes attached
+    """
+    volume_names = utils.generate_ids(count=len(servers_to_evacuate))
+    volumes = volume_steps.create_volumes(size=1, names=volume_names)
+    for server, volume in zip(servers_to_evacuate, volumes):
+        attach_volume_to_server(server, volume)
+
+    return servers_to_evacuate, volumes
