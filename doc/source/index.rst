@@ -38,6 +38,10 @@ Stepler uses `py.test <http://doc.pytest.org/>`_ as test runner and `tox <https:
 How to install
 --------------
 
+Install pre-conditions (Ubuntu 16.04)::
+
+   apt-get -y install libssl-dev python-dev
+
 Make following commands in terminal::
 
    git clone https://github.com/Mirantis/stepler.git
