@@ -28,6 +28,7 @@ __all__ = [
     'flavor',
     'flavor_steps',
     'tiny_flavor',
+    'small_flavor',
     'baremetal_flavor',
     'public_flavor',
 ]
@@ -74,7 +75,7 @@ def create_flavor(flavor_steps):
 
 @pytest.fixture
 def flavor(request, create_flavor):
-    """Callable function fixture to create single ova flavor with options.
+    """Function fixture to create single nova flavor with options.
 
     Can be called several times during a test.
     After the test it destroys all created nodes.
@@ -116,6 +117,19 @@ def tiny_flavor(flavor_steps):
         object: tiny flavor
     """
     return flavor_steps.get_flavor(name=config.FLAVOR_TINY)
+
+
+@pytest.fixture
+def small_flavor(flavor_steps):
+    """Function fixture to find small flavor before test.
+
+    Args:
+        flavor_steps (object): instantiated flavor steps
+
+    Returns:
+        object: small flavor
+    """
+    return flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
 
 
 @pytest.fixture
