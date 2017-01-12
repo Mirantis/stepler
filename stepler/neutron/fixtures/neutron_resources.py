@@ -154,7 +154,7 @@ def neutron_2_servers_different_networks(
             image=cirros_image,
             flavor=flavor,
             networks=[network],
-            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            availability_zone='nova:{}'.format(hypervisor.service['host']),
             security_groups=[security_group],
             username=config.CIRROS_USERNAME,
             password=config.CIRROS_PASSWORD,
@@ -253,7 +253,7 @@ def neutron_2_servers_same_network(
         server_2_hypervisor = getattr(server, config.SERVER_ATTR_HOST)
     else:
         server_2_hypervisor = hypervisor_steps.get_another_hypervisor([server])
-        server_2_hypervisor = server_2_hypervisor.hypervisor_hostname
+        server_2_hypervisor = server_2_hypervisor.service['host']
 
     network, subnet, router = net_subnet_router
 
@@ -336,7 +336,7 @@ def neutron_2_servers_iperf_different_networks(
             keypair=keypair,
             networks=[network],
             userdata=config.START_IPERF_USERDATA,
-            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            availability_zone='nova:{}'.format(hypervisor.service['host']),
             security_groups=[security_group],
             username=config.UBUNTU_USERNAME,
             check=False)[0]
@@ -437,7 +437,7 @@ def neutron_conntrack_2_projects_resources(
     if server_count < 4:
         pytest.skip('Requires at least 4 servers with {flavor} to boot on '
                     'single compute'.format(flavor=public_flavor))
-    hostname = sorted_hypervisors[0].hypervisor_hostname
+    hostname = sorted_hypervisors[0].service['host']
 
     resources = []
     admin_role = role_steps.get_role(name=config.ROLE_ADMIN)
