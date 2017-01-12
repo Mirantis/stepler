@@ -220,6 +220,7 @@ _plugins = [
     'default_project',
     'destructive_dispatcher',
     'idempotent_id',
+    'output_fixtures',
     'reports_cleaner',
     'steps_checker',
     'supported_platforms',
