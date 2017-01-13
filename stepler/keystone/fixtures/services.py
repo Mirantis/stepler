@@ -38,7 +38,7 @@ def get_service_steps(get_keystone_client):
         function: function to get project steps
     """
     def _get_steps(**credentials):
-        return steps.ServicesSteps(get_keystone_client(**credentials).services)
+        return steps.ServiceSteps(get_keystone_client(**credentials).services)
 
     return _get_steps
 
