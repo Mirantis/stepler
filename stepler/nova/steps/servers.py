@@ -209,16 +209,16 @@ class ServerSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         if by_name:
-            def predicate():
-                names = [s.name for s in self._client.list()]
-                return present == (server.name in names)
+            search_opts = {'name': server.name}
         else:
-            def predicate():
-                try:
-                    self._client.get(server.id)
-                    return present
-                except nova_exceptions.NotFound:
-                    return not present
+            search_opts = {'id': server.id}
+
+        def predicate():
+            try:
+                self._client.find(**search_opts)
+                return present
+            except nova_exceptions.NotFound:
+                return not present
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
@@ -1048,7 +1048,7 @@ class ServerSteps(base.BaseSteps):
                 break
 
         if check:
-            remote.check_process_present('cpulimit')
+            remote.check_process_present('stress')
 
     @steps_checker.step
     def server_network_listen(self, remote, port=5010, check=True):
