@@ -18,6 +18,8 @@ Tests for Ironic CLI client
 
 import pytest
 
+pytestmark = [pytest.mark.requires("ironic_nodes_count >= 1")]
+
 
 @pytest.mark.idempotent_id('4bd3e2ac-be73-423e-8026-39a151592076')
 def test_ironic_node_list(cli_ironic_steps):

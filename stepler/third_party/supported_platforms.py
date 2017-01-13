@@ -9,7 +9,7 @@ Usage example:
 
     from stepler.third_party.supported_platforms import platform
 
-    @platform.mos10
+    @pytest.mark.platform('mos10')
     def test_something():
         pass
 

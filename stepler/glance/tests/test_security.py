@@ -77,7 +77,7 @@ def test_user_storage_quota_bypass(get_glance_steps,
 
 
 @pytest.mark.idempotent_id('46e8a669-1204-4427-a2e3-bbe21a87333d')
-@pytest.mark.requires('glance_swift')
+@pytest.mark.requires("glance_backend == 'swift'")
 def test_change_glance_credentials(request, cirros_image, glance_steps):
     """**Scenario:** Check image available after changing glance credentials.
 

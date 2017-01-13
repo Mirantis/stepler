@@ -253,17 +253,17 @@ def test_create_user_and_authenticate(new_user_with_project,
 
 
 services_list = [
-    config.CEILOMETER,
-    config.CINDER,
-    config.CINDERV2,
+    pytest.mark.requires('ceilometer')(config.CEILOMETER),
+    pytest.mark.requires('cinder_nodes_count >= 1')(config.CINDER),
+    pytest.mark.requires('cinder_nodes_count >= 1')(config.CINDERV2),
     config.GLANCE,
     config.HEAT,
     config.HEAT_CNF,
     config.KEYSTONE,
     config.NEUTRON,
     config.NOVA,
-    config.NOVA_EC2,
-    config.NOVA20
+    pytest.mark.platform('mk2x')(config.NOVA_EC2),
+    pytest.mark.platform('mk2x')(config.NOVA20)
 ]
 
 
