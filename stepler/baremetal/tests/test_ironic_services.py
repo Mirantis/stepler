@@ -20,6 +20,8 @@ import pytest
 
 from stepler import config
 
+pytestmark = pytest.mark.requires("ironic_nodes_count >= 1")
+
 
 @pytest.mark.idempotent_id('a0b0d6f7-0952-4e29-9148-a4ada8cf349c')
 def test_ironic_api_service(keypair,

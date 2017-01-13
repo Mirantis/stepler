@@ -50,8 +50,8 @@ def test_restart_agent_controller_with_sighup(agent_steps,
     #. Check that no new ERROR and TRACE messages appear in log
     #. Check that only one SIGHUP message appear in log
     """
-    node = os_faults_steps.get_node_with_services(
-        service_names=[config.NOVA_API, agent_name])
+    node = os_faults_steps.get_node(service_names=[config.NOVA_API,
+                                                   agent_name])
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][0]
@@ -109,7 +109,7 @@ def test_restart_neutron_server_with_sighup(os_faults_steps,
     #. Check that no new ERROR and TRACE messages appear in log
     #. Check that only one SIGHUP message appear in log
     """
-    node = os_faults_steps.get_node_with_services(
+    node = os_faults_steps.get_node(
         service_names=[config.NOVA_API, config.NEUTRON_SERVER_SERVICE])
 
     log_file = config.AGENT_LOGS[config.NEUTRON_SERVER_SERVICE][0]
@@ -181,8 +181,8 @@ def test_restart_metadata_agent_controller_with_sighup(agent_steps,
     #. Check that only one SIGHUP message appear in log
     """
     agent_name = config.NEUTRON_METADATA_SERVICE
-    node = os_faults_steps.get_node_with_services(
-        service_names=[config.NOVA_API, agent_name])
+    node = os_faults_steps.get_node(service_names=[config.NOVA_API,
+                                                   agent_name])
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][0]
@@ -245,8 +245,8 @@ def test_restart_metadata_agent_compute_with_sighup(agent_steps,
     #. Check that only one SIGHUP message appear in log
     """
     agent_name = config.NEUTRON_METADATA_SERVICE
-    node = os_faults_steps.get_node_with_services(
-        service_names=[config.NOVA_COMPUTE, agent_name])
+    node = os_faults_steps.get_node(service_names=[config.NOVA_COMPUTE,
+                                                   agent_name])
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][1]
@@ -304,8 +304,8 @@ def test_restart_l3_agent_compute_with_sighup(agent_steps,
     #. Check that only one SIGHUP message appear in log
     """
     agent_name = config.NEUTRON_L3_SERVICE
-    node = os_faults_steps.get_node_with_services(
-        service_names=[config.NOVA_COMPUTE, agent_name])
+    node = os_faults_steps.get_node(service_names=[config.NOVA_COMPUTE,
+                                                   agent_name])
     host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][1]
