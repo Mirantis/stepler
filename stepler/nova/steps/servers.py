@@ -231,7 +231,7 @@ class ServerSteps(base.BaseSteps):
         """Verify step to check server status.
 
         Args:
-            server (object): nova instance to ping its floating ip
+            server (object): nova server to check its status
             expected_statuses (list): expected server statuses
             transit_statuses (iterable): allowed transit statuses
             timeout (int): seconds to wait a result of check
@@ -391,8 +391,16 @@ class ServerSteps(base.BaseSteps):
 
     @steps_checker.step
     def attach_floating_ip(self, server, floating_ip, check=True):
-        # TODO(schipiga): expand documentation
-        """Step to attach floating IP to server."""
+        """Step to attach floating IP to server.
+
+        Args:
+            server (object): nova server
+            floating_ip (object): floating IP
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            AssertionError: if floating IP is not attached to a server
+        """
         self._client.add_floating_ip(server, floating_ip)
 
         if check:
@@ -404,8 +412,16 @@ class ServerSteps(base.BaseSteps):
 
     @steps_checker.step
     def detach_floating_ip(self, server, floating_ip, check=True):
-        # TODO(schipiga): expand documentation
-        """Step to detach floating IP from server."""
+        """Step to detach floating IP from server.
+
+        Args:
+            server (object): nova server
+            floating_ip (object): floating IP
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            AssertionError: if floating IP is still attached to a server
+        """
         self._client.remove_floating_ip(server, floating_ip)
 
         if check:
@@ -420,7 +436,7 @@ class ServerSteps(base.BaseSteps):
         """Step to attach fixed IP from provided network to provided server.
 
         Args:
-            server (object): nova instance to ping its floating ip
+            server (object): nova server to attach fixed ip
             network_id (str): the ID of the network the IP should be on
             check (bool): flag whether to check step or not
 
@@ -452,7 +468,7 @@ class ServerSteps(base.BaseSteps):
         """Step to detach provided fixed IP from provided server.
 
         Args:
-            server (object): nova instance to delete fixed ip
+            server (object): nova server to delete fixed ip
             fixed_ip (str): Fixed IP address
             check (bool): flag whether to check step or not
 
@@ -481,7 +497,7 @@ class ServerSteps(base.BaseSteps):
             not attached to it fixed IP.
 
         Args:
-            server (object): nova instance to delete fixed ip
+            server (object): nova server to delete fixed ip
             unattached_fixed_ip (str): Unattached Fixed IP address
 
         Raises:
@@ -502,9 +518,9 @@ class ServerSteps(base.BaseSteps):
         """Step to get server IPs.
 
         Args:
-            server (object): Instance of nova server.
-            ip_type (str, optional): Type of IP to filter IPs.
-            check (bool, optional): Flag whether to check step or not.
+            server (object): nova server
+            ip_type (str, optional): type of IP to filter IPs
+            check (bool, optional): flag whether to check step or not
 
         Returns:
             dict: Retrieved IPs.
@@ -538,7 +554,7 @@ class ServerSteps(base.BaseSteps):
         """Step to get one server fixed IP for the server.
 
         Args:
-            server (object): instance of nova server
+            server (object): nova server
             check (bool, optional): flag whether to check step or not
 
         Returns:
@@ -555,7 +571,7 @@ class ServerSteps(base.BaseSteps):
         """Step to get one server floating IP for the server.
 
         Args:
-            server (object): instance of nova server
+            server (object): nova server
             check (bool, optional): flag whether to check step or not
 
         Returns:
@@ -572,7 +588,7 @@ class ServerSteps(base.BaseSteps):
         """Step to check DHCP on cirros server.
 
         Args:
-            cirros_server (object): instance of nova server
+            cirros_server (object): nova server
 
         Raises:
             TimeoutExpired: if check failed after ssh timeout
@@ -591,7 +607,7 @@ class ServerSteps(base.BaseSteps):
         """Verify step to check ping for ip from remote or local host.
 
         Args:
-            ip_to_ping (str): nova instance to ping its floating ip
+            ip_to_ping (str): nova server to ping its floating ip
             remote_from (object|None): instance of
                 stepler.third_party.ssh.SshClient. If None - ping executing
                 from local host.
@@ -620,7 +636,7 @@ class ServerSteps(base.BaseSteps):
         communication with networks outside the cloud, including the Internet.
 
         Args:
-            server (object): nova instance to ping its floating ip
+            server (object): nova server to ping its floating ip
             timeout (int): seconds to wait for result of check
 
         Raises:
@@ -712,7 +728,7 @@ class ServerSteps(base.BaseSteps):
         parameter.
 
         Args:
-            servers (list): nova instances to check ping between
+            servers (list): nova servers to check ping between them
             ip_types (tuple): types of ip addresses which should be pinged
             timeout (int): seconds to wait for result of check
 
@@ -728,7 +744,7 @@ class ServerSteps(base.BaseSteps):
         """Step to live migrate nova servers.
 
         Args:
-            servers (list): nova instances to migrate
+            servers (list): nova servers to migrate
             host (str): hypervisor's hostname to migrate to
             block_migration (bool): should nova use block or true live
                 migration
@@ -761,7 +777,7 @@ class ServerSteps(base.BaseSteps):
         """Step to migrate servers
 
         Args:
-            servers (list): servers to migrate
+            servers (list): nova servers to migrate
             check (bool): flag whether to check step or not
 
         Raises:
@@ -793,7 +809,7 @@ class ServerSteps(base.BaseSteps):
         """Step to confirm resize for servers
 
         Args:
-            servers (list): servers to confirm resize
+            servers (list): nova servers to confirm resize
             check (bool): flag whether to check step or not
 
         Raises:
@@ -820,7 +836,7 @@ class ServerSteps(base.BaseSteps):
         """Verify step to check that server's hypervisor hostname.
 
         Args:
-            server (object): nova instance to check hypervisor hostname
+            server (object): nova server to check hypervisor hostname
             host (str): name of hypervisor hostname to compare with
                 server's hypervisor
             equal (bool): flag whether servers's hypervisor hostname should be
@@ -1053,7 +1069,7 @@ class ServerSteps(base.BaseSteps):
         """Verify step to check server log contains substring.
 
         Args:
-            server (object): nova instance to ping its floating ip
+            server (object): nova server
             substring (str): substring to match
             timeout (int): seconds to wait a result of check
 
@@ -1258,7 +1274,7 @@ class ServerSteps(base.BaseSteps):
         """Step to restore soft-deleted server.
 
         Args:
-            server (object): nova instance
+            server (object): nova server
             check (bool): flag whether to check step or not
         """
         server.restore()
@@ -1273,7 +1289,7 @@ class ServerSteps(base.BaseSteps):
         provided values.
 
         Args:
-            server (object): nova instance object
+            server (object): nova server
             custom_meta (dict): data, which presence should be checked in
                                 server's metadata.
                                 Like: {'key': 'stepler_test'}
@@ -1299,7 +1315,7 @@ class ServerSteps(base.BaseSteps):
         """Step to pause nova server.
 
         Args:
-            server (object): nova instance to pause
+            server (object): nova server to pause
             check (bool): flag whether to check step or not
 
         Raises:
@@ -1320,8 +1336,8 @@ class ServerSteps(base.BaseSteps):
         """Step to rebuild nova server.
 
         Args:
-            server (object): nova instance to rebuild
-            image (object): image used for instance rebuild
+            server (object): nova server to rebuild
+            image (object): image used for server rebuild
             check (bool): flag whether to check step or not
 
         Raises:
@@ -1342,7 +1358,7 @@ class ServerSteps(base.BaseSteps):
         """Step to rescue nova server.
 
         Args:
-            server (object): nova instance to rescue
+            server (object): nova server to rescue
             check (bool): flag whether to check step or not
 
         Raises:
@@ -1424,8 +1440,8 @@ class ServerSteps(base.BaseSteps):
         """Step to resize server.
 
         Args:
-            server (object): nova instance
-            flavor (object): flavor instance
+            server (object): nova server
+            flavor (object): flavor object
             check (bool): flag whether check step or not
         """
         self._client.resize(server, flavor)
