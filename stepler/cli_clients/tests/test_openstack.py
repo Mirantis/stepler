@@ -39,6 +39,7 @@ def test_server_list(server, cli_openstack_steps):
 
 
 @pytest.mark.idempotent_id('07aa946f-46a0-40f3-9cbc-5d11f35e7fc0')
+@pytest.mark.requires("ironic_nodes_count >= 1")
 def test_baremetal_node_list(cli_openstack_steps):
     """**Scenario:** openstack baremetal list works via shell.
 

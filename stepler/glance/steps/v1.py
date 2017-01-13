@@ -17,6 +17,9 @@ Glance steps v1
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, calling, raises  # noqa
+from requests import exceptions as requests_exc
+
 from stepler import config
 from stepler.glance.steps import base
 from stepler.third_party import steps_checker
@@ -50,3 +53,20 @@ class GlanceStepsV1(base.BaseGlanceSteps):
                 image,
                 config.STATUS_ACTIVE,
                 timeout=config.IMAGE_AVAILABLE_TIMEOUT)
+
+    @steps_checker.step
+    def check_image_update_is_forbidden(self, images, status):
+        """Step to check that it is forbidden to update volume.
+
+        Args:
+            images (object): glance images
+            status (str): status to be set for images
+
+        Raises:
+            AssertionError: if check triggered an error
+        """
+        exception_message = "403 Client Error: Forbidden for url"
+        assert_that(
+            calling(self.update_images).with_args(
+                images, status, check=False),
+            raises(requests_exc.HTTPError, exception_message))

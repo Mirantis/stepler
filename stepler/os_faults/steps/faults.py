@@ -62,12 +62,21 @@ class OsFaultsSteps(base.BaseSteps):
                 nodes = self._client.get_service(service_name).get_nodes()
                 for host in nodes.hosts:
                     service_fqdns.add(host.fqdn)
-            if not fqdns:
-                fqdns = service_fqdns
+
+            if fqdns:
+                service_fqdns &= set(fqdns)
+
+            if service_fqdns:
+                nodes = self._client.get_nodes(fqdns=service_fqdns)
             else:
-                fqdns = set(fqdns)
-                fqdns &= service_fqdns
-        nodes = self._client.get_nodes(fqdns=fqdns)
+                # no nodes with service_name and fqdns were found so
+                # we should return empty collection
+                nodes = self._client.NODE_CLS(
+                    cloud_management=self._client,
+                    power_management=self._client.power_management,
+                    hosts=[])
+        else:
+            nodes = self._client.get_nodes(fqdns=fqdns)
 
         if check:
             assert_that(nodes, is_not(empty()))
@@ -273,6 +282,26 @@ class OsFaultsSteps(base.BaseSteps):
                 timeout=config.SERVICE_START_TIMEOUT)
 
     @steps_checker.step
+    def get_nodes_private_key_path(self, check=True):
+        """Step to retrieve private key for nodes.
+
+        Args:
+            check (bool): flag whether check step or not
+
+        Returns:
+            str: path to private key which is used for ssh to nodes
+
+        Raises:
+            AssertionError: if path to private key doesn't exist
+        """
+        private_key_path = self._client.private_key_file
+        if check:
+            assert_that(private_key_path, is_not(empty()))
+            assert_that(os.path.exists(private_key_path), is_(True))
+
+        return private_key_path
+
+    @steps_checker.step
     def download_file(self, node, file_path, check=True):
         """Step to download file from remote host to tempfile.
 
@@ -439,7 +468,7 @@ class OsFaultsSteps(base.BaseSteps):
         if not present:
             command = '! ' + command
         task = {'shell': command}
-        result = nodes.run_task(task)
+        result = nodes.run_task(task, raise_on_error=False)
         assert_that(result, only_contains(has_properties(status='OK')))
 
     @steps_checker.step
@@ -964,6 +993,22 @@ class OsFaultsSteps(base.BaseSteps):
         nodes = self.get_nodes(service_names=[config.GLANCE_API]).pick()
         result = self.execute_cmd(nodes, cmd, check=False)
         return result[0].payload['stdout'].strip()
+
+    @steps_checker.step
+    def get_ceilometer(self):
+        """Step to retrieve whether ceilometer is enabled or not.
+
+        Returns:
+            bool: is ceilometer enabled or not
+        """
+        node = self.get_nodes(service_names=[config.NOVA_API]).pick()
+        try:
+            self.check_file_exists(node, config.CEILOMETER_CONFIG_PATH)
+            is_present = True
+        except AssertionError:
+            is_present = False
+
+        return is_present
 
     @steps_checker.step
     def check_router_namespace_presence(self, router, node, must_present=True,
