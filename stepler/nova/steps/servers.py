@@ -25,7 +25,8 @@ import time
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
                       has_item, has_properties, is_, is_in, is_not,
-                      less_than_or_equal_to, raises, greater_than)  # noqa H301
+                      less_than_or_equal_to, raises, greater_than,
+                      has_key)  # noqa H301
 
 from novaclient import exceptions as nova_exceptions
 import paramiko
@@ -532,6 +533,29 @@ class ServerSteps(base.BaseSteps):
             assert_that(ips, is_not(empty()))
 
         return ips
+
+    @steps_checker.step
+    def check_server_ip(self, server, ip, must_present=True, timeout=0):
+        """Step to check that server has (or not) IP address.
+
+        Args:
+            server (object): nova server
+            ip (str): ip address
+            must_present (bool, optional): flag whether server should contain
+                ip or not
+            timeout (int, optional): seconds to wait result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _check_server_ip():
+            matcher = has_key(ip)
+            if not must_present:
+                matcher = is_not(matcher)
+            return waiter.expect_that(self.get_ips(server, check=False),
+                                      matcher)
+
+        waiter.wait(_check_server_ip, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_fixed_ip(self, server, check=True):
