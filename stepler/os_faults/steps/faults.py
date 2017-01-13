@@ -48,6 +48,10 @@ class OsFaultsSteps(base.BaseSteps):
     def get_nodes(self, fqdns=None, service_names=None, check=True):
         """Step to get nodes.
 
+        If fqdns and service_names are not None simultaneously, then
+        the intersection of nodes with fqdns and nodes with all required
+        services will be returned.
+
         Args:
             fqdns (list): nodes hostnames to filter
             service_names (list): names of services to filter nodes with
@@ -56,18 +60,10 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             NodeCollection: one or more nodes
         """
-        if service_names:
-            service_fqdns = set()
-            for service_name in service_names:
-                nodes = self._client.get_service(service_name).get_nodes()
-                for host in nodes.hosts:
-                    service_fqdns.add(host.fqdn)
-            if not fqdns:
-                fqdns = service_fqdns
-            else:
-                fqdns = set(fqdns)
-                fqdns &= service_fqdns
         nodes = self._client.get_nodes(fqdns=fqdns)
+        if service_names:
+            for service_name in service_names:
+                nodes &= self._client.get_service(service_name).get_nodes()
 
         if check:
             assert_that(nodes, is_not(empty()))
@@ -90,13 +86,11 @@ class OsFaultsSteps(base.BaseSteps):
             fqdns=fqdns, service_names=service_names, check=check)
         return nodes.pick()
 
-    # TODO(ssokolov) refactor two steps before and two steps after
     @steps_checker.step
-    def get_nodes_with_services(self, service_names, check=True):
+    def get_nodes_with_any_service(self, service_names, check=True):
         """Step to get nodes with running services.
 
-        Unlike get_nodes, it returns nodes where all required services are
-        running.
+        Unlike get_nodes, it returns nodes with at least one required service.
 
         Args:
             service_names (list): names of services to filter nodes with
@@ -105,34 +99,13 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             NodeCollection: one or more nodes
         """
-        common_nodes = None
-        for service_name in service_names:
-            nodes = self.get_nodes(service_names=[service_name])
-            if not common_nodes:
-                common_nodes = nodes
-            else:
-                common_nodes &= nodes
+        nodes = self._client.get_service(service_names[0]).get_nodes()
+        for service_name in service_names[1:]:
+            nodes |= self._client.get_service(service_name).get_nodes()
+
         if check:
-            assert_that(common_nodes, is_not(empty()))
-        return common_nodes
-
-    @steps_checker.step
-    def get_node_with_services(self, service_names, check=True):
-        """Step to get one node with running services.
-
-        Unlike get_node, it returns node where all required services are
-        running.
-
-        Args:
-            service_names (list): names of services to filter nodes with
-            check (bool): flag whether check step or not
-
-        Returns:
-            NodeCollection: one node
-        """
-        nodes = self.get_nodes_with_services(
-            service_names=service_names, check=check)
-        return nodes.pick()
+            assert_that(nodes, is_not(empty()))
+        return nodes
 
     @steps_checker.step
     def get_service(self, name, check=True):
@@ -271,6 +244,26 @@ class OsFaultsSteps(base.BaseSteps):
                 nodes,
                 must_run=True,
                 timeout=config.SERVICE_START_TIMEOUT)
+
+    @steps_checker.step
+    def get_nodes_private_key_path(self, check=True):
+        """Step to retrieve private key for nodes.
+
+        Args:
+            check (bool): flag whether check step or not
+
+        Returns:
+            str: path to private key which is used for ssh to nodes
+
+        Raises:
+            AssertionError: if path to private key doesn't exist
+        """
+        private_key_path = self._client.private_key_file
+        if check:
+            assert_that(private_key_path, is_not(empty()))
+            assert_that(os.path.exists(private_key_path))
+
+        return private_key_path
 
     @steps_checker.step
     def download_file(self, node, file_path, check=True):
@@ -439,7 +432,7 @@ class OsFaultsSteps(base.BaseSteps):
         if not present:
             command = '! ' + command
         task = {'shell': command}
-        result = nodes.run_task(task)
+        result = nodes.run_task(task, raise_on_error=False)
         assert_that(result, only_contains(has_properties(status='OK')))
 
     @steps_checker.step
@@ -961,9 +954,25 @@ class OsFaultsSteps(base.BaseSteps):
         """
         cmd = "awk -F'=' '/^default_store/{{ print $2 }}' {}".format(
             config.GLANCE_API_CONFIG_PATH)
-        nodes = self.get_nodes(service_names=[config.GLANCE_API]).pick()
+        nodes = self.get_node(service_names=[config.GLANCE_API])
         result = self.execute_cmd(nodes, cmd, check=False)
         return result[0].payload['stdout'].strip()
+
+    @steps_checker.step
+    def get_ceilometer(self):
+        """Step to retrieve whether ceilometer is enabled or not.
+
+        Returns:
+            bool: is ceilometer enabled or not
+        """
+        node = self.get_node(service_names=[config.NOVA_API])
+        try:
+            self.check_file_exists(node, config.CEILOMETER_CONFIG_PATH)
+            is_present = True
+        except AssertionError:
+            is_present = False
+
+        return is_present
 
     @steps_checker.step
     def check_router_namespace_presence(self, router, node, must_present=True,

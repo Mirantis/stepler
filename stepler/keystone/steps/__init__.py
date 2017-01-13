@@ -22,9 +22,9 @@ from .domains import *  # noqa
 from .groups import *  # noqa
 from .projects import *  # noqa
 from .roles import *  # noqa
+from .services import *  # noqa
 from .tokens import *  # noqa
 from .users import *  # noqa
-from .services import *  # noqa
 
 __all__ = [
     'DomainSteps',

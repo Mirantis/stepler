@@ -137,6 +137,14 @@ class Predicates(object):
 
     @property
     @_store_call
+    def ironic_nodes_count(self):
+        """Returns ironic nodes count."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(os_faults_steps.get_nodes(service_names=[config.IRONIC_API],
+                                             check=False))
+
+    @property
+    @_store_call
     def dhcp_agent_nodes_count(self):
         """Get DHCP agents nodes count."""
         os_faults_steps = self._get_fixture('os_faults_steps')
@@ -159,7 +167,7 @@ class Predicates(object):
         """Get count of L3 agent nodes with SNAT."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(
-            os_faults_steps.get_nodes_with_services(
+            os_faults_steps.get_nodes(
                 service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API],
                 check=False))
 
@@ -208,6 +216,13 @@ class Predicates(object):
         """Get glance default backend."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return os_faults_steps.get_default_glance_backend()
+
+    @property
+    @_store_call
+    def ceilometer(self):
+        """Define whether ceilometer is enabled."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_ceilometer()
 
     @property
     @_store_call

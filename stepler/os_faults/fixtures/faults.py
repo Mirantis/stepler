@@ -82,7 +82,8 @@ def patch_ini_file_and_restart_services(os_faults_steps):
     @context.context
     def _patch_ini_file_and_restart_services(
             service_names, file_path, option, value, section=None):
-        nodes = os_faults_steps.get_nodes(service_names=service_names)
+        nodes = os_faults_steps.get_nodes_with_any_service(
+            service_names=service_names)
 
         backup_path = os_faults_steps.patch_ini_file(
             nodes, file_path, option, value, section)
@@ -132,7 +133,7 @@ def nova_api_node(os_faults_steps):
     Returns:
         obj: node with nova-api service
     """
-    return os_faults_steps.get_nodes(service_names=[config.NOVA_API]).pick()
+    return os_faults_steps.get_node(service_names=[config.NOVA_API])
 
 
 @pytest.fixture
@@ -145,4 +146,4 @@ def ironic_api_node(os_faults_steps):
     Returns:
         obj: node with ironic-api service
     """
-    return os_faults_steps.get_nodes(service_names=[config.IRONIC_API]).pick()
+    return os_faults_steps.get_node(service_names=[config.IRONIC_API])
