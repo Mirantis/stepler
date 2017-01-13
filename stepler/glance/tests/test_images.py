@@ -71,9 +71,8 @@ def test_change_image_status_directly(glance_steps, api_glance_steps_v1):
     """
     images = glance_steps.create_images(
         image_path=utils.get_file_path(config.CIRROS_QCOW2_URL))
-    api_glance_steps_v1.update_images(images,
-                                      status=config.STATUS_QUEUED,
-                                      check=False)
+    api_glance_steps_v1.check_image_update_is_forbidden(
+        images, status=config.STATUS_QUEUED)
     glance_steps.check_image_status(images[0], config.STATUS_ACTIVE)
 
 

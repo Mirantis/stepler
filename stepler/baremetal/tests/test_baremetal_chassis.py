@@ -18,6 +18,8 @@ Ironic baremetal chassis tests
 
 import pytest
 
+pytestmark = pytest.mark.requires("ironic_nodes_count >= 1")
+
 
 @pytest.mark.idempotent_id('cde24671-65b2-46f5-b8e5-e3ff087e4da6')
 def test_chassis_create(ironic_chassis_steps):

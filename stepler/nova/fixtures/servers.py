@@ -290,8 +290,14 @@ def get_ssh_proxy_cmd(network_steps,
         dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
         dhcp_server_ip = [
             node.ip for node in os_faults_steps.get_node(fqdns=[dhcp_host])][0]
-        proxy_cmd = 'ssh {} root@{} ip netns exec {} netcat {} 22'.format(
-            ssh_opts, dhcp_server_ip, dhcp_netns, server_ip)
+        private_key_path = os_faults_steps.get_nodes_private_key_path()
+        proxy_cmd = ('ssh {ssh_opts} -i {pkey} root@{dhcp_server_ip} ip netns '
+                     'exec {dhcp_netns} netcat {server_ip} 22').format(
+            ssh_opts=ssh_opts,
+            pkey=private_key_path,
+            dhcp_server_ip=dhcp_server_ip,
+            dhcp_netns=dhcp_netns,
+            server_ip=server_ip)
 
         return proxy_cmd
 

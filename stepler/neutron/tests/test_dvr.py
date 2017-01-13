@@ -365,7 +365,7 @@ def test_reschedule_router_from_snat_controller(
     current_agent = agent_steps.get_l3_agents_for_router(router)[0]
     current_agent_node = os_faults_steps.get_nodes_for_agents([current_agent])
 
-    l3_agents_nodes = os_faults_steps.get_nodes_with_services(
+    l3_agents_nodes = os_faults_steps.get_nodes(
         service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API])
     free_agents_nodes = l3_agents_nodes - current_agent_node
     new_agent = agent_steps.get_agents(binary=config.NEUTRON_L3_SERVICE,
@@ -951,7 +951,7 @@ def test_check_ban_l3_agents_and_clear_one(
         server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
 
-    l3_agents_count = len(os_faults_steps.get_nodes_with_services(
+    l3_agents_count = len(os_faults_steps.get_nodes(
         service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API]))
     for _ in range(l3_agents_count - 1):
         l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
@@ -1127,7 +1127,7 @@ def test_connectivity_after_ban_l3_agent_many_times(
     l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
     current_l3_agent_node = os_faults_steps.get_nodes_for_agents([l3_agent])
 
-    l3_agents_nodes = os_faults_steps.get_nodes_with_services(
+    l3_agents_nodes = os_faults_steps.get_nodes(
         service_names=[config.NEUTRON_L3_SERVICE, config.NOVA_API])
     other_l3_agents_nodes = l3_agents_nodes - current_l3_agent_node
     os_faults_steps.terminate_service(service_name=config.NEUTRON_L3_SERVICE,
@@ -1255,7 +1255,7 @@ def test_check_router_update_notification_for_l3_agents(
     #. Delete subnet
     #. Delete network
     """
-    nodes = os_faults_steps.get_nodes_with_services(
+    nodes = os_faults_steps.get_nodes(
         service_names=[config.NOVA_COMPUTE, config.NEUTRON_L3_SERVICE])
     server_host_name = next(host.fqdn for host in nodes.hosts)
 
@@ -1415,7 +1415,7 @@ def test_add_router_interface_with_port_id(create_router,
     #. Delete router
     #. Delete subnet and network
     """
-    nodes = os_faults_steps.get_nodes_with_services(
+    nodes = os_faults_steps.get_nodes(
         service_names=[config.NEUTRON_SERVER_SERVICE])
 
     log_file = config.AGENT_LOGS[config.NEUTRON_SERVER_SERVICE][0]
