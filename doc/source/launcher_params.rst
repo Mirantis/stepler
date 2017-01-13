@@ -22,6 +22,8 @@ Environment variables
   created. By default it will be in directory where tests are launched.
 * ``OS_FLOATING_NETWORK`` - name of external (floating) network. By default is
   ``admin_floating_net``.
+* ``OPENRC_ACTIVATE_CMD`` - command to source the admin credentials. By default
+  is ``source /root/openrc``.
 
 ---------------------------
 Launch tests for components
