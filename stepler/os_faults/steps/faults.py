@@ -45,6 +45,25 @@ class OsFaultsSteps(base.BaseSteps):
     """os-faults steps."""
 
     @steps_checker.step
+    def get_cloud_param_value(self, param_name):
+        """Step to get value of a cloud management parameter.
+
+        Args:
+            param_name (str): parameter name
+
+        Returns:
+            str: parameter value
+
+        Raises:
+            AttributeError: if wrong parameter name
+        """
+        if param_name == 'driver':
+            value = self._client.get_driver_name()
+        else:
+            value = getattr(self._client, param_name)
+        return value
+
+    @steps_checker.step
     def get_nodes(self, fqdns=None, service_names=None, check=True):
         """Step to get nodes.
 
@@ -1634,3 +1653,26 @@ class OsFaultsSteps(base.BaseSteps):
             config.NOVA_COMPUTE)
 
         self.execute_cmd(nova_api_node, cmd, check=check)
+
+    @steps_checker.step
+    def get_fqdn_by_short_host_name(self, short_host_name, check=True):
+        """Step to get FQDN by short host name.
+
+        Ex: cmp01 -> cmp01.mk22-lab-dvr.local
+
+        Args:
+            short_host_name (str): short host name
+
+        Raises:
+            AssertionError: if number of nodes with proper FQDN != 1
+
+        Returns:
+            str: FQDN
+        """
+        nodes = self._client.get_nodes()
+        fqdns = [node.fqdn for node in nodes
+                 if node.fqdn.startswith(short_host_name)]
+        if check:
+            assert_that(fqdns, has_length(1))
+        return fqdns[0]
+
