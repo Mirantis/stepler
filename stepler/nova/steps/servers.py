@@ -1444,12 +1444,14 @@ class ServerSteps(base.BaseSteps):
             flavor (object): flavor object
             check (bool): flag whether check step or not
         """
-        self._client.resize(server, flavor)
+        server.resize(flavor)
 
         if check:
-            self.check_server_status(server, config.STATUS_VERIFY_RESIZE,
-                                     transit_statuses=(config.STATUS_RESIZE,),
-                                     timeout=config.VERIFY_RESIZE_TIMEOUT)
+            self.check_server_status(
+                server,
+                expected_statuses=[config.STATUS_VERIFY_RESIZE],
+                transit_statuses=[config.STATUS_RESIZE],
+                timeout=config.VERIFY_RESIZE_TIMEOUT)
 
     @steps_checker.step
     def reboot_server(self,
@@ -1516,6 +1518,51 @@ class ServerSteps(base.BaseSteps):
                                      timeout=config.SERVER_ACTIVE_TIMEOUT)
 
     @steps_checker.step
+    def shelve_server(self, server, check=True):
+        """Step to shelve server.
+
+        Args:
+            server (obj): nova server to shelve
+            check (bool): flag whether to check step or not
+
+        Raises:
+             TimeoutExpired: if check failed after timeout
+        """
+        server.shelve()
+
+        if check:
+            self.check_server_status(server,
+                                     expected_statuses=[
+                                         config.STATUS_SHELVED,
+                                         config.STATUS_SHELVED_OFFLOADED
+                                     ],
+                                     transit_statuses=[config.STATUS_ACTIVE],
+                                     timeout=config.SERVER_SHELVE_TIMEOUT)
+
+    @steps_checker.step
+    def lock_server(self, server, check=True):
+        """Step to lock server.
+
+        Args:
+            server (obj): nova server to lock
+            check (bool): flag whether to check step or not
+
+        Raises:
+             TimeoutExpired: if check failed after timeout
+        """
+        server.lock()
+
+        if check:
+            self.check_server_status(server,
+                                     expected_statuses=[config.STATUS_ACTIVE],
+                                     timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+            self.check_server_attribute(server,
+                                        attr=config.SERVER_ATTR_LOCKED,
+                                        value=True,
+                                        timeout=config.SERVER_UPDATE_TIMEOUT)
+
+    @steps_checker.step
     @contextlib.contextmanager
     def check_iperf_loss_context(self, server_ssh, ip, port, time=60,
                                  max_loss=0):
@@ -1552,6 +1599,40 @@ class ServerSteps(base.BaseSteps):
         return "Server fault:\n{}".format(fault_msg)
 
     @steps_checker.step
+    def check_server_attribute(self,
+                               server,
+                               attr,
+                               value,
+                               equal=True,
+                               timeout=0):
+        """Verify step to check that server's attribute has an expected value.
+
+        Args:
+            server (object): nova server to check its attribute defined in
+                arguments
+            attr (str): name of server's attribute
+            value (str) expected value of server's attribute
+            equal (bool): flag whether servers's attribute should be
+                equal to `value` or not
+            timeout (int): seconds to wait a result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+
+        if equal:
+            matcher = is_(value)
+        else:
+            matcher = is_not(value)
+
+        def predicate():
+            server.get()
+            server_attr = getattr(server, attr)
+            return waiter.expect_that(server_attr, matcher)
+
+        waiter.wait(predicate, timeout_seconds=timeout)
+
+    @steps_checker.step
     def evacuate_servers(self, servers, host=None, check=True):
         """Step to evacuate servers from failed host
 
@@ -1585,3 +1666,92 @@ class ServerSteps(base.BaseSteps):
                     failed_host[server.id],
                     equal=False,
                     timeout=config.EVACUATE_TIMEOUT)
+
+    @steps_checker.step
+    def check_servers_not_evacuated_in_rescue_state(self, rescue_servers):
+        """Step to check servers will not be evacuated in Rescue state.
+
+        Args:
+            rescue_servers (list): servers to be set to Rescue state
+
+        Raises:
+            AssertionError: if check failed
+        """
+        exception_message = ("Cannot 'evacuate' instance " +
+                             (rescue_servers[0].id or rescue_servers[1].id) +
+                             " while it is in vm_state rescue")
+        assert_that(
+            calling(self.evacuate_servers).with_args(
+                rescue_servers, check=False),
+            raises(nova_exceptions.Conflict, exception_message))
+
+    @steps_checker.step
+    def check_servers_not_evacuated_in_shelved_state(self, shelved_servers):
+        """Step to check servers will not be evacuated in Shelved state.
+
+        Args:
+            shelved_servers (list): servers to be set to Shelved state
+
+        Raises:
+            AssertionError: if check failed
+        """
+        exception_message = ("The target host can't be the same one.")
+        assert_that(
+            calling(self.evacuate_servers).with_args(
+                shelved_servers, check=False),
+            raises(nova_exceptions.BadRequest, exception_message))
+
+    @steps_checker.step
+    def check_servers_not_evacuated_in_paused_state(self, paused_servers):
+        """Step to check servers will not be evacuated in Paused state.
+
+        Args:
+            paused_servers (list): servers to be set to Paused state
+
+        Raises:
+            AssertionError: if check failed
+        """
+        exception_message = ("Cannot 'evacuate' instance " +
+                             (paused_servers[0].id or paused_servers[1].id) +
+                             " while it is in vm_state paused")
+        assert_that(
+            calling(self.evacuate_servers).with_args(
+                paused_servers, check=False),
+            raises(nova_exceptions.Conflict, exception_message))
+
+    @steps_checker.step
+    def check_servers_not_evacuated_in_resized_state(self, resized_servers):
+        """Step to check servers will not be evacuated in Resized state.
+
+        Args:
+            resized_servers (list): servers to be set to Resized state
+
+        Raises:
+            AssertionError: if check failed
+        """
+        exception_message = ("Cannot 'evacuate' instance " +
+                             (resized_servers[0].id or resized_servers[1].id) +
+                             " while it is in vm_state resized")
+        assert_that(
+            calling(self.evacuate_servers).with_args(
+                resized_servers, check=False),
+            raises(nova_exceptions.Conflict, exception_message))
+
+    @steps_checker.step
+    def check_servers_not_evacuated_to_initial_compute(self,
+                                                       servers_to_evacuate,
+                                                       host):
+        """Step to check servers will not be evacuated to initial compute.
+
+        Args:
+            servers_to_evacuate (list): servers to be evacuated
+            host (str): target host, must be equal to failed compute's hostname
+
+        Raises:
+            AssertionError: if check failed
+        """
+        exception_message = ("The target host can't be the same one.")
+        assert_that(
+            calling(self.evacuate_servers).with_args(
+                servers_to_evacuate, host, check=False),
+            raises(nova_exceptions.BadRequest, exception_message))

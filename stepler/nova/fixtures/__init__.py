@@ -42,6 +42,7 @@ __all__ = sorted([  # sort for documentation
     'flavor',
     'flavor_steps',
     'tiny_flavor',
+    'small_flavor',
     'baremetal_flavor',
     'public_flavor',
 
@@ -88,6 +89,7 @@ __all__ = sorted([  # sort for documentation
     'live_migration_servers_with_volumes',
     'servers_cleanup',
     'servers_to_evacuate',
+    'servers_with_volumes_to_evacuate',
     'generate_traffic',
     'ubuntu_server',
     'unexpected_servers_cleanup',
