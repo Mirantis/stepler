@@ -23,6 +23,8 @@ from stepler.neutron.client import network
 from stepler.neutron.client import port
 from stepler.neutron.client import quota
 from stepler.neutron.client import router
+from stepler.neutron.client import security_group
+from stepler.neutron.client import security_group_rule
 from stepler.neutron.client import subnet
 
 
@@ -54,6 +56,14 @@ class NeutronClient(object):
     @property
     def routers(self):
         return router.RouterManager(self)
+
+    @property
+    def security_groups(self):
+        return security_group.SecurityGroupManager(self)
+
+    @property
+    def security_group_rules(self):
+        return security_group_rule.SecurityGroupRuleManager(self)
 
     @property
     def subnets(self):

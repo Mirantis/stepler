@@ -23,12 +23,16 @@ from .networks import *  # noqa
 from .ports import *  # noqa
 from .quotas import *  # noqa
 from .routers import *  # noqa
+from .security_groups import *  # noqa
+from .security_group_rules import *  # noqa
 from .subnets import *  # noqa
 
 
 __all__ = [
     "AgentSteps",
     "FloatingIPSteps",
+    "NeutronSecurityGroupRuleSteps",
+    "NeutronSecurityGroupSteps",
     "NetworkSteps",
     "PortSteps",
     "QuotaSteps",
