@@ -1,7 +1,7 @@
 """
--------------
-Neutron steps
--------------
+------------------------------
+Neutron security group manager
+------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,25 +17,15 @@ Neutron steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .agents import *  # noqa
-from .floating_ips import *  # noqa
-from .networks import *  # noqa
-from .ports import *  # noqa
-from .quotas import *  # noqa
-from .routers import *  # noqa
-from .security_groups import *  # noqa
-from .security_group_rules import *  # noqa
-from .subnets import *  # noqa
+from stepler.neutron.client import base
 
 
-__all__ = [
-    "AgentSteps",
-    "FloatingIPSteps",
-    "NeutronSecurityGroupSteps",
-    "NetworkSteps",
-    "PortSteps",
-    "QuotaSteps",
-    "RouterSteps",
-    "SecurityGroupRuleSteps",
-    "SubnetSteps",
-]
+class SecurityGroup(base.Resource):
+    pass
+
+
+class SecurityGroupManager(base.BaseNeutronManager):
+    """Security Group (neutron) manager."""
+
+    NAME = 'security_group'
+    _resource_class = SecurityGroup
