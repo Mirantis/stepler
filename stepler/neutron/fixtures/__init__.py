@@ -26,7 +26,8 @@ from .ports import *  # noqa
 from .quotas import *  # noqa
 from .routers import *  # noqa
 from .subnets import *  # noqa
-
+from .security_groups import *  # noqa
+from .security_group_rules import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'create_network',
@@ -73,4 +74,10 @@ __all__ = sorted([  # sort for documentation
     'floating_ip',
     'floating_ip_steps',
     'get_floating_ip_steps',
+    'get_security_group_rule_steps',
+    'security_group_rule_steps',
+    'get_neutron_security_group_steps',
+    'neutron_security_group_steps',
+    'neutron_create_security_group',
+    'neutron_security_group',
 ])
