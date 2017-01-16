@@ -22,6 +22,7 @@ import time
 import pytest
 
 from stepler import config
+from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('3e21c239-c95a-49ea-b518-9b38ca7ad3ea')
@@ -60,6 +61,75 @@ def test_ssh_unavailable_after_detach_floating_ip(
             timeout=config.FLOATING_IP_DETACH_TIMEOUT)
     server_steps.check_ssh_connection_establishment(
         server_ssh, must_work=False)
+
+
+@pytest.mark.idempotent_id('036633a6-b6e0-44da-bd85-748eaf846e39')
+def test_ssh_unavailable_after_deleting_tcp_rule(net_subnet_router,
+                                                 flavor,
+                                                 cirros_image,
+                                                 create_security_group,
+                                                 nova_floating_ip,
+                                                 security_group_steps,
+                                                 server_steps):
+    """**Scenario:** Check ssh for server after deleting tcp rule.
+
+    **Setup:**
+
+    #. Create network, subnet and router
+    #. Create flavor
+    #. Create cirros image
+    #. Create floating ip
+
+    **Steps:**
+
+    #. Create security group
+    #. Add icmp and tcp rules to security group
+    #. Create server with security group
+    #. Assign floating ip to server
+    #. Open ssh connection to server, check that it operable
+    #. Delete tcp rule from security group
+    #. Check that opened SSH connection is not operable
+    #. Check that new SSH connection can't be established
+    #. Add tcp rule to security group again
+    #. Check that new SSH connection can be established
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete security group
+    #. Delete floating ip
+    #. Delete image
+    #. Delete flavor
+    #. Delete network, subnet and router
+    """
+    security_group = create_security_group(next(utils.generate_ids()))
+    security_group_steps.add_group_rules(
+        security_group, config.SECURITY_GROUP_PING_RULES)
+    ssh_rule = security_group_steps.add_group_rules(
+        security_group, config.SECURITY_GROUP_SSH_RULES)
+
+    server = server_steps.create_servers(image=cirros_image,
+                                         flavor=flavor,
+                                         networks=[net_subnet_router[0]],
+                                         security_groups=[security_group],
+                                         username=config.CIRROS_USERNAME,
+                                         password=config.CIRROS_PASSWORD)[0]
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    server_ssh = server_steps.get_server_ssh(server)
+    with server_ssh:
+        server_steps.check_active_ssh_connection(server_ssh)
+        security_group_steps.remove_group_rules(security_group, ssh_rule)
+        server_steps.check_active_ssh_connection(
+            server_ssh,
+            must_operable=False,
+            timeout=config.SSH_CLIENT_TIMEOUT)
+    server_steps.check_ssh_connection_establishment(server_ssh,
+                                                    must_work=False)
+
+    security_group_steps.add_group_rules(
+        security_group, config.SECURITY_GROUP_SSH_RULES)
+    server_steps.check_ssh_connection_establishment(server_ssh)
 
 
 @pytest.mark.idempotent_id('bf8d9694-4fbb-416f-b5b8-a073c3739b15')
