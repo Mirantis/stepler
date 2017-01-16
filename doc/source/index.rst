@@ -99,6 +99,8 @@ We recommend to use ``ipdb`` to set up break points inside code. Just put follow
 
    import ipdb; ipdb.set_trace()
 
+Please report bugs found in ``stepler`` to https://bugs.launchpad.net/stepler
+
 -----------------
 Deep to structure
 -----------------
