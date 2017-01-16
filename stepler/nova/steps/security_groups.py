@@ -32,7 +32,8 @@ class SecurityGroupSteps(BaseSteps):
     """Security group steps."""
 
     @steps_checker.step
-    def create_group(self, group_name, description='description', check=True):
+    def create_group(self, group_name=None, description='description',
+                     check=True):
         """Step to create security group.
 
         Args:
@@ -56,12 +57,26 @@ class SecurityGroupSteps(BaseSteps):
     @steps_checker.step
     def add_group_rules(self, group, rules, check=True):
         """Step to add rules to security group."""
+        rules_id = []
         for rule in rules:
-            self._client.security_group_rules.create(group.id, **rule)
+            rule = self._client.security_group_rules.create(group.id, **rule)
+            rules_id.append(rule)
 
         if check:
             for rule in rules:
                 self.check_rule_presence(group, rule)
+
+        return rules_id
+
+    @steps_checker.step
+    def remove_group_rules(self, group, rules, check=True):
+        """Step to remove rule from security group."""
+        for rule in rules:
+            self._client.security_group_rules.delete(rule)
+
+        if check:
+            for rule in rules:
+                self.check_rule_presence(group, rule, present=False)
 
     @steps_checker.step
     def delete_group(self, group, check=True):
@@ -85,14 +100,20 @@ class SecurityGroupSteps(BaseSteps):
 
     @steps_checker.step
     def check_rule_presence(self, group, rule, present=True, timeout=0):
-        """Verify step to check security group is present."""
+        """Verify step to check security group rule is present."""
 
         group_id = group.id
-
-        def predicate():
+        if hasattr(rule, 'id'):
+            rule_to_check = {'to_port': rule.to_port,
+                             'from_port': rule.from_port,
+                             'ip_protocol': rule.ip_protocol,
+                             'ip_range': rule.ip_range}
+        else:
             rule_to_check = rule.copy()
             cidr = rule_to_check.pop('cidr')
             rule_to_check['ip_range'] = {'cidr': cidr}
+
+        def predicate():
             try:
                 group = self._client.security_groups.get(group_id)
                 assert_that(group.rules, has_item(has_entries(rule_to_check)))
