@@ -329,7 +329,7 @@ SECURITY_GROUP_SSH_RULES = [
     }
 ]
 
-SECURITY_GROUP_SSH_PING_RULES = SECURITY_GROUP_SSH_RULES + [
+SECURITY_GROUP_PING_RULES = [
     {
         # ping
         'ip_protocol': 'icmp',
@@ -339,6 +339,17 @@ SECURITY_GROUP_SSH_PING_RULES = SECURITY_GROUP_SSH_RULES + [
     }
 ]
 
+SECURITY_GROUP_EGRESS_PING_RULE = {
+    'direction': 'egress',
+    'protocol': 'icmp',
+    'port_range_min': None,
+    'port_range_max': None,
+    'remote_ip_prefix': '0.0.0.0/0'
+}
+
+
+SECURITY_GROUP_SSH_PING_RULES = (SECURITY_GROUP_SSH_RULES +
+                                 SECURITY_GROUP_PING_RULES)
 # Heat
 HEAT_VERSION = 1
 HEAT_IN_PROGRESS_STATUS = 'in_progress'
