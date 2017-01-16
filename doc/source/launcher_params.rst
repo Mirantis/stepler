@@ -23,6 +23,22 @@ Environment variables
 * ``OS_FLOATING_NETWORK`` - name of external (floating) network. By default is
   ``admin_floating_net``.
 
+
+Os-faults specific environment variables:
+
+* ``OS_FAULTS_CLOUD_DRIVER`` - Cloud driver. Can be one of ``devstack``,
+  ``fuel`` or ``tcpcloud``.
+* ``OS_FAULTS_CLOUD_DRIVER_ADDRESS`` - Ip address of fuel master (or mk cfg)
+  node.
+* ``OS_FAULTS_CLOUD_DRIVER_USERNAME`` - Username to connect to nodes. By
+  default is ``root``.
+* ``OS_FAULTS_CLOUD_DRIVER_KEYFILE`` - Path to private keyfile to connect via SSH
+  to any node in cloud with ``OS_FAULTS_CLOUD_DRIVER_USERNAME``.
+* ``OS_FAULTS_POWER_DRIVER`` - Name of os-faults power driver to cloud. By
+  default it ``libvirt``.
+* ``OS_FAULTS_POWER_DRIVER_URI`` - URI to connect to power driver.
+
+
 ---------------------------
 Launch tests for components
 ---------------------------
