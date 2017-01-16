@@ -329,7 +329,7 @@ SECURITY_GROUP_SSH_RULES = [
     }
 ]
 
-SECURITY_GROUP_SSH_PING_RULES = SECURITY_GROUP_SSH_RULES + [
+SECURITY_GROUP_PING_RULES = [
     {
         # ping
         'ip_protocol': 'icmp',
@@ -338,6 +338,18 @@ SECURITY_GROUP_SSH_PING_RULES = SECURITY_GROUP_SSH_RULES + [
         'cidr': '0.0.0.0/0',
     }
 ]
+
+SECURITY_GROUP_EGRESS_PING_RULE = {
+    'direction': 'egress',
+    'protocol': 'icmp',
+    'port_range_min': None,
+    'port_range_max': None,
+    'remote_ip_prefix': '0.0.0.0/0'
+}
+
+
+SECURITY_GROUP_SSH_PING_RULES = (SECURITY_GROUP_SSH_RULES +
+                                 SECURITY_GROUP_PING_RULES)
 
 # Heat
 HEAT_VERSION = 1
@@ -412,6 +424,8 @@ SERVICE_TERMINATE_TIMEOUT = 60
 SERVICE_START_TIMEOUT = 60
 AGENT_RESCHEDULING_TIMEOUT = 3 * 60
 FLOATING_IP_DETACH_TIMEOUT = 30
+
+NEUTRON_UPDATE_SEC_GROUP_RULES_TIMEOUT = 30
 
 TAP_INTERFACE_UP_TIMEOUT = 3 * 60
 
