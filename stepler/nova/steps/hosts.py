@@ -36,7 +36,7 @@ class HostSteps(base.BaseSteps):
         """Step to get hosts.
 
         Args:
-            check (bool|True): flag whether check step or not
+            check (bool, optional): flag whether to check step or not
 
         Returns:
             list: list of hosts objects
@@ -56,15 +56,37 @@ class HostSteps(base.BaseSteps):
 
         Args:
             name (str): host name
-            check (bool|True): flag whether check step or not
+            check (bool, optional): flag whether to check step or not
 
         Returns:
-            list: list of hosts objects
+            object: host object
 
         Raises:
             AssertionError: if host is not found
         """
         hosts = [host for host in self.get_hosts() if host.host_name == name]
+
+        if check:
+            assert_that(len(hosts), equal_to(1))
+
+        return hosts[0]
+
+    @steps_checker.step
+    def get_host_by_fqdn(self, fqdn, check=True):
+        """Step to get host by FQDN.
+
+        Args:
+            fqdn (str): FQDN of host
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            object: host object
+
+        Raises:
+            AssertionError: if host is not found
+        """
+        hosts = [host for host in self.get_hosts()
+                 if fqdn.startswith(host.host_name)]
 
         if check:
             assert_that(len(hosts), equal_to(1))
@@ -82,7 +104,7 @@ class HostSteps(base.BaseSteps):
 
         Args:
             host (object): host
-            check (bool|True): flag whether check step or not
+            check (bool, optional): flag whether to check step or not
 
         Raises:
             AssertionError: if usage data has less than 3 elements
