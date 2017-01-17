@@ -17,7 +17,7 @@ Host steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, is_not, equal_to, empty,
+from hamcrest import (assert_that, is_not, equal_to, empty, has_length,
                       greater_than_or_equal_to)  # noqa
 
 from stepler import base
@@ -36,7 +36,7 @@ class HostSteps(base.BaseSteps):
         """Step to get hosts.
 
         Args:
-            check (bool|True): flag whether check step or not
+            check (bool, optional): flag whether to check step or not
 
         Returns:
             list: list of hosts objects
@@ -51,23 +51,32 @@ class HostSteps(base.BaseSteps):
         return hosts
 
     @steps_checker.step
-    def get_host(self, name, check=True):
-        """Step to get host by name.
+    def get_host(self, name=None, fqdn=None, check=True):
+        """Step to get host by name or FQDN.
+
+        If not arguments are specified that means any host is suitable.
 
         Args:
             name (str): host name
-            check (bool|True): flag whether check step or not
+            fqdn (str): FQDN of host
+            check (bool, optional): flag whether to check step or not
 
         Returns:
-            list: list of hosts objects
+            object: host object
 
         Raises:
             AssertionError: if host is not found
         """
-        hosts = [host for host in self.get_hosts() if host.host_name == name]
+        hosts = self.get_hosts()
 
+        if name:
+            hosts = [host for host in hosts if host.host_name == name]
+        if fqdn:
+            hosts = [host for host in hosts if fqdn.startswith(host.host_name)]
         if check:
-            assert_that(len(hosts), equal_to(1))
+            assert_that(hosts, is_not(empty()))
+            if name or fqdn:
+                assert_that(hosts, has_length(1))
 
         return hosts[0]
 
@@ -82,7 +91,7 @@ class HostSteps(base.BaseSteps):
 
         Args:
             host (object): host
-            check (bool|True): flag whether check step or not
+            check (bool, optional): flag whether to check step or not
 
         Raises:
             AssertionError: if usage data has less than 3 elements
