@@ -83,7 +83,7 @@ def test_check_east_west_connectivity_between_instances(
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_ip = next(iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+    server_2_ip = server_steps.get_fixed_ip(server_2)
     with server_steps.get_server_ssh(server_1) as server_1_ssh:
         server_steps.check_ping_for_ip(
             server_2_ip,
@@ -554,7 +554,7 @@ def test_east_west_connectivity_after_ban_clear_l3_on_compute(
     os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, server_1_host)
 
     proxy_cmd = get_ssh_proxy_cmd(server_1)
-    server_2_ip = next(iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+    server_2_ip = server_steps.get_fixed_ip(server_2)
     with server_steps.get_server_ssh(
             server_1, proxy_cmd=proxy_cmd) as server_1_ssh:
         server_steps.check_ping_for_ip(
@@ -1219,6 +1219,7 @@ def test_check_router_update_notification_for_l3_agents(
         net_subnet_router,
         nova_floating_ip,
         server_steps,
+        host_steps,
         os_faults_steps):
     """**Scenario:** Check router update notifications for L3 agent.
 
@@ -1257,7 +1258,7 @@ def test_check_router_update_notification_for_l3_agents(
     """
     nodes = os_faults_steps.get_nodes_with_services(
         service_names=[config.NOVA_COMPUTE, config.NEUTRON_L3_SERVICE])
-    server_host_name = next(host.fqdn for host in nodes.hosts)
+    server_host_fqdn = next(host.fqdn for host in nodes.hosts)
 
     log_file = config.AGENT_LOGS[config.NEUTRON_L3_SERVICE][1]
 
@@ -1265,6 +1266,7 @@ def test_check_router_update_notification_for_l3_agents(
                                                                  log_file)
 
     network = net_subnet_router[0]
+    server_host_name = host_steps.get_host_by_fqdn(server_host_fqdn).host_name
     server = server_steps.create_servers(
         image=cirros_image,
         flavor=flavor,
@@ -1276,7 +1278,7 @@ def test_check_router_update_notification_for_l3_agents(
     server_steps.attach_floating_ip(server, nova_floating_ip)
     server_steps.detach_floating_ip(server, nova_floating_ip)
 
-    server_node = os_faults_steps.get_node(fqdns=[server_host_name])
+    server_node = os_faults_steps.get_node(fqdns=[server_host_fqdn])
     os_faults_steps.check_string_in_file(
         server_node, file_name=log_file,
         keyword=config.STR_L3_AGENT_NOTIFICATION,
@@ -1310,6 +1312,7 @@ def test_instance_connectivity_after_l3_agent_restart(
         flavor_steps,
         server_steps,
         hypervisor_steps,
+        host_steps,
         os_faults_steps,
         flavor_name):
     """**Scenario:** Check instances connectivity after restarting l3 agent.
@@ -1339,7 +1342,8 @@ def test_instance_connectivity_after_l3_agent_restart(
     #. Restore original neutron quotas
     """
     servers = []
-    host_name = hypervisor_steps.get_hypervisors()[0].hypervisor_hostname
+    host_fqdn = hypervisor_steps.get_hypervisors()[0].hypervisor_hostname
+    host_name = host_steps.get_host_by_fqdn(host_fqdn).host_name
     flavor = flavor_steps.get_flavor(name=flavor_name)
 
     for _ in range(10):
@@ -1372,7 +1376,7 @@ def test_instance_connectivity_after_l3_agent_restart(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
 
-    node = os_faults_steps.get_node(fqdns=[host_name])
+    node = os_faults_steps.get_node(fqdns=[host_fqdn])
     for _ in range(60):
         os_faults_steps.restart_services(names=[config.NEUTRON_L3_SERVICE],
                                          nodes=node)
