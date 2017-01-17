@@ -42,7 +42,9 @@ def set_glance_storage_to_file_with_quota(os_faults_steps, get_glance_steps):
         ('glance_store', 'stores', 'file,http'),
         ('glance_store', 'default_store', 'file'),
         (None, 'user_storage_quota', config.GLANCE_USER_STORAGE_QUOTA), )
-    nodes = os_faults_steps.get_nodes(service_names=config.GLANCE_SERVICES)
+    nodes = os_faults_steps.get_nodes_with_any_service(
+        service_names=config.GLANCE_SERVICES)
+
     for section, option, value in new_params:
         backup = os_faults_steps.patch_ini_file(
             nodes,

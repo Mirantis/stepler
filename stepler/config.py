@@ -364,6 +364,9 @@ HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-tem
 BAREMETAL_NETWORK = 'baremetal'
 BAREMETAL_NODE = bool(os.environ.get('BAREMETAL_NODE', False))
 
+# Ceilometer
+CEILOMETER_CONFIG_PATH = '/etc/ceilometer/ceilometer.conf'
+
 # CLI clients
 SERVER_LIST_TIMEOUT = 60
 MIGRATION_START_TIMEOUT = 15

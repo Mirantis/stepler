@@ -18,6 +18,8 @@ Ironic node tests
 
 import pytest
 
+pytestmark = pytest.mark.requires("ironic_nodes_count >= 1")
+
 
 @pytest.mark.idempotent_id('340cec4f-179e-4ebd-843a-67977d666a67')
 def test_node_create(ironic_node):
