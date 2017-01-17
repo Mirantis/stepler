@@ -46,6 +46,7 @@ __all__ = sorted([  # sort for documentation
     'baremetal_flavor',
     'public_flavor',
 
+    'get_nova_floating_ip_steps',
     'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
