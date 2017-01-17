@@ -2,6 +2,32 @@
 Horizon
 =======
 
+---------------
+Tests launching
+---------------
+
+.. code::
+
+   py.test stepler/horizon
+
+Special environment variables:
+
+* ``VIRTUAL_DISPLAY`` says py.test to use `xvfb <https://en.wikipedia.org/wiki/Xvfb>`_.
+  Not specified by default.
+
+Required software:
+
+* ``firefox v45 or less`` - modern firefox versions require geckodriver,
+  which is unstable still
+* ``avconv`` - is used to capture tests video
+* ``xvfb`` - optionally, if you are going to use virtual X11 display
+
+.. note::
+
+   It requires X11 display to launch firefox. With server distributive it's
+   recommended to use ``xvfb``. Environment variable ``DISPLAY`` should be
+   defined and point to actual X11 display. Otherwise tests will be failed.
+
 .. automodule:: stepler.horizon.conftest
    :members:
 
