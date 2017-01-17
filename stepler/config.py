@@ -500,6 +500,8 @@ HORIZON_CONFIG_PATH = os.environ.get(
 
 # Cloud-specific variables
 
+TCP_CLOUD = 'tcpcloud'
+
 # Check if current node is fuel primary controller
 FUEL_PRIMARY_CONTROLLER_CMD = "hiera roles | grep primary-controller"
 FUEL_NON_PRIMARY_CONTROLLERS_CMD = ("hiera roles | grep controller | "

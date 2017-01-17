@@ -277,7 +277,10 @@ def get_ssh_proxy_cmd(network_steps,
         function: function to get ssh proxy command
     """
     ssh_opts = ('-o UserKnownHostsFile=/dev/null '
-                '-o StrictHostKeyChecking=no ')
+                '-o StrictHostKeyChecking=no')
+    if os_faults_steps.get_cloud_param_value('driver') == config.TCP_CLOUD:
+        ssh_opts += ' -i {}'.format(
+            os_faults_steps.get_cloud_param_value('private_key_file'))
 
     def _get_ssh_proxy_cmd(server, ip=None):
         # proxy command is actual for fixed IP only
@@ -288,6 +291,10 @@ def get_ssh_proxy_cmd(network_steps,
         net_id = network_steps.get_network_id_by_mac(server_mac)
         dhcp_netns = "qdhcp-{}".format(net_id)
         dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
+        if '.' not in dhcp_host:
+            # host name in short format must be converted to full format, ex:
+            # gtw01 -> gtw01.mk22-lab-dvr.local
+            dhcp_host = os_faults_steps.get_fqdn_by_short_host_name(dhcp_host)
         dhcp_server_ip = [
             node.ip for node in os_faults_steps.get_node(fqdns=[dhcp_host])][0]
         proxy_cmd = 'ssh {} root@{} ip netns exec {} netcat {} 22'.format(
