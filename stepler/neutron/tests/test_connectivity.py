@@ -133,3 +133,103 @@ def test_connectivity_between_servers_diff_networks(
                 server_dest_ip,
                 server_init_ssh,
                 timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.requires("computes_count >= 2")
+@pytest.mark.idempotent_id(
+    '4327a3db-a65a-4047-9eca-a44188dd2783',
+    neutron_2_servers_different_networks='same_host')
+@pytest.mark.idempotent_id(
+    'aef27c07-5015-4220-8bcc-a66d7e324c6c',
+    neutron_2_servers_different_networks='different_hosts')
+@pytest.mark.parametrize('neutron_2_servers_different_networks',
+                         ['same_host', 'different_hosts'],
+                         indirect=True)
+def test_connectivity_floating_between_servers(
+        neutron_2_servers_different_networks,
+        nova_create_floating_ip,
+        server_steps):
+    """**Scenario:** Check connectivity by floating IP between servers.
+
+    This test checks connectivity by floating IP between servers on different
+    networks and hosted on the same or different compute nodes.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network_1 with subnet_1
+    #. Create network_2 with subnet_2
+    #. Create router and add interfaces to both subnets
+    #. Create server_1 connected to network_1
+    #. Create server_2 connected to network_2 on the same or another compute
+
+    **Steps:**
+
+    #. Assign floating ip to server_1
+    #. Assign floating ip to server_2
+    #. Ping server_2 from server_1
+    #. Ping server_1 from server_2
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete router
+    #  Delete subnet_1 and network_1
+    #  Delete subnet_2 and network_2
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_1, server_2 = neutron_2_servers_different_networks.servers
+
+    floating_ip_1 = nova_create_floating_ip()
+    server_steps.attach_floating_ip(server_1, floating_ip_1)
+
+    floating_ip_2 = nova_create_floating_ip()
+    server_steps.attach_floating_ip(server_2, floating_ip_2)
+
+    server_steps.check_ping_between_servers_via_floating(
+        [server_1, server_2],
+        timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('1b6a3348-0bfe-4233-a12f-4d8246fb470a')
+def test_connectivity_external(
+        server,
+        get_ssh_proxy_cmd,
+        server_steps):
+    """**Scenario:** Check connectivity to external IP with external router.
+
+    This test checks connectivity to external resource from server with router
+    to external network.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet
+    #. Create router, add gateway and interface to subnet
+    #. Create server
+
+    **Steps:**
+
+    #. Ping 8.8.8.8 from server
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete router
+    #. Delete subnet and network
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    proxy_cmd = get_ssh_proxy_cmd(server)
+
+    with server_steps.get_server_ssh(
+            server, proxy_cmd=proxy_cmd) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
