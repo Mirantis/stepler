@@ -32,6 +32,17 @@ class VideoRecorder(object):
 
     def __init__(self, file_path, frame_rate=30):
         """Constructor."""
+        assert not subprocess.call(['which', 'avconv']), \
+            "`avconv` is not found on current system. Be sure that you have " \
+            "installed `avconv` to capture video. More details in " \
+            "http://stepler.readthedocs.io/horizon.html#tests-launching."
+
+        assert os.environ.get('DISPLAY'), \
+            "Environment variable `DISPLAY` is " \
+            "undefined. Can't determine X11 display to capture video. Be " \
+            "sure that you have installed X11 display or xvfb. More details " \
+            "in http://stepler.readthedocs.io/horizon.html#tests-launching."
+
         self.is_launched = False
         self.file_path = file_path
         # avconv -f x11grab -r 15 -s 1920x1080 -i :0.0 -codec libx264 out.mp4
