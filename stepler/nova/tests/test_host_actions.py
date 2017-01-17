@@ -22,6 +22,7 @@ from stepler import config
 
 
 @pytest.mark.idempotent_id('2eb54a35-7218-4220-b376-8aa5f1b6f74f')
+@pytest.mark.requires("computes_count >= 2")
 def test_host_resources_info(cirros_image,
                              flavor,
                              network,
