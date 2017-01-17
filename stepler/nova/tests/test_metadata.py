@@ -44,9 +44,9 @@ def test_metadata_reach_all_booted_vm(
         nova_floating_ip,
         ubuntu_image,
         keypair,
+        net_subnet_router,
         create_server_context,
         flavor_steps,
-        network_steps,
         server_steps):
     """**Scenario:** Verify that image can be connected with SSH.
 
@@ -75,7 +75,7 @@ def test_metadata_reach_all_booted_vm(
     #. Delete security group
     """
     flavor = flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
-    network = network_steps.get_network_by_name('admin_internal_net')
+    network, _, _ = net_subnet_router
 
     with create_server_context(next(utils.generate_ids('server')),
                                image=ubuntu_image,
