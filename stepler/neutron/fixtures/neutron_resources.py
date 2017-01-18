@@ -1,7 +1,7 @@
 """
-----------------------------------
-Neutron OVS restart tests fixtures
-----------------------------------
+----------------------
+Neutron tests fixtures
+----------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,7 @@ from stepler.third_party import utils
 __all__ = [
     'neutron_2_networks',
     'neutron_2_servers_different_networks',
+    'neutron_2_servers_different_subnets',
     'neutron_2_servers_diff_nets_with_floating',
     'neutron_2_servers_same_network',
     'neutron_2_servers_iperf_different_networks',
@@ -225,7 +226,7 @@ def neutron_2_servers_same_network(
     """Function fixture to prepare environment with 2 servers.
 
     This fixture creates router, network and subnet, connects network
-    to router, boot 2 nova server on different computes.
+    to router, boot 2 nova servers on different computes.
 
     All created resources are to be deleted after test.
 
@@ -392,7 +393,6 @@ def neutron_conntrack_2_projects_resources(
         * add floating ips for one of servers in each project.
 
     All created resources are to be deleted after test.
-
 
     Args:
         request (obj): py.test SubRequest
@@ -602,7 +602,6 @@ def neutron_2_servers_2_nets_diff_projects(request,
 
     All created resources are to be deleted after test.
 
-
     Args:
         request (obj): py.test SubRequest
         neutron_2_nets_diff_projects(AttrDict): neutron networks, subnets,
@@ -687,7 +686,6 @@ def neutron_2_nets_diff_projects(role_steps,
 
     All created resources are to be deleted after test.
 
-
     Args:
         public_network (dict): neutron public network
         role_steps (obj): instantiated role steps
@@ -764,7 +762,6 @@ def neutron_2_servers_2_projects_with_shared_net(request,
         * add floating ips for servers in each project.
 
     All created resources are to be deleted after test.
-
 
     Args:
         request (obj): py.test SubRequest
@@ -858,3 +855,62 @@ def neutron_2_servers_2_projects_with_shared_net(request,
         final_resources.append(project_resources)
 
     return attrdict.AttrDict(resources=final_resources)
+
+
+@pytest.fixture
+def neutron_2_servers_different_subnets(
+        cirros_image,
+        flavor,
+        security_group,
+        net_subnet_router,
+        server,
+        create_subnet,
+        add_router_interfaces,
+        server_steps):
+    """Function fixture to prepare environment with 2 servers.
+
+    This fixture creates router, network and 2 subnets, connects subnets
+    to router, boot 2 nova servers on different subnets and on the same
+    compute.
+
+    All created resources are to be deleted after test.
+
+    Args:
+        cirros_image (obj): cirros image
+        flavor (obj): nova flavor
+        security_group (obj): nova security group
+        net_subnet_router (tuple): network, subnet, router
+        server (obj): nova server
+        create_subnet (function): function to create subnet
+        add_router_interfaces (function): function to add subnet interface to
+            router
+        server_steps (obj): instantiated nova server steps
+
+    Returns:
+        attrdict.AttrDict: created resources
+    """
+
+    network, subnet, router = net_subnet_router
+    subnet_2 = create_subnet(
+        subnet_name=next(utils.generate_ids()),
+        network=network,
+        cidr='192.168.2.0/24')
+    add_router_interfaces(router, [subnet_2])
+
+    server_2_host = getattr(server, config.SERVER_ATTR_HOST)
+    server_2 = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        nics=[{
+            'net-id': network['id'],
+            'v4-fixed-ip': '192.168.2.10'
+        }],
+        availability_zone='nova:{}'.format(server_2_host),
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME,
+        password=config.CIRROS_PASSWORD)[0]
+
+    return attrdict.AttrDict(
+        servers=(server, server_2),
+        network=network,
+        router=router)
