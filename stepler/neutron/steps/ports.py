@@ -17,8 +17,9 @@ Port steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, equal_to, empty,
-                      has_entries, has_length, is_, is_not)  # noqa H301
+from hamcrest import (assert_that, calling, equal_to, empty, has_entries,
+                      has_length, is_, is_not, raises)  # noqa H301
+from neutronclient.common import exceptions
 
 from stepler import base
 from stepler import config
@@ -207,3 +208,19 @@ class PortSteps(base.BaseSteps):
         if expected_added_count is not None:
             actual_added_count = ports_binding_after - ports_binding_before
             assert_that(actual_added_count, has_length(expected_added_count))
+
+    @steps_checker.step
+    def check_negative_create_extra_port(self, network):
+        """Step to check that unable to create ports more than quota.
+
+        Args:
+            network (obj): network
+
+        Raises:
+            AssertionError: if no OverQuotaClient exception occurs or exception
+                message is not expected
+        """
+        exception_message = "Quota exceeded for resources"
+        assert_that(
+            calling(self.create).with_args(network, check=False),
+            raises(exceptions.OverQuotaClient, exception_message))

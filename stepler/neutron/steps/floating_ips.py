@@ -17,7 +17,8 @@ Subnet steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to  # noqa H301
+from hamcrest import assert_that, calling, equal_to, raises  # noqa H301
+from neutronclient.common import exceptions
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -124,3 +125,19 @@ class FloatingIPSteps(base.BaseSteps):
         if check:
             new_port_id = self._client.get(floating_ip['id'])['port_id']
             assert_that(new_port_id, equal_to(None))
+
+    @steps_checker.step
+    def check_negative_create_extra_floating_ip(self, network):
+        """Step to check that unable to create floating ips more than quota.
+
+        Args:
+            network (obj): network
+
+        Raises:
+            AssertionError: if no OverQuotaClient exception occurs or exception
+                message is not expected
+        """
+        exception_message = "Quota exceeded for resources"
+        assert_that(
+            calling(self.create).with_args(network, check=False),
+            raises(exceptions.OverQuotaClient, exception_message))

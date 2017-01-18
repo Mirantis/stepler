@@ -18,6 +18,8 @@ Neutron basic verification tests
 
 import pytest
 
+from stepler.third_party import utils
+
 
 @pytest.mark.idempotent_id('5a3a0b95-20c7-403a-9b2b-4d26fc10669a')
 def test_networks_list(network_steps):
@@ -41,3 +43,145 @@ def test_agents_list(agent_steps):
     """
     agents = agent_steps.get_agents()
     agent_steps.check_alive(agents)
+
+
+@pytest.mark.idempotent_id('0a600480-ec27-4742-ab13-819017fb0dae')
+@pytest.mark.parametrize('change_neutron_quota', [dict(network=5)],
+                         indirect=True)
+def test_neutron_networks_quota(create_network, network_steps,
+                                change_neutron_quota):
+    """**Scenario:** Negative create of networks more than quota allows.
+
+    **Setup:**
+
+    #. Increase neutron quota for networks
+
+    **Steps:**
+
+    #. Create max possible count of networks
+    #. Check that unable to create extra network
+
+    **Teardown:**
+
+    #. Delete networks
+    #. Restore original quota
+    """
+    for _ in range(change_neutron_quota['network']):
+        create_network(next(utils.generate_ids()))
+    network_steps.check_negative_create_extra_network()
+
+
+@pytest.mark.idempotent_id('7728c3ed-16f7-4fbd-ba90-cca8b2dfc718')
+@pytest.mark.parametrize('change_neutron_quota', [dict(router=5)],
+                         indirect=True)
+def test_neutron_routers_quota(create_router, router_steps,
+                               change_neutron_quota):
+    """**Scenario:** Negative create of routers more than quota allows.
+
+    **Setup:**
+
+    #. Increase neutron quota for routers
+
+    **Steps:**
+
+    #. Create max possible count of routers
+    #. Check that unable to create extra router
+
+    **Teardown:**
+
+    #. Delete routers
+    #. Restore original quota
+    """
+    for _ in range(change_neutron_quota['router']):
+        create_router(next(utils.generate_ids()))
+    router_steps.check_negative_create_extra_router()
+
+
+@pytest.mark.idempotent_id('0b44fd3d-434e-49d4-b0ba-92b1e6ef6196')
+@pytest.mark.parametrize('change_neutron_quota', [dict(floatingip=5)],
+                         indirect=True)
+def test_neutron_floating_ips_quota(public_network,
+                                    create_floating_ip,
+                                    floating_ip_steps,
+                                    change_neutron_quota):
+    """**Scenario:** Negative create of floating ips more than quota allows.
+
+    **Setup:**
+
+    #. Increase neutron quota for floating ips
+    #. Create public network
+
+    **Steps:**
+
+    #. Create max possible count of floating ips
+    #. Check that unable to create extra floating ip
+
+    **Teardown:**
+
+    #. Delete floating ips
+    #. Delete public network
+    #. Restore original quota
+    """
+    for _ in range(change_neutron_quota['floatingip']):
+        create_floating_ip(public_network)
+    floating_ip_steps.check_negative_create_extra_floating_ip(public_network)
+
+
+@pytest.mark.idempotent_id('328e3efe-41c8-403b-ae21-0fd015f29f52')
+@pytest.mark.parametrize('change_neutron_quota', [dict(subnet=5)],
+                         indirect=True)
+def test_neutron_subnets_quota(network, create_subnet, subnet_steps,
+                               change_neutron_quota):
+    """**Scenario:** Negative create of routers more than quota allows.
+
+    **Setup:**
+
+    #. Increase neutron quota for subnets
+    #. Create network
+
+    **Steps:**
+
+    #. Create max possible count of subnets for network
+    #. Check that unable to create extra subnet
+
+    **Teardown:**
+
+    #. Delete subnets
+    #. Delete network
+    #. Restore original quota
+    """
+    for i in range(change_neutron_quota['subnet']):
+        create_subnet(subnet_name=next(utils.generate_ids()),
+                      network=network,
+                      cidr='10.0.{0}.0/24'.format(i))
+    subnet_steps.check_negative_create_extra_subnet(network)
+
+
+@pytest.mark.idempotent_id('328e3efe-41c8-403b-ae21-0fd015f29f52')
+@pytest.mark.parametrize('change_neutron_quota', [dict(port=5)],
+                         indirect=True)
+def test_neutron_ports_quota(network,
+                             port_steps,
+                             create_port,
+                             change_neutron_quota):
+    """**Scenario:** Negative create of ports more than quota allows.
+
+    **Setup:**
+
+    #. Increase neutron quota for ports
+    #. Create network
+
+    **Steps:**
+
+    #. Create max possible count of ports for network
+    #. Check that unable to create extra ports
+
+    **Teardown:**
+
+    #. Delete ports
+    #. Delete network
+    #. Restore original quota
+    """
+    for _ in range(change_neutron_quota['port']):
+        create_port(network)
+    port_steps.check_negative_create_extra_port(network)
