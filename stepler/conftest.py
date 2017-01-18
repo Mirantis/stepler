@@ -221,6 +221,7 @@ _plugins = [
     'default_project',
     'destructive_dispatcher',
     'idempotent_id',
+    'no_tests_found',
     'reports_cleaner',
     'steps_checker',
     'supported_platforms',

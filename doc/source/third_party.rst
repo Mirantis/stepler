@@ -26,6 +26,9 @@ Third party modules
 .. automodule:: stepler.third_party.network_checks
    :members:
 
+.. automodule:: stepler.third_party.no_tests_found
+   :members:
+
 .. automodule:: stepler.third_party.output_parser
    :members:
 
