@@ -233,3 +233,50 @@ def test_connectivity_external(
             server, proxy_cmd=proxy_cmd) as server_ssh:
         server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
+
+
+@pytest.mark.idempotent_id('645e141b-f233-4872-a4b0-6762c07c3d7c')
+def test_connectivity_between_servers_diff_subnets(
+        neutron_2_servers_different_subnets,
+        get_ssh_proxy_cmd,
+        server_steps):
+    """**Scenario:** Check connectivity between servers on different subnets.
+
+    This test checks connectivity by internal IP between servers on different
+    subnets of the same network and hosted on the same compute node.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network with subnet_1 and router
+    #. Create server_1
+    #. Create subnet_2 and add router interface
+    #. Create server_2 on subnet_2 and hosted on the same compute
+
+    **Steps:**
+
+    #. Ping server_2 from server_1
+    #. Ping server_1 from server_2
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete router, subnets and network
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    server_1, server_2 = neutron_2_servers_different_subnets.servers
+
+    for server_init, server_dest in ((server_1, server_2),
+                                     (server_2, server_1)):
+        proxy_cmd = get_ssh_proxy_cmd(server_init)
+        server_dest_ip = server_steps.get_fixed_ip(server_init)
+        with server_steps.get_server_ssh(
+                server_init, proxy_cmd=proxy_cmd) as server_init_ssh:
+            server_steps.check_ping_for_ip(
+                server_dest_ip,
+                server_init_ssh,
+                timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
