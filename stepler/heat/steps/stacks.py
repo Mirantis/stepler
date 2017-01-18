@@ -94,7 +94,8 @@ class StackSteps(base.BaseSteps):
             'status',
             transit_values=transit_statuses,
             timeout=timeout)
-        assert_that(value.lower(), equal_to(status.lower()))
+        msg = getattr(stack, 'stack_status_reason', None)
+        assert_that(value.lower(), equal_to(status.lower()), msg)
 
     @steps_checker.step
     def check_stack_status(self, stack, status, transit_statuses=(),
