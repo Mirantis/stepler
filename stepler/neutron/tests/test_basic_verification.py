@@ -41,3 +41,19 @@ def test_agents_list(agent_steps):
     """
     agents = agent_steps.get_agents()
     agent_steps.check_alive(agents)
+
+
+@pytest.mark.idempotent_id('0a600480-ec27-4742-ab13-819017fb0dae')
+@pytest.mark.parametrize('change_neutron_quota', [dict(network=5)],
+                         indirect=True)
+def test_neutron_networks_quota(network_steps, change_neutron_quota):
+    network_steps.check_negative_create_networks_more_than_limits(
+        change_neutron_quota['network'])
+
+
+@pytest.mark.idempotent_id('7728c3ed-16f7-4fbd-ba90-cca8b2dfc718')
+@pytest.mark.parametrize('change_neutron_quota', [dict(router=5)],
+                         indirect=True)
+def test_neutron_routers_quota(router_steps, change_neutron_quota):
+    router_steps.check_negative_create_routers_more_than_limits(
+        change_neutron_quota['router'])

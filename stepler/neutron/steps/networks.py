@@ -17,11 +17,13 @@ Network steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, equal_to, has_entries,
-                      has_length, is_, is_not, less_than)  # noqa
+from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
+                      has_length, is_, is_not, less_than, raises)  # noqa
+from neutronclient.common import exceptions
 
 from stepler import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = ["NetworkSteps"]
@@ -248,3 +250,15 @@ class NetworkSteps(base.BaseSteps):
                                                                  max_count)
         assert_that(actual_percentage_difference,
                     is_(less_than(max_difference_in_percent)))
+
+    @steps_checker.step
+    def check_negative_create_networks_more_than_limits(self, max_count):
+        """"""
+        exception_message = "Quota exceeded for resources"
+        for _ in range(max_count):
+            self.create(next(utils.generate_ids()))
+
+        assert_that(
+            calling(self.create).with_args(
+                next(utils.generate_ids()), check=False),
+            raises(exceptions.OverQuotaClient, exception_message))
