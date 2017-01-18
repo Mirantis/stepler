@@ -17,8 +17,9 @@ Security group rules steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, equal_to, has_entries,
-                      is_not)  # noqa H301
+from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
+                      is_not, raises)  # noqa H301
+from neutronclient.common import exceptions
 
 from stepler import base
 from stepler import config
@@ -32,12 +33,12 @@ class NeutronSecurityGroupRuleSteps(base.BaseSteps):
     """Security group rules steps."""
 
     @steps_checker.step
-    def get_rules_for_group(self, group_id, check=True):
-        """Step to get rules from security group.
+    def get_rules(self, check=True, **kwargs):
+        """Step to get security group rules.
 
         Args:
-            group_id (str): id of security group
             check (bool): flag whether to check step or not
+            **kwargs: params to list security group rules
 
         Returns:
             list: security group rules
@@ -46,12 +47,13 @@ class NeutronSecurityGroupRuleSteps(base.BaseSteps):
             AssertionError: if no rules found or rule belongs to unexpected
                 security group
         """
-        rules = self._client.find_all(security_group_id=group_id)
+        rules = self._client.find_all(**kwargs)
 
         if check:
             assert_that(rules, is_not(empty()))
-            for rule in rules:
-                assert_that(rule['security_group_id'], equal_to(group_id))
+            if kwargs:
+                for rule in rules:
+                    assert_that(rule, has_entries(kwargs))
 
         return rules
 
@@ -122,3 +124,21 @@ class NeutronSecurityGroupRuleSteps(base.BaseSteps):
             assert_that(rule, has_entries(rule_params))
 
         return rule
+
+    @steps_checker.step
+    def check_negative_create_extra_group_rule(self, group_id, **rule_params):
+        """Step to check that unable to add group rules more than quota allows.
+
+        Args:
+            group_id (str): id of security group
+            **rule_params (dict, optional): rule parameters
+
+        Raises:
+            AssertionError: if no OverQuotaClient exception occurs or exception
+                message is not expected
+        """
+        exception_message = "Quota exceeded for resources"
+        assert_that(calling(self.add_rule_to_group).with_args(group_id,
+                                                              check=False,
+                                                              **rule_params),
+                    raises(exceptions.OverQuotaClient, exception_message))

@@ -23,6 +23,7 @@ from neutronclient.common import exceptions
 
 from stepler import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = ["RouterSteps"]
@@ -355,3 +356,17 @@ class RouterSteps(base.BaseSteps):
             calling(self.update_router).with_args(
                 router=router, distributed=True, check=False),
             raises(exceptions.BadRequest, exception_message))
+
+    @steps_checker.step
+    def check_negative_create_extra_router(self):
+        """Step to check that unable to create routers more than quota.
+
+        Raises:
+            AssertionError: if no OverQuotaClient exception occurs or exception
+                message is not expected
+        """
+        exception_message = "Quota exceeded for resources"
+        assert_that(
+            calling(self.create).with_args(
+                next(utils.generate_ids()), check=False),
+            raises(exceptions.OverQuotaClient, exception_message))

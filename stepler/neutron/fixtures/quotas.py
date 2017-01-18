@@ -90,6 +90,6 @@ def change_neutron_quota(request, current_project, neutron_quota_steps):
 
     neutron_quota_steps.update(current_project, new_values)
 
-    yield
+    yield new_values
 
     neutron_quota_steps.update(current_project, old_values)
