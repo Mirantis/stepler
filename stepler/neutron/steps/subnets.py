@@ -17,10 +17,13 @@ Subnet steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import equal_to
+from hamcrest import assert_that, calling, equal_to, raises  # noqa
+from neutronclient.common import exceptions
 
 from stepler import base
+from stepler import config
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
 __all__ = ["SubnetSteps"]
@@ -83,3 +86,26 @@ class SubnetSteps(base.BaseSteps):
             return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_subnet_presence, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_negative_create_extra_subnet(self, network):
+        """Step to check that unable to create subnets more than quota.
+
+        Args:
+            network (obj): network
+
+        Raises:
+            AssertionError: if no OverQuotaClient exception occurs or exception
+                message is not expected
+        """
+        exception_message = "Quota exceeded for resources"
+        assert_that(
+            calling(self.create).with_args(
+                subnet_name=next(utils.generate_ids()),
+                network=network,
+                cidr=config.LOCAL_CIDR,
+                check=False),
+            raises(exceptions.OverQuotaClient, exception_message),
+            "Subnet for network with ID {!r} has been created though it "
+            "exceeds the quota or OverQuotaClient exception with expected "
+            "error message has not been appeared".format(network['id']))
