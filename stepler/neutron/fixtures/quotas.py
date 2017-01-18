@@ -84,12 +84,15 @@ def change_neutron_quota(request, current_project, neutron_quota_steps):
         request (obj): py.test's SubRequest
         current_project (obj): current project
         neutron_quota_steps (obj): instantiated neutron quota steps
+
+    Yields:
+        dict: dict with new quota values
     """
     new_values = request.param
     old_values = neutron_quota_steps.get(current_project)
 
     neutron_quota_steps.update(current_project, new_values)
 
-    yield
+    yield new_values
 
     neutron_quota_steps.update(current_project, old_values)

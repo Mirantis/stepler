@@ -17,7 +17,9 @@ Neutron security groups steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, equal_to, is_not  # noqa H301
+from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
+                      is_not, raises)  # noqa H301
+from neutronclient.common import exceptions
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -87,21 +89,42 @@ class NeutronSecurityGroupSteps(base.BaseSteps):
             self.check_presence(group, must_present=False)
 
     @steps_checker.step
-    def get_security_groups(self, check=True):
+    def get_security_groups(self, check=True, **kwargs):
         """Step to get all security groups.
 
         Args:
             check (bool): flag whether to check step or not
+            **kwargs: params to list security groups
 
         Returns:
             list: security groups
 
         Raises:
-            AssertionError: if group list is empty
+            AssertionError: if group list is empty or doesn't correspond to
+                given filter
         """
-        groups = self._client.find_all()
+        groups = self._client.find_all(**kwargs)
 
         if check:
             assert_that(groups, is_not(empty()))
+            if kwargs:
+                for group in groups:
+                    assert_that(group, has_entries(kwargs))
 
         return groups
+
+    @steps_checker.step
+    def check_negative_create_extra_security_group(self):
+        """Step to check that unable to create security groups more than quota.
+
+        Raises:
+            AssertionError: if no OverQuotaClient exception occurs or exception
+                message is not expected
+        """
+        exception_message = "Quota exceeded for resources"
+        assert_that(
+            calling(self.create).with_args(check=False),
+            raises(exceptions.OverQuotaClient, exception_message),
+            "Security group has been created though it exceeds the quota "
+            "or OverQuotaClient exception with expected error message "
+            "has not been appeared")

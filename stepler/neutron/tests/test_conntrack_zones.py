@@ -178,8 +178,8 @@ def test_ping_unavailable_after_deleting_icmp_rule(
     # Nova client has restricted functionality with security group rules:
     # it allows create and delete only => neutron client is used for security
     # group rules here
-    rules = neutron_security_group_rule_steps.get_rules_for_group(
-        security_group.id)
+    rules = neutron_security_group_rule_steps.get_rules(
+        {'security_group_id': security_group.id})
     # By default group is created with 2 egress rules:
     # Egress  IPv6  Any  Any  ::/0
     # Egress  IPv4  Any  Any  0.0.0.0/0
