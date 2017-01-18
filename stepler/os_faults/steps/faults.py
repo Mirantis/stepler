@@ -794,7 +794,7 @@ class OsFaultsSteps(base.BaseSteps):
                     port = None
             return port_tags
 
-        nodes = self.get_nodes()
+        nodes = self.get_nodes(service_names=[config.NEUTRON_OVS_SERVICE])
         result_records = self.execute_cmd(nodes, 'ovs-vsctl show')
         ovs_vsctl_tags = {
             record.host: get_ports_tags_data(record.payload['stdout_lines'])
