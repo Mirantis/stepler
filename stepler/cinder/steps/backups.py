@@ -81,12 +81,10 @@ class BackupSteps(base.BaseSteps):
         return backup
 
     @steps_checker.step
-    def get_backups(self, all_projects=False, search_opts=None, check=True):
+    def get_backups(self, search_opts=None, check=True):
         """Step to retrieve all backups from cinder.
 
         Args:
-            all_projects (bool, optional): flag whether to retrieve
-                backups from all available projects or not
             search_opts (dict: optional): API filter options to
                 retrieve backups
             check (bool): flag whether to check step or not
@@ -97,10 +95,6 @@ class BackupSteps(base.BaseSteps):
         Raises:
             AssertionError: if check was failed
         """
-        if all_projects:
-            search_opts = search_opts or {}
-            search_opts['all_tenants'] = 1
-
         backups = self._client.list(search_opts=search_opts)
 
         if check:
