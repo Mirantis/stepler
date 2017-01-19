@@ -118,3 +118,56 @@ class CinderQuotaSteps(base.BaseSteps):
         if check:
             assert_that(quota, greater_than(0))
         return quota
+
+    @steps_checker.step
+    def set_volumes_quota(self, project, value, check=True):
+        """Step to set quota for volumes count.
+
+        Args:
+            project (obj): project object
+            value (int): new volumes count quota value
+            check (bool|True): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        self._client.update(project.id, volumes=value)
+        if check:
+            new_quota = self.get_volumes_quota(project)
+            assert_that(value, equal_to(new_quota))
+
+    @steps_checker.step
+    def get_backups_quota(self, project, check=True):
+        """Step to retrieve quota for backups count.
+
+        Args:
+            project (obj): project object
+            check (bool|True): flag whether to check step or not
+
+        Returns:
+            int: current quota value
+
+        Raises:
+            AssertionError: if check failed
+        """
+        quota = self._client.get(project.id).backups
+        if check:
+            assert_that(quota, greater_than(0))
+        return quota
+
+    @steps_checker.step
+    def set_backups_quota(self, project, value, check=True):
+        """Step to set quota for backups count.
+
+        Args:
+            project (obj): project object
+            value (int): new backups count quota value
+            check (bool|True): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        self._client.update(project.id, backups=value)
+        if check:
+            new_quota = self.get_backups_quota(project)
+            assert_that(value, equal_to(new_quota))

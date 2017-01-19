@@ -24,6 +24,9 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('71b0b170-10c4-4877-bab8-93d8284c3c01')
+# TODO(agromov): remove destructive marker when
+# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
+@pytest.mark.destructive
 def test_create_volume_with_unicode_name(cli_cinder_steps, volume_steps):
     """**Scenario:** Create volume with unicode symbols name.
 
@@ -48,6 +51,9 @@ def test_create_volume_with_unicode_name(cli_cinder_steps, volume_steps):
 
 
 @pytest.mark.idempotent_id('54b0e3f6-1284-4ea8-a991-c8a6cd772f0e')
+# TODO(agromov): remove destructive marker when
+# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
+@pytest.mark.destructive
 def test_create_volume_with_unicode_description(cli_cinder_steps,
                                                 volume_steps):
     """**Scenario:** Create volume with unicode symbols description.
@@ -74,6 +80,9 @@ def test_create_volume_with_unicode_description(cli_cinder_steps,
 
 
 @pytest.mark.idempotent_id('453c8024-f801-4a2e-8d33-7ffe2d637fd3')
+# TODO(agromov): remove destructive marker when
+# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
+@pytest.mark.destructive
 def test_show_volume_with_unicode_name(volume_steps, cli_cinder_steps):
     """**Scenario:** Show volume with unicode name.
 
@@ -92,6 +101,9 @@ def test_show_volume_with_unicode_name(volume_steps, cli_cinder_steps):
 
 
 @pytest.mark.idempotent_id('c080b991-9704-455a-8085-0d4f368acc25')
+# TODO(agromov): remove destructive marker when
+# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
+@pytest.mark.destructive
 def test_show_volume_with_unicode_description(volume_steps, cli_cinder_steps):
     """**Scenario:** Show volume with unicode description.
 

@@ -31,6 +31,7 @@ __all__ = [
 
 
 @pytest.fixture(scope='session')
+@pytest.mark.usefixtures('big_backup_quota')
 def get_backup_steps(get_cinder_client):
     """Callable session fixture to get volume backup steps.
 
@@ -61,7 +62,7 @@ def backup_steps(get_backup_steps, cleanup_backups):
     _backup_steps = get_backup_steps(
         config.CURRENT_CINDER_VERSION, is_api=False)
 
-    backups = _backup_steps.get_backups(all_projects=True, check=False)
+    backups = _backup_steps.get_backups(check=False)
     backup_ids_before = {backup.id for backup in backups}
 
     yield _backup_steps
@@ -110,8 +111,7 @@ def cleanup_backups(uncleanable):
     def _cleanup_backups(_backup_steps, uncleanable_ids=None):
         uncleanable_ids = uncleanable_ids or uncleanable.backup_ids
 
-        for backup in _backup_steps.get_backups(all_projects=True,
-                                                check=False):
+        for backup in _backup_steps.get_backups(check=False):
             if backup.id not in uncleanable_ids:
                 _backup_steps.delete_backup(backup)
 
