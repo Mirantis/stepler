@@ -24,7 +24,7 @@ import pytest
 from stepler import config
 
 
-pytestmark = [pytest.mark.requires("computes_count >= 2 and vlan"),
+pytestmark = [pytest.mark.requires("computes_count >= 2"),
               pytest.mark.destructive]
 
 
