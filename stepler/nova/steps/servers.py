@@ -317,8 +317,13 @@ class ServerSteps(base.BaseSteps):
             RuntimeError: if `server_ssh` is not closed
             TimeoutExpired: if check failed after timeout
         """
+        err_msg = "Invalid SSH connection status to {}".format(server_ssh)
+        if timeout:
+            err_msg += " during polling time {} second(s)".format(timeout)
+
         def _check_ssh_connection_establishment():
-            return waiter.expect_that(server_ssh.check(), equal_to(must_work))
+            return waiter.expect_that(
+                server_ssh.check(), equal_to(must_work), err_msg)
 
         waiter.wait(_check_ssh_connection_establishment,
                     timeout_seconds=timeout)

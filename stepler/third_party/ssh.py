@@ -124,6 +124,25 @@ class SshClient(object):
         self._sudo = False
         self._ssh = None
 
+    def __repr__(self):
+        """Representation."""
+        params = [
+            'host={!r}'.format(self._host),
+            'port={!r}'.format(self._port),
+        ]
+        if self._username:
+            params.append('username={!r}'.format(self._username))
+        if self._password:
+            params.append('password={!r}'.format(self._password))
+        if self._timeout:
+            params.append('timeout={!r}'.format(self._timeout))
+        if self._proxy_cmd:
+            params.append('proxy_cmd={!r}'.format(self._proxy_cmd))
+        if self._pkey:
+            params.append('private_key={!r}'.format(self._pkey))
+
+        return "SshClient <{}>".format(' '.join(params))
+
     @property
     def closed(self):
         return self._ssh is None
