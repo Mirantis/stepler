@@ -73,7 +73,7 @@ def generate_mac_addresses(count=1):
         yield mac_address
 
 
-def generate_ids(prefix=None, postfix=None, count=1, length=50,
+def generate_ids(prefix=None, postfix=None, count=1, length=None,
                  use_unicode=False, _stepler_prefix=None):
     """Generate unique identificators, based on UUID.
 
@@ -81,7 +81,7 @@ def generate_ids(prefix=None, postfix=None, count=1, length=50,
         prefix (str|None): prefix of unique ids
         postfix (str|None): postfix of unique ids
         count (int): count of unique ids
-        length (int): length of unique ids
+        length (int|None): length of unique ids
         use_unicode (boolean|False): generate str with unicode or not
         _stepler_prefix (str, optional): Resources prefix is used to call
             ``generate_ids`` inside ``stepler.config`` and avoid cross imports
@@ -98,21 +98,29 @@ def generate_ids(prefix=None, postfix=None, count=1, length=50,
         from stepler import config
         _stepler_prefix = config.STEPLER_PREFIX
 
+    if prefix:
+        prefix = prefix.strip('-')
+    if postfix:
+        postfix = postfix.strip('-')
+
     # hash usually should have >= 7 symbols
-    min_uid_length = 7
+    uid_length = min_uid_length = 7
 
-    const_length = len(_stepler_prefix + '-' +
-                       (prefix + '-' if prefix else '') +
-                       # uid will be here
-                       ('-' + postfix if postfix else ''))
+    # calculate if it's possible to generate UID with requested length,
+    # postfix and prefix
+    if length:
+        const_length = len(_stepler_prefix + '-' +
+                           (prefix + '-' if prefix else '') +
+                           # uid will be here
+                           ('-' + postfix if postfix else ''))
 
-    uid_length = length - const_length
+        uid_length = length - const_length
 
-    if uid_length < min_uid_length:
-        raise ValueError(
-            "According to passed prefix and postfix minimal length to "
-            "generate unique id must be equal or greater "
-            "than {0}.".format(const_length + min_uid_length))
+        if uid_length < min_uid_length:
+            raise ValueError(
+                "According to passed prefix and postfix minimal length to "
+                "generate unique id must be equal or greater "
+                "than {0}.".format(const_length + min_uid_length))
 
     for _ in range(count):
         # mix constant stepler prefix to separate tested objects
