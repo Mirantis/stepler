@@ -26,6 +26,7 @@ __all__ = [
     'create_project',
     'get_project_steps',
     'project_steps',
+    'get_current_project',
     'project',
     'current_project',
 ]
@@ -60,7 +61,7 @@ def project_steps(get_project_steps):
     return get_project_steps()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def create_project(project_steps):
     """Fixture to create project with options.
 
@@ -86,15 +87,33 @@ def project(create_project):
     return create_project(project_name)
 
 
+@pytest.fixture(scope="session")
+def get_current_project(get_session, get_project_steps):
+    """Callable session fixture to get current project.
+
+    Args:
+        get_session (function): function to get keystone session
+        get_project_steps (function): function to get project steps
+
+    Returns:
+        function: function to get current project
+    """
+    def _get_current_project():
+        _session = get_session()
+        _project_steps = get_project_steps()
+        return _project_steps.get_current_project(_session)
+
+    return _get_current_project
+
+
 @pytest.fixture
-def current_project(session, project_steps):
+def current_project(get_current_project):
     """Function fixture to get current project.
 
     Args:
-        session (obj): instantiated keystone session
-        project_steps (obj): instantiated project steps
+        get_current_project (function): function to get current project
 
     Returns:
         obj: current project
     """
-    return project_steps.get_current_project(session)
+    return get_current_project()

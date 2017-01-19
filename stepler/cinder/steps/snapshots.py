@@ -152,12 +152,10 @@ class SnapshotSteps(base.BaseSteps):
         waiter.wait(_check_snapshot_status, timeout_seconds=timeout)
 
     @steps_checker.step
-    def get_snapshots(self, all_projects=False, search_opts=None, check=True):
+    def get_snapshots(self, search_opts=None, check=True):
         """Step to get snapshots.
 
         Args:
-            all_projects (bool, optional): flag whether to retrieve
-                snapshots from all available projects or not
             search_opts (dict: optional): API filter options to
                 retrieve snapshots
             check (bool): flag whether to check step or not
@@ -168,10 +166,6 @@ class SnapshotSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        if all_projects:
-            search_opts = search_opts or {}
-            search_opts['all_tenants'] = 1
-
         snapshots = self._client.list(search_opts=search_opts)
 
         if check:

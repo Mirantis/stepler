@@ -32,6 +32,7 @@ __all__ = [
 
 
 @pytest.fixture(scope='session')
+@pytest.mark.usefixtures('big_snapshot_quota')
 def get_snapshot_steps(get_cinder_client):
     """Callable session fixture to get snapshot steps.
 
@@ -62,7 +63,7 @@ def snapshot_steps(get_snapshot_steps, cleanup_snapshots):
     _snapshot_steps = get_snapshot_steps(
         config.CURRENT_CINDER_VERSION, is_api=False)
 
-    snapshots = _snapshot_steps.get_snapshots(all_projects=True, check=False)
+    snapshots = _snapshot_steps.get_snapshots(check=False)
     snapshot_ids_before = {snapshot.id for snapshot in snapshots}
 
     yield _snapshot_steps
@@ -98,8 +99,7 @@ def cleanup_snapshots(uncleanable):
         uncleanable_ids = uncleanable_ids or uncleanable.snapshot_ids
         deleting_snapshots = []
 
-        for snapshot in _snapshot_steps.get_snapshots(all_projects=True,
-                                                      check=False):
+        for snapshot in _snapshot_steps.get_snapshots(check=False):
             if snapshot.id not in uncleanable_ids:
                 deleting_snapshots.append(snapshot)
 

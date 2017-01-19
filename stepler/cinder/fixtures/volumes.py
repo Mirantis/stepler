@@ -34,6 +34,7 @@ __all__ = [
 
 
 @pytest.fixture(scope='session')
+@pytest.mark.usefixtures('big_volume_quota')
 def get_volume_steps(get_cinder_client):
     """Callable session fixture to get volume steps.
 
@@ -86,7 +87,7 @@ def volume_steps(unexpected_volumes_cleanup,
     """
     _volume_steps = get_volume_steps(
         config.CURRENT_CINDER_VERSION, is_api=False)
-    volumes = _volume_steps.get_volumes(all_projects=True, check=False)
+    volumes = _volume_steps.get_volumes(check=False)
     volume_ids_before = {volume.id for volume in volumes}
 
     yield _volume_steps
@@ -110,7 +111,7 @@ def primary_volumes(get_volume_steps,
     volume_ids_before = set()
     for volume in get_volume_steps(
             config.CURRENT_CINDER_VERSION, is_api=False).get_volumes(
-                all_projects=True, check=False):
+                check=False):
         uncleanable.volume_ids.add(volume.id)
         volume_ids_before.add(volume.id)
 
@@ -134,8 +135,7 @@ def cleanup_volumes(uncleanable):
         uncleanable_ids = uncleanable_ids or uncleanable.volume_ids
         deleting_volumes = []
 
-        for volume in _volume_steps.get_volumes(all_projects=True,
-                                                check=False):
+        for volume in _volume_steps.get_volumes(check=False):
             if (volume.id not in uncleanable_ids and
                     volume.status != config.STATUS_DELETING):
                 deleting_volumes.append(volume)
