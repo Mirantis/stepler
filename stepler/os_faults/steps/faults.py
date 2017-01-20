@@ -888,8 +888,8 @@ class OsFaultsSteps(base.BaseSteps):
         Returns:
             NodeCollection: nodes for L3 or DHCP agents
         """
-        hosts = [agent['host'] for agent in agents]
-        nodes = self.get_nodes(fqdns=hosts, check=check)
+        fqdns = [self.get_fqdn_by_host_name(agent['host']) for agent in agents]
+        nodes = self.get_nodes(fqdns=fqdns, check=check)
 
         return nodes
 
@@ -1663,13 +1663,15 @@ class OsFaultsSteps(base.BaseSteps):
         self.execute_cmd(nova_api_node, cmd, check=check)
 
     @steps_checker.step
-    def get_fqdn_by_short_host_name(self, short_host_name, check=True):
-        """Step to get FQDN by short host name.
+    def get_fqdn_by_host_name(self, host_name, check=True):
+        """Step to get FQDN by host name.
 
         Ex: cmp01 -> cmp01.mk22-lab-dvr.local
+        This step usage is valid also if 'host_name' is equal to 'fqdn'.
 
         Args:
-            short_host_name (str): short host name
+            host_name (str): host name
+            check (bool, optional): flag whether to check step or not
 
         Raises:
             AssertionError: if number of nodes with proper FQDN != 1
@@ -1679,7 +1681,7 @@ class OsFaultsSteps(base.BaseSteps):
         """
         nodes = self._client.get_nodes()
         fqdns = [node.fqdn for node in nodes
-                 if node.fqdn.startswith(short_host_name)]
+                 if node.fqdn.startswith(host_name)]
         if check:
             assert_that(fqdns, has_length(1))
         return fqdns[0]

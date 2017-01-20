@@ -229,8 +229,9 @@ def test_north_south_connectivity_after_ban_clear_l3_on_compute(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
 
-    compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(server, config.SERVER_ATTR_HOST)])
+    compute_host = getattr(server, config.SERVER_ATTR_HOST)
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(compute_host)
+    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
     os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE, compute_node)
     os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, compute_node)
 
@@ -495,9 +496,10 @@ def test_north_south_connectivity_after_reset_compute(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
 
-    server_compute = os_faults_steps.get_node(
-        fqdns=[getattr(server, config.SERVER_ATTR_HOST)])
-    os_faults_steps.reset_nodes(server_compute, native=False)
+    compute_host = getattr(server, config.SERVER_ATTR_HOST)
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(compute_host)
+    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
+    os_faults_steps.reset_nodes(compute_node, native=False)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -548,10 +550,11 @@ def test_east_west_connectivity_after_ban_clear_l3_on_compute(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
-    server_1_host = os_faults_steps.get_node(
-        fqdns=[getattr(server_1, config.SERVER_ATTR_HOST)])
-    os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE, server_1_host)
-    os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, server_1_host)
+    compute_host = getattr(server_1, config.SERVER_ATTR_HOST)
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(compute_host)
+    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
+    os_faults_steps.terminate_service(config.NEUTRON_L3_SERVICE, compute_node)
+    os_faults_steps.start_service(config.NEUTRON_L3_SERVICE, compute_node)
 
     proxy_cmd = get_ssh_proxy_cmd(server_1)
     server_2_ip = server_steps.get_fixed_ip(server_2)
@@ -618,9 +621,12 @@ def test_east_west_connectivity_after_reset_computes(
             server_1_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
-    computes = os_faults_steps.get_nodes(
-        fqdns=[getattr(server_1, config.SERVER_ATTR_HOST),
-               getattr(server_2, config.SERVER_ATTR_HOST)])
+    compute_host_1 = getattr(server_1, config.SERVER_ATTR_HOST)
+    compute_fqdn_1 = os_faults_steps.get_fqdn_by_host_name(compute_host_1)
+    compute_host_2 = getattr(server_2, config.SERVER_ATTR_HOST)
+    compute_fqdn_2 = os_faults_steps.get_fqdn_by_host_name(compute_host_2)
+    computes = os_faults_steps.get_nodes(fqdns=[compute_fqdn_1,
+                                                compute_fqdn_2])
     os_faults_steps.reset_nodes(computes, native=False)
 
     proxy_cmd = get_ssh_proxy_cmd(server_2)
@@ -749,17 +755,18 @@ def test_associate_floating_ip_after_restart_l3_on_compute(
             config.GOOGLE_DNS_IP, server_ssh,
             timeout=config.PING_CALL_TIMEOUT)
 
-    server_host = getattr(server, config.SERVER_ATTR_HOST)
-    host_compute = os_faults_steps.get_node(fqdns=[server_host])
+    compute_host = getattr(server, config.SERVER_ATTR_HOST)
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(compute_host)
+    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
 
     os_faults_steps.restart_services(names=[config.NEUTRON_L3_SERVICE],
-                                     nodes=host_compute)
+                                     nodes=compute_node)
 
     network, _, _ = net_subnet_router
     server_2 = server_steps.create_servers(
         image=cirros_image, flavor=flavor, networks=[network],
         security_groups=[security_group],
-        availability_zone='nova:{}'.format(server_host),
+        availability_zone='nova:{}'.format(compute_host),
         username=config.CIRROS_USERNAME,
         password=config.CIRROS_PASSWORD)[0]
 
@@ -809,15 +816,16 @@ def test_check_router_namespace_on_compute_node(
     #. Delete network
     """
     _, _, router = net_subnet_router
-    server_host = getattr(server, config.SERVER_ATTR_HOST)
-    host_compute = os_faults_steps.get_node(fqdns=[server_host])
+    compute_host = getattr(server, config.SERVER_ATTR_HOST)
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(compute_host)
+    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
 
-    os_faults_steps.check_router_namespace_presence(router, host_compute)
+    os_faults_steps.check_router_namespace_presence(router, compute_node)
 
     server_steps.delete_servers([server])
     os_faults_steps.check_router_namespace_presence(
         router,
-        host_compute,
+        compute_node,
         must_present=False,
         timeout=config.ROUTER_NAMESPACE_TIMEOUT)
 
@@ -1062,10 +1070,12 @@ def test_update_router_from_centralized_to_distributed(
     router_steps.update_router(router, distributed=True)
     router_steps.update_router(router, admin_state_up=True)
 
-    server_host = getattr(server, config.SERVER_ATTR_HOST)
-    host_compute = os_faults_steps.get_node(fqdns=[server_host])
+    compute_host = getattr(server, config.SERVER_ATTR_HOST)
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(compute_host)
+    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
+
     os_faults_steps.check_router_namespace_presence(
-        router, host_compute, timeout=config.ROUTER_NAMESPACE_TIMEOUT)
+        router, compute_node, timeout=config.ROUTER_NAMESPACE_TIMEOUT)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         server_steps.check_ping_for_ip(
