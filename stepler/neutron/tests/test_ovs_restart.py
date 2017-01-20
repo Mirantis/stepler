@@ -64,8 +64,7 @@ def test_restart_with_pcs_disable_enable(
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_fixed_ip = next(iter(server_steps.get_ips(server_2,
-                                                       config.FIXED_IP)))
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -120,8 +119,7 @@ def test_restart_with_pcs_ban_clear(
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_fixed_ip = next(iter(server_steps.get_ips(server_2,
-                                                       config.FIXED_IP)))
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -182,8 +180,7 @@ def test_restart_many_times(
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_fixed_ip = next(
-        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
     with server_steps.get_server_ssh(server_1) as server_ssh:
@@ -238,8 +235,7 @@ def test_restart_with_broadcast_traffic(
     server_1, server_2 = neutron_2_servers_same_network.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_fixed_ip = next(
-        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
     with server_steps.get_server_ssh(server_1) as server_ssh:
@@ -256,9 +252,7 @@ def test_restart_with_broadcast_traffic(
 @pytest.mark.requires("computes_count >= 2")
 @pytest.mark.idempotent_id('f92c6488-f87d-46d7-b2a5-13a98e10ab28')
 def test_restart_adds_new_flows(
-        net_subnet_router,
         server,
-        server_steps,
         os_faults_steps,
         agent_steps):
     """**Scenario:** Check that new flows are added after OVS-agents restart.
@@ -290,8 +284,9 @@ def test_restart_adds_new_flows(
     """
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
 
-    compute_fqdn = getattr(server, config.SERVER_ATTR_HOST)
-    compute_node = os_faults_steps.get_node(fqdns=[compute_fqdn])
+    compute_host = getattr(server, config.SERVER_ATTR_HOST)
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(compute_host)
+    compute_node = os_faults_steps.get_nodes(fqdns=[compute_fqdn])
 
     old_cookies = os_faults_steps.get_ovs_flows_cookies(compute_node)
 
@@ -305,7 +300,7 @@ def test_restart_adds_new_flows(
 
 @pytest.mark.requires("vlan")
 @pytest.mark.idempotent_id('51340e3b-5762-4bb5-b394-3f050263e96b')
-def test_port_tags_immutable_after_restart(port_steps, os_faults_steps):
+def test_port_tags_immutable_after_restart(os_faults_steps):
     """Check that ports tags are the same after ovs-agents restart.
 
     **Steps:**
@@ -362,8 +357,7 @@ def test_restart_with_iperf_traffic(
     server_1, server_2 = neutron_2_servers_iperf_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_fixed_ip = next(
-        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
     with server_steps.get_server_ssh(server_1) as server_ssh:
@@ -427,8 +421,7 @@ def test_restart_servers_on_single_compute(
     server_1, server_2 = neutron_2_servers_same_network.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_fixed_ip = next(
-        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
     with server_steps.get_server_ssh(server_1) as server_ssh:
@@ -484,8 +477,7 @@ def test_no_connectivity_with_different_routers_during_restart(
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
     server_steps.attach_floating_ip(server_1, nova_floating_ip)
-    server_2_fixed_ip = next(
-        iter(server_steps.get_ips(server_2, config.FIXED_IP)))
+    server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
     with server_steps.get_server_ssh(server_1) as server_ssh:
