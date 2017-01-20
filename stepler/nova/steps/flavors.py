@@ -77,17 +77,30 @@ class FlavorSteps(BaseSteps):
                                      is_public=is_public)
         if check:
             self.check_flavor_presence(flavor)
-            assert_that(flavor.name, equal_to(flavor_name))
-            assert_that(flavor.ram, equal_to(ram))
-            assert_that(flavor.vcpus, equal_to(vcpus))
-            assert_that(flavor.disk, equal_to(disk))
-            assert_that(flavor.ephemeral, equal_to(ephemeral))
-            assert_that(flavor.rxtx_factor, equal_to(rxtx_factor))
-            assert_that(flavor.is_public, equal_to(is_public))
+
+            err_msg_tmpl = "Created flavor with ID {!r} doesn't have " \
+                           "correct value of ".format(flavor.id)
+
+            assert_that(flavor.name, equal_to(flavor_name),
+                        err_msg_tmpl + "name")
+            assert_that(flavor.ram, equal_to(ram),
+                        err_msg_tmpl + "RAM")
+            assert_that(flavor.vcpus, equal_to(vcpus),
+                        err_msg_tmpl + "vCPU count")
+            assert_that(flavor.disk, equal_to(disk),
+                        err_msg_tmpl + "disk size")
+            assert_that(flavor.ephemeral, equal_to(ephemeral),
+                        err_msg_tmpl + "ephemeral disk size")
+            assert_that(flavor.rxtx_factor, equal_to(rxtx_factor),
+                        err_msg_tmpl + "RX/TX factor")
+            assert_that(flavor.is_public, equal_to(is_public),
+                        err_msg_tmpl + "public status")
             if flavorid is not 'auto':
-                assert_that(flavor.id, equal_to(flavorid))
+                assert_that(flavor.id, equal_to(flavorid),
+                            err_msg_tmpl + "ID")
             if swap:
-                assert_that(flavor.swap, equal_to(swap))
+                assert_that(flavor.swap, equal_to(swap),
+                            err_msg_tmpl + "SWAP")
 
         return flavor
 
@@ -116,6 +129,11 @@ class FlavorSteps(BaseSteps):
         Raises:
             TimeoutExpired: if check was triggered to False after timeout
         """
+        err_msg = "Invalid presence status of flavor " \
+                  "with ID {!r}".format(flavor.id)
+        if timeout:
+            err_msg += " after waiting {!r} second(s)".format(timeout)
+
         def _check_flavor_presence():
             try:
                 # After deleting flavor `get` method still return object,
@@ -124,7 +142,8 @@ class FlavorSteps(BaseSteps):
                 is_present = True
             except exceptions.NotFound:
                 is_present = False
-            return waiter.expect_that(is_present, equal_to(must_present))
+            return waiter.expect_that(
+                is_present, equal_to(must_present), err_msg)
 
         waiter.wait(_check_flavor_presence, timeout_seconds=timeout)
 
@@ -156,7 +175,9 @@ class FlavorSteps(BaseSteps):
         flavor = self._client.find(**kwgs)
 
         if check:
-            assert_that(flavor.to_dict(), has_entries(kwgs))
+            err_msg = "Retrieved flavor with ID {!r} doesn't correspond " \
+                      "requested parameters".format(flavor.id)
+            assert_that(flavor.to_dict(), has_entries(kwgs), err_msg)
         return flavor
 
     @steps_checker.step
@@ -187,9 +208,15 @@ class FlavorSteps(BaseSteps):
         flavors = self._client.findall(**kwgs)
 
         if check:
-            assert_that(flavors, is_not(empty()))
+            err_msg = "No flavors were retrieved, which correspond " \
+                      "requested parameters {!r}".format(kwgs)
+            assert_that(flavors, is_not(empty()), err_msg)
+
             for flavor in flavors:
-                assert_that(flavor.to_dict(), has_entries(kwgs))
+                err_msg = "Retrieved flavor with ID {!r} doesn't correspond " \
+                          "requested parameters".format(flavor.id)
+                assert_that(flavor.to_dict(), has_entries(kwgs), err_msg)
+
         return flavors
 
     @steps_checker.step
@@ -207,4 +234,6 @@ class FlavorSteps(BaseSteps):
         flavor.set_keys(metadata)
 
         if check:
-            assert_that(flavor.get_keys(), has_entries(metadata))
+            err_msg = "Flavor with ID {!r} doesn't have " \
+                      "set metadata".format(flavor.id)
+            assert_that(flavor.get_keys(), has_entries(metadata), err_msg)
