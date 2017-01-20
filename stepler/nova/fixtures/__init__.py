@@ -84,6 +84,7 @@ __all__ = sorted([  # sort for documentation
 
     'create_server_context',
     'create_servers_context',
+    'cirros_server_to_rebuild',
     'get_server_steps',
     'get_ssh_proxy_cmd',
     'server',
@@ -96,6 +97,7 @@ __all__ = sorted([  # sort for documentation
     'servers_with_volumes_to_evacuate',
     'generate_traffic',
     'ubuntu_server',
+    'ubuntu_server_to_rebuild',
     'unexpected_servers_cleanup',
 
     'nova_service_steps',

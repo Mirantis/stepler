@@ -30,6 +30,7 @@ from stepler.third_party import utils
 __all__ = [
     'create_server_context',
     'create_servers_context',
+    'cirros_server_to_rebuild',
     'get_server_steps',
     'get_ssh_proxy_cmd',
     'server',
@@ -41,6 +42,7 @@ __all__ = [
     'live_migration_servers_with_volumes',
     'servers_cleanup',
     'ubuntu_server',
+    'ubuntu_server_to_rebuild',
     'unexpected_servers_cleanup',
 ]
 
@@ -622,3 +624,132 @@ def servers_with_volumes_to_evacuate(servers_to_evacuate,
         attach_volume_to_server(server, volume)
 
     return servers_to_evacuate, volumes
+
+
+@pytest.fixture
+def cirros_server_to_rebuild(request,
+                             keypair,
+                             flavor,
+                             security_group,
+                             cirros_image,
+                             net_subnet_router,
+                             volume_steps,
+                             server_steps):
+    """Fixture to create server for nova rebuild tests.
+
+    This fixture creates a server which can be booted from cirros image
+    or cirros-based volume with parametrization.
+    Default is boot from image.
+
+    Example:
+        .. code:: python
+
+            @pytest.mark.parametrized('cirros_server_to_rebuild', [
+                    {'boot_from_volume': True},
+                    {'boot_from_volume': False}
+                ], indirect=True)
+            def test_foo(cirros_server_to_rebuild):
+                pass
+
+    Args:
+        request (obj): pytest SubRequest instance
+        keypair (obj): keypair
+        flavor (obj): flavor
+        security_group (obj): security group
+        nova_floating_ip (obj): nova floating ip
+        cirros_image (obj): cirros image
+        net_subnet_router (tuple): neutron network, subnet and router
+        volume_steps (obj): instantiated volume steps
+        server_steps (obj): instantiated server steps
+
+    Returns:
+        object: nova server
+    """
+    network, _, _ = net_subnet_router
+
+    params = getattr(request, "param", {})
+    boot_from_volume = params.get('boot_from_volume', False)
+
+    if boot_from_volume:
+        volume = volume_steps.create_volumes(size=5, image=cirros_image)[0]
+
+        block_device_mapping = {'vda': volume.id}
+        kwargs = dict(image=None, block_device_mapping=block_device_mapping)
+    else:
+        kwargs = dict(image=cirros_image)
+
+    server = server_steps.create_servers(
+        flavor=flavor,
+        keypair=keypair,
+        networks=[network],
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME,
+        **kwargs)[0]
+
+    return server
+
+
+@pytest.fixture
+def ubuntu_server_to_rebuild(request,
+                             keypair,
+                             flavor,
+                             security_group,
+                             ubuntu_image,
+                             net_subnet_router,
+                             volume_steps,
+                             server_steps):
+    """Fixture to create Ubuntu server for nova rebuild tests.
+
+    In some test cases for 'nova rebuild' actions we need a proper cloud-init
+    behavior (e.g. file injection operation), which cannot be guaranteed by
+    cirros-based images and servers booted from them.
+    This fixture creates a server which can be booted from ubuntu image
+    or ubuntu-based volume with parametrization.
+    Default is boot from image.
+
+    Example:
+        .. code:: python
+
+            @pytest.mark.parametrized('ubuntu_server_to_rebuild', [
+                    {'boot_from_volume': True},
+                    {'boot_from_volume': False}
+                ], indirect=True)
+            def test_foo(ubuntu_server_to_rebuild):
+                pass
+
+    Args:
+        request (obj): pytest SubRequest instance
+        keypair (obj): keypair
+        flavor (obj): flavor
+        security_group (obj): security group
+        nova_floating_ip (obj): nova floating ip
+        ubuntu_image (obj): ubuntu image
+        net_subnet_router (tuple): neutron network, subnet and router
+        volume_steps (obj): instantiated volume steps
+        server_steps (obj): instantiated server steps
+
+    Returns:
+        object: nova server
+    """
+    network, _, _ = net_subnet_router
+
+    params = getattr(request, "param", {})
+    boot_from_volume = params.get('boot_from_volume', False)
+
+    if boot_from_volume:
+        volume = volume_steps.create_volumes(size=5, image=ubuntu_image)[0]
+
+        block_device_mapping = {'vda': volume.id}
+        kwargs = dict(image=None, block_device_mapping=block_device_mapping)
+    else:
+        kwargs = dict(image=ubuntu_image)
+
+    server = server_steps.create_servers(
+        flavor=flavor,
+        keypair=keypair,
+        networks=[network],
+        security_groups=[security_group],
+        username=config.UBUNTU_USERNAME,
+        **kwargs)[0]
+
+    return server

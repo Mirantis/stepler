@@ -1361,26 +1361,29 @@ class ServerSteps(base.BaseSteps):
                 timeout=config.SERVER_UPDATE_TIMEOUT)
 
     @steps_checker.step
-    def rebuild_server(self, server, image, check=True):
+    def rebuild_server(self, server, image, check=True, **kwargs):
         """Step to rebuild nova server.
 
         Args:
             server (object): nova server to rebuild
             image (object): image used for server rebuild
+            files (dict): an optional dict of files to overwrite on the server
+                          upon boot
             check (bool): flag whether to check step or not
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        server.rebuild(image)
+        server.rebuild(image, **kwargs)
 
         if check:
             self.check_server_status(
                 server,
                 expected_statuses=[config.STATUS_ACTIVE],
-                transit_statuses=[config.STATUS_REBUILDING,
+                transit_statuses=[config.STATUS_REBUILD,
+                                  config.STATUS_REBUILDING,
                                   config.STATUS_REBUILD_SPAWNING],
-                timeout=config.SERVER_UPDATE_TIMEOUT)
+                timeout=config.SERVER_ACTIVE_TIMEOUT)
 
     @steps_checker.step
     def rescue_server(self, server, check=True):

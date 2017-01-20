@@ -260,6 +260,7 @@ SERVER_ACTIVE_TIMEOUT = 14 * 60
 SERVER_UPDATE_TIMEOUT = 2 * 60
 SERVER_SHELVE_TIMEOUT = 3 * 60
 SERVER_SHUTOFF_TIMEOUT = 3 * 60
+UBUNTU_BOOT_COMPLETE_TIMEOUT = 10 * 60
 
 REBOOT_SOFT = 'SOFT'
 REBOOT_HARD = 'HARD'
@@ -306,12 +307,19 @@ SERVER_ATTR_FLAVOR = 'flavor'
 SERVER_ATTR_HOST = 'OS-EXT-SRV-ATTR:host'
 SERVER_ATTR_INSTANCE_NAME = 'OS-EXT-SRV-ATTR:instance_name'
 SERVER_ATTR_LOCKED = 'locked'
+SERVER_ATTR_DESCRIPTION = 'description'
 
 
 IO_SPEC_LIMIT = 10240000
 IO_SPEC_LIMIT_METADATA = {'quota:disk_read_bytes_sec': str(IO_SPEC_LIMIT),
                           'quota:disk_write_bytes_sec': str(IO_SPEC_LIMIT)}
 EVACUATE_SERVERS_COUNT = 2
+USER_FILES_FOR_TEST_REBUILD = {"/home/ubuntu/file1.txt": 'Test file 1',
+                               "/home/ubuntu/file2.txt": 'Test file 2',
+                               "/home/ubuntu/file3.txt": 'Test file 3',
+                               "/home/ubuntu/file4.txt": 'Test file 4',
+                               "/home/ubuntu/file5.txt": 'Test file 5'}
+DESCRIPTION_FOR_TEST_REBUILD = "Description added during rebuild"
 
 # Glance
 GLANCE_AVAILABILITY_TIMEOUT = 15
