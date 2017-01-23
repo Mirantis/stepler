@@ -19,7 +19,7 @@ Swift container fixtures
 
 import pytest
 
-from stepler.swift import steps
+from stepler.object_storage import steps
 
 __all__ = [
     'container_steps',
