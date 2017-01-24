@@ -24,9 +24,8 @@ import os
 import time
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
-                      has_item, has_properties, is_, is_in, is_not,
-                      less_than_or_equal_to, raises, greater_than,
-                      has_key)  # noqa H301
+                      has_item, is_, is_in, is_not, less_than_or_equal_to,
+                      raises, greater_than, has_key)  # noqa H301
 
 from novaclient import exceptions as nova_exceptions
 import paramiko
@@ -138,19 +137,16 @@ class ServerSteps(base.BaseSteps):
         return servers
 
     @steps_checker.step
-    def delete_servers(self, servers, soft=False, check=True,
-                       check_status=False):
+    def delete_servers(self, servers, soft=False, check=True):
         """Step to delete servers.
 
         Args:
             servers (obj): nova servers' list
             soft (bool, optional): flag whetever to run soft or hard deleting
             check (bool, optional): flag whether to check step or not
-            check_status (bool, optional): flag whether to check server status
-                after deleting in case of soft deleting
         """
         if soft:
-            self._soft_delete_servers(servers, check, check_status)
+            self._soft_delete_servers(servers, check)
         else:
             self._hard_delete_servers(servers, check)
 
@@ -176,47 +172,21 @@ class ServerSteps(base.BaseSteps):
         return servers
 
     @steps_checker.step
-    def get_server(self, check=True, **kwargs):
-        """Step to retrieve server from nova with filter.
-
-        Args:
-            check (bool): flag whether to check step or not
-            kwargs: Additional filters to pass
-
-        Returns:
-            obj: server object
-        """
-        server = self._client.find(**kwargs)
-
-        if check:
-            assert_that(server, has_properties(kwargs))
-
-        return server
-
-    @steps_checker.step
-    def check_server_presence(self, server, present=True, by_name=False,
-                              timeout=0):
+    def check_server_presence(self, server, present=True, timeout=0):
         """Check-step to check server presence.
 
         Args:
             server (object): nova server
             present (bool): flag to check is server present or absent
-            by_name (bool): indicator of check method - by id or by name
-                            in server list. For soft-deleted servers,
-                            result = False for by_name=True, else True)
             timeout (int): seconds to wait a result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        if by_name:
-            search_opts = {'name': server.name}
-        else:
-            search_opts = {'id': server.id}
 
         def predicate():
             try:
-                self._client.find(**search_opts)
+                server.get()
                 return present
             except nova_exceptions.NotFound:
                 return not present
@@ -1441,7 +1411,7 @@ class ServerSteps(base.BaseSteps):
                 rescue_server, image, check=False),
             raises(nova_exceptions.Conflict, exception_message))
 
-    def _soft_delete_servers(self, servers, check, check_status=False):
+    def _soft_delete_servers(self, servers, check):
         # it doesn't delete server really, just hides server and marks it as
         # trash for nova garbage collection after reclaim timeout.
         for server in servers:
@@ -1449,12 +1419,11 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             for server in servers:
-                self.check_server_presence(
-                    server, present=False, by_name=True,
+                self.check_server_status(
+                    server,
+                    expected_statuses=[config.STATUS_SOFT_DELETED],
+                    transit_statuses=(config.STATUS_ACTIVE,),
                     timeout=config.SOFT_DELETED_TIMEOUT)
-                if check_status:
-                    self.check_server_status(
-                        server, expected_statuses=[config.STATUS_SOFT_DELETED])
 
     def _hard_delete_servers(self, servers, check):
         for server in servers:
