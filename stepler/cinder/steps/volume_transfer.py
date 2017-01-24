@@ -32,12 +32,10 @@ class VolumeTransferSteps(base.BaseSteps):
     """Cinder volume transfer steps."""
 
     @steps_checker.step
-    def get_transfers(self, all_projects=False, search_opts=None, check=True):
+    def get_transfers(self, search_opts=None, check=True):
         """Step to retrieve volume transfers.
 
         Args:
-            all_projects (bool, optional): flag whether to retrieve
-                transfers from all available projects or not
             search_opts (dict: optional): API filter options to
                 retrieve transfers
             check (bool|True): flag whether to check step or not
@@ -48,10 +46,6 @@ class VolumeTransferSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        if all_projects:
-            search_opts = search_opts or {}
-            search_opts['all_tenants'] = 1
-
         transfers = self._client.list(search_opts=search_opts)
 
         if check:

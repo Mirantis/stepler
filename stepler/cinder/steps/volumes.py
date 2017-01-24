@@ -244,31 +244,24 @@ class VolumeSteps(base.BaseSteps):
     def get_volumes(self,
                     name_prefix=None,
                     metadata=None,
-                    all_projects=False,
                     search_opts=None,
                     check=True):
         """Step to retrieve volumes.
 
         Args:
-            name_prefix (str, optional): Prefix to filter volumes by name.
+            name_prefix (str, optional): Prefix to filter volumes by name
             metadata (dict, optional): Data to filter volume by metadata
-                ``key: value``.
-            all_projects (bool, optional): Flag whether to retrieve volumes
-                from all available projects or not.
+                ``key: value``
             search_opts (dict: optional): API filter options to retrieve
-                volumes.
-            check (bool, optional): Flag whether to check step or not.
+                volumes
+            check (bool, optional): Flag whether to check step or not
 
         Returns:
-            list: Volumes collection.
+            list: Volumes collection
 
         Raises:
-            AssertionError: If volumes collection is empty.
+            AssertionError: If volumes collection is empty
         """
-        if all_projects:
-            search_opts = search_opts or {}
-            search_opts['all_tenants'] = 1
-
         volumes = self._client.list(search_opts=search_opts)
 
         if name_prefix:

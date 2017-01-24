@@ -61,7 +61,7 @@ def transfer_steps(get_transfer_steps, cleanup_transfers):
     """
     _transfer_steps = get_transfer_steps(
         config.CURRENT_CINDER_VERSION, is_api=False)
-    transfers = _transfer_steps.get_transfers(all_projects=True, check=False)
+    transfers = _transfer_steps.get_transfers(check=False)
     transfer_ids_before = {transfer.id for transfer in transfers}
 
     yield _transfer_steps
@@ -106,8 +106,7 @@ def cleanup_transfers(uncleanable):
     def _cleanup_transfers(_transfer_steps, uncleanable_ids=None):
         uncleanable_ids = uncleanable_ids or uncleanable.transfer_ids
 
-        for transfer in _transfer_steps.get_transfers(all_projects=True,
-                                                      check=False):
+        for transfer in _transfer_steps.get_transfers(check=False):
             if transfer.id not in uncleanable_ids:
                 _transfer_steps.delete_volume_transfer(transfer)
 
