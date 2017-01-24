@@ -24,6 +24,9 @@ from stepler import config
 from stepler.third_party.supported_platforms import platform
 
 
+pytestmark = pytest.mark.destructive
+
+
 @platform.mk2x
 @pytest.mark.idempotent_id('6d8cfa5c-c927-4916-940e-5dd57c8e8977',
                            os_workload=False)
@@ -36,11 +39,12 @@ def test_shutdown_vip_controller(cirros_image,
                                  flavor,
                                  security_group,
                                  net_subnet_router,
-                                 volume,
                                  nova_floating_ip,
                                  attach_volume_to_server,
+                                 volume,
                                  server_steps,
                                  nova_service_steps,
+                                 host_steps,
                                  os_faults_steps,
                                  generate_os_workload,
                                  os_workload):
@@ -91,15 +95,21 @@ def test_shutdown_vip_controller(cirros_image,
     rabbit_nodes = os_faults_steps.get_nodes(service_names=[config.RABBITMQ])
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
 
-    # TODO(ssokolov) uncomment after fixing poweron/poweroff problem
-    # vip_controller = os_faults_steps.get_nodes_by_cmd(
-    #     config.TCP_VIP_CONTROLLER_CMD)
+    nova_nodes = os_faults_steps.get_nodes_with_any_service(
+        [config.NOVA_API, config.NOVA_COMPUTE])
+    vip_controller = os_faults_steps.get_nodes_by_cmd(
+        config.TCP_VIP_CONTROLLER_CMD)
+    nodes_without_vip = nova_nodes - vip_controller
+    alive_host_names = [host_steps.get_host(fqdn=node.fqdn).host_name for
+                        node in nodes_without_vip]
 
-    # TODO(ssokolov) commented because poweron is not yet implemented
-    # os_faults_steps.poweroff_nodes(vip_controller)
+    os_faults_steps.poweroff_nodes(vip_controller)
 
     nova_service_steps.check_services_up(
+        host_names=alive_host_names,
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
     server = server_steps.create_servers(image=cirros_image,
                                          flavor=flavor,
@@ -118,8 +128,7 @@ def test_shutdown_vip_controller(cirros_image,
                                        server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
 
-    # TODO(ssokolov) not yet implemented
-    # os_faults_steps.poweron_nodes(vip_controller)
+    os_faults_steps.poweron_nodes(vip_controller)
 
     nova_service_steps.check_service_states(
         nova_services_init,
@@ -131,7 +140,101 @@ def test_shutdown_vip_controller(cirros_image,
                                         nodes=mysql_nodes)
 
 
-@platform.mk2x
+@pytest.mark.idempotent_id('75d405d0-1f31-498c-b144-3b160b85a39e')
+def test_power_off_cluster(cirros_image,
+                           keypair,
+                           flavor,
+                           security_group,
+                           net_subnet_router,
+                           nova_floating_ip,
+                           attach_volume_to_server,
+                           volume,
+                           get_nova_client,
+                           nova_service_steps,
+                           server_steps,
+                           os_faults_steps):
+    """**Scenario:** Check functionality after power off/on the whole cluster
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create keypair
+    #. Create flavor
+    #. Create security group
+    #. Create network, subnet and router
+    #. Create volume
+    #. Create floating IP
+
+    **Steps:**
+
+    #. Get current states of nova services, RabbitMQ and Galera
+    #. Power off the all nodes at once
+    #. Wait for 5 minutes
+    #. Start all cluster nodes one by one
+    #. Wait until basic OpenStack operations start working
+    #. Create server with volume
+    #. Attach floating IP
+    #. Check connectivity from server
+    #. Check RabbitMQ and Galera states
+
+    **Teardown:**
+
+    #. Delete volume
+    #. Delete server
+    #. Delete floating IP
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete keypair
+    #. Delete cirros image
+    """
+    rabbit_nodes = os_faults_steps.get_nodes(service_names=[config.RABBITMQ])
+    mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+
+    nodes = os_faults_steps.get_nodes()
+
+    os_faults_steps.poweroff_nodes(nodes)
+
+    time.sleep(config.TIME_BETWEEN_CLUSTER_RESTART)
+
+    # TODO(ssokolov): replace when os-faults supports 'for node in nodes'
+    # for node in nodes:
+    #     os_faults_steps.poweron_nodes(node)
+    for ip in nodes.get_ips():
+        node = nodes.filter(lambda host: host.ip == ip)
+        os_faults_steps.poweron_nodes(node)
+
+    # reinit nova client and wait for its availability
+    get_nova_client()
+
+    nova_service_steps.check_services_up(
+        timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
+
+    server = server_steps.create_servers(image=cirros_image,
+                                         flavor=tiny_flavor,
+                                         networks=[net_subnet_router[0]],
+                                         security_groups=[security_group],
+                                         username=config.CIRROS_USERNAME,
+                                         password=config.CIRROS_PASSWORD,
+                                         keypair=keypair)[0]
+    attach_volume_to_server(server, volume)
+
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
+                                       server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
+
+    os_faults_steps.check_service_state(service_name=config.RABBITMQ,
+                                        nodes=rabbit_nodes)
+    os_faults_steps.check_service_state(service_name=config.MYSQL,
+                                        nodes=mysql_nodes)
+
+
 @pytest.mark.idempotent_id('7509ac93-f0a3-4b62-84dc-ed722e3eba55')
 def test_network_outage(cirros_image,
                         keypair,
@@ -231,9 +334,9 @@ def test_reboot_vip_controller(cirros_image,
                                flavor,
                                security_group,
                                net_subnet_router,
-                               volume,
                                nova_floating_ip,
                                attach_volume_to_server,
+                               volume,
                                server_steps,
                                nova_service_steps,
                                os_faults_steps,
@@ -287,20 +390,13 @@ def test_reboot_vip_controller(cirros_image,
     vip_controller = os_faults_steps.get_nodes_by_cmd(
         config.TCP_VIP_CONTROLLER_CMD)
 
-    # TODO(ssokolov) can be replaced to os_faults_steps.reset()
-    os_faults_steps.execute_cmd(vip_controller, config.NODE_REBOOT_CMD)
-    os_faults_steps.check_nodes_tcp_availability(
-        vip_controller,
-        must_available=False,
-        timeout=config.NODE_SHUTDOWN_TIMEOUT)
-    os_faults_steps.check_nodes_tcp_availability(
-        vip_controller,
-        must_available=True,
-        timeout=config.NODE_REBOOT_TIMEOUT)
+    os_faults_steps.reset_nodes(vip_controller)
 
     nova_service_steps.check_service_states(
         nova_services_init,
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
     server = server_steps.create_servers(image=cirros_image,
                                          flavor=flavor,

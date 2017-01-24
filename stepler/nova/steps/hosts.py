@@ -52,8 +52,11 @@ class HostSteps(base.BaseSteps):
 
     @steps_checker.step
     def get_host(self, name=None, fqdn=None, check=True):
-        """Step to get host.
+        """Step to get host by name of FQDN.
 
+        Host object consists of 'host_name', 'service' and 'zone'.
+        If there are several hosts with the same host_name, then any host
+        with proper name is returned.
         If not arguments are specified that means any host is suitable.
 
         Args:
@@ -75,8 +78,9 @@ class HostSteps(base.BaseSteps):
             hosts = [host for host in hosts if fqdn.startswith(host.host_name)]
         if check:
             assert_that(hosts, is_not(empty()))
+            host_names = [host.host_name for host in hosts]
             if name or fqdn:
-                assert_that(hosts, has_length(1))
+                 assert_that(set(host_names), has_length(1))
 
         return hosts[0]
 
