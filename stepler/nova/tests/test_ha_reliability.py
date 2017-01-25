@@ -323,3 +323,59 @@ def test_reboot_vip_controller(cirros_image,
                                         nodes=rabbit_nodes)
     os_faults_steps.check_service_state(service_name=config.MYSQL,
                                         nodes=mysql_nodes)
+
+
+@platform.mk2x
+@pytest.mark.destructive
+@pytest.mark.idempotent_id('bcb88d70-d347-45fa-9261-71732ac54523')
+def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
+                                               flavor,
+                                               net_subnet_router,
+                                               os_faults_steps,
+                                               server_steps):
+    """**Scenario:** Check shutdown and bootstrap galera cluster.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create network, subnet and router
+
+    **Steps:**
+
+    #. Terminate 'mysql' service for all nodes
+    #. Run '/usr/bin/mysqld_safe --wsrep-new-cluster' on the one node
+    #. Check that new operational cluster is created and its size 1
+    #. Add nodes to cluster by start of 'mysql' service
+    #. Check that cluster still operational but with new size
+    #. Create server to check cluster
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete network, subnet and router
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.terminate_service(service_name=config.MYSQL,
+                                      nodes=mysql_nodes)
+
+    primary_node = os_faults_steps.get_node(fqdns=[mysql_nodes.hosts[0].fqdn])
+    secondary_node_fqdns = [host.fqdn for host in mysql_nodes.hosts[1:]]
+    secondary_nodes = os_faults_steps.get_nodes(fqdns=secondary_node_fqdns)
+
+    # Start galera cluster
+    os_faults_steps.execute_cmd(primary_node, config.GALERA_CLUSTER_START_CMD)
+    os_faults_steps.check_galera_cluster_state(primary_node, 1)
+
+    # Add secondary nodes to cluster
+    os_faults_steps.start_service(service_name=config.MYSQL,
+                                  nodes=secondary_nodes)
+    os_faults_steps.check_galera_cluster_state(mysql_nodes, len(mysql_nodes))
+
+    server_steps.create_servers(image=cirros_image,
+                                flavor=flavor,
+                                networks=[net_subnet_router[0]],
+                                username=config.CIRROS_USERNAME,
+                                password=config.CIRROS_PASSWORD)

@@ -24,10 +24,11 @@ import tempfile
 import time
 import warnings
 
-from hamcrest import (assert_that, empty, has_item, has_properties, is_not,
-                      only_contains, has_items, has_length, is_, equal_to,
-                      contains_inanyorder, is_in, any_of, all_of,
-                      contains_string, greater_than, less_than_or_equal_to)  # noqa H301
+from hamcrest import (assert_that, empty, equal_to, has_item, has_properties,
+                      is_not, only_contains, has_items, has_entries,
+                      has_length, is_, contains_inanyorder, is_in, any_of,
+                      all_of, contains_string, greater_than,
+                      less_than_or_equal_to)  # noqa H301
 from six import moves
 
 from stepler import base
@@ -1685,3 +1686,82 @@ class OsFaultsSteps(base.BaseSteps):
         if check:
             assert_that(fqdns, has_length(1))
         return fqdns[0]
+
+    @steps_checker.step
+    def check_galera_cluster_state(self, nodes, size):
+        """Step to check galera cluster parameters.
+
+        This step checks that cluster is in 'Operational' state with 'Primary'
+        status. 'Synced' state of nodes is checked too as well as cluster size
+        and its members.
+
+        wsrep_local_state_comment: Synced
+        wsrep_incoming_addresses: 172.16.10.102:3306, 172.16.10.101:3306
+        wsrep_evs_state: OPERATIONAL
+        wsrep_cluster_size: 2
+        wsrep_cluster_status: Primary
+
+        Args:
+            nodes (NodeCollection): nodes to check cluster
+            size (int): expected cluster size
+
+        Raises:
+            AssertionError: if cluster parameters are unexpected
+            TimeoutException: if no response from cluster after timeout
+        """
+        cluster_params = {}
+        cmd = config.GALERA_CLUSTER_STATUS_CHECK_CMD
+
+        def _wait_successful_command_response():
+            results = self.execute_cmd(nodes, cmd, check=False)
+            return all(
+                waiter.expect_that(result.status, equal_to(config.STATUS_OK))
+                for result in results)
+
+        waiter.wait(_wait_successful_command_response,
+                    timeout_seconds=config.GALERA_CLUSTER_UP_TIMEOUT)
+
+        results = self.execute_cmd(nodes, cmd)
+        for result in results:
+            cluster_params[result.host] = {}
+            for parameter in result.payload['stdout_lines'][1:]:
+                parameter_name, value = parameter.split('\t')
+                cluster_params[result.host].update({parameter_name: value})
+
+        expected_incoming_addr = [
+            '{}:{}'.format(ip, config.MYSQL_PORT)
+            for ip in self.get_nodes_ip_for_interface(nodes, 'eth1')]
+
+        for host, param in cluster_params.items():
+            actual_incoming_addr = sorted(
+                param[config.GALERA_CLUSTER_MEMBERS_PARAM].split(','))
+            assert_that(
+                param, has_entries(config.GALERA_CLUSTER_STATUS_PARAMS))
+            assert_that(
+                param[config.GALERA_CLUSTER_SIZE_PARAM], equal_to(str(size)))
+            assert_that(actual_incoming_addr, equal_to(expected_incoming_addr))
+
+    @steps_checker.step
+    def get_nodes_ip_for_interface(self, nodes, interface, check=True):
+        """Step to get specific interface ips of nodes.
+
+        Args:
+            nodes (NodeCollection): nodes to get ips
+            interface (str): interface name
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            AnsibleExecutionException: if command execution
+                failed in case of check=True
+
+        Returns:
+            list: sorted ips
+        """
+        ips = []
+        results = self.execute_cmd(
+            nodes, "ifconfig {} | grep addr".format(interface), check=check)
+        for result in results:
+            ip = re.findall(r'inet addr:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})',
+                            result.payload['stdout'])[0]
+            ips.append(ip)
+        return sorted(ips)
