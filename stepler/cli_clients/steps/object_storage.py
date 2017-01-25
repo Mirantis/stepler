@@ -1,0 +1,94 @@
+"""
+-------------------------------
+Object Storage CLI client steps
+-------------------------------
+"""
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from hamcrest import assert_that, empty, is_in, is_not  # noqa H301
+from six import moves
+
+from stepler.cli_clients.steps import base
+from stepler.third_party import steps_checker
+
+
+class CliSwiftSteps(base.BaseCliSteps):
+    """CLI object storage client steps."""
+
+    @steps_checker.step
+    def create(self, container_name, check=True):
+        """Step to create swift container.
+
+        Args:
+            container_name (str): name of created container
+            check (bool): flag whether to check result or not
+
+        Returns:
+            tuple: execution result (image dict, exit_code, stdout, stderr)
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'swift post '
+        cmd += moves.shlex_quote(container_name)
+        self.execute_command(cmd, check=check)
+
+    @steps_checker.step
+    def list(self, check=True):
+        """Step to get swift list.
+
+        Args:
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'swift list'
+        exit_code, stdout, stderr = self.execute_command(cmd, check=check)
+        return stdout
+
+    @steps_checker.step
+    def delete(self, container_name, check=True):
+        """Step to delete swift container.
+
+        Args:
+            container_name (str): object storage container
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'swift delete '
+        cmd += moves.shlex_quote(container_name)
+        self.execute_command(cmd, check=check)
+
+    @steps_checker.step
+    def check_container_presence(self, container_name, must_present=True):
+        """Step to check that container is in container list.
+
+        Args:
+            container_name (str): object storage container
+            must_present (bool): flag whether container should present or not
+
+        Raises:
+            AssertionError: check failed if container exists/doesn't exist in
+            containers list
+        """
+        containers_list = self.list()
+        if must_present:
+            assert_that(containers_list, is_not(empty()))
+            assert_that(container_name, is_in(containers_list))
+        else:
+            assert_that(container_name, is_not(is_in(containers_list)))
