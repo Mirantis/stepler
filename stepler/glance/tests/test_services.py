@@ -16,6 +16,8 @@ Glance service tests
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import signal
+
 import pytest
 
 from stepler import config
@@ -104,19 +106,25 @@ def test_restart_all_glance_services(cirros_image,
 @pytest.mark.parametrize('controller_cmd',
                          [config.FUEL_PRIMARY_CONTROLLER_CMD],
                          ids=['primary'])
-def test_shutdown_controller(os_faults_steps,
-                             glance_steps,
-                             controller_cmd):
-    """**Scenario:** Image uploads successfully after controller shutdown.
+def test_kill_glance_on_primary_controller(os_faults_steps,
+                                           glance_steps,
+                                           controller_cmd):
+    """**Scenario:** Kill glance services on controller and upload image.
 
     **Steps:**
 
-    #. Shutdown controller node
-    #. Wait glance service becomes available
+    #. Kill all glance services on primary controller
+    #. Wait glance becomes available
     #. Upload image to glance
     """
     controller_node = os_faults_steps.get_nodes_by_cmd(controller_cmd)
-    os_faults_steps.poweroff_nodes(controller_node)
+
+    for service_name in config.GLANCE_SERVICES:
+        pid = os_faults_steps.get_process_pid(controller_node, service_name)
+        os_faults_steps.send_signal_to_process(controller_node,
+                                               pid=pid,
+                                               signal=signal.SIGKILL,
+                                               delay=10)
 
     glance_steps.check_glance_service_available(
         timeout=config.SERVICE_REBALANCE_TIMEOUT)
