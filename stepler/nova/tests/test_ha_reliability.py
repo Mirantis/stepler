@@ -323,3 +323,110 @@ def test_reboot_vip_controller(cirros_image,
                                         nodes=rabbit_nodes)
     os_faults_steps.check_service_state(service_name=config.MYSQL,
                                         nodes=mysql_nodes)
+
+
+@pytest.mark.destructive
+@pytest.mark.idempotent_id('bcb88d70-d347-45fa-9261-71732ac54523')
+def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
+                                               flavor,
+                                               net_subnet_router,
+                                               os_faults_steps,
+                                               server_steps):
+    """**Scenario:** Check shutdown and bootstrap galera cluster.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create network, subnet and router
+
+    **Steps:**
+
+    #. Terminate 'mysql' service for all nodes
+    #. Run '/usr/bin/mysqld_safe --wsrep-new-cluster' on the one node
+    #. Check that new operational cluster is created and its size 1
+    #. Add nodes to cluster by start of 'mysql' service
+    #. Check that cluster still operational but with new size
+    #. Create server to check cluster
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete network, subnet and router
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.terminate_service(service_name=config.MYSQL,
+                                      nodes=mysql_nodes)
+
+    primary_node = os_faults_steps.get_node(fqdns=[mysql_nodes.hosts[0].fqdn])
+    secondary_node_fqdns = [host.fqdn for host in mysql_nodes.hosts[1:]]
+    secondary_nodes = os_faults_steps.get_nodes(fqdns=secondary_node_fqdns)
+
+    # Start galera cluster
+    os_faults_steps.execute_cmd(primary_node, config.GALERA_CLUSTER_START_CMD)
+    os_faults_steps.check_galera_cluster_state(member_nodes=primary_node)
+
+    # Add secondary nodes to cluster
+    os_faults_steps.start_service(service_name=config.MYSQL,
+                                  nodes=secondary_nodes)
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
+    server_steps.create_servers(image=cirros_image,
+                                flavor=flavor,
+                                networks=[net_subnet_router[0]],
+                                username=config.CIRROS_USERNAME,
+                                password=config.CIRROS_PASSWORD)
+
+
+@pytest.mark.destructive
+@pytest.mark.idempotent_id('c2b89348-30a6-43b1-b547-9d8615f22e29')
+def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
+                                                   cirros_image,
+                                                   flavor,
+                                                   net_subnet_router,
+                                                   os_faults_steps,
+                                                   server_steps):
+    """**Scenario:** Check reboot node from galera cluster with workload.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create network, subnet and router
+
+    **Steps:**
+
+    #. Start Openstack workload generation
+    #. Reset one node from Galera cluster
+    #. Check that Galera cluster still operational but without rebooted node
+    #. Wait for Galera cluster update after node availability
+    #. Check cluster state and size
+    #. Create server to check cluster operability
+
+    **Teardown:**
+
+    #. Stop Openstack workload generation
+    #. Delete server
+    #. Delete network, subnet and router
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    generate_os_workload(config.OS_LOAD_GENERATOR)
+    nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    node_to_reboot = os_faults_steps.get_node(fqdns=[nodes.hosts[0].fqdn])
+    other_node_fqdns = [host.fqdn for host in nodes.hosts[1:]]
+    other_nodes = os_faults_steps.get_nodes(fqdns=other_node_fqdns)
+
+    os_faults_steps.reset_nodes(node_to_reboot)
+    os_faults_steps.check_galera_cluster_state(member_nodes=other_nodes)
+
+    time.sleep(config.GALERA_CLUSTER_UP_TIMEOUT)
+
+    os_faults_steps.check_galera_cluster_state(member_nodes=nodes)
+    server_steps.create_servers(image=cirros_image,
+                                flavor=flavor,
+                                networks=[net_subnet_router[0]],
+                                username=config.CIRROS_USERNAME,
+                                password=config.CIRROS_PASSWORD)
