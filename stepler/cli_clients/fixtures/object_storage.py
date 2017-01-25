@@ -1,7 +1,7 @@
 """
-----------------
-CLI client steps
-----------------
+----------------------------------
+Object Storage CLI client fixtures
+----------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,22 +17,24 @@ CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .baremetal import *  # noqa
-from .cinder import *  # noqa
-from .glance import *  # noqa
-from .heat import *  # noqa
-from .neutron import *  # noqa
-from .nova import *  # noqa
-from .object_storage import * #noqa
-from .openstack import *  # noqa
+import pytest
+
+from stepler.cli_clients import steps
 
 __all__ = [
-    'CliCinderSteps',
-    'CliGlanceSteps',
-    'CliHeatSteps',
-    'CliIronicSteps',
-    'CliNovaSteps',
-    'CliOpenstackSteps',
-    'CliNeutronSteps',
-    'CliSwiftSteps',
+    'cli_swift_steps',
 ]
+
+
+@pytest.fixture
+def cli_swift_steps(remote_executor):
+    """Function fixture to object storage CLI steps.
+
+    Args:
+        remote_executor (callable): function to execute command on
+            controller nodes
+
+    Returns:
+        CliSwiftSteps: instantiated object storage CLI steps.
+    """
+    return steps.CliSwiftSteps(remote_executor)

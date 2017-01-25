@@ -24,6 +24,7 @@ from .glance import *  # noqa
 from .heat import *  # noqa
 from .neutron import *  # noqa
 from .nova import *  # noqa
+from .object_storage import * #noqa
 from .openstack import *  # noqa
 
 __all__ = [
@@ -43,4 +44,6 @@ __all__ = [
     'cli_openstack_steps',
 
     'cli_neutron_steps',
+
+    'cli_swift_steps',
 ]
