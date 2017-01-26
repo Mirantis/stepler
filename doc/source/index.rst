@@ -123,3 +123,23 @@ Deep to structure
    os_faults
    cli_clients
    third_party
+
+-------
+Plugins
+-------
+
+If you want to have own tests repository but use stepler fixtures and steps,
+you may orginize own repository as stepler plugin, using stepler as required
+library. In order to use stepler follow next steps:
+
+* Inside ``requirements.txt`` file add ``git+git://github.com/Mirantis/stepler.git``.
+* In root directory of project put ``conftest.py`` file and add next code:
+
+.. code:: python
+
+   from stepler.conftest import *  # all shared stepler fixtures
+   from stepler.conftest import __all__   # to follow pythonic and stepler code style
+   from stepler.conftest import pytest_plugins  # if want to use stepler pytest plugins
+
+If after previous steps you have problems with stepler usage, please report
+`a bug <https://bugs.launchpad.net/stepler>`_.
