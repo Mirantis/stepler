@@ -784,7 +784,7 @@ def test_manually_rescheduling_dhcp_agent(network,
 @pytest.mark.idempotent_id('1ea3a2e0-f46f-4d10-b37f-27631bb8a1e2')
 @pytest.mark.parametrize(
     'change_neutron_quota',
-    [dict(network=50, router=50, subnet=50, port=150)],
+    [dict(network=50, router=50, subnet=50, port=200)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_nets_count_for_agents_nearly_equals(
@@ -832,7 +832,7 @@ def test_check_nets_count_for_agents_nearly_equals(
 @pytest.mark.idempotent_id('3952df20-88df-4755-b6c6-3baad7686ec2')
 @pytest.mark.parametrize(
     'change_neutron_quota',
-    [dict(network=50, router=50, subnet=50, port=150)],
+    [dict(network=50, router=50, subnet=50, port=200)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_port_binding_after_node_restart(
@@ -907,7 +907,7 @@ def test_check_port_binding_after_node_restart(
 @pytest.mark.idempotent_id('5bc6c902-961a-4bd4-9fd4-0471dddd6f1c')
 @pytest.mark.parametrize(
     'change_neutron_quota',
-    [dict(network=50, router=50, subnet=50, port=150)],
+    [dict(network=50, router=50, subnet=50, port=200)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_dhcp_agents_for_net_after_restart(
@@ -979,7 +979,7 @@ def test_check_dhcp_agents_for_net_after_restart(
 @pytest.mark.idempotent_id('6890121c-73b6-42e5-b358-ed7037b36184')
 @pytest.mark.parametrize(
     'change_neutron_quota',
-    [dict(network=50, router=50, subnet=50, port=150)],
+    [dict(network=50, router=50, subnet=50, port=200)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_check_tap_interfaces_for_net_after_restart(
@@ -1058,7 +1058,7 @@ def test_check_tap_interfaces_for_net_after_restart(
 @pytest.mark.idempotent_id('ce6dcbbe-583e-495e-b41a-084ccc8dff94')
 @pytest.mark.parametrize(
     'change_neutron_quota',
-    [dict(network=50, router=50, subnet=50, port=150)],
+    [dict(network=50, router=50, subnet=50, port=200)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 def test_ban_two_dhcp_and_two_l3_agents(router,

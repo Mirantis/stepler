@@ -1305,7 +1305,7 @@ def test_check_router_update_notification_for_l3_agents(
 @pytest.mark.idempotent_id('11703a9c-2620-49c7-b834-0bffbed975d6')
 @pytest.mark.parametrize(
     'change_neutron_quota', [dict(
-        network=50, router=50, subnet=50, port=150)],
+        network=50, router=50, subnet=50, port=200)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
 @pytest.mark.parametrize('flavor_name', [config.FLAVOR_MICRO])
