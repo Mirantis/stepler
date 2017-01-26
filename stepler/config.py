@@ -557,3 +557,10 @@ NOVA_SERVICES_UP_TIMEOUT = 5 * 60
 NOVA_TIME_AFTER_SERVICES_UP = 30
 NETWORK_OUTAGE_TIME = 5 * 60
 TIME_BETWEEN_CLUSTER_RESTART = 5 * 60
+
+# Commands to create and remove file
+CREATE_FILE_CMD = 'fallocate -l {size}K {file_path}'
+REMOVE_FILE_CMD = 'rm -f {file_path}'
+
+# Galera cluster
+GALERA_CLUSTER_DOWN_TIMEOUT = 2 * 60
