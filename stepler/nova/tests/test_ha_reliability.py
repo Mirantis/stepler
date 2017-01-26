@@ -22,6 +22,7 @@ import pytest
 
 from stepler import config
 from stepler.third_party.supported_platforms import platform
+from stepler.third_party import utils
 
 
 pytestmark = pytest.mark.destructive
@@ -419,3 +420,58 @@ def test_reboot_vip_controller(cirros_image,
                                         nodes=rabbit_nodes)
     os_faults_steps.check_service_state(service_name=config.MYSQL,
                                         nodes=mysql_nodes)
+
+
+@platform.mk2x
+@pytest.mark.idempotent_id('e85c3844-e4ce-48d4-8dd6-0605e65001fb')
+def test_fill_root_filesystem_on_vip_controller(server,
+                                                os_faults_steps,
+                                                server_steps,
+                                                get_server_steps):
+    """**Scenario:** Check functionality after reboot of controller with VIP
+
+    This test has two modes: with and without Openstack workload
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network, subnet and router
+    #. Create server
+
+    **Steps:**
+
+    #. Find controller holding VIP
+    #. Check basic openstack operation: request server list
+    #. Allocate all free space on controller
+    #. Check that openstack operations failed with GatewayTimeout exception
+    #. Free up disk space on controller
+    #. Check basic openstack operation: request server list
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    file_dir = '/'
+    file_name = next(utils.generate_ids())
+    vip_controller = os_faults_steps.get_nodes_by_cmd(
+        config.TCP_VIP_CONTROLLER_CMD)
+    vip_controller_ip = vip_controller.get_ips()[0]
+
+    server_steps.get_servers()
+
+    free_space = os_faults_steps.get_free_space(vip_controller, file_dir)
+    cmd = 'fallocate -l {}K {}{}'.format(free_space[vip_controller_ip],
+                                         file_dir, file_name)
+    os_faults_steps.execute_cmd(vip_controller, cmd)
+    server_steps.check_servers_actions_not_available(get_server_steps)
+
+    cmd = "rm -f {}{}".format(file_dir, file_name)
+    os_faults_steps.execute_cmd(vip_controller, cmd)
+    server_steps = get_server_steps()
+    server_steps.get_servers()
