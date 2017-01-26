@@ -91,3 +91,17 @@ class CliSwiftSteps(base.BaseCliSteps):
         containers_list = self.swift_list()
         assert_that(containers_list, is_not(empty()))
         assert_that(container_name, is_in(containers_list))
+
+    @steps_checker.step
+    def check_containers_list_doesnt_contain(self, container_name):
+        """Step to check that container is in container list.
+
+        Args:
+            container_name (str): object storage container
+
+        Raises:
+            AssertionError: check failed if container is not present in
+            containers list
+        """
+        containers_list = self.swift_list()
+        assert_that(container_name, is_not(is_in(containers_list)))
