@@ -69,11 +69,15 @@ class NovaServiceSteps(base.BaseSteps):
         return service_data
 
     @steps_checker.step
-    def check_services_up(self, timeout=0):
+    def check_services_up(self, host_names=None, timeout=0):
         """Step to check that nova services are up.
 
+        If host_names is specified service states atr checked only on
+        these hosts.
+
         Args:
-            timeout (int): seconds to wait result of check
+            host_names (list, optional): list of host names
+            timeout (int, optional): seconds to wait result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
@@ -83,7 +87,11 @@ class NovaServiceSteps(base.BaseSteps):
             service_data = self._get_service_data(services)
             expected_service_data = []
             for data in service_data:
-                expected_data = [data[0], data[1], 'enabled', 'up']
+                binary, host_name = data[0:2]
+                if host_names and host_name not in host_names:
+                    expected_data = data
+                else:
+                    expected_data = [binary, host_name, 'enabled', 'up']
                 expected_service_data.append(expected_data)
             return waiter.expect_that(service_data,
                                       equal_to(expected_service_data))
