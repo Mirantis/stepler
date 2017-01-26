@@ -38,4 +38,23 @@ def test_containers_list_contains_created_container(cli_swift_steps,
     """
     container_name = next(utils.generate_ids())
     container_steps.create(name=container_name)
-    cli_swift_steps.check_containers_list_contains(container_name)
+    cli_swift_steps.check_container_presence(container_name)
+
+
+@pytest.mark.idempotent_id('f715705b-bfe6-4ea6-971f-27833168f53e')
+def test_containers_list_doesnt_contain_deleted_container(cli_swift_steps,
+                                                          container_steps):
+    """**Scenario:** Check container list doesn't contain deleted container.
+
+    **Steps:**
+
+    #. Create container via Swift API
+    #. Delete container using Swift API
+    #. Check that deleted container does not exist in list of containers
+    via CLI
+    """
+    container_name = next(utils.generate_ids('test'))
+    container_steps.create(name=container_name)
+    container_steps.delete(name=container_name)
+    cli_swift_steps.check_container_presence(
+        container_name=container_name, must_present=False)
