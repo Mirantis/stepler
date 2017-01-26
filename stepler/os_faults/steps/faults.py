@@ -1810,3 +1810,23 @@ class OsFaultsSteps(base.BaseSteps):
         assert_that(len(ip_addresses), is_(len(fqdns)))
 
         return cluster_nodes, fqdns, ip_addresses
+
+    @steps_checker.step
+    def get_free_space(self, node, path, check=True):
+        """Step to get free space in bytes.
+
+        Args:
+            node (NodeCollection): node to check free space
+            path (str): path to check space
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            AnsibleExecutionException: if command execution
+                failed in case of check=True
+
+        Returns:
+            int: free space on path in bytes
+        """
+        cmd = "df -hk {0} | awk 'NR==2 {{print $4}}'".format(path)
+        results = self.execute_cmd(node, cmd, check=check)
+        return results[0].payload['stdout']

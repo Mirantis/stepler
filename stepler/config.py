@@ -571,6 +571,10 @@ NOVA_TIME_AFTER_SERVICES_UP = 30
 NETWORK_OUTAGE_TIME = 5 * 60
 TIME_BETWEEN_CLUSTER_RESTART = 5 * 60
 
+# Commands to create and remove file
+CREATE_FILE_CMD = 'fallocate -l {size}K {file_path}'
+REMOVE_FILE_CMD = 'rm -f {file_path}'
+
 # Galera cluster
 GALERA_CLUSTER_STATUS_CHECK_CMD = (
     "mysql -u root -p{0} ".format(PASSWORD) +
@@ -582,5 +586,6 @@ GALERA_CLUSTER_STATUS_PARAMS = {'wsrep_local_state_comment': 'Synced',
 GALERA_CLUSTER_SIZE_PARAM = "wsrep_cluster_size"
 GALERA_CLUSTER_MEMBERS_PARAM = "wsrep_incoming_addresses"
 GALERA_CLUSTER_UP_TIMEOUT = 3 * 60
+GALERA_CLUSTER_DOWN_TIMEOUT = 2 * 60
 
 MYSQL_PORT = 3306

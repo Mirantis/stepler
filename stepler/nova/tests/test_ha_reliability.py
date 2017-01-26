@@ -22,6 +22,7 @@ import pytest
 
 from stepler import config
 from stepler.third_party.supported_platforms import platform
+from stepler.third_party import utils
 
 
 pytestmark = pytest.mark.destructive
@@ -775,3 +776,58 @@ def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
     server_steps.create_servers(image=cirros_image,
                                 flavor=flavor,
                                 networks=[net_subnet_router[0]])
+
+
+@platform.mk2x
+@pytest.mark.idempotent_id('e85c3844-e4ce-48d4-8dd6-0605e65001fb')
+def test_fill_root_filesystem_on_vip_controller(server,
+                                                os_faults_steps,
+                                                server_steps,
+                                                get_server_steps):
+    """**Scenario:** Check Galera cluster after free up space on controller.
+
+    This test checks OpenStack operations fail in case of no free space on
+    controller holding VIP. Also it checks cluster is in working state after
+    space has been freed.
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create flavor
+    #. Create security group
+    #. Create network, subnet and router
+    #. Create server
+
+    **Steps:**
+
+    #. Find controller holding VIP
+    #. Check basic openstack operation: request server list
+    #. Allocate all free space on controller
+    #. Check that openstack operations failed with GatewayTimeout exception
+    #. Free up disk space on controller
+    #. Check basic openstack operation: request server list
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete cirros image
+    """
+    file_dir = '/'
+    file_path = file_dir + next(utils.generate_ids())
+    vip_controller = os_faults_steps.get_nodes_by_cmd(
+        config.TCP_VIP_CONTROLLER_CMD)
+
+    server_steps.get_servers()
+
+    free_space = os_faults_steps.get_free_space(vip_controller, file_dir)
+    cmd = config.CREATE_FILE_CMD.format(size=free_space, file_path=file_path)
+    os_faults_steps.execute_cmd(vip_controller, cmd)
+    server_steps.check_servers_actions_not_available(get_server_steps)
+
+    cmd = config.REMOVE_FILE_CMD.format(file_path=file_path)
+    os_faults_steps.execute_cmd(vip_controller, cmd)
+    server_steps = get_server_steps()
+    server_steps.get_servers()
