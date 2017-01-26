@@ -60,16 +60,35 @@ class CliSwiftSteps(base.BaseCliSteps):
         return stdout
 
     @steps_checker.step
-    def check_containers_list_contains(self, container_name):
+    def delete(self, container_name, check=True):
+        """Step to delete swift container.
+
+        Args:
+            container_name (str): object storage container
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'swift delete '
+        cmd += moves.shlex_quote(container_name)
+        self.execute_command(cmd, check=check)
+
+    @steps_checker.step
+    def check_container_presence(self, container_name, must_present=True):
         """Step to check that container is in container list.
 
         Args:
             container_name (str): object storage container
+            must_present (bool): flag whether container should present or not
 
         Raises:
-            AssertionError: check failed if container is not present in
+            AssertionError: check failed if container exists/doesn't exist in
             containers list
         """
         containers_list = self.list()
-        assert_that(containers_list, is_not(empty()))
-        assert_that(container_name, is_in(containers_list))
+        if must_present:
+            assert_that(containers_list, is_not(empty()))
+            assert_that(container_name, is_in(containers_list))
+        else:
+            assert_that(container_name, is_not(is_in(containers_list)))
