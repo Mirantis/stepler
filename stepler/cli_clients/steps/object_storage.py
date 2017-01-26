@@ -17,7 +17,7 @@ Object Storage CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, is_in, is_not  # noqa H301
+from hamcrest import assert_that, empty, equal_to, is_in, is_not  # noqa H301
 from six import moves
 
 from stepler.cli_clients.steps import base
@@ -43,18 +43,45 @@ class CliSwiftSteps(base.BaseCliSteps):
         self.execute_command(cmd, check=check)
 
     @steps_checker.step
-    def list(self, check=True):
+    def list(self, container_name=None, check=True):
         """Step to get swift list.
 
         Args:
+            container_name (str): object storage container
             check (bool): flag whether to check result or not
 
         Raises:
             AnsibleExecutionException: if command execution failed
         """
-        cmd = 'swift list'
+        cmd = 'swift list '
+        if container_name:
+            cmd += moves.shlex_quote(container_name)
         exit_code, stdout, stderr = self.execute_command(cmd, check=check)
         return stdout
+
+    @steps_checker.step
+    def upload(self, container_name, object_name, check=True):
+        """Step to upload object to container.
+
+        Args:
+            container_name (str): object storage container
+            object_name (str): name of object to upload
+            check (bool): flag whether to check result or not
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        cmd = 'swift upload '
+        cmd += '{} {}'.format(moves.shlex_quote(container_name),
+                              moves.shlex_quote(object_name))
+        cmd_to_create_object = 'dd if=/dev/zero of={} bs=1M count=1'.format(
+            object_name)
+        self.execute_command(cmd_to_create_object)
+        exit_code, stdout, stderr = self.execute_command(cmd, check=check)
+        if check:
+            assert_that(object_name, equal_to(stdout))
+        cmd_to_delete_object = 'rm {}'.format(object_name)
+        self.execute_command(cmd_to_delete_object)
 
     @steps_checker.step
     def delete(self, container_name, check=True):
@@ -89,3 +116,18 @@ class CliSwiftSteps(base.BaseCliSteps):
             assert_that(container_name, is_in(containers_list))
         else:
             assert_that(container_name, is_not(is_in(containers_list)))
+
+    @steps_checker.step
+    def check_object_in_container(self, container_name, object_name):
+        """Step to check if object presents into container objects list.
+
+        Args:
+            container_name (str): object storage container
+            object_name (str): name of object to upload
+
+        Raises:
+            AssertionError: check failed if object does not present in
+            container objects list
+        """
+        objects_in_container = self.list(container_name=container_name)
+        assert_that(object_name, is_in(objects_in_container))
