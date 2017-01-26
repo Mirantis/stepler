@@ -39,3 +39,49 @@ def test_containers_list_contains_created_container(cli_swift_steps,
     container_name = next(utils.generate_ids())
     container_steps.create(name=container_name)
     cli_swift_steps.check_containers_list_contains(container_name)
+
+
+@pytest.mark.idempotent_id('0f0482b3-0b87-4e47-8ef6-de4bb51d8c04')
+def test_upload_object_cli(cli_swift_steps, container_steps):
+    """**Scenario:** Check object uploads to container successfully.
+
+    **Steps:**
+
+    #. Create container via Swift API
+    #. Create object to upload to container
+    #. Upload this object to container using CLI
+
+    **Teardown:**
+
+    #. Delete container
+    #. Delete object
+    """
+    container_name, object_name = utils.generate_ids(count=2)
+    container_steps.create(name=container_name)
+    cli_swift_steps.upload(container_name=container_name,
+                           object_name=object_name)
+
+
+@pytest.mark.idempotent_id('2da956c3-8715-4ba0-ae33-8e6d524ce9fe')
+def test_upload_object_to_container(cli_swift_steps, container_steps):
+    """**Scenario:** Check object uploaded to container successfully.
+
+    **Steps:**
+
+    #. Create container via Swift API
+    #. Create object to upload to container
+    #. Upload this object to container using API
+    #. Check this object exists inside the container
+
+    **Teardown:**
+
+    #. Delete container
+    #. Delete this object
+    """
+    container_name, object_name, content = utils.generate_ids(count=3)
+    container_steps.create(name=container_name)
+    container_steps.put_object(container_name=container_name,
+                               object_name=object_name,
+                               content=content)
+    cli_swift_steps.check_object_in_container(container_name=container_name,
+                                              object_name=object_name)
