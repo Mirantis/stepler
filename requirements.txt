@@ -23,6 +23,7 @@ prettytable==0.7.2
 scapy==2.3.3
 os-faults>=0.1.8,<0.2.0
 pytest-timeout==1.2.0
+pika==0.10.0
 
 # ui testing
 attrdict==2.0.0

@@ -28,6 +28,7 @@ from .network_workload import *  # noqa
 from .nova import *  # noqa
 from .nova_volumes import *  # noqa
 from .os_workload import *  # noqa
+from .rabbitmq import *  # noqa
 from .security_groups import *  # noqa
 from .servers import *  # noqa
 from .services import *  # noqa
@@ -72,6 +73,9 @@ __all__ = sorted([  # sort for documentation
     'small_nova_reclaim_instance_interval',
 
     'generate_os_workload',
+
+    'rabbitmq_steps',
+    'get_rabbitmq_cluster_data',
 
     'create_security_group',
     'security_group',

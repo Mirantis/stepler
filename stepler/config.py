@@ -531,6 +531,11 @@ OS_LOAD_SCRIPTS_DIR = os.path.join(os.path.dirname(__file__),
 OS_LOAD_GENERATOR = 'os_load_generator.py'
 DELAY_AFTER_OS_WORKLOAD_START = 15
 
+# RabbitMQ
+RABBITMQ_CONFIG = '/etc/rabbitmq/rabbitmq.config'
+RABBITMQ_CHECK_CLUSTER_CMD = 'rabbitmqctl cluster_status'
+TIME_AFTER_RABBITMQ_STOP = 3 * 60
+
 # Cloud-specific variables
 
 TCP_CLOUD = 'tcpcloud'
