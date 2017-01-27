@@ -26,6 +26,7 @@ from stepler import config
 
 __all__ = [
     'skip_test',
+    'predicates',
 ]
 
 

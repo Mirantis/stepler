@@ -37,6 +37,7 @@ __all__ = sorted([  # sort for documentation
     'report_dir',
 
     'skip_test',
+    'predicates',
 
     'credentials',
     'create_user_with_project',
