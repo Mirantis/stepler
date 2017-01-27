@@ -18,12 +18,14 @@ Openstack fixtures
 # limitations under the License.
 
 import attrdict
+from keystoneauth1 import exceptions
 from keystoneauth1 import identity
 from keystoneauth1 import session as _session
 import pytest
 from requests.packages import urllib3
 
 from stepler import config
+from stepler.third_party import waiter
 
 __all__ = [
     'get_session',
@@ -79,6 +81,14 @@ def get_session(credentials):
     """
     assert config.AUTH_URL, "Environment variable OS_AUTH_URL is not defined"
 
+    def _check_keystone_available(session):
+        try:
+            session.get_token()
+            is_available = True
+        except exceptions.InternalServerError:
+            is_available = False
+        return waiter.expect_that(is_available)
+
     def _get_session(auth_url=None,
                      username=None,
                      password=None,
@@ -119,9 +129,14 @@ def get_session(credentials):
 
         if cert is None:
             urllib3.disable_warnings()
-            return _session.Session(auth=auth, cert=cert, verify=False)
+            session = _session.Session(auth=auth, cert=cert, verify=False)
         else:
-            return _session.Session(auth=auth, cert=cert)
+            session = _session.Session(auth=auth, cert=cert)
+
+        waiter.wait(_check_keystone_available,
+                    args=(session,),
+                    timeout_seconds=config.KEYSTONE_AVAILABILITY_TIMEOUT)
+        return session
 
     return _get_session
 
