@@ -32,8 +32,17 @@ __all__ = [
 PREDICATES = 'predicates'
 
 
+@pytest.fixture
+def predicates(request):
+    """Returns instance of predicates.
+
+    Useful for extending Predicatess class in other projects.
+    """
+    return Predicates(request)
+
+
 @pytest.fixture(autouse=True)
-def skip_test(request):
+def skip_test(request, predicates):
     """Autouse function fixture to skip test by predicate.
 
     Usage:
@@ -52,8 +61,6 @@ def skip_test(request):
     marker = request.node.get_marker('requires')
     if not marker:
         return
-
-    predicates = Predicates(request)
 
     for requires in marker.args:
 
