@@ -558,3 +558,17 @@ NOVA_SERVICES_UP_TIMEOUT = 5 * 60
 NOVA_TIME_AFTER_SERVICES_UP = 30
 NETWORK_OUTAGE_TIME = 5 * 60
 TIME_BETWEEN_CLUSTER_RESTART = 5 * 60
+
+# Galera cluster
+GALERA_CLUSTER_STATUS_CHECK_CMD = (
+    "mysql -u root -p{0} ".format(PASSWORD) +
+    "-e \"show status like 'wsrep%';\"")
+GALERA_CLUSTER_START_CMD = "/usr/bin/mysqld_safe --wsrep-new-cluster &"
+GALERA_CLUSTER_STATUS_PARAMS = {'wsrep_local_state_comment': 'Synced',
+                                'wsrep_evs_state': 'OPERATIONAL',
+                                'wsrep_cluster_status': 'Primary'}
+GALERA_CLUSTER_SIZE_PARAM = "wsrep_cluster_size"
+GALERA_CLUSTER_MEMBERS_PARAM = "wsrep_incoming_addresses"
+GALERA_CLUSTER_UP_TIMEOUT = 3 * 60
+
+MYSQL_PORT = 3306
