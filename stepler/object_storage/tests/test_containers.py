@@ -116,3 +116,38 @@ def test_remove_object_from_container(container_steps):
     container_steps.check_object_presence(container_name=container_name,
                                           object_name=object_name,
                                           must_present=False)
+
+
+@pytest.mark.idempotent_id('8f5392a4-f427-4133-882b-80497692983a')
+def test_container_presents_in_list(container_steps):
+    """**Scenario:** Check that container presents into list of containers.
+
+    **Steps:**
+
+    #. Create new container
+    #. Check container exists in containers list
+
+    **Teardown:**
+
+    #. Delete container
+    """
+    container_name = next(utils.generate_ids())
+    container_steps.create(name=container_name)
+    container_steps.check_presence(name=container_name)
+
+
+@pytest.mark.idempotent_id('4a00ad6e-51d4-4b65-93ae-e2d198225b71')
+def test_container_does_not_present_in_list(container_steps):
+    """**Scenario**: Check container doesn't present into list of containers.
+
+    **Steps:**
+
+    #. Create new container
+    #. Remove container
+    #. Check container doesn't exist in containers list
+    """
+    container_name = next(utils.generate_ids())
+    container_steps.create(name=container_name)
+    container_steps.delete(name=container_name)
+    container_steps.check_presence(name=container_name,
+                                   must_present=False)
