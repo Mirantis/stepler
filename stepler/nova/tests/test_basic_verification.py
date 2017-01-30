@@ -227,7 +227,7 @@ def test_delete_instance_during_resizing(cirros_image,
             server,
             [config.STATUS_RESIZE, config.STATUS_VERIFY_RESIZE],
             timeout=config.VERIFY_RESIZE_TIMEOUT)
-        server_steps.delete_servers([server], soft=True)
+        server_steps.delete_servers([server])
         os_faults_steps.check_no_nova_server_artifacts(server)
 
 
