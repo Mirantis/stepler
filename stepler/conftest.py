@@ -30,6 +30,11 @@ from stepler.nova.conftest import *  # noqa
 from stepler.os_faults.conftest import *  # noqa
 
 __all__ = sorted([  # sort for documentation
+    'get_role_steps',
+    'get_user_steps',
+    'get_keystone_client',
+    'predicates',
+    'get_project_steps',
     'admin_ssh_key_path',
     'auth_url',
     'ip_by_host',
