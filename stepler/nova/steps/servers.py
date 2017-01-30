@@ -136,18 +136,18 @@ class ServerSteps(base.BaseSteps):
         return servers
 
     @steps_checker.step
-    def delete_servers(self, servers, soft=False, check=True):
+    def delete_servers(self, servers, force=False, check=True):
         """Step to delete servers.
 
         Args:
             servers (obj): nova servers' list
-            soft (bool, optional): flag whetever to run soft or hard deleting
+            force (bool, optional): flag whetever to run force or soft deleting
             check (bool, optional): flag whether to check step or not
         """
-        if soft:
-            self._soft_delete_servers(servers, check)
-        else:
+        if force:
             self._hard_delete_servers(servers, check)
+        else:
+            self._soft_delete_servers(servers, check)
 
     @steps_checker.step
     def get_servers(self, name_prefix=None, check=True):
@@ -1418,11 +1418,9 @@ class ServerSteps(base.BaseSteps):
 
         if check:
             for server in servers:
-                self.check_server_status(
-                    server,
-                    expected_statuses=[config.STATUS_SOFT_DELETED],
-                    transit_statuses=(config.STATUS_ACTIVE,),
-                    timeout=config.SOFT_DELETED_TIMEOUT)
+                self.check_server_presence(
+                    server, present=False,
+                    timeout=config.SERVER_DELETE_TIMEOUT)
 
     def _hard_delete_servers(self, servers, check):
         for server in servers:

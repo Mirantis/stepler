@@ -471,7 +471,9 @@ def neutron_conntrack_2_projects_resources(
             username=config.CIRROS_USERNAME,
             password=config.CIRROS_PASSWORD)[0]
         request.addfinalizer(
-            functools.partial(server_steps.delete_servers, [server1]))
+            functools.partial(server_steps.delete_servers,
+                              [server1],
+                              force=True))
         servers.append(server1)
 
         server1_port = port_steps.get_port(
@@ -492,7 +494,9 @@ def neutron_conntrack_2_projects_resources(
             username=config.CIRROS_USERNAME,
             password=config.CIRROS_PASSWORD)[0]
         request.addfinalizer(
-            functools.partial(server_steps.delete_servers, [server2]))
+            functools.partial(server_steps.delete_servers,
+                              [server2],
+                              force=True))
         servers.append(server2)
         project_resources.servers = servers
         resources.append(project_resources)
@@ -559,7 +563,9 @@ def create_max_networks_with_instances(cirros_image,
                 net_list.append(network)
 
                 if len(servers) >= max_instances:
-                    server_steps.delete_servers(servers)
+                    # We should physically delete server so that
+                    # we could create another one later
+                    server_steps.delete_servers(servers, force=True)
                     servers = []
 
                 server = server_steps.create_servers(
@@ -652,7 +658,9 @@ def neutron_2_servers_2_nets_diff_projects(request,
             username=config.CIRROS_USERNAME,
             password=config.CIRROS_PASSWORD)[0]
         request.addfinalizer(
-            functools.partial(server_steps.delete_servers, [server]))
+            functools.partial(server_steps.delete_servers,
+                              [server],
+                              force=True))
 
         # Attach floating ips to servers
         nova_floating_ip_steps = get_nova_floating_ip_steps(**credentials)
@@ -841,7 +849,9 @@ def neutron_2_servers_2_projects_with_shared_net(request,
             username=config.CIRROS_USERNAME,
             password=config.CIRROS_PASSWORD)[0]
         request.addfinalizer(
-            functools.partial(server_steps.delete_servers, [server]))
+            functools.partial(server_steps.delete_servers,
+                              [server],
+                              force=True))
         # Add floating ips to servers
         nova_floating_ip_steps = get_nova_floating_ip_steps(
             **resources[i].credentials)

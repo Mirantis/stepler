@@ -123,7 +123,7 @@ def test_delete_server_with_precreated_port(
     servers = server_steps.create_servers(image=cirros_image,
                                           flavor=flavor,
                                           ports=[port])
-    server_steps.delete_servers(servers)
+    server_steps.delete_servers(servers, force=True)
     port_steps.check_presence(port)
 
 
@@ -227,7 +227,7 @@ def test_delete_instance_during_resizing(cirros_image,
             server,
             [config.STATUS_RESIZE, config.STATUS_VERIFY_RESIZE],
             timeout=config.VERIFY_RESIZE_TIMEOUT)
-        server_steps.delete_servers([server], soft=True)
+        server_steps.delete_servers([server])
         os_faults_steps.check_no_nova_server_artifacts(server)
 
 

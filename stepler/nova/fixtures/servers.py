@@ -77,7 +77,7 @@ def unexpected_servers_cleanup():
             servers = [server for server in servers
                        if server not in SKIPPED_SERVERS]
         if servers:
-            server_steps.delete_servers(servers)
+            server_steps.delete_servers(servers, force=True)
 
     yield _servers_cleanup
 
@@ -140,7 +140,7 @@ def servers_cleanup(uncleanable, get_server_steps):
 
                 deleting_servers.append(server)
 
-    server_steps.delete_servers(deleting_servers)
+    server_steps.delete_servers(deleting_servers, force=True)
 
 
 @pytest.fixture
@@ -172,7 +172,7 @@ def create_servers_context(server_steps):
         servers = server_steps.create_servers(server_names=server_names,
                                               *args, **kwgs)
         yield servers
-        server_steps.delete_servers(servers)
+        server_steps.delete_servers(servers, force=True)
 
     return _create_servers_context
 

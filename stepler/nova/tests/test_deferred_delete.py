@@ -102,7 +102,13 @@ def test_restore_soft_deleted_server(
 
     attach_volume_to_server(server_1, volume)
 
-    server_steps.delete_servers([server_1], soft=True)
+    server_steps.delete_servers([server_1], check=False)
+    server_steps.check_server_status(
+        server_1,
+        expected_statuses=[config.STATUS_SOFT_DELETED],
+        transit_statuses=(config.STATUS_ACTIVE,),
+        timeout=config.SOFT_DELETED_TIMEOUT)
+
     server_steps.restore_server(server_1)
 
     server_steps.check_ping_to_server_floating(
@@ -187,7 +193,12 @@ def test_server_deleted_after_reclaim_timeout(
         username=config.CIRROS_USERNAME)[0]
 
     attach_volume_to_server(server_1, volume)
-    server_steps.delete_servers([server_1], soft=True)
+    server_steps.delete_servers([server_1], check=False)
+    server_steps.check_server_status(
+        server_1,
+        expected_statuses=[config.STATUS_SOFT_DELETED],
+        transit_statuses=(config.STATUS_ACTIVE,),
+        timeout=config.SOFT_DELETED_TIMEOUT)
 
     # TODO(ssokolov) workaround for bug
     # https://bugs.launchpad.net/nova/+bug/1463856
@@ -277,7 +288,13 @@ def test_force_delete_server_before_deferred_cleanup(
 
         attach_volume_to_server(server_1, volume)
 
-        server_steps.delete_servers([server_1], soft=True)
+        server_steps.delete_servers([server_1], check=False)
+        server_steps.check_server_status(
+            server_1,
+            expected_statuses=[config.STATUS_SOFT_DELETED],
+            transit_statuses=(config.STATUS_ACTIVE,),
+            timeout=config.SOFT_DELETED_TIMEOUT)
+
         volume_steps.check_volume_status(volume,
                                          [config.STATUS_INUSE])
 
