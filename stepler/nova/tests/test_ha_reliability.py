@@ -569,6 +569,129 @@ def test_stop_rabbitmq(cirros_image,
 
 
 @platform.mk2x
+@pytest.mark.idempotent_id('d445284f-4029-489e-b3d8-2495a4092d28',
+                           os_workload=False)
+@pytest.mark.idempotent_id('238e32a2-9d85-45fb-8a6b-1b2b26d74fcc',
+                           os_workload=True)
+@pytest.mark.parametrize('os_workload', [False, True],
+                         ids=['without workload', 'with workload'])
+def test_unplug_network(cirros_image,
+                        keypair,
+                        flavor,
+                        security_group,
+                        net_subnet_router,
+                        nova_floating_ip,
+                        attach_volume_to_server,
+                        volume_steps,
+                        server_steps,
+                        nova_service_steps,
+                        host_steps,
+                        os_faults_steps,
+                        generate_os_workload,
+                        os_workload):
+    """**Scenario:** Check functionality after network unpluging on mysql node
+
+    This test has two modes: with and without Openstack workload
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create keypair
+    #. Create flavor
+    #. Create security group
+    #. Create network, subnet and router
+    #. Create floating IP
+
+    **Steps:**
+
+    #. Start Openstack workload generation (optional)
+    #. Check Galera state
+    #. Block input/output on MySQL node (not VIP controller) and schedule
+    #   its unblock in 4 minutes
+    #. Wait for nova services work on available nodes
+    #. Check Galera state and data replication on available nodes
+    #. Create server with volume
+    #. Attach floating IP
+    #. Check connectivity from server
+    #. Wait for unblocking input/output on MySQL node
+    #. Wait for nova services work on all nodes
+    #. Check Galera state
+
+    **Teardown:**
+
+    #. Stop Openstack workload generation (optional)
+    #. Delete server
+    #. Delete volume
+    #. Delete floating IP
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete flavor
+    #. Delete keypair
+    #. Delete cirros image
+    """
+    if os_workload:
+        generate_os_workload(config.OS_LOAD_GENERATOR)
+
+    mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
+    nova_nodes = os_faults_steps.get_nodes_with_any_service(
+        service_names=[config.NOVA_API, config.NOVA_COMPUTE])
+
+    vip_controller = os_faults_steps.get_nodes_by_cmd(
+        config.TCP_VIP_CONTROLLER_CMD)
+    mysql_nodes_without_VIP = mysql_nodes - vip_controller
+    disabled_node = os_faults_steps.get_node(
+        fqdns=[mysql_nodes_without_VIP.hosts[0].fqdn])
+
+    enabled_mysql_nodes = mysql_nodes - disabled_node
+    enabled_nova_nodes = nova_nodes - disabled_node
+    enabled_host_names = [host_steps.get_host(fqdn=node.fqdn).host_name
+                          for node in enabled_nova_nodes]
+
+    os_faults_steps.block_iptables_input_output(
+        disabled_node, duration=config.TIME_NETWORK_DOWN)
+    network_up_time = time.time() + config.TIME_NETWORK_DOWN
+
+    nova_service_steps.check_services_up(
+        host_names=enabled_host_names,
+        timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
+
+    os_faults_steps.check_galera_cluster_state(
+        member_nodes=enabled_mysql_nodes)
+    os_faults_steps.check_galera_data_replication(enabled_mysql_nodes)
+
+    server = server_steps.create_servers(image=cirros_image,
+                                         flavor=flavor,
+                                         networks=[net_subnet_router[0]],
+                                         security_groups=[security_group],
+                                         username=config.CIRROS_USERNAME,
+                                         password=config.CIRROS_PASSWORD,
+                                         keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
+    attach_volume_to_server(server, volume)
+
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
+                                       server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
+
+    delay_before_network_up = network_up_time - time.time()
+    if delay_before_network_up > 0:
+        time.sleep(delay_before_network_up)
+
+    nova_service_steps.check_services_up(
+        timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
+
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
+
+@platform.mk2x
 @pytest.mark.idempotent_id('509fa960-c42c-40de-bbc5-61b59391b9c5',
                            stop_command=config.STOP_KEEPALIVED_CMD)
 @pytest.mark.idempotent_id('b18754ba-a0c4-4b58-9e7e-1000b0c32ae9',
