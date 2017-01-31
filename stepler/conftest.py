@@ -27,6 +27,7 @@ from stepler.heat.conftest import *  # noqa
 from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
 from stepler.nova.conftest import *  # noqa
+from stepler.object_storage.conftest import *  # noqa
 from stepler.os_faults.conftest import *  # noqa
 
 __all__ = sorted([  # sort for documentation
@@ -220,6 +221,9 @@ __all__ = sorted([  # sort for documentation
     'ironic_steps_v1',
     'api_ironic_steps_v1',
     'api_ironic_steps',
+
+    'container_steps',
+    'swift_client',
 ])
 
 _plugins = [
