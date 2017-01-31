@@ -66,7 +66,7 @@ Before launching you should export some openstack environment variables:
 * ``OS_PROJECT_NAME`` (default value ``'admin'``)
 * ``OS_USERNAME`` (default value ``'admin'``)
 * ``OS_PASSWORD`` (default value ``'password'``)
-* ``OS_AUTH_URL`` (keystone auth url should be defined explicitly:
+* ``OS_AUTH_URL`` (keystone auth url for **admin** actions should be defined explicitly:
   **v3** - ``http://keystone/url/v3``, **v2** - ``http://keystone/url/v2.0``)
 
 To get details look into ``stepler/config.py``

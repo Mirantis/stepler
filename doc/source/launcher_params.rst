@@ -8,6 +8,8 @@ Environment variables
 
 * ``OS_AUTH_URL`` - openstack keystone auth URL. Is required explicitly:
   **v3** - ``http://keystone/url/v3``, **v2** - ``http://keystone/url/v2.0``.
+  Tests assume **admin** access for cloud management. In practice it requires
+  **admin** auth URL usage.
 * ``OS_USERNAME`` - openstack user name. By default is ``admin``.
 * ``OS_PASSWORD`` - openstack user password. By default is ``password``.
 * ``OS_PROJECT_NAME`` - openstack project name. By default is ``admin``.
