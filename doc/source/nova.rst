@@ -30,7 +30,7 @@ Nova tests
 .. automodule:: stepler.nova.tests.test_metadata
    :members:
 
-.. automodule:: stepler.nova.tests.test_rebuild_negative
+.. automodule:: stepler.nova.tests.test_rebuild
    :members:
 
 .. automodule:: stepler.nova.tests.test_restart_all_services
