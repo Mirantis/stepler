@@ -1768,3 +1768,45 @@ class OsFaultsSteps(base.BaseSteps):
         if check:
             assert_that(ips, is_not(empty()))
         return sorted(ips)
+
+    @steps_checker.step
+    def get_rabbitmq_cluster_config_data(self, check=True):
+        """Step to get names, FQDNs and IP addresses of RabbitMQ servers.
+
+        IP addresses and other data are defined in RabbitMQ config files
+        (in standard Erlang config format)
+
+        Args:
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            tuple: (cluster_nodes, fqdns, ip_addresses)
+
+        Raises:
+            AssertionError: if unexpected format of config files
+        """
+        nodes = self.get_nodes(service_names=[config.RABBITMQ])
+        cmd = "egrep -w 'cluster_nodes|ip' {}".format(config.RABBITMQ_CONFIG)
+        results = self.execute_cmd(nodes, cmd, check=check)
+        cluster_nodes = []
+        ip_addresses = []
+        fqdns = []
+        for result in results:
+            for node in nodes:
+                if node.ip == result.host:
+                    fqdns.append(node.fqdn)
+                    break
+            stdout = result.payload['stdout']
+            # {cluster_nodes, {['rabbit@ctl01', 'rabbit@ctl02', ...], disc}} ->
+            # rabbit@ctl01', rabbit@ctl02', ...
+            # it's supposed that this line is identical on all nodes
+            cluster_nodes = re.findall(r'\'(\w+@\w+)\'', stdout)
+            # ex: {ip, "172.16.10.101" } -> 172.16.10.101
+            ip_address = re.findall(r'(\d+\.\d+\.\d+\.\d+)', stdout)[0]
+            ip_addresses.append(ip_address)
+
+        assert_that(cluster_nodes, is_not(empty()))
+        assert_that(len(cluster_nodes), is_(len(fqdns)))
+        assert_that(len(ip_addresses), is_(len(fqdns)))
+
+        return cluster_nodes, fqdns, ip_addresses
