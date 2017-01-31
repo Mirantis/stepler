@@ -158,6 +158,7 @@ STATUS_SHELVED_OFFLOADED = 'shelved_offloaded'
 STATUS_SHUTOFF = 'shutoff'
 STATUS_SOFT_DELETED = 'soft_deleted'
 STATUS_SUCCESS = 'success'
+STATUS_UNREACHABLE = 'UNREACHABLE'
 STATUS_UPDATING = 'updating'
 STATUS_UPLOADING = 'uploading'
 STATUS_VERIFY_RESIZE = 'verify_resize'
@@ -570,15 +571,18 @@ NOVA_SERVICES_UP_TIMEOUT = 5 * 60
 NOVA_TIME_AFTER_SERVICES_UP = 30
 NETWORK_OUTAGE_TIME = 5 * 60
 TIME_BETWEEN_CLUSTER_RESTART = 5 * 60
+TIME_BEFORE_INTERFACE_DOWN = 5
+TIME_INTERFACE_DOWN = 3 * 60
 
 # Commands to create and remove file
 CREATE_FILE_CMD = 'fallocate -l {size}K {file_path}'
 REMOVE_FILE_CMD = 'rm -f {file_path}'
 
 # Galera cluster
-GALERA_CLUSTER_STATUS_CHECK_CMD = (
-    "mysql -u root -p{0} ".format(PASSWORD) +
-    "-e \"show status like 'wsrep%';\"")
+
+MYSQL_EXEC_CMD = "mysql -u root -p{0} ".format(PASSWORD)
+GALERA_CLUSTER_STATUS_CHECK_CMD = (MYSQL_EXEC_CMD +
+                                   "-e \"show status like 'wsrep%';\"")
 GALERA_CLUSTER_START_CMD = "/usr/bin/mysqld_safe --wsrep-new-cluster &"
 GALERA_CLUSTER_STATUS_PARAMS = {'wsrep_local_state_comment': 'Synced',
                                 'wsrep_evs_state': 'OPERATIONAL',
@@ -587,5 +591,23 @@ GALERA_CLUSTER_SIZE_PARAM = "wsrep_cluster_size"
 GALERA_CLUSTER_MEMBERS_PARAM = "wsrep_incoming_addresses"
 GALERA_CLUSTER_UP_TIMEOUT = 3 * 60
 GALERA_CLUSTER_DOWN_TIMEOUT = 2 * 60
+
+TEST_DATABASE = 'stepler_test'
+TEST_TABLE = 'test'
+
+MYSQL_CREATE_TABLE_CMD = (
+    MYSQL_EXEC_CMD +
+    "-e \"drop database if exists {0}; ".format(TEST_DATABASE) +
+    "create database {0}; use {0}; ".format(TEST_DATABASE) +
+    "create table {0}(count int); ".format(TEST_TABLE) +
+    "insert into {0} values (1);\"".format(TEST_TABLE))
+MYSQL_CHECK_TABLE_CMD = (
+    MYSQL_EXEC_CMD +
+    "-e \"use {0}; ".format(TEST_DATABASE) +
+    "select * from {0};\"".format(TEST_TABLE))
+MYSQL_DELETE_DATABASE_CMD = (
+    MYSQL_EXEC_CMD +
+    "-e \"drop database {0};\"".format(TEST_DATABASE))
+MYSQL_EXPECTED_RESULT = 'count\n1'
 
 MYSQL_PORT = 3306
