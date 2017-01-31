@@ -85,7 +85,7 @@ def get_session(credentials):
         try:
             session.get_token()
             is_available = True
-        except exceptions.InternalServerError:
+        except exceptions.ClientException:
             is_available = False
         return waiter.expect_that(is_available)
 
