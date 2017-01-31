@@ -62,3 +62,57 @@ def test_restart_all_swift_services(
     container_steps.delete(container_name)
     glance_steps.check_image_content(
         cirros_image, utils.get_file_path(config.CIRROS_QCOW2_URL))
+
+
+@pytest.mark.idempotent_id('7c0f5bef-c1cb-4f54-8096-3122d873e044')
+def test_upload_object_to_container(container_steps):
+    """**Scenario:** Upload object to container.
+
+    **Setup:**
+
+    #. Create container
+    #. Create object
+    #. Upload object to container
+    #. Check that this object presents into the container
+
+    **Teardown:**
+
+    #. Delete container
+    #. Delete object
+    """
+    container_name, object_name, content = utils.generate_ids(count=3)
+    container_steps.create(name=container_name)
+    container_steps.put_object(container_name=container_name,
+                               object_name=object_name,
+                               content=content)
+    container_steps.check_object_presence(container_name=container_name,
+                                          object_name=object_name)
+
+
+@pytest.mark.idempotent_id('eb3e4694-95b5-4436-8914-42494d7da217')
+def test_remove_object_from_container(container_steps):
+    """**Scenario:** Remove object from container.
+
+    **Setup:**
+
+    #. Create container
+    #. Create object
+    #. Upload object to container
+    #. Delete object
+    #. Check that object doesn't present in container
+
+    **Teardown:**
+
+    #. Delete container
+    #. Delete object
+    """
+    container_name, object_name, content = utils.generate_ids(count=3)
+    container_steps.create(name=container_name)
+    container_steps.put_object(container_name=container_name,
+                               object_name=object_name,
+                               content=content)
+    container_steps.delete_object(container_name=container_name,
+                                  object_name=object_name)
+    container_steps.check_object_presence(container_name=container_name,
+                                          object_name=object_name,
+                                          must_present=False)
