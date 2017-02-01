@@ -621,7 +621,7 @@ class ServerSteps(base.BaseSteps):
         def predicate():
             result = ping.Pinger(
                 ip_to_ping, remote=remote_from).ping(count=ping_count)
-            return result.loss == 0
+            return result.loss
 
         waiter.wait(predicate, timeout_seconds=timeout,
                     expected_exceptions=EOFError)
