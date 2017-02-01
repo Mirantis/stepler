@@ -32,12 +32,12 @@ pytestmark = [
 
 @pytest.mark.idempotent_id('12c72e88-ca87-400b-9fbb-a35c1d07cbda')
 @pytest.mark.parametrize('block_migration', [True])
-def test_network_connectivity_to_vm_during_live_migration(
+def test_network_connectivity_to_vm_after_live_migration(
         nova_floating_ip,
-        live_migration_server,
+        server,
         server_steps,
         block_migration):
-    """**Scenario:** Verify connectivity to the VM during live migration.
+    """**Scenario:** Verify connectivity to the VM after live migration.
 
     **Setup:**
 
@@ -54,10 +54,9 @@ def test_network_connectivity_to_vm_during_live_migration(
 
     **Steps:**
 
-    #. Start ping to server floating ip
     #. Migrate server to another hypervisor
-    #. Stop ping
-    #. Check that ping loss is not more than 20
+    #. Start ping
+    #. Check that pings reach the server succesfully
 
     **Teardown:**
 
@@ -69,10 +68,10 @@ def test_network_connectivity_to_vm_during_live_migration(
     #. Delete network
     #. Delete cirros image
     """
-    with server_steps.check_ping_loss_context(
-            nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
-        server_steps.live_migrate([live_migration_server],
-                                  block_migration=block_migration)
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.live_migrate([server], block_migration=block_migration)
+    server_steps.check_ping_to_server_floating(
+        server, timeout=config.PING_CALL_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('f472898f-7b50-4388-94a4-294b4db5ad7a',
@@ -329,10 +328,9 @@ def test_migration_with_ephemeral_disk(
     #. Boot server from cirros image with created flavor
     #. Assign floating ip to server
     #. Create timestamp on on root and ephemeral disks
-    #. Start ping instance
     #. Migrate server to another hypervisor
-    #. Stop ping
-    #. Check that ping loss is not more than 20
+    #. Start ping instance
+    #. Check that pings reach the server succesfully
     #. Verify timestamp on root and ephemeral disks
 
     **Teardown:**
@@ -363,9 +361,9 @@ def test_migration_with_ephemeral_disk(
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.create_timestamps_on_root_and_ephemeral_disks(
             server_ssh, timestamp=timestamp)
-    with server_steps.check_ping_loss_context(
-            nova_floating_ip.ip, max_loss=config.LIVE_MIGRATION_PING_MAX_LOSS):
-        server_steps.live_migrate([server], block_migration=block_migration)
+    server_steps.live_migrate([server], block_migration=block_migration)
+    server_steps.check_ping_to_server_floating(
+        server, timeout=config.PING_CALL_TIMEOUT)
     with server_steps.get_server_ssh(server,
                                      nova_floating_ip.ip) as server_ssh:
         server_steps.check_timestamps_on_root_and_ephemeral_disks(
