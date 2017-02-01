@@ -19,7 +19,6 @@ Nova deferred delete tests
 import pytest
 
 from stepler import config
-from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('c80af877-bf63-4b1c-bcc4-14571da1d971')
@@ -102,7 +101,13 @@ def test_restore_soft_deleted_server(
 
     attach_volume_to_server(server_1, volume)
 
-    server_steps.delete_servers([server_1], soft=True)
+    server_steps.delete_servers([server_1], check=False)
+    server_steps.check_server_status(
+        server_1,
+        expected_statuses=[config.STATUS_SOFT_DELETED],
+        transit_statuses=(config.STATUS_ACTIVE,),
+        timeout=config.SOFT_DELETED_TIMEOUT)
+
     server_steps.restore_server(server_1)
 
     server_steps.check_ping_to_server_floating(
@@ -187,7 +192,12 @@ def test_server_deleted_after_reclaim_timeout(
         username=config.CIRROS_USERNAME)[0]
 
     attach_volume_to_server(server_1, volume)
-    server_steps.delete_servers([server_1], soft=True)
+    server_steps.delete_servers([server_1], check=False)
+    server_steps.check_server_status(
+        server_1,
+        expected_statuses=[config.STATUS_SOFT_DELETED],
+        transit_statuses=(config.STATUS_ACTIVE,),
+        timeout=config.SOFT_DELETED_TIMEOUT)
 
     # TODO(ssokolov) workaround for bug
     # https://bugs.launchpad.net/nova/+bug/1463856
@@ -258,28 +268,35 @@ def test_force_delete_server_before_deferred_cleanup(
 
     network, _, _ = net_subnet_router
 
-    with create_server_context(
-            next(utils.generate_ids('server')),
-            image=cirros_image,
-            flavor=flavor,
-            networks=[network],
-            keypair=keypair,
-            security_groups=[security_group],
-            username=config.CIRROS_USERNAME) as server_1:
+    server_1 = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME)[0]
 
-        server_2 = server_steps.create_servers(
-            image=cirros_image,
-            flavor=flavor,
-            networks=[network],
-            keypair=keypair,
-            security_groups=[security_group],
-            username=config.CIRROS_USERNAME)[0]
+    server_2 = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME)[0]
 
-        attach_volume_to_server(server_1, volume)
+    attach_volume_to_server(server_1, volume)
 
-        server_steps.delete_servers([server_1], soft=True)
-        volume_steps.check_volume_status(volume,
-                                         [config.STATUS_INUSE])
+    server_steps.delete_servers([server_1], check=False)
+    server_steps.check_server_status(
+        server_1,
+        expected_statuses=[config.STATUS_SOFT_DELETED],
+        transit_statuses=(config.STATUS_ACTIVE,),
+        timeout=config.SOFT_DELETED_TIMEOUT)
+
+    volume_steps.check_volume_status(volume,
+                                     [config.STATUS_INUSE])
+
+    server_steps.delete_servers([server_1], force=True)
 
     volume_steps.check_volume_status(
         volume,

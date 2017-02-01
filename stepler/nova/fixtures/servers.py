@@ -140,7 +140,12 @@ def servers_cleanup(uncleanable, get_server_steps):
 
                 deleting_servers.append(server)
 
-    server_steps.delete_servers(deleting_servers)
+    # we should use force deletion as teardown of this fixture can be
+    # performed before fixtures which can change config file and
+    # restart services
+    # as result reclaim_instance_interval can be big and check of
+    # ``delete_servers`` step can fail
+    server_steps.delete_servers(deleting_servers, force=True)
 
 
 @pytest.fixture
