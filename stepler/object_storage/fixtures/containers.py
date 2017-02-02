@@ -1,7 +1,7 @@
 """
-------------------------
-Swift container fixtures
-------------------------
+---------------------------------
+Object Storage container fixtures
+---------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ Swift container fixtures
 
 import pytest
 
-from stepler.object_storage import steps
+from stepler.object_storage import steps as object_storage_steps
 
 __all__ = [
     'container_steps',
@@ -27,10 +27,13 @@ __all__ = [
 
 
 @pytest.fixture
-def container_steps(swift_client):
+def container_steps(swift_client, os_faults_steps, cli_openstack_steps):
     """Function fixture to get swift container steps.
 
     Returns:
         object: instantiated swift container steps
     """
-    return steps.ContainerSteps(swift_client)
+    if os_faults_steps.get_default_glance_backend() == "swift":
+        return object_storage_steps.ContainerSwiftSteps(swift_client)
+    else:
+        return object_storage_steps.ContainerCephSteps(cli_openstack_steps)

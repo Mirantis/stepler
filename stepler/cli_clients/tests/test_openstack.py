@@ -48,3 +48,14 @@ def test_baremetal_node_list(cli_openstack_steps):
     #. Execute in shell ``openstack baremetal list``
     """
     cli_openstack_steps.baremetal_node_list()
+
+
+@pytest.mark.idempotent_id('cd2d6fa4-8670-441f-b509-523148e1d23d')
+def test_create_ec2_creds(cli_openstack_steps):
+    """**Scenario:** Create ec2 credentials via shell.
+
+    **Steps:**
+
+    #. Execute in shell ``openstack ec2 credentials create``
+    """
+    cli_openstack_steps.ec2_creds_create()
