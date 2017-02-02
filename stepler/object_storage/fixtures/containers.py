@@ -1,7 +1,7 @@
 """
-------------------------
-Swift container fixtures
-------------------------
+---------------------------------
+Object Storage container fixtures
+---------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +17,42 @@ Swift container fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import boto3
 import pytest
+from urlparse import urlparse
 
-from stepler.object_storage import steps
+from stepler import config
+from stepler.object_storage import steps as object_storage_steps
 
 __all__ = [
+    's3_client',
     'container_steps',
 ]
 
 
 @pytest.fixture
-def container_steps(swift_client):
+def s3_client(user_steps, ec2_steps):
+    user = user_steps.get_user(name=config.USERNAME)
+    ec2_creds = ec2_steps.list(user)[0]
+    auth_url = urlparse(config.AUTH_URL)
+    net_ip = auth_url.netloc.rsplit(':')[0]
+    endpoint_url = '{}://{}'.format(auth_url.scheme, net_ip)
+    s3 = boto3.client('s3',
+                      aws_access_key_id=ec2_creds.access,
+                      aws_secret_access_key=ec2_creds.secret,
+                      endpoint_url='{}:{}'.format(endpoint_url,
+                                                  config.S3_PORT))
+    return s3
+
+
+@pytest.fixture
+def container_steps(swift_client, os_faults_steps, s3_client):
     """Function fixture to get swift container steps.
 
     Returns:
-        object: instantiated swift container steps
+        object: instantiated swift or rbd container steps
     """
-    return steps.ContainerSteps(swift_client)
+    if os_faults_steps.get_default_glance_backend() == "swift":
+        return object_storage_steps.ContainerSwiftSteps(swift_client)
+    else:
+        return object_storage_steps.ContainerCephSteps(s3_client)
