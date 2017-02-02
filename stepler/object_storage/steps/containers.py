@@ -1,7 +1,7 @@
 """
----------------------
-Swift container steps
----------------------
+------------------------------
+Object Storage container steps
+------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,17 @@ Swift container steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, is_not, has_items,
+from hamcrest import (assert_that, empty, is_in, is_not, has_items,
                       has_entries, equal_to)  # noqa H301
 
 from stepler import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-__all__ = ['ContainerSteps']
+__all__ = ['ContainerSwiftSteps', 'ContainerCephSteps']
 
 
-class ContainerSteps(base.BaseSteps):
+class ContainerSwiftSteps(base.BaseSteps):
     """Swift container steps."""
 
     @steps_checker.step
@@ -188,3 +189,58 @@ class ContainerSteps(base.BaseSteps):
         """
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
+
+
+class ContainerCephSteps(base.BaseSteps):
+    """Ceph container steps."""
+
+    @steps_checker.step
+    def create(self, bucket_name=None, check=True):
+        """Step to create bucket.
+
+        Args:
+            bucket_name (str|None): bucket name
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        bucket_name = bucket_name or next(utils.generate_ids())
+        bucket = self._client.create_bucket(Bucket=bucket_name)
+        if check:
+            self.check_presence(bucket_name)
+        return bucket
+
+    @steps_checker.step
+    def list(self, check=True):
+        """Step to list all buckets.
+
+        Args:
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        buckets_name_list = self._client.list_buckets()
+        if check:
+            assert_that(buckets_name_list, is_not(empty()))
+        return buckets_name_list
+
+    @steps_checker.step
+    def check_presence(self, bucket_name, must_present=True):
+        """Step to check container presents in containers list.
+
+        Args:
+            bucket_name (str): bucket name
+            must_present (bool, optional): flag whether container should exist
+                or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        buckets_name_list = self.list()
+        for bucket in buckets_name_list['Buckets']:
+            if must_present:
+                assert_that(bucket_name, is_in(bucket['Name']))
+            else:
+                assert_that(bucket_name, is_not(is_in(bucket['Name'])))

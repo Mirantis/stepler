@@ -1,7 +1,7 @@
 """
---------------
-Keystone steps
---------------
+------------
+Ec2 fixtures
+------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,22 +18,23 @@ Keystone steps
 # limitations under the License.
 
 
-from .domains import *  # noqa
-from .ec2 import *  # noqa
-from .groups import *  # noqa
-from .projects import *  # noqa
-from .roles import *  # noqa
-from .services import *  # noqa
-from .tokens import *  # noqa
-from .users import *  # noqa
+import pytest
+
+from stepler.keystone import steps
 
 __all__ = [
-    'DomainSteps',
-    'Ec2Steps',
-    'GroupSteps',
-    'ProjectSteps',
-    'RoleSteps',
-    'UserSteps',
-    'TokenSteps',
-    'ServiceSteps'
+    'ec2_steps',
 ]
+
+
+@pytest.fixture
+def ec2_steps(keystone_client):
+    """Fixture to get ec2 steps.
+
+    Args:
+        keystone_client (object): function to get keystone client
+
+    Returns:
+        object: object to with ec2 credentials steps
+    """
+    return steps.Ec2Steps(keystone_client.ec2)
