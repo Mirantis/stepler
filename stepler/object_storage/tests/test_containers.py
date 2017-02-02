@@ -1,7 +1,7 @@
 """
--------------------
-Swift restart tests
--------------------
+--------------------
+Object Storage tests
+--------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -174,3 +174,24 @@ def test_upload_big_object(container_steps):
                                content=content_big_file)
     container_steps.check_object_presence(container_name=container_name,
                                           object_name=object_name)
+
+
+@pytest.mark.idempotent_id('37288461-1140-4f32-91fa-b6c4bf20dfc8')
+def test_rados_container_create(container_steps, ec2_steps, user_steps):
+    """**Scenario:** Create container in Object Storage (RadosGW).
+
+    **Setup:**
+
+    #. Get ec2 credentials to create ec2 session
+    #. Create new container
+    #. Check container exists in containers list
+
+    **Teardown:**
+
+    #. Delete container
+    """
+    user = user_steps.get_user(name=config.USERNAME)
+    ec2_creds = ec2_steps.list(user)[0]
+    container_name = next(utils.generate_ids())
+    session = container_steps.connect_s3(ec2_creds=ec2_creds)
+    container_steps.create(session=session, container_name=container_name)
