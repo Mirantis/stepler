@@ -31,7 +31,7 @@ class ContainerSteps(base.BaseSteps):
 
     @steps_checker.step
     def create(self, name, check=True):
-        """Step to create container.
+        """Step to create container and check it exists in containers list.
 
         Args:
             name (str): container name
@@ -45,6 +45,8 @@ class ContainerSteps(base.BaseSteps):
         """
         self._client.put_container(name)
         container = self.get(name, check=check)
+        if check:
+            self.check_presence(name)
         return container
 
     @steps_checker.step
