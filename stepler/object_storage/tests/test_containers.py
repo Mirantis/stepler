@@ -1,7 +1,7 @@
 """
--------------------
-Swift restart tests
--------------------
+--------------------
+Object Storage tests
+--------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -174,3 +174,20 @@ def test_upload_big_object(container_steps):
                                content=content_big_file)
     container_steps.check_object_presence(container_name=container_name,
                                           object_name=object_name)
+
+
+@pytest.mark.idempotent_id('37288461-1140-4f32-91fa-b6c4bf20dfc8')
+@pytest.mark.requires('glance_backend == "rbd"')
+def test_rados_bucket_presents_in_list(container_steps):
+    """**Scenario:** Create bucket in Object Storage (RadosGW).
+
+    **Steps:**
+
+    #. Create new bucket
+    #. Check bucket exists in buckets list
+
+    **Teardown:**
+
+    #. Delete bucket
+    """
+    container_steps.create()
