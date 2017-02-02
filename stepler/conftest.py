@@ -122,6 +122,7 @@ __all__ = sorted([  # sort for documentation
     'user_steps',
     'user',
     'new_user_with_project',
+    'ec2_steps',
 
     'create_network',
     'network',
