@@ -136,30 +136,26 @@ class NetworkSteps(base.BaseSteps):
         return networks
 
     @steps_checker.step
-    def check_networks_are_accessible(self, must_be_accessible=True,
-                                      timeout=0):
-        """Step to check whether networks are accessible.
+    def check_neutron_is_available(self, timeout=0):
+        """Step to check whether neutron is available.
 
         Args:
-            must_be_accessible (bool, optional): flag to wait for network
-                accessibility or inaccessibility
             timeout (int): seconds to wait for result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
         """
 
-        def _check_networks_are_accessible():
+        def _check_neutron_is_accessible():
             try:
                 self.get_networks(check=False)
                 is_run = True
-            except Exception:
+            except exceptions.NeutronClientException:
                 is_run = False
 
-            return waiter.expect_that(is_run, equal_to(must_be_accessible))
+            return waiter.expect_that(is_run)
 
-        waiter.wait(_check_networks_are_accessible,
-                    timeout_seconds=timeout)
+        waiter.wait(_check_neutron_is_accessible, timeout_seconds=timeout)
 
     @steps_checker.step
     def get_network_id_by_mac(self, mac):
@@ -202,18 +198,22 @@ class NetworkSteps(base.BaseSteps):
         return networks
 
     @steps_checker.step
-    def check_nets_count_for_agent(self, agent, expected_count):
+    def check_nets_count_for_agent(self, agent, expected_count, timeout=0):
         """Step to check networks count for DHCP agent.
 
         Args:
             agent (dict): neutron agent dict to check status
             expected_count (int): expected networks count for DHCP agents
+            timeout (int): seconds to wait for a result of check
 
         Raises:
-            AssertionError: if check failed
+            TimeoutExpired: if check failed after timeout
         """
-        networks = self.get_networks_for_dhcp_agent(agent, check=False)
-        assert_that(networks, has_length(expected_count))
+        def _check_nets_count_for_agent():
+            networks = self.get_networks_for_dhcp_agent(agent, check=False)
+            return waiter.expect_that(networks, has_length(expected_count))
+
+        waiter.wait(_check_nets_count_for_agent, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_nets_count_difference_for_agents(self, dhcp_agents,

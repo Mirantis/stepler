@@ -122,13 +122,13 @@ def set_dhcp_agents_count_for_net(request,
             config.NEUTRON_SERVER_SERVICE,
             nodes,
             timeout=config.SERVICE_START_TIMEOUT)
-        network_steps.check_networks_are_accessible(
-            timeout=config.SERVICE_START_TIMEOUT)
+        network_steps.check_neutron_is_available(
+            timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
 
         yield
 
     os_faults_steps.check_service_state(config.NEUTRON_SERVER_SERVICE,
                                         nodes,
                                         timeout=config.SERVICE_START_TIMEOUT)
-    network_steps.check_networks_are_accessible(
-        timeout=config.SERVICE_START_TIMEOUT)
+    network_steps.check_neutron_is_available(
+        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)

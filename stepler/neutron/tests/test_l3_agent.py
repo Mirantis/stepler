@@ -555,6 +555,7 @@ def test_check_l3_agent_after_destroy_controller(
         nova_create_floating_ip,
         os_faults_steps,
         agent_steps,
+        network_steps,
         router_steps,
         server_steps,
         controller_cmd):
@@ -580,6 +581,7 @@ def test_check_l3_agent_after_destroy_controller(
     #. Ping server_1 and server_2 from each other with floatings ip
     #. Check that ping from server_1 and server_2 to 8.8.8.8 is successful
     #. Destroy primary/non-primary controller
+    #. Wait for neutron availability
     #. Wait for L3 agent becoming dead
     #. Check that all routers rescheduled from primary/non-primary controller
     #. Boot server_3 in network_1
@@ -616,6 +618,9 @@ def test_check_l3_agent_after_destroy_controller(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     os_faults_steps.poweroff_nodes(controller)
+    network_steps.check_neutron_is_available(
+        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+
     agent_steps.check_alive([l3_agent],
                             must_alive=False,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
@@ -658,6 +663,7 @@ def test_check_l3_agent_after_reset_primary_controller(
         nova_create_floating_ip,
         os_faults_steps,
         agent_steps,
+        network_steps,
         router_steps,
         server_steps):
     """**Scenario:** Reset controller and check L3 agent is alive.
@@ -682,6 +688,7 @@ def test_check_l3_agent_after_reset_primary_controller(
     #. Ping server_1 and server_2 from each other with floatings ip
     #. Check that ping from server_1 and server_2 to 8.8.8.8 is successful
     #. Reset or reboot primary controller
+    #. Wait for neutron availability
     #. Wait for L3 agent becoming dead
     #. Check that all routers rescheduled from primary controller
     #. Boot server_3 in network_1
@@ -719,6 +726,9 @@ def test_check_l3_agent_after_reset_primary_controller(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     os_faults_steps.reset_nodes(controller)
+    network_steps.check_neutron_is_available(
+        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+
     agent_steps.check_alive([l3_agent],
                             must_alive=False,
                             timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)

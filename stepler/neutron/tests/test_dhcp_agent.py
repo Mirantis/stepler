@@ -182,8 +182,10 @@ def test_ban_all_dhcp_agents_restart_one(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
     networks_count = len(networks_on_agents)
-    network_steps.check_nets_count_for_agent(dhcp_agent,
-                                             expected_count=networks_count)
+    network_steps.check_nets_count_for_agent(
+        dhcp_agent,
+        expected_count=networks_count,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
 
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
@@ -284,8 +286,10 @@ def test_ban_all_dhcp_agents_restart_first(network,
     agent_steps.check_agents_count_for_net(
         network, expected_count=1, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
     networks_count = len(networks_on_agents)
-    network_steps.check_nets_count_for_agent(agent_to_clear,
-                                             expected_count=networks_count)
+    network_steps.check_nets_count_for_agent(
+        agent_to_clear,
+        expected_count=networks_count,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
 
 
@@ -463,6 +467,7 @@ def test_destroy_controller_check_dhcp(network,
         controller if it is not there yet
     #. Check DHCP with cirros-dhcpc command on server with sudo
     #. Destroy primary/non-primary controller
+    #. Wait for neutron availability
     #. Wait for primary/non-primary controller's DHCP agent becoming dead
     #. Check that dhcp-agent does not in dhcp-agents list for network
     #. Check that network is on 2 healthy agents
@@ -489,6 +494,9 @@ def test_destroy_controller_check_dhcp(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
     os_faults_steps.poweroff_nodes(controller)
+    network_steps.check_neutron_is_available(
+        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
                             timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
@@ -496,8 +504,10 @@ def test_destroy_controller_check_dhcp(network,
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     agent_steps.check_agents_count_for_net(
         network, expected_count=2, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
-    network_steps.check_nets_count_for_agent(dhcp_agent,
-                                             expected_count=0)
+    network_steps.check_nets_count_for_agent(
+        dhcp_agent,
+        expected_count=0,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
 
 
@@ -530,6 +540,7 @@ def test_dhcp_alive_after_primary_controller_reset(network,
         if it is not there yet
     #. Check DHCP with cirros-dhcpc command on server with sudo
     #. Reset primary controller
+    #. Wait for neutron availability
     #. Wait for primary controller's DHCP agent becoming dead
     #. Check that dhcp-agent does not in dhcp-agents list for network
     #. Check that all networks rescheduled from primary controller
@@ -555,13 +566,18 @@ def test_dhcp_alive_after_primary_controller_reset(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
     os_faults_steps.reset_nodes(primary_controller)
+    network_steps.check_neutron_is_available(
+        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
                             timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
     agent_steps.check_network_rescheduled(
         network, dhcp_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
-    network_steps.check_nets_count_for_agent(dhcp_agent,
-                                             expected_count=0)
+    network_steps.check_nets_count_for_agent(
+        dhcp_agent,
+        expected_count=0,
+        timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     server_steps.check_dhcp_on_cirros_server(server)
 
 
@@ -840,6 +856,7 @@ def test_check_port_binding_after_node_restart(
         create_max_networks_with_instances,
         port_steps,
         agent_steps,
+        network_steps,
         os_faults_steps):
     """**Scenario:** Check port binding after node restart.
 
@@ -863,6 +880,7 @@ def test_check_port_binding_after_node_restart(
     #. Get DHCP agent for the first network
     #. Get node with DHCP agent for network
     #. Destroy node with DHCP agent
+    #. Wait for neutron availability
     #. Wait for DHCP agent becoming dead
     #. Start node with DHCP agent
     #. Wait for DHCP agent becoming alive
@@ -886,6 +904,9 @@ def test_check_port_binding_after_node_restart(
     dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
     nodes_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
     os_faults_steps.poweroff_nodes(nodes_with_dhcp)
+    network_steps.check_neutron_is_available(
+        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
                             timeout=config.NEUTRON_AGENT_DIE_TIMEOUT)
