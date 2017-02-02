@@ -1,7 +1,7 @@
 """
------------
-Swift steps
------------
+---------------------
+Object Storage  steps
+---------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,5 +20,6 @@ Swift steps
 from .containers import *  # noqa
 
 __all__ = [
-    'ContainerSteps'
+    'ContainerSwiftSteps',
+    'ContainerCephSteps'
 ]

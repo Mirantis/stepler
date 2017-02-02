@@ -1,7 +1,7 @@
 """
----------------------
-Swift container steps
----------------------
+------------------------------
+Object Storage container steps
+------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,18 @@ Swift container steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, empty, is_not, has_items,
+import boto3
+from hamcrest import (assert_that, empty, is_in, is_not, has_items,
                       has_entries, equal_to)  # noqa H301
 
 from stepler import base
+from stepler import config
 from stepler.third_party import steps_checker
 
-__all__ = ['ContainerSteps']
+__all__ = ['ContainerSwiftSteps', 'ContainerCephSteps']
 
 
-class ContainerSteps(base.BaseSteps):
+class ContainerSwiftSteps(base.BaseSteps):
     """Swift container steps."""
 
     @steps_checker.step
@@ -188,3 +190,77 @@ class ContainerSteps(base.BaseSteps):
         """
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
+
+
+class ContainerCephSteps(base.BaseSteps):
+    """Ceph container steps."""
+
+    @steps_checker.step
+    def connect_s3(self, ec2_creds, check=True):
+        """Step to connect to s3.
+
+        Args:
+            ec2_creds (dict): ec2 credentials dict
+            check (bool, optional): flag whether to check this step or not
+        """
+        auth_url = config.AUTH_URL.rsplit(':')
+        endpoint_url = '{}:{}'.format(auth_url[0], auth_url[1])
+        s3 = boto3.client('s3',
+                          aws_access_key_id=ec2_creds.access,
+                          aws_secret_access_key=ec2_creds.secret,
+                          endpoint_url='{}:8080'.format(endpoint_url))
+        return s3
+
+    @steps_checker.step
+    def create(self, session, container_name, check=True):
+        """Step to create container.
+
+        Args:
+            session: module to connect to s3
+            container_name (str): container name
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        bucket = session.create_bucket(Bucket=container_name)
+        if check:
+            self.check_radow_container_presence(session, container_name)
+        return bucket
+
+    @steps_checker.step
+    def list(self, session, check=True):
+        """Step to list all containers.
+
+        Args:
+            session: module to connect to s3
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        containers_name_list = None
+        if check:
+            for bucket in session.buckets.all():
+                containers_name_list = bucket.name
+            return containers_name_list
+
+    @steps_checker.step
+    def check_radow_container_presence(self, session, container_name,
+                                       must_present=True):
+        """Step to check container presents in containers list.
+
+        Args:
+            session: module to connect to s3
+            container_name (str): container name
+            must_present (bool, optional): flag whether container should exist
+                or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        containers_name_list = self.list(session)
+        if must_present:
+            assert_that(container_name, is_in(containers_name_list))
+        else:
+            assert_that(container_name, is_not(is_in(containers_name_list)))
