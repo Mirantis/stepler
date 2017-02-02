@@ -1,7 +1,7 @@
 """
----------------------
-Swift container steps
----------------------
+------------------------------
+Object Storage container steps
+------------------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,17 @@ Swift container steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import boto3
 from hamcrest import (assert_that, empty, is_not, has_items,
                       has_entries, equal_to)  # noqa H301
 
 from stepler import base
 from stepler.third_party import steps_checker
 
-__all__ = ['ContainerSteps']
+__all__ = ['ContainerSwiftSteps', 'ContainerCephSteps']
 
 
-class ContainerSteps(base.BaseSteps):
+class ContainerSwiftSteps(base.BaseSteps):
     """Swift container steps."""
 
     @steps_checker.step
@@ -186,3 +187,58 @@ class ContainerSteps(base.BaseSteps):
         """
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
+
+
+class ContainerCephSteps(base.BaseSteps):
+    """Ceph container steps."""
+
+    @steps_checker.step
+    def create(self, container_name, check=True):
+        """Step to create container.
+
+        Args:
+            container_name (str): container name
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        s3 = boto3.resource('s3')
+        bucket = s3.create_bucket(Bucket=container_name)
+        return bucket
+
+    @steps_checker.step
+    def get(self, container_name, check=True):
+        """Step to get container by name.
+
+        Args:
+            container_name (str): container name
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        s3 = boto3.resource('s3')
+        container = s3.meta.client.head_bucket(Bucket=container_name)
+        if check:
+            assert_that(container_name, is_not(empty()))
+        return container
+
+    @steps_checker.step
+    def check_radow_container_presence(self, container_name,
+                                       must_present=True):
+        """Step to check container presents in containers list.
+
+        Args:
+            container_name (str): container name
+            must_present (bool, optional): flag whether container should exist
+                or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        containers = self.get(container_name=container_name)
+        matcher = has_items(has_entries(name=container_name))
+        if not must_present:
+            matcher = is_not(matcher)
+        assert_that(containers, matcher)
