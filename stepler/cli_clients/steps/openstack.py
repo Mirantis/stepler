@@ -19,6 +19,7 @@ Openstack CLI client steps
 
 from stepler.cli_clients.steps import base
 from stepler import config
+from stepler.third_party import output_parser
 from stepler.third_party import steps_checker
 
 
@@ -57,3 +58,21 @@ class CliOpenstackSteps(base.BaseCliSteps):
         self.execute_command(cmd,
                              timeout=config.SERVER_LIST_TIMEOUT,
                              check=check)
+
+    @steps_checker.step
+    def ec2_creds_create(self, check=True):
+        """Step to create ec2 creds.
+
+        Args:
+            check (bool): flag whether to check result or not
+
+        Raises:
+            TimeoutExpired|AssertionError: if check failed after timeout
+        """
+        cmd = 'openstack ec2 credentials create'
+        exit_code, stdout, stderr = self.execute_command(
+            cmd, timeout=config.SERVER_LIST_TIMEOUT, check=check)
+        if check:
+            creds_table = output_parser.table(stdout)['values']
+            creds = {line[0]: line[1] for line in creds_table}
+            return creds
