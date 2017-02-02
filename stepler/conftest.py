@@ -21,6 +21,7 @@ Includes fixtures available in global scope among all tests.
 
 from stepler.baremetal.conftest import *  # noqa
 from stepler.cinder.conftest import *  # noqa
+from stepler.cli_clients.conftest import *  # noqa
 from stepler.fixtures import *  # noqa
 from stepler.glance.conftest import *  # noqa
 from stepler.heat.conftest import *  # noqa
@@ -224,6 +225,7 @@ __all__ = sorted([  # sort for documentation
 
     'container_steps',
     'swift_client',
+    'cli_openstack_steps',
 ])
 
 _plugins = [
