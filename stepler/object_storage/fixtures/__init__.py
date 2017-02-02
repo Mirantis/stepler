@@ -1,7 +1,7 @@
 """
---------------
-swift fixtures
---------------
+-----------------------
+Object Storage fixtures
+-----------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,5 +22,6 @@ from .swift import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'swift_client',
+    's3_client',
     'container_steps',
 ])
