@@ -148,3 +148,29 @@ def test_container_does_not_present_in_list(container_steps):
     container_name = next(utils.generate_ids())
     container_steps.create(container_name)
     container_steps.delete(container_name)
+
+
+@pytest.mark.idempotent_id('f9fd923d-003f-4130-ae1c-a22de450f9cd')
+def test_upload_big_object(container_steps):
+    """**Scenario:** Upload big object to Object Storage.
+
+    **Setup:**
+
+    #. Create container
+    #. Create object
+    #. Upload big object to container
+    #. Check that this object presents into the container
+
+    **Teardown:**
+
+    #. Delete container
+    #. Delete object
+    """
+    content_1 = next(utils.generate_files(size=10**10))
+    container_name, object_name = utils.generate_ids(count=3)
+    container_steps.create(name=container_name)
+    container_steps.put_object(container_name=container_name,
+                               object_name=object_name,
+                               content=content_1)
+    container_steps.check_object_presence(container_name=container_name,
+                                          object_name=object_name)
