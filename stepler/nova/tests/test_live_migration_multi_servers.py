@@ -40,6 +40,7 @@ pytestmark = [
     ],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_servers'])
+@pytest.mark.destructive
 def test_migration_with_memory_workload(live_migration_servers,
                                         server_steps,
                                         block_migration):
@@ -59,10 +60,10 @@ def test_migration_with_memory_workload(live_migration_servers,
     #. Start memory workload on servers
     #. Initiate LM of servers to another compute node
     #. Check that ping to servers' floating ips is successful
+    #. Delete servers
 
     **Teardown:**
 
-    #. Delete servers
     #. Delete flavor
     #. Delete security group
     #. Delete network, subnet, router
@@ -79,6 +80,8 @@ def test_migration_with_memory_workload(live_migration_servers,
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
 
+    server_steps.delete_servers(live_migration_servers)
+
 
 @pytest.mark.idempotent_id('b0b0baa4-60af-4429-98f2-eb137eae8219',
                            block_migration=True)
@@ -90,6 +93,7 @@ def test_migration_with_memory_workload(live_migration_servers,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_servers'])
+@pytest.mark.destructive
 def test_migration_with_cpu_workload(live_migration_servers,
                                      server_steps,
                                      block_migration):
@@ -109,10 +113,10 @@ def test_migration_with_cpu_workload(live_migration_servers,
     #. Start CPU workload on servers
     #. Initiate LM of servers to another compute node
     #. Check that ping to servers' floating ips is successful
+    #. Delete servers
 
     **Teardown:**
 
-    #. Delete servers
     #. Delete flavor
     #. Delete security group
     #. Delete network, subnet, router
@@ -127,6 +131,8 @@ def test_migration_with_cpu_workload(live_migration_servers,
     for server in live_migration_servers:
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
+
+    server_steps.delete_servers(live_migration_servers)
 
 
 @pytest.mark.idempotent_id('77dcf03f-20d3-4d71-96f5-8fb1343f906a')
@@ -151,10 +157,10 @@ def test_migration_with_disk_workload(live_migration_servers,
     #. Start disk workload on servers
     #. Initiate LM of servers to another compute node
     #. Check that ping to servers' floating ips is successful
+    #. Delete servers
 
     **Teardown:**
 
-    #. Delete servers
     #. Delete flavor
     #. Delete security group
     #. Delete network, subnet, router
@@ -171,6 +177,8 @@ def test_migration_with_disk_workload(live_migration_servers,
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
 
+    server_steps.delete_servers(live_migration_servers)
+
 
 @pytest.mark.idempotent_id('b1152b92-5021-4115-9b89-c423fd61abad',
                            block_migration=True)
@@ -182,6 +190,7 @@ def test_migration_with_disk_workload(live_migration_servers,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_servers'])
+@pytest.mark.destructive
 def test_migration_with_network_workload(
         live_migration_servers,
         security_group,
@@ -206,10 +215,10 @@ def test_migration_with_network_workload(
     #. Start network workload on servers
     #. Initiate LM of servers to another compute node
     #. Check that ping to servers' floating ips is successful
+    #. Delete servers
 
     **Teardown:**
 
-    #. Delete servers
     #. Delete flavor
     #. Delete security group
     #. Delete network, subnet, router
@@ -235,6 +244,8 @@ def test_migration_with_network_workload(
     for server in live_migration_servers:
         server_steps.check_ping_to_server_floating(
             server, timeout=config.PING_CALL_TIMEOUT)
+
+    server_steps.delete_servers(live_migration_servers)
 
 
 @pytest.mark.idempotent_id('00495cbf-7476-4143-91fc-37e23626d548',

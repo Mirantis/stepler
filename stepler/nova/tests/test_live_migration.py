@@ -84,6 +84,7 @@ def test_network_connectivity_to_vm_after_live_migration(
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
+@pytest.mark.destructive
 def test_server_migration_with_cpu_workload(live_migration_server,
                                             nova_floating_ip, server_steps,
                                             block_migration):
@@ -107,10 +108,10 @@ def test_server_migration_with_cpu_workload(live_migration_server,
     #. Start CPU workload on server
     #. Migrate server to another hypervisor
     #. Check that ping to server's floating ip is successful
+    #. Delete server
 
     **Teardown:**
 
-    #. Delete server
     #. Delete flavor
     #. Delete security group
     #. Delete router
@@ -126,6 +127,8 @@ def test_server_migration_with_cpu_workload(live_migration_server,
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
+    server_steps.delete_servers([server])
+
 
 @pytest.mark.idempotent_id('27d2c48a-018b-4561-b9a7-c512f9f88e8b',
                            block_migration=True)
@@ -138,6 +141,7 @@ def test_server_migration_with_cpu_workload(live_migration_server,
     ],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
+@pytest.mark.destructive
 def test_server_migration_with_memory_workload(live_migration_server,
                                                nova_floating_ip, server_steps,
                                                block_migration):
@@ -161,10 +165,10 @@ def test_server_migration_with_memory_workload(live_migration_server,
     #. Start memory workload on server
     #. Migrate server to another hypervisor
     #. Check that ping to server's floating ip is successful
+    #. Delete server
 
     **Teardown:**
 
-    #. Delete server
     #. Delete flavor
     #. Delete security group
     #. Delete router
@@ -179,6 +183,8 @@ def test_server_migration_with_memory_workload(live_migration_server,
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
+
+    server_steps.delete_servers([server])
 
 
 @pytest.mark.idempotent_id('7ba9014f-d615-400e-924c-723f45713748',
@@ -215,10 +221,10 @@ def test_server_migration_with_disk_workload(live_migration_server,
     #. Start disk workload on server
     #. Migrate server to another hypervisor
     #. Check that ping to server's floating ip is successful
+    #. Delete server
 
     **Teardown:**
 
-    #. Delete server
     #. Delete flavor
     #. Delete security group
     #. Delete router
@@ -234,6 +240,8 @@ def test_server_migration_with_disk_workload(live_migration_server,
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
+    server_steps.delete_servers([server])
+
 
 @pytest.mark.idempotent_id('f5bccac0-c45f-4dcc-b955-55af429de7b3',
                            block_migration=True)
@@ -245,6 +253,7 @@ def test_server_migration_with_disk_workload(live_migration_server,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
+@pytest.mark.destructive
 def test_server_migration_with_network_workload(
         live_migration_server, security_group, nova_floating_ip,
         generate_traffic, security_group_steps, server_steps, block_migration):
@@ -268,10 +277,10 @@ def test_server_migration_with_network_workload(
     #. Start network workload on server
     #. Migrate server to another hypervisor
     #. Check that ping to server's floating ip is successful
+    #. Delete server
 
     **Teardown:**
 
-    #. Delete server
     #. Delete flavor
     #. Delete security group
     #. Delete router
@@ -294,6 +303,8 @@ def test_server_migration_with_network_workload(
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
+
+    server_steps.delete_servers([server])
 
 
 @pytest.mark.idempotent_id('1fb54c78-20f5-459b-9515-3d7caf73ed64')
