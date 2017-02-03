@@ -329,7 +329,6 @@ def test_reschedule_router_from_snat_controller(
         nova_floating_ip,
         agent_steps,
         os_faults_steps,
-        router_steps,
         server_steps):
     """**Scenario:** Check manually reschedule router from SNAT controller.
 
@@ -372,8 +371,10 @@ def test_reschedule_router_from_snat_controller(
     new_agent = agent_steps.get_agents(binary=config.NEUTRON_L3_SERVICE,
                                        host=free_agents_nodes.hosts[0].fqdn)[0]
 
-    router_steps.remove_router_from_l3_agent(router, current_agent)
-    router_steps.add_router_to_l3_agent(router, new_agent)
+    agent_steps.remove_router_from_l3_agent(
+        current_agent, router, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+    agent_steps.add_router_to_l3_agent(
+        new_agent, router, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
     agent_steps.check_router_rescheduled(
         router=router,
         old_l3_agent=current_agent,
