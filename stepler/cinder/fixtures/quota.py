@@ -81,7 +81,8 @@ def big_snapshot_quota(get_current_project, get_cinder_quota_steps):
     _cinder_quota_steps.set_snapshots_quota(
         _current_project, config.CINDER_SNAPSHOTS_QUOTA_BIG_VALUE)
     yield
-    _cinder_quota_steps.set_snapshots_quota(_current_project, original_quota)
+    get_cinder_quota_steps().set_snapshots_quota(_current_project,
+                                                 original_quota)
 
 
 @pytest.fixture(scope='session')
@@ -101,7 +102,8 @@ def big_volume_quota(get_current_project, get_cinder_quota_steps):
     _cinder_quota_steps.set_volumes_quota(
         _current_project, config.CINDER_VOLUMES_QUOTA_BIG_VALUE)
     yield
-    _cinder_quota_steps.set_volumes_quota(_current_project, original_quota)
+    get_cinder_quota_steps().set_volumes_quota(_current_project,
+                                               original_quota)
 
 
 @pytest.fixture(scope='session')
@@ -117,11 +119,12 @@ def big_backup_quota(get_current_project, get_cinder_quota_steps):
     _current_project = get_current_project()
     _cinder_quota_steps = get_cinder_quota_steps()
 
-    original_quota = _cinder_quota_steps.get_volumes_quota(_current_project)
-    _cinder_quota_steps.set_volumes_quota(
+    original_quota = _cinder_quota_steps.get_backups_quota(_current_project)
+    _cinder_quota_steps.set_backups_quota(
         _current_project, config.CINDER_BACKUPS_QUOTA_BIG_VALUE)
     yield
-    _cinder_quota_steps.set_volumes_quota(_current_project, original_quota)
+    get_cinder_quota_steps().set_backups_quota(_current_project,
+                                               original_quota)
 
 
 @pytest.fixture
