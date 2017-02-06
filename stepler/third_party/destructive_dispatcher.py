@@ -26,6 +26,9 @@ import time
 
 import pytest
 
+from stepler import config
+from stepler.third_party import waiter
+
 __all__ = [
     'pytest_runtest_teardown',
     'revert_environment',
@@ -129,4 +132,7 @@ def revert_environment(destructor, snapshot_name):
     """Revert environment to original state."""
     nodes = destructor.get_nodes()
     nodes.revert(snapshot_name)
+    waiter.wait(lambda: nodes.run_task({'shell': 'hostname'}),
+                timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
+                expected_exceptions=AssertionError)
     nodes.run_task({'command': 'hwclock --hctosys'})

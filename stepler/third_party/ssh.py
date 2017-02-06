@@ -179,7 +179,7 @@ class SshClient(object):
         try:
             self.connect()
             return True
-        except (paramiko.SSHException, socket.error):
+        except (paramiko.SSHException, socket.error, EOFError):
             return False
         finally:
             self.close()

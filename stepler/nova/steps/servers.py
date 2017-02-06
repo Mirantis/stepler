@@ -21,6 +21,7 @@ import collections
 import contextlib
 import itertools
 import os
+import socket
 import time
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
@@ -624,7 +625,9 @@ class ServerSteps(base.BaseSteps):
             return result.loss == 0
 
         waiter.wait(predicate, timeout_seconds=timeout,
-                    expected_exceptions=EOFError)
+                    expected_exceptions=(paramiko.SSHException,
+                                         socket.error,
+                                         EOFError))
 
     @steps_checker.step
     def check_ping_to_server_floating(self, server, timeout=0):
