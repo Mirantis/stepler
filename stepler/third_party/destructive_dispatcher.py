@@ -24,6 +24,7 @@ Destructive scenarios are marked via decorator ``@pytest.mark.destructive``.
 import logging
 import time
 
+from os_faults.ansible import executor
 import pytest
 
 from stepler import config
@@ -134,5 +135,5 @@ def revert_environment(destructor, snapshot_name):
     nodes.revert(snapshot_name)
     waiter.wait(lambda: nodes.run_task({'shell': 'hostname'}),
                 timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
-                expected_exceptions=AssertionError)
+                expected_exceptions=executor.AnsibleExecutionException)
     nodes.run_task({'command': 'hwclock --hctosys'})
