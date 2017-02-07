@@ -65,7 +65,7 @@ class IronicNodeSteps(BaseSteps):
              TimeoutExpired: if check failed after timeout.
 
         Returns:
-            object: ironic node.
+            nodes_list (list): list of created ironic nodes
         """
         nodes_names = nodes_names or utils.generate_ids(count=count)
         nodes_list = []
