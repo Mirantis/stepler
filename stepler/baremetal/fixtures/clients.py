@@ -44,7 +44,8 @@ def get_api_ironic_client(get_session):
             if is_api:
                 return api_clients.IronicApiClientV1(session=get_session())
             else:
-                return client_v1.get_client(session=get_session())
+                return client_v1.get_client(api_version=version,
+                                            session=get_session())
 
         raise ValueError("Unexpected ironic version: {!r}".format(version))
 
