@@ -66,7 +66,7 @@ class IronicChassisSteps(BaseSteps):
             self.check_ironic_chassis_presence(chassis_list)
             for chassis in chassis_list:
                 assert_that(_chassis_descriptions[chassis.uuid],
-                            equal_to(description))
+                            equal_to(descriptions))
 
         return chassis_list
 
