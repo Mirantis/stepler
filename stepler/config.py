@@ -579,10 +579,8 @@ CREATE_FILE_CMD = 'fallocate -l {size}K {file_path}'
 REMOVE_FILE_CMD = 'rm -f {file_path}'
 
 # Galera cluster
-
-MYSQL_EXEC_CMD = "mysql -u root -p{0} ".format(PASSWORD)
-GALERA_CLUSTER_STATUS_CHECK_CMD = (MYSQL_EXEC_CMD +
-                                   "-e \"show status like 'wsrep%';\"")
+MYSQL_CONFIG_FILE = '/etc/mysql/my.cnf'
+GALERA_CLUSTER_STATUS_CHECK_CMD = "show status like 'wsrep%';"
 GALERA_CLUSTER_START_CMD = "/usr/bin/mysqld_safe --wsrep-new-cluster &"
 GALERA_CLUSTER_STATUS_PARAMS = {'wsrep_local_state_comment': 'Synced',
                                 'wsrep_evs_state': 'OPERATIONAL',
@@ -596,18 +594,13 @@ TEST_DATABASE = 'stepler_test'
 TEST_TABLE = 'test'
 
 MYSQL_CREATE_TABLE_CMD = (
-    MYSQL_EXEC_CMD +
-    "-e \"drop database if exists {0}; ".format(TEST_DATABASE) +
+    "drop database if exists {0}; ".format(TEST_DATABASE) +
     "create database {0}; use {0}; ".format(TEST_DATABASE) +
     "create table {0}(count int); ".format(TEST_TABLE) +
-    "insert into {0} values (1);\"".format(TEST_TABLE))
-MYSQL_CHECK_TABLE_CMD = (
-    MYSQL_EXEC_CMD +
-    "-e \"use {0}; ".format(TEST_DATABASE) +
-    "select * from {0};\"".format(TEST_TABLE))
-MYSQL_DELETE_DATABASE_CMD = (
-    MYSQL_EXEC_CMD +
-    "-e \"drop database {0};\"".format(TEST_DATABASE))
-MYSQL_EXPECTED_RESULT = 'count\n1'
+    "insert into {0} values (11);".format(TEST_TABLE))
+MYSQL_CHECK_TABLE_CMD = "use {0}; select * from {1};".format(
+    TEST_DATABASE, TEST_TABLE)
+MYSQL_DELETE_DATABASE_CMD = "drop database {0};".format(TEST_DATABASE)
+MYSQL_EXPECTED_RESULT = 'count\n11'
 
 MYSQL_PORT = 3306
