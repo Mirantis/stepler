@@ -22,6 +22,7 @@ from hamcrest import (assert_that, empty, is_not, has_items,
 
 from stepler import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
 __all__ = ['ContainerSteps']
 
@@ -188,3 +189,40 @@ class ContainerSteps(base.BaseSteps):
         """
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
+
+    @steps_checker.step
+    def get_object_from_container(self, container_name, object_name,
+                                  file_name):
+        """Step to get object from container.
+
+        Args:
+            container_name (str): container name
+            object_name(str): object name
+            file_name(str): file name
+
+        Returns:
+            str: file_name
+        """
+        obj_tuple = self.get_object(container_name, object_name)
+        with open(file_name, 'w') as f:
+            f.write(obj_tuple)
+        return file_name
+
+    @steps_checker.step
+    def check_object_hash(self, created_object_name, downloaded_object_name):
+
+        """Step to check hash sum of created object name and downloaded object
+        name.
+
+        Args:
+            created_object_name (str): name of created object
+            downloaded_object_name (str): name to downloaded object
+
+        Raises:
+            AssertionError: if hash sum has been mismatched
+        """
+
+        created_obj_md5_sum = utils.get_md5sum(created_object_name)
+        downloaded_obj_md5_sum = utils.get_md5sum(downloaded_object_name)
+
+        assert_that(created_obj_md5_sum, equal_to(downloaded_obj_md5_sum))
