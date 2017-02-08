@@ -65,7 +65,8 @@ class TimeoutExpired(Exception):
 
 
 @logger.log
-def wait(predicate, args=None, kwargs=None, **wait_kwargs):
+def wait(predicate, args=None, kwargs=None, expected_exceptions=(),
+         **wait_kwargs):
     """Wait that predicate execution returns non-falsy result.
 
     It catches all raised ExpectationError and uses last exception to construct
@@ -90,8 +91,6 @@ def wait(predicate, args=None, kwargs=None, **wait_kwargs):
         <function <lambda> at 0x7f2b54360848>
         No exception raised during predicate executing
 
-
-
     Args:
         predicate (function): predicate to wait execution result
         timeout_seconds (int): seconds to wait result
@@ -114,11 +113,20 @@ def wait(predicate, args=None, kwargs=None, **wait_kwargs):
     args = args or ()
     kwargs = kwargs or {}
 
+    if isinstance(expected_exceptions, tuple):
+        expected_exceptions += (ExpectationError,)
+    elif (isinstance(expected_exceptions, type) and
+          issubclass(expected_exceptions, Exception)):
+        expected_exceptions = (expected_exceptions, ExpectationError,)
+    else:
+        raise ValueError('expected_exceptions should be tuple or '
+                         'Exception subclass')
+
     @functools.wraps(predicate)
     def wrapper():
         try:
             return predicate(*args, **kwargs)
-        except ExpectationError as e:
+        except expected_exceptions as e:
             raised_exceptions.append(e)
             return False
 
@@ -127,7 +135,9 @@ def wait(predicate, args=None, kwargs=None, **wait_kwargs):
     except waiting.TimeoutExpired as e:
         ex = TimeoutExpired(e)
         if raised_exceptions:
-            ex.message += "\n" + str(raised_exceptions[-1])
+            ex.message += "\n{0}: {1}".format(
+                type(raised_exceptions[-1]).__name__,
+                raised_exceptions[-1])
         else:
             ex.message += "\nNo exception raised during predicate executing"
         raise ex
