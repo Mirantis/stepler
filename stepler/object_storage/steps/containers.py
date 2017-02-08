@@ -225,6 +225,21 @@ class ContainerCephSteps(base.BaseSteps):
         return buckets_name_list
 
     @steps_checker.step
+    def delete(self, bucket_name, check=True):
+        """Step to delete container.
+
+        Args:
+            bucket_name (str): name of bucket to delete
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        self._client.delete_bucket(Bucket=bucket_name)
+        if check:
+            self.check_radow_bucket_presence(bucket_name, must_present=False)
+
+    @steps_checker.step
     def check_radow_bucket_presence(self, bucket_name, must_present=True):
         """Step to check container presents in containers list.
 
