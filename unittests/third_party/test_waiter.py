@@ -68,7 +68,7 @@ def test_pass_args_to_predicate():
 
 
 def test_log_wait_calls(caplog):
-    """Check tha logs contains waiting start and end records"""
+    """Check that logs contains waiting start and end records"""
     with caplog.atLevel(logging.DEBUG):
         waiter.wait(
             lambda: True,
@@ -79,3 +79,36 @@ def test_log_wait_calls(caplog):
                     "Function 'wait' starts",
                     "'waiting_for': 'expected_predicate to be True'",
                     "Function 'wait' ended", ))
+
+
+@pytest.mark.parametrize(
+    'expected_exceptions',
+    [AttributeError,
+     (AttributeError, ValueError)])
+def test_expected_exceptions(expected_exceptions):
+    """"Check expected_exceptions arg"""
+
+    def predicate():
+        raise AttributeError("AttributeError was thrown.")
+
+    assert_that(
+        calling(waiter.wait).with_args(
+            predicate,
+            timeout_seconds=0,
+            expected_exceptions=expected_exceptions),
+        raises(waiter.TimeoutExpired,
+               'AttributeError: AttributeError was thrown.'))
+
+
+def test_not_in_expected_exceptions():
+    """Check that exception is thrown if it is not in expected_exception"""
+
+    def predicate():
+        raise AttributeError("AttributeError was thrown.")
+
+    assert_that(
+        calling(waiter.wait).with_args(
+            predicate,
+            timeout_seconds=0,
+            expected_exceptions=ValueError),
+        raises(AttributeError, 'AttributeError was thrown.'))

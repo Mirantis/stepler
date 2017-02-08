@@ -50,24 +50,20 @@ def get_nova_client(get_session):
         function: function to get nova client
     """
 
-    def _check_nova_available(client):
-        try:
-            client.versions.get_current()
-            is_available = True
-        except exc.ClientException:
-            is_available = False
-        return waiter.expect_that(is_available)
-
-    def _get_nova_client(**credentials):
+    def _wait_client_availability(**credentials):
         client = Client(version=config.CURRENT_NOVA_VERSION,
                         session=get_session(**credentials))
 
-        waiter.wait(_check_nova_available,
-                    args=(client,),
-                    timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT)
-
         current_microversion = client.versions.get_current().version
         client.api_version = APIVersion(current_microversion)
+
+        return client
+
+    def _get_nova_client(**credentials):
+        client = waiter.wait(_wait_client_availability,
+                             kwargs=credentials,
+                             timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT,
+                             expected_exceptions=exc.ClientException)
 
         return client
 

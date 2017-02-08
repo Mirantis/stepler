@@ -17,11 +17,13 @@ Neutron fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from neutronclient.common import exceptions
 from neutronclient.v2_0.client import Client
 import pytest
 
 from stepler import config
 from stepler.neutron.client import client
+from stepler.third_party import waiter
 
 __all__ = [
     'neutron_client',
@@ -42,11 +44,20 @@ def get_neutron_client(get_session):
     Returns:
         function: function to get instantiated neutron client wrapper
     """
-    def _get_client(**credentials):
+    def _wait_client_availability(**credentials):
         rest_client = Client(session=get_session(**credentials))
-        return client.NeutronClient(rest_client)
+        neutron_client = client.NeutronClient(rest_client)
+        neutron_client.networks.find_all()
+        return neutron_client
 
-    return _get_client
+    def _get_neutron_client(**credentials):
+        return waiter.wait(
+            _wait_client_availability,
+            kwargs=credentials,
+            timeout_seconds=config.NEUTRON_AVAILABILITY_TIMEOUT,
+            expected_exceptions=exceptions.NeutronClientException)
+
+    return _get_neutron_client
 
 
 @pytest.fixture
@@ -122,13 +133,13 @@ def set_dhcp_agents_count_for_net(request,
             config.NEUTRON_SERVER_SERVICE,
             nodes,
             timeout=config.SERVICE_START_TIMEOUT)
-        network_steps.check_neutron_is_available(
-            timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+        # wait for neutron availability
+        get_neutron_client()
 
         yield
 
     os_faults_steps.check_service_state(config.NEUTRON_SERVER_SERVICE,
                                         nodes,
                                         timeout=config.SERVICE_START_TIMEOUT)
-    network_steps.check_neutron_is_available(
-        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+    # wait for neutron availability
+    get_neutron_client()
