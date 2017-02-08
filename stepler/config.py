@@ -520,7 +520,7 @@ IMAGE_SOURCE = 'Image'
 VOLUME_SOURCE = 'Volume'
 
 NODES_AVAILABILITY_TIMEOUT = 3 * 60
-NODE_REBOOT_TIMEOUT = 5 * 60
+NODE_REBOOT_TIMEOUT = 10 * 60
 TCPDUMP_LATENCY = 2
 
 # Horizon
@@ -561,11 +561,11 @@ SHUTDOWN_BR_EX_CMD = "ip link set br-ex down"
 # http://10.109.4.6:5000/v3 -> 10.109.4.6
 if AUTH_URL:
     VIP = urlparse(AUTH_URL).hostname
-    TCP_VIP_CONTROLLER_CMD = "ip a | grep {}".format(VIP)
+    TCP_VIP_CONTROLLER_CMD = "ip a | grep -w {}".format(VIP)
 
-NODE_REBOOT_CMD = '/sbin/shutdown -r now'
-NODE_SHUTDOWN_CMD = '/sbin/shutdown now'
+TCP_KVM_NODE_CMD = "salt-call pillar.get salt:control:enabled | grep True"
 
+NODE_POWEROFF_TIMEOUT = 60
 NODE_SHUTDOWN_TIMEOUT = 3 * 60
 NOVA_SERVICES_UP_TIMEOUT = 5 * 60
 NOVA_TIME_AFTER_SERVICES_UP = 30
@@ -573,6 +573,8 @@ NETWORK_OUTAGE_TIME = 5 * 60
 TIME_BETWEEN_CLUSTER_RESTART = 5 * 60
 TIME_BEFORE_NETWORK_DOWN = 5
 TIME_NETWORK_DOWN = 4 * 60
+NODES_ON_KVM_START_TIMEOUT = 5 * 60
+TIME_AFTER_SHUTDOWN_KVM_NODE = 30
 
 # Commands to create and remove file
 CREATE_FILE_CMD = 'fallocate -l {size}K {file_path}'
