@@ -174,3 +174,34 @@ def test_upload_big_object(container_steps):
                                content=content_big_file)
     container_steps.check_object_presence(container_name=container_name,
                                           object_name=object_name)
+
+
+@pytest.mark.idempotent_id('03ed9be4-d134-4463-8e4c-c069688209eb')
+def test_download_object(container_steps):
+    """**Scenario:** Download object from Object Storage.
+
+    **Setup:**
+
+    #. Create container
+    #. Create object
+    #. Upload object to container
+    #. Check that this object presents into the container
+
+    **Steps:**
+    #.Upload object from container
+
+    #. Delete container
+    #. Delete object
+    """
+
+    container_name, file_name, content, object_name = utils.generate_ids(
+        count=4)
+    container_steps.create(name=container_name)
+    created_object = list(utils.generate_files(prefix='test'))[0]
+    container_steps.put_object(container_name=container_name,
+                               object_name=created_object,
+                               content=content)
+    downloaded_object = container_steps.get_object_from_container(
+        container_name=container_name, object_name=created_object,
+        file_name=created_object)
+    container_steps.check_object_hash(created_object, downloaded_object)

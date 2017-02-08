@@ -21,7 +21,7 @@ from hamcrest import (assert_that, empty, is_not, has_items,
                       has_entries, equal_to)  # noqa H301
 
 from stepler import base
-from stepler.third_party import steps_checker
+from stepler.third_party import steps_checker, utils
 
 __all__ = ['ContainerSteps']
 
@@ -188,3 +188,38 @@ class ContainerSteps(base.BaseSteps):
         """
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
+
+    @steps_checker.step
+    def get_object_from_container(self, container_name, object_name,
+                                  file_name):
+        """Step to get object from container.
+
+        Args:
+            container_name (str): container name
+            object_name(str): object name
+            file_name(str): file name
+
+        Returns:
+            str: file_name
+        """
+        obj_tuple = self.get_object(container_name, object_name)
+        with open(file_name, 'w') as my_hello:
+            my_hello.write(obj_tuple)
+        return file_name
+
+    @steps_checker.step
+    def check_object_hash(self, object_1, object_2):
+        """Step to check hash sum of created object and downloaded object.
+
+        Args:
+            object_1 (str): name of created object
+            object_2 (str): name to downloaded object
+
+        Raises:
+            AssertionError: if hash sum has been mismatched
+        """
+
+        object_md5_1 = utils.get_md5sum(object_1)
+        object_md5_2 = utils.get_md5sum(object_2)
+
+        assert_that(object_md5_1, equal_to(object_md5_2))
