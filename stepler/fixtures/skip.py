@@ -271,3 +271,10 @@ class Predicates(object):
             else:
                 count += 1
         return count
+
+    @property
+    @_store_call
+    def kvm_nodes_count(self):
+        """Get count of KVM nodes."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(os_faults_steps.get_nodes_by_cmd(config.TCP_KVM_NODE_CMD))
