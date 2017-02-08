@@ -553,9 +553,9 @@ def test_check_l3_agent_after_destroy_controller(
         security_group,
         neutron_2_servers_diff_nets_with_floating,
         nova_create_floating_ip,
+        get_neutron_client,
         os_faults_steps,
         agent_steps,
-        network_steps,
         router_steps,
         server_steps,
         controller_cmd):
@@ -618,8 +618,8 @@ def test_check_l3_agent_after_destroy_controller(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     os_faults_steps.poweroff_nodes(controller)
-    network_steps.check_neutron_is_available(
-        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+    # wait for neutron availability
+    get_neutron_client()
 
     agent_steps.check_alive([l3_agent],
                             must_alive=False,
@@ -661,9 +661,9 @@ def test_check_l3_agent_after_reset_primary_controller(
         security_group,
         neutron_2_servers_diff_nets_with_floating,
         nova_create_floating_ip,
+        get_neutron_client,
         os_faults_steps,
         agent_steps,
-        network_steps,
         router_steps,
         server_steps):
     """**Scenario:** Reset controller and check L3 agent is alive.
@@ -726,8 +726,8 @@ def test_check_l3_agent_after_reset_primary_controller(
         ping_plan, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
     os_faults_steps.reset_nodes(controller)
-    network_steps.check_neutron_is_available(
-        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+    # wait for neutron availability
+    get_neutron_client()
 
     agent_steps.check_alive([l3_agent],
                             must_alive=False,
