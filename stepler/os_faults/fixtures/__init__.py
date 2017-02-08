@@ -26,4 +26,5 @@ __all__ = sorted([  # sort for documentation
     'execute_command_with_rollback',
     'nova_api_node',
     'ironic_api_node',
+    'shutdown_nodes',
 ])
