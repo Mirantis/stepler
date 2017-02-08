@@ -188,3 +188,21 @@ class ContainerSteps(base.BaseSteps):
         """
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
+
+    @steps_checker.step
+    def get_object_from_container(self, container_name, object_name,
+                                  file_name):
+        """Step to get object from container.
+
+        Args:
+            container_name (str): container name
+            object_name(str): object name
+            file_name(str): file name
+
+        Returns:
+            str: file_name
+        """
+        obj_tuple = self.get_object(container_name, object_name)
+        with open(file_name, 'w') as my_hello:
+            my_hello.write(obj_tuple)
+        return file_name
