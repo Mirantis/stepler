@@ -133,7 +133,6 @@ def revert_environment(destructor, snapshot_name):
     """Revert environment to original state."""
     nodes = destructor.get_nodes()
     nodes.revert(snapshot_name)
-    waiter.wait(lambda: nodes.run_task({'shell': 'hostname'}),
+    waiter.wait(lambda: nodes.run_task({'command': 'hwclock --hctosys'}),
                 timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
                 expected_exceptions=executor.AnsibleExecutionException)
-    nodes.run_task({'command': 'hwclock --hctosys'})
