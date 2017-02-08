@@ -87,9 +87,9 @@ class NovaServiceSteps(base.BaseSteps):
             service_data = self._get_service_data(services)
             expected_service_data = []
             for data in service_data:
-                binary, host_name = data[0:2]
+                binary, host_name, status = data[0:3]
                 if host_names and host_name not in host_names:
-                    expected_data = [binary, host_name, 'enabled', 'down']
+                    expected_data = [binary, host_name, status, 'down']
                 else:
                     expected_data = [binary, host_name, 'enabled', 'up']
                 expected_service_data.append(expected_data)
