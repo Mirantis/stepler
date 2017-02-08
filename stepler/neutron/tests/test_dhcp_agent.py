@@ -442,9 +442,9 @@ def test_ban_dhcp_agent_many_times(network,
 def test_destroy_controller_check_dhcp(network,
                                        server,
                                        nova_floating_ip,
+                                       get_network_steps,
                                        server_steps,
                                        os_faults_steps,
-                                       network_steps,
                                        agent_steps,
                                        controller_cmd):
     """**Scenario:** Destroy controller and check DHCP.
@@ -494,8 +494,8 @@ def test_destroy_controller_check_dhcp(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
     os_faults_steps.poweroff_nodes(controller)
-    network_steps.check_neutron_is_available(
-        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+    # wait for neutron availability and refresh network_steps
+    network_steps = get_network_steps()
 
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
@@ -516,9 +516,9 @@ def test_destroy_controller_check_dhcp(network,
 def test_dhcp_alive_after_primary_controller_reset(network,
                                                    server,
                                                    nova_floating_ip,
+                                                   get_network_steps,
                                                    server_steps,
                                                    os_faults_steps,
-                                                   network_steps,
                                                    agent_steps):
     """**Scenario:** Reset primary controller and check DHCP is alive.
 
@@ -566,8 +566,8 @@ def test_dhcp_alive_after_primary_controller_reset(network,
     server_steps.check_dhcp_on_cirros_server(server)
 
     os_faults_steps.reset_nodes(primary_controller)
-    network_steps.check_neutron_is_available(
-        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+    # wait for neutron availability and refresh network_steps
+    network_steps = get_network_steps()
 
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,
@@ -854,9 +854,9 @@ def test_check_nets_count_for_agents_nearly_equals(
 def test_check_port_binding_after_node_restart(
         router,
         create_max_networks_with_instances,
+        get_neutron_client,
         port_steps,
         agent_steps,
-        network_steps,
         os_faults_steps):
     """**Scenario:** Check port binding after node restart.
 
@@ -903,9 +903,10 @@ def test_check_port_binding_after_node_restart(
 
     dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
     nodes_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
+
     os_faults_steps.poweroff_nodes(nodes_with_dhcp)
-    network_steps.check_neutron_is_available(
-        timeout=config.NEUTRON_AVAILABILITY_TIMEOUT)
+    # wait for neutron availability
+    get_neutron_client()
 
     agent_steps.check_alive([dhcp_agent],
                             must_alive=False,

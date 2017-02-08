@@ -136,28 +136,6 @@ class NetworkSteps(base.BaseSteps):
         return networks
 
     @steps_checker.step
-    def check_neutron_is_available(self, timeout=0):
-        """Step to check whether neutron is available.
-
-        Args:
-            timeout (int): seconds to wait for result of check
-
-        Raises:
-            TimeoutExpired: if check failed after timeout
-        """
-
-        def _check_neutron_is_accessible():
-            try:
-                self.get_networks(check=False)
-                is_run = True
-            except exceptions.NeutronClientException:
-                is_run = False
-
-            return waiter.expect_that(is_run)
-
-        waiter.wait(_check_neutron_is_accessible, timeout_seconds=timeout)
-
-    @steps_checker.step
     def get_network_id_by_mac(self, mac):
         """Step to get network ID by server MAC.
 
