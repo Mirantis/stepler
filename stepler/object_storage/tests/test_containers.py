@@ -194,3 +194,20 @@ def test_rados_container_create(container_steps, cli_openstack_steps):
     session = container_steps.connect_s3(cli_openstack_steps)
     container_name = next(utils.generate_ids())
     container_steps.create(session=session, container_name=container_name)
+
+
+@pytest.mark.idempotent_id('cd5c81cf-3760-4fad-a060-e589f3a17bc4')
+def test_rados_container_does_not_present_in_list(container_steps,
+                                                  cli_openstack_steps):
+    """**Scenario:** Delete container from Object Storage (RadosGW).
+
+    **Steps:**
+
+    #. Create new container
+    #. Delete container
+    #. Check container doesn't exist in containers list
+    """
+    session = container_steps.connect_s3(cli_openstack_steps)
+    container_name = next(utils.generate_ids())
+    container_steps.create(session=session, container_name=container_name)
+    container_steps.delete(session=session, container_name=container_name)

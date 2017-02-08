@@ -247,6 +247,24 @@ class ContainerCephSteps(base.BaseSteps):
             return containers_name_list
 
     @steps_checker.step
+    def delete(self, session, container_name, check=True):
+        """Step to delete container.
+
+        Args:
+            session: module to connect to s3
+            container_name (str): name of container to delete
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        session.delete_bucket(Bucket=container_name)
+        if check:
+            self.check_radow_container_presence(session,
+                                                container_name,
+                                                must_present=False)
+
+    @steps_checker.step
     def check_radow_container_presence(self, session, container_name,
                                        must_present=True):
         """Step to check container presents in containers list.
