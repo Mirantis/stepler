@@ -357,7 +357,7 @@ class OsFaultsSteps(base.BaseSteps):
             line (str): line to search in files
             all (bool): presents on all node / any node
         Raises:
-            AssertioError: if any of files doesn't contains `line`
+            AssertionError: if any of files doesn't contains `line`
         """
         task = {
             'command': 'grep "{line}" "{path}"'.format(
@@ -1080,6 +1080,25 @@ class OsFaultsSteps(base.BaseSteps):
         return self.get_nodes_by_cmd(cmd).pick()
 
     @steps_checker.step
+    def check_all_nodes_availability(self, timeout=0):
+        """Step to verify availability of all nodes.
+
+        Args:
+            timeout (int, optional): seconds to wait result of check
+
+        Raises:
+            TimeoutExpired: if check failed after timeout
+        """
+        def _verify_connect():
+            try:
+                self._client.verify()
+                return True
+            except Exception:
+                return False
+
+        waiter.wait(_verify_connect, timeout_seconds=timeout)
+
+    @steps_checker.step
     def check_nodes_tcp_availability(self, nodes, must_available=True,
                                      timeout=0):
         """Step to check that all nodes available (or not) on 22 TCP port.
@@ -1102,8 +1121,8 @@ class OsFaultsSteps(base.BaseSteps):
             actual_availability = dict.fromkeys(ips)
             for ip in ips:
                 actual_availability[ip] = network_checks.check_tcp_connect(ip)
-            return waiter.expect_that(expected_availability,
-                                      equal_to(actual_availability))
+            return waiter.expect_that(actual_availability,
+                                      equal_to(expected_availability))
 
         waiter.wait(_check_nodes_ssh_availability, timeout_seconds=timeout)
 
@@ -1121,7 +1140,9 @@ class OsFaultsSteps(base.BaseSteps):
         """
         nodes.poweroff()
         if check:
-            self.check_nodes_tcp_availability(nodes, must_available=False)
+            self.check_nodes_tcp_availability(
+                nodes, must_available=False,
+                timeout=config.NODE_SHUTDOWN_TIMEOUT)
 
     @steps_checker.step
     def poweron_nodes(self, nodes, check=True):
@@ -1141,21 +1162,23 @@ class OsFaultsSteps(base.BaseSteps):
                 nodes, timeout=config.NODE_REBOOT_TIMEOUT)
 
     @steps_checker.step
-    def reset_nodes(self, nodes, native=True, check=True, wait_reboot=True):
+    def reset_nodes(self, nodes, native=True, wait_reboot=True, check=True):
         """Step to reset nodes.
 
         Args:
             nodes (obj): NodeCollection to reset
             native (bool, optional): flag whether to use reset or
-                poweroff/poweron. By default poweroff/poweron is used
-            check (bool, optional): flag whether to check this step or not
+                poweroff/poweron. By default reset is used
             wait_reboot (bool, optional): flag whether to wait for nodes
                 availability
+            check (bool, optional): flag whether to check this step or not
         """
         if native:
             nodes.reset()
             if check:
-                self.check_nodes_tcp_availability(nodes, must_available=False)
+                self.check_nodes_tcp_availability(
+                    nodes, must_available=False,
+                    timeout=config.NODE_SHUTDOWN_TIMEOUT)
             if wait_reboot:
                 self.check_nodes_tcp_availability(
                     nodes, timeout=config.NODE_REBOOT_TIMEOUT)

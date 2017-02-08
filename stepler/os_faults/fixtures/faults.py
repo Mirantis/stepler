@@ -17,6 +17,8 @@ os_faults fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
 import os_faults
 import pytest
 
@@ -32,6 +34,7 @@ __all__ = [
     'execute_command_with_rollback',
     'nova_api_node',
     'ironic_api_node',
+    'power_off_nodes',
 ]
 
 
@@ -147,3 +150,36 @@ def ironic_api_node(os_faults_steps):
         obj: node with ironic-api service
     """
     return os_faults_steps.get_node(service_names=[config.IRONIC_API])
+
+
+@pytest.yield_fixture
+def power_off_nodes(os_faults_steps, get_nova_client, nova_service_steps):
+    """Callable fixture to power off nodes.
+
+    Can be called several times during a test.
+    After the test all stopped nodes are powered on.
+
+    Args:
+        os_faults_steps (object): instantiated os_faults steps
+
+    Yields:
+        function: function to power off nodes
+    """
+    stopped_fqdns = []
+
+    def _poweroff_node(nodes):
+        os_faults_steps.poweroff_nodes(nodes)
+        fqdns = [node.fqdn for node in nodes]
+        stopped_fqdns.extend(fqdns)
+
+    yield _poweroff_node
+
+    stopped_nodes = os_faults_steps.get_nodes(fqdns=stopped_fqdns)
+    os_faults_steps.poweron_nodes(stopped_nodes)
+
+    # reinit nova client and wait for its availability
+    get_nova_client()
+
+    nova_service_steps.check_services_up(
+        timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)

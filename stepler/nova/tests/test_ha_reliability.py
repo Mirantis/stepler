@@ -831,3 +831,197 @@ def test_fill_root_filesystem_on_vip_controller(server,
     os_faults_steps.execute_cmd(vip_controller, cmd)
     server_steps = get_server_steps()
     server_steps.get_servers()
+
+
+@platform.mk2x
+@pytest.mark.requires("kvm_nodes_count > 1")
+@pytest.mark.idempotent_id('8c5ca930-d491-416a-84b7-f92461e6f78a')
+def test_shutdown_kvm_node(cirros_image,
+                           keypair,
+                           tiny_flavor,
+                           security_group,
+                           net_subnet_router,
+                           nova_floating_ip,
+                           attach_volume_to_server,
+                           volume_steps,
+                           server_steps,
+                           nova_service_steps,
+                           host_steps,
+                           get_rabbitmq_cluster_data,
+                           rabbitmq_steps,
+                           power_off_nodes,
+                           os_faults_steps):
+    """**Scenario:** Check functionality after shutdown of KVM node
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create keypair
+    #. Create security group
+    #. Create network, subnet and router
+    #. Create floating IP
+
+    **Steps:**
+
+    #. Check Galera state
+    #. Check status of RabbitMQ cluster
+    #. Shutdown KVM node
+    #. Wait for nova services work
+    #. Create server with volume
+    #. Attach floating IP
+    #. Check connectivity from server
+    #. Check Galera state
+    #. Check status of RabbitMQ cluster
+    #. Check alarms
+
+    **Teardown:**
+
+    #. Power on KVM node
+    #. Wait for nova services work
+    #. Delete server
+    #. Delete volume
+    #. Delete floating IP
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete keypair
+    #. Delete cirros image
+    """
+
+    mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
+    rabbit_node_names, _, _, rabbit_status = get_rabbitmq_cluster_data()
+    rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
+
+    kvm_node = os_faults_steps.get_node_by_cmd(config.TCP_KVM_NODE_CMD)
+
+    power_off_nodes(kvm_node)
+    time.sleep(config.TIME_AFTER_SHUTDOWN_KVM_NODE)
+
+    alive_nova_nodes = os_faults_steps.get_nodes_with_any_service(
+        [config.NOVA_API, config.NOVA_COMPUTE])
+    alive_nova_host_names = [host_steps.get_host(fqdn=node.fqdn).host_name for
+                             node in alive_nova_nodes]
+
+    nova_service_steps.check_services_up(
+        host_names=alive_nova_host_names,
+        timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
+
+    server = server_steps.create_servers(image=cirros_image,
+                                         flavor=tiny_flavor,
+                                         networks=[net_subnet_router[0]],
+                                         security_groups=[security_group],
+                                         username=config.CIRROS_USERNAME,
+                                         password=config.CIRROS_PASSWORD,
+                                         keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
+    attach_volume_to_server(server, volume)
+
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
+                                       server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
+
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
+    _, _, _, rabbit_status = get_rabbitmq_cluster_data()
+    rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
+
+    # TODO(ssokolov) check alarms
+
+
+@platform.mk2x
+@pytest.mark.requires("kvm_nodes_count >= 1")
+@pytest.mark.idempotent_id('128c1157-d395-4d0c-b01c-d674eeb1238b')
+def test_reboot_kvm_node(cirros_image,
+                         keypair,
+                         tiny_flavor,
+                         security_group,
+                         net_subnet_router,
+                         nova_floating_ip,
+                         attach_volume_to_server,
+                         volume_steps,
+                         server_steps,
+                         nova_service_steps,
+                         get_rabbitmq_cluster_data,
+                         rabbitmq_steps,
+                         os_faults_steps):
+    """**Scenario:** Check functionality after reboot of KVM node
+
+    **Setup:**
+
+    #. Create cirros image
+    #. Create keypair
+    #. Create security group
+    #. Create network, subnet and router
+    #. Create floating IP
+
+    **Steps:**
+
+    #. Check Galera state
+    #. Check status of RabbitMQ cluster
+    #. Reboot KVM node
+    #. Wait for nova services work
+    #. Create server with volume
+    #. Attach floating IP
+    #. Check connectivity from server
+    #. Check Galera state
+    #. Check status of RabbitMQ cluster
+    #. Check alarms
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete volume
+    #. Delete floating IP
+    #. Delete network, subnet, router
+    #. Delete security group
+    #. Delete keypair
+    #. Delete cirros image
+    """
+
+    mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
+    rabbit_node_names, _, _, rabbit_status = get_rabbitmq_cluster_data()
+    rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
+
+    kvm_node = os_faults_steps.get_node_by_cmd(config.TCP_KVM_NODE_CMD)
+
+    os_faults_steps.reset_nodes(kvm_node)
+
+    os_faults_steps.check_all_nodes_availability(
+        timeout=config.NODES_ON_KVM_START_TIMEOUT)
+
+    nova_service_steps.check_services_up(
+        timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
+
+    server = server_steps.create_servers(image=cirros_image,
+                                         flavor=tiny_flavor,
+                                         networks=[net_subnet_router[0]],
+                                         security_groups=[security_group],
+                                         username=config.CIRROS_USERNAME,
+                                         password=config.CIRROS_PASSWORD,
+                                         keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
+    attach_volume_to_server(server, volume)
+
+    server_steps.attach_floating_ip(server, nova_floating_ip)
+
+    with server_steps.get_server_ssh(server,
+                                     nova_floating_ip.ip) as server_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
+                                       server_ssh,
+                                       timeout=config.PING_CALL_TIMEOUT)
+
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
+    _, _, _, rabbit_status = get_rabbitmq_cluster_data()
+    rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
+
+    # TODO(ssokolov) check alarms
