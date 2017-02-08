@@ -191,3 +191,19 @@ def test_rados_bucket_presents_in_list(container_steps):
     #. Delete bucket
     """
     container_steps.create()
+
+
+@pytest.mark.idempotent_id('cd5c81cf-3760-4fad-a060-e589f3a17bc4')
+@pytest.mark.requires('glance_backend == "rbd"')
+def test_rados_bucket_does_not_present_in_list(container_steps):
+    """**Scenario:** Delete bucket from Object Storage (RadosGW).
+
+    **Steps:**
+
+    #. Create new bucket
+    #. Delete bucket
+    #. Check bucket doesn't exist in buckets list
+    """
+    bucket_name = next(utils.generate_ids())
+    container_steps.create(bucket_name=bucket_name)
+    container_steps.delete(bucket_name=bucket_name)
