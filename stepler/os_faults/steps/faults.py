@@ -1688,6 +1688,26 @@ class OsFaultsSteps(base.BaseSteps):
         return fqdns[0]
 
     @steps_checker.step
+    def get_mysql_credentials(self, mysql_nodes):
+        """Step to get mysql username and password from config file.
+
+        Args:
+            mysql_nodes (NodeCollection): nodes with mysql
+
+        Returns:
+            tuple: (username, password)
+
+        Raises:
+            ValueError|IndexError: if unexpected format of config files
+        """
+        cmd = "grep wsrep_sst_auth {}".format(config.MYSQL_CONFIG_FILE)
+        results = self.execute_cmd(mysql_nodes, cmd)
+        stdout = results[0].payload['stdout']
+        # wsrep_sst_auth=root:sJI8rf5YGypAnuf4
+        username, password = stdout.split('=')[1].split(':')
+        return username, password
+
+    @steps_checker.step
     def check_galera_cluster_state(self, member_nodes, nodes_to_check=None):
         """Step to check galera cluster parameters.
 
@@ -1710,7 +1730,9 @@ class OsFaultsSteps(base.BaseSteps):
             TimeoutException: if no response from cluster after timeout
         """
         cluster_params = {}
-        cmd = config.GALERA_CLUSTER_STATUS_CHECK_CMD
+        username, password = self.get_mysql_credentials(member_nodes)
+        cmd = "mysql -u {0} -p{1} -e \"{2}\"".format(
+            username, password, config.GALERA_CLUSTER_STATUS_CHECK_CMD)
         nodes_to_check = nodes_to_check or member_nodes
 
         def _wait_successful_command_response():
@@ -1756,17 +1778,22 @@ class OsFaultsSteps(base.BaseSteps):
             AnsibleExecutionException: if command execution failed
             AssertionError: if result of 'select' command is wrong
         """
+        username, password = self.get_mysql_credentials(nodes)
+        cmd = "mysql -u {0} -p{1}".format(username, password) + " -e \"{}\""
         for main_host in nodes:
             main_node = self.get_node(fqdns=[main_host.fqdn])
             # Create database and table
-            self.execute_cmd(main_node, config.MYSQL_CREATE_TABLE_CMD)
+            self.execute_cmd(main_node,
+                             cmd.format(config.MYSQL_CREATE_TABLE_CMD))
             # Execute 'select' on all nodes
-            results = self.execute_cmd(nodes, config.MYSQL_CHECK_TABLE_CMD)
+            results = self.execute_cmd(
+                nodes, cmd.format(config.MYSQL_CHECK_TABLE_CMD))
             for result in results:
                 stdout = result.payload['stdout']
                 assert_that(stdout, is_(config.MYSQL_EXPECTED_RESULT))
             # Delete database
-            self.execute_cmd(main_node, config.MYSQL_DELETE_DATABASE_CMD)
+            self.execute_cmd(main_node,
+                             cmd.format(config.MYSQL_DELETE_DATABASE_CMD))
 
     @steps_checker.step
     def get_nodes_ip_for_interface(self, nodes, interface, check=True):
