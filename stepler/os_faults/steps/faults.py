@@ -1743,6 +1743,32 @@ class OsFaultsSteps(base.BaseSteps):
             assert_that(actual_incoming_addr, equal_to(expected_incoming_addr))
 
     @steps_checker.step
+    def check_galera_data_replication(self, nodes):
+        """Step to check galera data replication.
+
+        This step checks that a new table created in database on one node is
+        visible on other nodes.
+
+        Args:
+            nodes (NodeCollection): nodes of Galera cluster
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            AssertionError: if result of 'select' command is wrong
+        """
+        for main_host in nodes:
+            main_node = self.get_node(fqdns=[main_host.fqdn])
+            # Create database and table
+            self.execute_cmd(main_node, config.MYSQL_CREATE_TABLE_CMD)
+            # Execute 'select' on all nodes
+            results = self.execute_cmd(nodes, config.MYSQL_CHECK_TABLE_CMD)
+            for result in results:
+                stdout = result.payload['stdout']
+                assert_that(stdout, is_(config.MYSQL_EXPECTED_RESULT))
+            # Delete database
+            self.execute_cmd(main_node, config.MYSQL_DELETE_DATABASE_CMD)
+
+    @steps_checker.step
     def get_nodes_ip_for_interface(self, nodes, interface, check=True):
         """Step to get specific interface ips of nodes.
 
@@ -1830,3 +1856,35 @@ class OsFaultsSteps(base.BaseSteps):
         cmd = "df -hk {0} | awk 'NR==2 {{print $4}}'".format(path)
         results = self.execute_cmd(node, cmd, check=check)
         return results[0].payload['stdout']
+
+    @steps_checker.step
+    def block_iptables_input_output(self, node, duration, check=True):
+        """Step to block input/output on node during some time.
+
+        This step blocks input/output on node using iptables.
+        Restoration of original iptables rules is scheduled i.e. it is done
+        after finishing this step.
+
+        Args:
+            nodes (NodeCollection): nodes
+            duration (int): time between block and unblock input/output
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            AnsibleExecutionException: if command execution
+                failed in case of check=True
+            AssertionError: if node is available after blocking
+        """
+        rule_file = '/tmp/iptables.rules'
+        cmd = ("(sleep {0}; iptables-save > {1}; "
+               "iptables -P INPUT DROP; iptables -P OUTPUT DROP; "
+               "sleep {2}; iptables-restore < {1}) &".
+               format(config.TIME_BEFORE_NETWORK_DOWN, rule_file, duration))
+        # sleep before is necessary for correct execution of os-fault command
+        self.execute_cmd(node, cmd, check=check)
+        time.sleep(config.TIME_BEFORE_NETWORK_DOWN + 1)
+        if check:
+            # no access to node during some time
+            results = self.execute_cmd(node, "date", check=False)
+            assert_that(results, only_contains(
+                has_properties(status=config.STATUS_UNREACHABLE)))
