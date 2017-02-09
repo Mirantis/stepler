@@ -79,10 +79,14 @@ def nova_availability_zone(availability_zone_steps):
 def nova_availability_zone_hosts(nova_availability_zone):
     """Fixture to get all hosts from nova availability zone.
 
+    This fixture gets all hosts from nova availability zone except for
+    ironic nodes.
+
     Args:
         nova_availability_zone (object): nova zone object.
 
     Returns:
         list: str FQDN values
     """
-    return nova_availability_zone.hosts.keys()
+    return [host for host in nova_availability_zone.hosts
+            if not host.startswith('ironic')]
