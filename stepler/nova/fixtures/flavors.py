@@ -100,7 +100,7 @@ def flavor(request, create_flavor):
     Returns:
         function: function to create single flavor with options
     """
-    flavor_params = dict(ram=1024, vcpus=1, disk=5)
+    flavor_params = dict(ram=512, vcpus=1, disk=5)
     flavor_params.update(getattr(request, 'param', {}))
     flavor_name = next(generate_ids('flavor'))
     return create_flavor(flavor_name, **flavor_params)
