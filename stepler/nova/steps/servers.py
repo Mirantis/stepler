@@ -28,7 +28,6 @@ from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
                       has_item, is_, is_in, is_not, less_than_or_equal_to,
                       raises, greater_than, has_key)  # noqa H301
 
-from keystoneclient import exceptions as keystone_exceptions
 from novaclient import exceptions as nova_exceptions
 import paramiko
 
@@ -1761,22 +1760,27 @@ class ServerSteps(base.BaseSteps):
             raises(nova_exceptions.BadRequest, exception_message))
 
     @steps_checker.step
-    def check_servers_actions_not_available(self, get_server_steps):
-        """Step to check servers actions if no free space on controller.
+    def check_servers_actions_not_available(self, timeout=0):
+        """Step to check that servers actions are not available.
+
+        This step checks that some exception occurs when getting server list
+        during some time period.
 
         Args:
-            get_server_steps (function): function to get server steps
+            timeout (int): seconds to wait exception
 
         Raises:
-            TimeoutExpired: if no GatewayTimeout exception occurs after timeout
+            TimeoutExpired: if no exception occurs during timeout
         """
+
         def _is_servers_action_unavailable():
             try:
-                get_server_steps()
+                self.get_servers()
                 is_available = True
-            except keystone_exceptions.GatewayTimeout:
+            except Exception:
+                # ex: oslo_db.exception.DBError or other internal exceptions
+                # (cannot specify exactly)
                 is_available = False
             return waiter.expect_that(is_available, equal_to(False))
 
-        waiter.wait(_is_servers_action_unavailable,
-                    timeout_seconds=config.GALERA_CLUSTER_DOWN_TIMEOUT)
+        waiter.wait(_is_servers_action_unavailable, timeout_seconds=timeout)
