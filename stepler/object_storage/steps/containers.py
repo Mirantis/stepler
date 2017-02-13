@@ -250,3 +250,57 @@ class ContainerCephSteps(base.BaseSteps):
                 assert_that(bucket_name, is_in(bucket['Name']))
             else:
                 assert_that(bucket_name, is_not(is_in(bucket['Name'])))
+
+    @steps_checker.step
+    def put_object(self, bucket_name, key, check=True):
+        """Step to put object to bucket.
+
+         Args:
+            bucket_name (str): bucket name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        self._client.put_object(Bucket=bucket_name, Key=key)
+        if check:
+            self.check_object_presence(bucket_name=bucket_name, key=key)
+
+    @steps_checker.step
+    def delete_object(self, bucket_name, key, check=True):
+        """Step to delete object from bucket.
+
+         Args:
+            bucket_name (str): bucket name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        self._client.delete_object(Bucket=bucket_name, Key=key)
+        if check:
+            self.check_object_presence(bucket_name=bucket_name, key=key,
+                                       must_present=False)
+
+    @steps_checker.step
+    def check_object_presence(self, bucket_name, key, must_present=True):
+        """Step to check object presence.
+
+         Args:
+             bucket_name (str): bucket name
+             key(str): key of object
+             must_present (bool, optional): flag whether object should exist
+             or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        list_of_keys_objects = [
+            obj['Key'] for obj in self._client.list_objects(
+                Bucket=bucket_name)['Contents']]
+        if must_present:
+            assert_that(key, is_in(list_of_keys_objects))
+        else:
+            assert_that(key, is_not(is_in(list_of_keys_objects)))
