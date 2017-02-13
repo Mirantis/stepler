@@ -17,6 +17,8 @@ os_faults fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
 import os_faults
 import pytest
 
@@ -24,6 +26,7 @@ from stepler import config
 from stepler.os_faults.steps import OsFaultsSteps
 from stepler import os_faults_config
 from stepler.third_party import context
+from stepler.third_party import network_checks
 
 __all__ = [
     'os_faults_client',
@@ -32,6 +35,7 @@ __all__ = [
     'execute_command_with_rollback',
     'nova_api_node',
     'ironic_api_node',
+    'shutdown_nodes',
 ]
 
 
@@ -147,3 +151,42 @@ def ironic_api_node(os_faults_steps):
         obj: node with ironic-api service
     """
     return os_faults_steps.get_node(service_names=[config.IRONIC_API])
+
+
+@pytest.fixture
+def shutdown_nodes(os_faults_steps, get_nova_client, nova_service_steps):
+    """Callable fixture to shutdown nodes gracefully.
+
+    Can be called several times during a test.
+    After the test all stopped nodes are powered on.
+
+    Args:
+        os_faults_steps (object): instantiated os_faults steps
+
+    Yields:
+        function: function to shutdown nodes
+    """
+    stopped_fqdns = []
+
+    def _shutdown_nodes(nodes):
+        os_faults_steps.shutdown_nodes(nodes)
+        fqdns = [node.fqdn for node in nodes]
+        stopped_fqdns.extend(fqdns)
+
+    yield _shutdown_nodes
+
+    fqdns_to_start = []
+    for fqdn in stopped_fqdns:
+        node = os_faults_steps.get_node(fqdns=[fqdn])
+        ip = node.get_ips()[0]
+        if not network_checks.check_tcp_connect(ip):
+            fqdns_to_start.append(fqdn)
+
+    if fqdns_to_start:
+        nodes_to_start = os_faults_steps.get_nodes(fqdns=fqdns_to_start)
+        os_faults_steps.poweron_nodes(nodes_to_start)
+        # reinit nova client and wait for its availability
+        get_nova_client()
+        nova_service_steps.check_services_up(
+            timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+        time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
