@@ -263,3 +263,60 @@ class ContainerCephSteps(base.BaseSteps):
             assert_that(bucket, is_in(containers_name_list['Buckets']))
         else:
             assert_that(bucket, is_not(is_in(containers_name_list['Buckets'])))
+
+    @steps_checker.step
+    def put_object_radow(self, container_name, key, check=True):
+
+        """Step to put object to container.
+
+         Args:
+            container_name (str): container name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        self._client.put_object(Bucket=container_name, Key=key)
+        if check:
+            self.check_object_presence_radow(Bucket=container_name, key=key)
+
+    @steps_checker.step
+    def delete_object_from_container_radow(self, container_name, key,
+                                           check=True):
+        """Step to delete object to container.
+
+         Args:
+            container_name (str): container name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        self._client.delete_object(Bucket=container_name, Key=key)
+        if check:
+            self.check_object_presence_radow(container_name, key=key,
+                                             must_present=False)
+
+    @steps_checker.step
+    def check_object_presence_radow(self, container_name, key,
+                                    must_present=True):
+        """Step to check object presence.
+
+         Args:
+             container_name (str): container name
+             key(str): key of object
+             must_present (bool, optional): flag whether object should exist
+             or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        list_of_keys_objects = [
+            object['Key'] for object in self._client.list_objects(
+                Bucket=container_name)['Contents']]
+        if must_present:
+            assert_that(key, is_in(list_of_keys_objects))
+        if not must_present:
+            assert_that(key, is_not(is_in(list_of_keys_objects)))
