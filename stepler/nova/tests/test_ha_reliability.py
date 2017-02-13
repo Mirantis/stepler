@@ -37,12 +37,12 @@ pytestmark = pytest.mark.destructive
                          ids=['without workload', 'with workload'])
 def test_shutdown_vip_controller(cirros_image,
                                  keypair,
-                                 flavor,
+                                 tiny_flavor,
                                  security_group,
                                  net_subnet_router,
                                  nova_floating_ip,
                                  attach_volume_to_server,
-                                 volume,
+                                 volume_steps,
                                  server_steps,
                                  nova_service_steps,
                                  host_steps,
@@ -59,16 +59,14 @@ def test_shutdown_vip_controller(cirros_image,
 
     #. Create cirros image
     #. Create keypair
-    #. Create flavor
     #. Create security group
     #. Create network, subnet and router
     #. Create floating IP
-    #. Create volume
 
     **Steps:**
 
     #. Start Openstack workload generation (optional)
-    #. Get current states of Nova services and Galera
+    #. Check Galera state
     #. Check status of RabbitMQ cluster
     #. Shutdown controller holding VIP
     #. Wait until basic OpenStack operations start working
@@ -83,21 +81,19 @@ def test_shutdown_vip_controller(cirros_image,
     **Teardown:**
 
     #. Stop Openstack workload generation (optional)
-    #. Delete volume
     #. Delete server
+    #. Delete volume
     #. Delete network, subnet, router
     #. Delete floating IP
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
     #. Delete cirros image
     """
     if os_workload:
         generate_os_workload(config.OS_LOAD_GENERATOR)
 
-    nova_services_init = nova_service_steps.get_services()
-
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     cluster_node_names, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -115,16 +111,16 @@ def test_shutdown_vip_controller(cirros_image,
     nova_service_steps.check_services_up(
         host_names=alive_host_names,
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
-
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
     server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
+                                         flavor=tiny_flavor,
                                          networks=[net_subnet_router[0]],
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME,
                                          password=config.CIRROS_PASSWORD,
                                          keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -137,12 +133,11 @@ def test_shutdown_vip_controller(cirros_image,
 
     os_faults_steps.poweron_nodes(vip_controller)
 
-    nova_service_steps.check_service_states(
-        nova_services_init,
+    nova_service_steps.check_services_up(
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
-    os_faults_steps.check_service_state(service_name=config.MYSQL,
-                                        nodes=mysql_nodes)
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     _, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -152,15 +147,15 @@ def test_shutdown_vip_controller(cirros_image,
 @pytest.mark.idempotent_id('75d405d0-1f31-498c-b144-3b160b85a39e')
 def test_power_off_cluster(cirros_image,
                            keypair,
-                           flavor,
+                           tiny_flavor,
                            security_group,
                            net_subnet_router,
                            nova_floating_ip,
                            attach_volume_to_server,
-                           volume,
+                           volume_steps,
+                           server_steps,
                            get_nova_client,
                            nova_service_steps,
-                           server_steps,
                            rabbitmq_steps,
                            get_rabbitmq_cluster_data,
                            os_faults_steps):
@@ -170,15 +165,13 @@ def test_power_off_cluster(cirros_image,
 
     #. Create cirros image
     #. Create keypair
-    #. Create flavor
     #. Create security group
     #. Create network, subnet and router
-    #. Create volume
     #. Create floating IP
 
     **Steps:**
 
-    #. Get current states of Nova services and Galera
+    #. Check Galera state
     #. Check status of RabbitMQ cluster
     #. Power off the all nodes at once
     #. Wait for 5 minutes
@@ -192,16 +185,16 @@ def test_power_off_cluster(cirros_image,
 
     **Teardown:**
 
-    #. Delete volume
     #. Delete server
+    #. Delete volume
     #. Delete floating IP
     #. Delete network, subnet, router
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
     #. Delete cirros image
     """
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     cluster_node_names, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -219,21 +212,19 @@ def test_power_off_cluster(cirros_image,
         node = os_faults_steps.get_nodes(fqdns=[fqdn])
         os_faults_steps.poweron_nodes(node)
 
-    # reinit nova client and wait for its availability
     get_nova_client()
-
     nova_service_steps.check_services_up(
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
-
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
     server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
+                                         flavor=tiny_flavor,
                                          networks=[net_subnet_router[0]],
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME,
                                          password=config.CIRROS_PASSWORD,
                                          keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -244,8 +235,7 @@ def test_power_off_cluster(cirros_image,
                                        server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
 
-    os_faults_steps.check_service_state(service_name=config.MYSQL,
-                                        nodes=mysql_nodes)
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     _, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -255,12 +245,12 @@ def test_power_off_cluster(cirros_image,
 @pytest.mark.idempotent_id('7509ac93-f0a3-4b62-84dc-ed722e3eba55')
 def test_network_outage(cirros_image,
                         keypair,
-                        flavor,
+                        tiny_flavor,
                         security_group,
                         net_subnet_router,
                         nova_floating_ip,
-                        volume,
                         attach_volume_to_server,
+                        volume_steps,
                         router_steps,
                         server_steps,
                         nova_service_steps,
@@ -273,15 +263,13 @@ def test_network_outage(cirros_image,
 
     #. Create cirros image
     #. Create keypair
-    #. Create flavor
     #. Create security group
     #. Create network, subnet and router
     #. Create floating IP
-    #. Create volume
 
     **Steps:**
 
-    #. Get current states of Nova services and Galera
+    #. Check Galera state
     #. Check status of RabbitMQ cluster
     #. Switch off ports on router
     #. Wait for 5 minutes
@@ -295,18 +283,16 @@ def test_network_outage(cirros_image,
 
     **Teardown:**
 
-    #. Delete volume
     #. Delete server
+    #. Delete volume
     #. Delete floating IP
     #. Delete network, subnet, router
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
     #. Delete cirros image
     """
-    nova_services_init = nova_service_steps.get_services()
-
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     cluster_node_names, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -316,19 +302,18 @@ def test_network_outage(cirros_image,
 
     time.sleep(config.NETWORK_OUTAGE_TIME)
 
-    router_steps.update_router(router, admin_state_up=True)
-
-    nova_service_steps.check_service_states(
-        nova_services_init,
+    nova_service_steps.check_services_up(
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
+    time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
     server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
-                                         networks=[network],
+                                         flavor=tiny_flavor,
+                                         networks=[net_subnet_router[0]],
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME,
                                          password=config.CIRROS_PASSWORD,
                                          keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -339,8 +324,7 @@ def test_network_outage(cirros_image,
                                        server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
 
-    os_faults_steps.check_service_state(service_name=config.MYSQL,
-                                        nodes=mysql_nodes)
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     _, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -355,12 +339,12 @@ def test_network_outage(cirros_image,
                          ids=['without workload', 'with workload'])
 def test_reboot_vip_controller(cirros_image,
                                keypair,
-                               flavor,
+                               tiny_flavor,
                                security_group,
                                net_subnet_router,
                                nova_floating_ip,
                                attach_volume_to_server,
-                               volume,
+                               volume_steps,
                                server_steps,
                                nova_service_steps,
                                rabbitmq_steps,
@@ -376,16 +360,14 @@ def test_reboot_vip_controller(cirros_image,
 
     #. Create cirros image
     #. Create keypair
-    #. Create flavor
     #. Create security group
     #. Create network, subnet and router
     #. Create floating IP
-    #. Create volume
 
     **Steps:**
 
     #. Start Openstack workload generation (optional)
-    #. Get current states of Nova services and Galera
+    #. Check Galera state
     #. Check status of RabbitMQ cluster
     #. Reboot controller holding VIP
     #. Wait until basic OpenStack operations start working
@@ -398,21 +380,19 @@ def test_reboot_vip_controller(cirros_image,
     **Teardown:**
 
     #. Stop Openstack workload generation (optional)
-    #. Delete volume
     #. Delete server
+    #. Delete volume
     #. Delete floating IP
     #. Delete network, subnet, router
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
     #. Delete cirros image
     """
     if os_workload:
         generate_os_workload(config.OS_LOAD_GENERATOR)
 
-    nova_services_init = nova_service_steps.get_services()
-
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     cluster_node_names, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -422,19 +402,18 @@ def test_reboot_vip_controller(cirros_image,
 
     os_faults_steps.reset_nodes(vip_controller)
 
-    nova_service_steps.check_service_states(
-        nova_services_init,
+    nova_service_steps.check_services_up(
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
-
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
     server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
+                                         flavor=tiny_flavor,
                                          networks=[net_subnet_router[0]],
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME,
                                          password=config.CIRROS_PASSWORD,
                                          keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -445,8 +424,7 @@ def test_reboot_vip_controller(cirros_image,
                                        server_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
 
-    os_faults_steps.check_service_state(service_name=config.MYSQL,
-                                        nodes=mysql_nodes)
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     _, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
@@ -461,12 +439,12 @@ def test_reboot_vip_controller(cirros_image,
                          ids=['without workload', 'with workload'])
 def test_stop_rabbitmq(cirros_image,
                        keypair,
-                       flavor,
+                       tiny_flavor,
                        security_group,
                        net_subnet_router,
                        nova_floating_ip,
                        attach_volume_to_server,
-                       volume,
+                       volume_steps,
                        server_steps,
                        rabbitmq_steps,
                        get_rabbitmq_cluster_data,
@@ -481,11 +459,9 @@ def test_stop_rabbitmq(cirros_image,
 
     #. Create cirros image
     #. Create keypair
-    #. Create flavor
     #. Create security group
     #. Create network, subnet and router
     #. Create floating IP
-    #. Create volume
 
     **Steps:**
 
@@ -507,12 +483,11 @@ def test_stop_rabbitmq(cirros_image,
     **Teardown:**
 
     #. Stop Openstack workload generation (optional)
-    #. Delete volume
     #. Delete server
+    #. Delete volume
     #. Delete floating IP
     #. Delete network, subnet, router
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
     #. Delete cirros image
     """
@@ -520,6 +495,7 @@ def test_stop_rabbitmq(cirros_image,
         generate_os_workload(config.OS_LOAD_GENERATOR)
 
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     cluster_node_names, fqdns, ip_addresses, cluster_status = (
         get_rabbitmq_cluster_data())
@@ -533,12 +509,13 @@ def test_stop_rabbitmq(cirros_image,
     time.sleep(config.TIME_AFTER_RABBITMQ_STOP)
 
     server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
+                                         flavor=tiny_flavor,
                                          networks=[net_subnet_router[0]],
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME,
                                          password=config.CIRROS_PASSWORD,
                                          keypair=keypair)[0]
+    volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
     server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -564,8 +541,7 @@ def test_stop_rabbitmq(cirros_image,
 
     rabbitmq_steps.check_traffic(ip_addresses)
 
-    os_faults_steps.check_service_state(service_name=config.MYSQL,
-                                        nodes=mysql_nodes)
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
 
 @platform.mk2x
@@ -577,7 +553,7 @@ def test_stop_rabbitmq(cirros_image,
                          ids=['without workload', 'with workload'])
 def test_unplug_network(cirros_image,
                         keypair,
-                        flavor,
+                        tiny_flavor,
                         security_group,
                         net_subnet_router,
                         nova_floating_ip,
@@ -597,7 +573,6 @@ def test_unplug_network(cirros_image,
 
     #. Create cirros image
     #. Create keypair
-    #. Create flavor
     #. Create security group
     #. Create network, subnet and router
     #. Create floating IP
@@ -625,7 +600,6 @@ def test_unplug_network(cirros_image,
     #. Delete floating IP
     #. Delete network, subnet, router
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
     #. Delete cirros image
     """
@@ -663,7 +637,7 @@ def test_unplug_network(cirros_image,
     os_faults_steps.check_galera_data_replication(enabled_mysql_nodes)
 
     server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
+                                         flavor=tiny_flavor,
                                          networks=[net_subnet_router[0]],
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME,
@@ -702,12 +676,12 @@ def test_unplug_network(cirros_image,
                          ids=['stop', 'kill-9'])
 def test_stop_keepalived(cirros_image,
                          keypair,
-                         flavor,
+                         tiny_flavor,
                          security_group,
                          net_subnet_router,
                          nova_floating_ip,
                          attach_volume_to_server,
-                         volume,
+                         volume_steps,
                          server_steps,
                          rabbitmq_steps,
                          get_rabbitmq_cluster_data,
@@ -724,11 +698,9 @@ def test_stop_keepalived(cirros_image,
 
     #. Create cirros image
     #. Create keypair
-    #. Create flavor
     #. Create security group
     #. Create network, subnet and router
     #. Create floating IP
-    #. Create volume
 
     **Steps:**
 
@@ -746,18 +718,18 @@ def test_stop_keepalived(cirros_image,
     **Teardown:**
 
     #. Stop Openstack workload generation
-    #. Delete volume
     #. Delete server
+    #. Delete volume
     #. Delete floating IP
     #. Delete network, subnet, router
     #. Delete security group
-    #. Delete flavor
     #. Delete keypair
     #. Delete cirros image
     """
     generate_os_workload(config.OS_LOAD_GENERATOR)
 
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
+    os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     cluster_node_names, _, ip_addresses, cluster_status = (
         get_rabbitmq_cluster_data())
@@ -779,12 +751,13 @@ def test_stop_keepalived(cirros_image,
         rabbitmq_steps.check_traffic(ip_addresses)
 
         server = server_steps.create_servers(image=cirros_image,
-                                             flavor=flavor,
+                                             flavor=tiny_flavor,
                                              networks=[net_subnet_router[0]],
                                              security_groups=[security_group],
                                              username=config.CIRROS_USERNAME,
                                              password=config.CIRROS_PASSWORD,
                                              keypair=keypair)[0]
+        volume = volume_steps.create_volumes()[0]
         attach_volume_to_server(server, volume)
 
         server_steps.attach_floating_ip(server, nova_floating_ip)
@@ -795,8 +768,7 @@ def test_stop_keepalived(cirros_image,
                                            server_ssh,
                                            timeout=config.PING_CALL_TIMEOUT)
 
-        os_faults_steps.check_service_state(service_name=config.MYSQL,
-                                            nodes=mysql_nodes)
+        os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     time.sleep(config.TIME_AFTER_KEEPALIVED_START)
 
@@ -804,7 +776,7 @@ def test_stop_keepalived(cirros_image,
 @platform.mk2x
 @pytest.mark.idempotent_id('bcb88d70-d347-45fa-9261-71732ac54523')
 def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
-                                               flavor,
+                                               tiny_flavor,
                                                net_subnet_router,
                                                os_faults_steps,
                                                server_steps):
@@ -813,7 +785,6 @@ def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
     **Setup:**
 
     #. Create cirros image
-    #. Create flavor
     #. Create network, subnet and router
 
     **Steps:**
@@ -829,7 +800,6 @@ def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
 
     #. Delete server
     #. Delete network, subnet and router
-    #. Delete flavor
     #. Delete cirros image
     """
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
@@ -847,8 +817,9 @@ def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
     os_faults_steps.start_service(service_name=config.MYSQL,
                                   nodes=secondary_nodes)
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
+
     server_steps.create_servers(image=cirros_image,
-                                flavor=flavor,
+                                flavor=tiny_flavor,
                                 networks=[net_subnet_router[0]])
 
 
@@ -856,7 +827,7 @@ def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
 @pytest.mark.idempotent_id('c2b89348-30a6-43b1-b547-9d8615f22e29')
 def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
                                                    cirros_image,
-                                                   flavor,
+                                                   tiny_flavor,
                                                    net_subnet_router,
                                                    os_faults_steps,
                                                    server_steps):
@@ -865,7 +836,6 @@ def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
     **Setup:**
 
     #. Create cirros image
-    #. Create flavor
     #. Create network, subnet and router
 
     **Steps:**
@@ -873,6 +843,7 @@ def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
     #. Start Openstack workload generation
     #. Reset one node from Galera cluster
     #. Check that Galera cluster still operational but without rebooted node
+    #. Check Galera data replication
     #. Wait for Galera cluster update after node availability
     #. Check cluster state and size
     #. Create server to check cluster operability
@@ -882,7 +853,6 @@ def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
     #. Stop Openstack workload generation
     #. Delete server
     #. Delete network, subnet and router
-    #. Delete flavor
     #. Delete cirros image
     """
     generate_os_workload(config.OS_LOAD_GENERATOR)
@@ -892,21 +862,24 @@ def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
 
     os_faults_steps.reset_nodes(node_to_reboot)
     os_faults_steps.check_galera_cluster_state(member_nodes=other_nodes)
+    os_faults_steps.check_galera_data_replication(other_nodes)
 
     time.sleep(config.GALERA_CLUSTER_UP_TIMEOUT)
 
     os_faults_steps.check_galera_cluster_state(member_nodes=nodes)
+
     server_steps.create_servers(image=cirros_image,
-                                flavor=flavor,
+                                flavor=tiny_flavor,
                                 networks=[net_subnet_router[0]])
 
 
 @platform.mk2x
 @pytest.mark.idempotent_id('e85c3844-e4ce-48d4-8dd6-0605e65001fb')
 def test_fill_root_filesystem_on_vip_controller(server,
-                                                os_faults_steps,
                                                 server_steps,
-                                                get_server_steps):
+                                                get_server_steps,
+                                                os_faults_steps,
+                                                execute_command_with_rollback):
     """**Scenario:** Check Galera cluster after free up space on controller.
 
     This test checks OpenStack operations fail in case of no free space on
@@ -946,11 +919,13 @@ def test_fill_root_filesystem_on_vip_controller(server,
     server_steps.get_servers()
 
     free_space = os_faults_steps.get_free_space(vip_controller, file_dir)
-    cmd = config.CREATE_FILE_CMD.format(size=free_space, file_path=file_path)
-    os_faults_steps.execute_cmd(vip_controller, cmd)
-    server_steps.check_servers_actions_not_available(get_server_steps)
 
-    cmd = config.REMOVE_FILE_CMD.format(file_path=file_path)
-    os_faults_steps.execute_cmd(vip_controller, cmd)
-    server_steps = get_server_steps()
+    with execute_command_with_rollback(
+            nodes=vip_controller,
+            cmd=config.CREATE_FILE_CMD.format(
+                size=free_space, file_path=file_path),
+            rollback_cmd=config.REMOVE_FILE_CMD.format(file_path=file_path)):
+        server_steps.check_servers_actions_not_available(
+            timeout=config.GALERA_CLUSTER_DOWN_TIMEOUT)
+
     server_steps.get_servers()

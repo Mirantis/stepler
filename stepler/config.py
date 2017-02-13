@@ -561,7 +561,7 @@ SHUTDOWN_BR_EX_CMD = "ip link set br-ex down"
 # http://10.109.4.6:5000/v3 -> 10.109.4.6
 if AUTH_URL:
     VIP = urlparse(AUTH_URL).hostname
-    TCP_VIP_CONTROLLER_CMD = "ip a | grep {}".format(VIP)
+    TCP_VIP_CONTROLLER_CMD = "ip a | grep -w {}".format(VIP)
 
 NODE_REBOOT_CMD = '/sbin/shutdown -r now'
 NODE_SHUTDOWN_CMD = '/sbin/shutdown now'
