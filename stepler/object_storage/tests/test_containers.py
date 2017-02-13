@@ -195,3 +195,33 @@ def test_rados_container_create(container_steps, ec2_steps, user_steps):
     container_name = next(utils.generate_ids())
     session = container_steps.connect_s3(ec2_creds=ec2_creds)
     container_steps.create(session=session, container_name=container_name)
+
+
+@pytest.mark.idempotent_id('e2199c81-4e6e-42b2-9424-6097edebc0f6')
+def test_delete_object_radow(container_steps, ec2_steps, user_steps):
+    """**Scenario:** Delete object from Object Storage (RadosGW).
+
+    **Steps:**
+
+    #. Get ec2 credentials to create ec2 session
+    #. Create new container
+    #. Check container exists in containers list
+    #. Upload object to container
+    #. Delete object
+    #. Check that object doesn't present in container
+
+    **Teardown:**
+
+    #. Delete container
+    #. Delete object
+    """
+    user = user_steps.get_user(name=config.USERNAME)
+    ec2_creds = ec2_steps.list(user)[0]
+    container_name = next(utils.generate_ids())
+    session = container_steps.connect_s3(ec2_creds=ec2_creds)
+    container_steps.create(session=session, container_name=container_name)
+    container_steps.put_object_radow(session=session,
+                                     container_name=container_name,
+                                     key=next(utils.generate_ids()))
+    container_steps.delete_object_from_container_radow(
+        session=session, container_name=container_name)

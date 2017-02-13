@@ -263,3 +263,45 @@ class ContainerCephSteps(base.BaseSteps):
             assert_that(bucket, is_in(containers_name_list['Buckets']))
         else:
             assert_that(bucket, is_not(is_in(containers_name_list['Buckets'])))
+
+    @steps_checker.step('c1ec8c55-3698-4c5a-97bc-3e4205066948')
+    def put_object_radow(self, session, container_name, key, check=True):
+
+        """Step to put object to container.
+
+         Args:
+            session: module to connect to s3
+            container_name (str): container name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        session.put_object(Bucket=container_name, Key=key)
+        if check:
+            session.list_objects(Bucket=container_name)
+
+    @steps_checker.step('69be0793-47f8-43a0-bb9b-27e467b1aa2a')
+    def delete_object_from_container_radow(self, session, container_name,
+                                           check=True):
+        """Step to put object to container.
+
+         Args:
+            session: module to connect to s3
+            container_name (str): container name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        page = session.get_paginator('list_objects')
+        for page in page.paginate(Bucket=container_name):
+            keys = [{'Key': obj['Key']} for obj in page.get('Contents', [])]
+            if keys:
+                session.delete_objects(Bucket=container_name,
+                                       Delete={'Objects': keys})
+        if check:
+             assert_that('Contents', is_not(is_in(session.list_objects(
+                 Bucket=container_name))))
