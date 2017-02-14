@@ -109,7 +109,6 @@ class NeutronSecurityGroupRuleSteps(base.BaseSteps):
             **rule_params (dict, optional): could be:
 
                 * direction (str): 'egress' or 'ingress'
-                * security_group_id (str): id or name of security group
                 * ethertype (str): 'IPv4' or 'IPv6'
                 * protocol (str): icmp, icmpv6, tcp, udp
                 * port_range_min (int|None): starting port range
@@ -121,7 +120,7 @@ class NeutronSecurityGroupRuleSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        rule = self._client.create(**rule_params)
+        rule = self._client.create(security_group_id=group_id, **rule_params)
 
         if check:
             self.check_rule_presence(rule['id'], group_id)
