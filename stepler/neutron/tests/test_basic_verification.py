@@ -250,8 +250,7 @@ def test_neutron_sec_group_rules_quota(current_project,
     params_template = {'direction': 'egress',
                        'protocol': 'icmp',
                        'port_range_min': None,
-                       'port_range_max': None,
-                       'security_group_id': sec_group.id}
+                       'port_range_max': None}
 
     rules_count = len(neutron_security_group_rule_steps.get_rules(
         tenant_id=current_project.id))

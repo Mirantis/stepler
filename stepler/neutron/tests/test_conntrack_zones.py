@@ -194,7 +194,6 @@ def test_ping_unavailable_after_deleting_icmp_rule(
 
     # Add icmp egress rule
     icmp_rule_params = config.SECURITY_GROUP_EGRESS_PING_RULE
-    icmp_rule_params['security_group_id'] = security_group.id
     icmp_rule = neutron_security_group_rule_steps.add_rule_to_group(
         security_group.id, **icmp_rule_params)
 
