@@ -85,21 +85,16 @@ def unexpected_servers_cleanup():
 
 
 @pytest.fixture(scope='session')
-def get_server_steps(get_nova_client, get_availability_zone_steps):
+def get_server_steps(get_nova_client):
     """Callable session fixture to get server steps.
 
     Args:
         get_nova_client (function): function to get nova client
-        get_availability_zone_steps (function): function to get availability
-            zone steps.
 
     Returns:
         function: function to get server steps
     """
     def _get_server_steps(**credentials):
-        zone_steps = get_availability_zone_steps()
-        zone_steps.check_all_active_hosts_available()
-
         return steps.ServerSteps(get_nova_client(**credentials).servers)
 
     return _get_server_steps
