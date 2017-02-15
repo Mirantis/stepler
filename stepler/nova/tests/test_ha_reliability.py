@@ -472,7 +472,7 @@ def test_graceful_shutdown_cluster(cirros_image,
     #. Check Galera state
     #. Check status of RabbitMQ cluster
     #. Start monitoring nodes (if exist)
-    #. Check monitoring (if exist)
+    #. Check monitoring (if exist): services, alarms and metrics
 
     **Teardown:**
 
@@ -539,9 +539,24 @@ def test_graceful_shutdown_cluster(cirros_image,
     rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
 
     if len(mon_nodes) > 0:
-        os_faults_steps.poweron_nodes(mon_nodes)
 
-        # TODO(ssokolov) check monitoring
+        os_faults_steps.poweron_nodes(mon_nodes)
+        time.sleep(config.TIME_AFTER_START_MON_NODE)
+
+        for service in config.STACKLIGHT_SERVICES:
+            os_faults_steps.check_service_state(service_name=service,
+                                                nodes=mon_nodes)
+
+        time_start = time.time()
+        node = os_faults_steps.get_node(service_names=[config.NOVA_COMPUTE])
+        os_faults_steps.terminate_service(config.NOVA_COMPUTE, node)
+        time.sleep(config.TIME_BETWEEN_STOP_START_SERVICE)
+        os_faults_steps.start_service(config.NOVA_COMPUTE, node)
+        time.sleep(config.TIME_BEFORE_ALARM_CHECK)
+        os_faults_steps.check_alarms(
+            mon_nodes, time_start, expected_alarms=[config.TCP_EXPECTED_ALARM])
+
+        os_faults_steps.check_metrics(mon_nodes, time_start)
 
 
 @platform.mk2x
@@ -1099,7 +1114,6 @@ def test_shutdown_kvm_node(cirros_image,
     #. Delete keypair
     #. Delete cirros image
     """
-
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
@@ -1120,6 +1134,8 @@ def test_shutdown_kvm_node(cirros_image,
         host_names=alive_nova_host_names,
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
+
+    time_start = time.time()
 
     server = server_steps.create_servers(image=cirros_image,
                                          flavor=tiny_flavor,
@@ -1144,7 +1160,9 @@ def test_shutdown_kvm_node(cirros_image,
     _, _, _, rabbit_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
 
-    # TODO(ssokolov) check alarms
+    mon_nodes = os_faults_steps.get_nodes_by_cmd(config.TCP_MON_NODE_CMD)
+    if len(mon_nodes) > 0:
+        os_faults_steps.check_alarms(mon_nodes, time_start)
 
 
 @platform.mk2x
@@ -1196,7 +1214,6 @@ def test_reboot_kvm_node(cirros_image,
     #. Delete keypair
     #. Delete cirros image
     """
-
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
@@ -1213,6 +1230,8 @@ def test_reboot_kvm_node(cirros_image,
     nova_service_steps.check_services_up(
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
+
+    time_start = time.time()
 
     server = server_steps.create_servers(image=cirros_image,
                                          flavor=tiny_flavor,
@@ -1237,4 +1256,6 @@ def test_reboot_kvm_node(cirros_image,
     _, _, _, rabbit_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
 
-    # TODO(ssokolov) check alarms
+    mon_nodes = os_faults_steps.get_nodes_by_cmd(config.TCP_MON_NODE_CMD)
+    if len(mon_nodes) > 0:
+        os_faults_steps.check_alarms(mon_nodes, time_start)
