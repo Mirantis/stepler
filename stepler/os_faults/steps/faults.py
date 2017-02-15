@@ -23,6 +23,7 @@ import re
 import tempfile
 import time
 import warnings
+import yaml
 
 from hamcrest import (assert_that, empty, equal_to, has_item, has_properties,
                       is_not, only_contains, has_items, has_entries,
@@ -1960,3 +1961,112 @@ class OsFaultsSteps(base.BaseSteps):
             results = self.execute_cmd(node, "date", check=False)
             assert_that(results, only_contains(
                 has_properties(status=config.STATUS_UNREACHABLE)))
+
+    @steps_checker.step
+    def get_influxdb_data(self, mon_node):
+        """Step to get database, username, password, host and port of influxdb.
+
+        Args:
+            mon_node (NodeCollection): monitoring node
+
+        Returns:
+            tuple: (database, username, password, host, port)
+
+        Raises:
+            KeyError: if unexpected output of salt command
+        """
+        results = self.execute_cmd(mon_node, config.TCP_GET_INFLUXDB_DATA_CMD)
+        stdout = results[0].payload['stdout']
+        influxdb_data = yaml.load(stdout)
+        database = influxdb_data['local']['database']['lma']['name']
+        username = influxdb_data['local']['user'][database]['name']
+        password = influxdb_data['local']['user'][database]['password']
+        host = influxdb_data['local']['http']['bind']['address']
+        port = influxdb_data['local']['http']['bind']['port']
+        return database, username, password, host, port
+
+    @steps_checker.step
+    def check_metrics(self, start_time):
+        """Step to check appearance of new metrics during some time interval.
+
+        Metrics are got from influx databases on monitoring nodes.
+        Example of influx command:
+        /usr/bin/influx -database lma -username lma -password lmapass
+        -host 172.16.10.188 -port 8086 -execute '<request>'
+        Example of request:
+        select * from mysql_check where time > now() - 10s
+
+        Args:
+            start_time (float): start time for checking metrics
+
+        Raises:
+            AssertionError: if no new metrics appear
+        """
+        mon_nodes = self.get_nodes_by_cmd(config.TCP_MON_NODE_CMD)
+        for fqdn in [node.fqdn for node in mon_nodes]:
+            mon_node = self.get_node(fqdns=[fqdn])
+            data = self.get_influxdb_data(mon_node)
+            time_sec = int(time.time() - start_time)
+            cmd = config.TCP_CHECK_METRICS_CMD.format(
+                database=data[0], username=data[1],
+                password=data[2], host=data[3],
+                port=data[4], time_sec=time_sec)
+            results = self.execute_cmd(mon_node, cmd)
+            stdout = results[0].payload['stdout']
+            if stdout:
+                break
+        assert_that(stdout, is_not(empty()))
+
+    @steps_checker.step
+    def check_alarms(self, start_time, expected_alarms=None):
+        """Step to check alarms.
+
+        This step checks missing of alarms or present of expected alarms
+        during some time interval.
+        Alarms are got from influx databases on monitoring nodes.
+        Expected alarms are identified by some unique strings in results of
+        requests.
+        Example of influx command:
+        /usr/bin/influx -database lma -username lma -password lmapass
+        -host 172.16.10.188 -port 8086 -execute '<request>'
+        Example of request 1:
+        select * from status where value>0 and hostname!='cfg' and
+        time > now() - 30s
+        Example of request 2:
+        select * from cluster_status where value>0 and time > now() - 30s
+
+        Args:
+            start_time (float): start time for checking alarms
+            expected_alarms (list|None): list of expected alarms
+
+        Raises:
+            AssertionError: if unexpected alarms exist (expected_alarms=None)
+                or no expected alarms
+        """
+        if expected_alarms:
+            expected = dict.fromkeys(expected_alarms, True)
+            present = dict.fromkeys(expected_alarms, False)
+
+        mon_nodes = self.get_nodes_by_cmd(config.TCP_MON_NODE_CMD)
+        for fqdn in [node.fqdn for node in mon_nodes]:
+            mon_node = self.get_node(fqdns=[fqdn])
+            data = self.get_influxdb_data(mon_node)
+            time_sec = int(time.time() - start_time)
+            for cmd_tmpl in (config.TCP_CHECK_ALARMS_CMD1,
+                             config.TCP_CHECK_ALARMS_CMD2):
+                cmd = cmd_tmpl.format(database=data[0], username=data[1],
+                                      password=data[2], host=data[3],
+                                      port=data[4], time_sec=time_sec)
+                results = self.execute_cmd(mon_node, cmd)
+                stdout = results[0].payload['stdout']
+                if expected_alarms:
+                    for expected_alarm in expected_alarms:
+                        if stdout.find(expected_alarm) >= 0:
+                            present[expected_alarm] = True
+                else:
+                    assert_that(stdout, is_(empty()))
+            if expected_alarms and all(present.values()):
+                break
+
+        if expected_alarms:
+            assert_that(present, is_(expected))
