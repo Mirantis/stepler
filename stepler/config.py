@@ -564,7 +564,13 @@ if AUTH_URL:
     TCP_VIP_CONTROLLER_CMD = "ip a | grep -w {}".format(VIP)
 
 TCP_KVM_NODE_CMD = "salt-call pillar.get salt:control:enabled | grep True"
-TCP_MON_NODE_CMD = "salt-call pillar.get nagios:server:enabled | grep True"
+TCP_MON_NODE_CMD = "salt-call pillar.get influxdb:server:enabled | grep True"
+TCP_GET_INFLUXDB_DATA_CMD = "salt-call pillar.get --out=yaml influxdb:server"
+TCP_CHECK_ALARMS_CMD = ("/usr/bin/influx -database {database} "
+                        "-username {username} -password {password} "
+                        "-host {host} -port {port} "
+                        "-execute 'select * from status where value>0 and "
+                        "hostname!='cfg' and time > now() - {time_sec}s'")
 
 NODE_POWEROFF_TIMEOUT = 60
 NODE_SHUTDOWN_TIMEOUT = 3 * 60
