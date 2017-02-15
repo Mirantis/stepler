@@ -1147,6 +1147,8 @@ def test_shutdown_kvm_node(cirros_image,
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
+    time_start = time.time()
+
     server = server_steps.create_servers(image=cirros_image,
                                          flavor=tiny_flavor,
                                          networks=[net_subnet_router[0]],
@@ -1170,11 +1172,11 @@ def test_shutdown_kvm_node(cirros_image,
     _, _, _, rabbit_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
 
-    # TODO(ssokolov) check alarms
+    os_faults_steps.check_alarms(time_start)
 
 
 @platform.mk2x
-@pytest.mark.requires("kvm_nodes_count >= 1")
+# @pytest.mark.requires("kvm_nodes_count >= 1")
 @pytest.mark.idempotent_id('128c1157-d395-4d0c-b01c-d674eeb1238b')
 def test_reboot_kvm_node(cirros_image,
                          keypair,
@@ -1240,6 +1242,8 @@ def test_reboot_kvm_node(cirros_image,
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
 
+    time_start = time.time()
+
     server = server_steps.create_servers(image=cirros_image,
                                          flavor=tiny_flavor,
                                          networks=[net_subnet_router[0]],
@@ -1263,4 +1267,4 @@ def test_reboot_kvm_node(cirros_image,
     _, _, _, rabbit_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(rabbit_status, rabbit_node_names)
 
-    # TODO(ssokolov) check alarms
+    os_faults_steps.check_alarms(time_start)
