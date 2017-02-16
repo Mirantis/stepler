@@ -218,3 +218,26 @@ def test_rados_delete_object_from_bucket(container_steps):
     container_steps.put_object(bucket_name=bucket_name, key=key)
     container_steps.delete_object_from_container(
         bucket_name=bucket_name, key=key)
+
+
+@pytest.mark.idempotent_id('d2dde79c-b4fa-40e0-ad6b-8b88f4abb365')
+def test_rados_upload_big_object(container_steps):
+    """**Scenario:** Upload big object to Object Storage(RadosGW).
+
+    **Steps:**
+
+    #. Create new bucket
+    #. Upload big object to bucket
+    #. Delete object
+    #. Check that object doesn't present in container
+
+    **Teardown:**
+
+    #. Delete bucket
+    #. Delete object
+    """
+    chunksize = 10**10
+    bucket_name, key = utils.generate_ids(count=2)
+    container_steps.create(bucket_name=bucket_name)
+    container_steps.put_object(bucket_name=bucket_name, key=key,
+                               chunksize=chunksize)
