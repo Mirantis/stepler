@@ -287,3 +287,28 @@ def test_download_object(container_steps):
     container_steps.delete_object(container_name=container_name,
                                   object_name=object_name)
     container_steps.delete(container_name=container_name)
+
+
+@pytest.mark.idempotent_id('d2dde79c-b4fa-40e0-ad6b-8b88f4abb365')
+@pytest.mark.requires('glance_backend == "rbd"')
+def test_rados_upload_big_object(container_steps):
+    """**Scenario:** Upload big object to Object Storage(RadosGW).
+
+    **Steps:**
+
+    #. Create new bucket and big-size object
+    #. Upload big object to bucket
+    #. Delete object from bucket
+    #. Check that object doesn't present in container
+
+    **Teardown:**
+
+    #. Delete object
+    #. Delete bucket
+    """
+    bucket_name, key = utils.generate_ids(count=2)
+    container_steps.create(bucket_name=bucket_name)
+    container_steps.put_object(bucket_name=bucket_name, key=key,
+                               chunksize=10**10)
+    container_steps.delete_object(bucket_name=bucket_name, key=key)
+    container_steps.delete(bucket_name=bucket_name)
