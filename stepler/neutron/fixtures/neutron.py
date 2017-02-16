@@ -93,7 +93,7 @@ def net_subnet_router(network, subnet, router, add_router_interfaces):
 
 @pytest.fixture
 def set_dhcp_agents_count_for_net(request,
-                                  network_steps,
+                                  get_neutron_client,
                                   os_faults_steps,
                                   patch_ini_file_and_restart_services):
     """Function fixture to set DHCP agents count for network.
@@ -110,7 +110,8 @@ def set_dhcp_agents_count_for_net(request,
 
     Args:
         request (obj): py.test SubRequest
-        network_steps (object): instantiated network steps
+        get_neutron_client (function): function to get instantiated neutron
+            client wrapper
         os_faults_steps (object): instantiated os_faults steps
         patch_ini_file_and_restart_services (function): callable fixture to
             patch ini file and restart services
