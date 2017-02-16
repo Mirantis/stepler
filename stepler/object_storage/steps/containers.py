@@ -17,6 +17,8 @@ Object Storage container steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
+
 from hamcrest import (assert_that, empty, is_in, is_not, has_items,
                       has_entries, equal_to)  # noqa H301
 
@@ -267,7 +269,8 @@ class ContainerCephSteps(base.BaseSteps):
                 assert_that(bucket_name, is_not(is_in(bucket['Name'])))
 
     @steps_checker.step
-    def put_object(self, bucket_name, key, check=True):
+    def put_object(self, bucket_name, key, check=True, chunksize=None):
+
         """Step to put object to bucket.
 
          Args:
@@ -278,6 +281,12 @@ class ContainerCephSteps(base.BaseSteps):
          Raises:
             AssertionError: if check failed
         """
+        if chunksize is not None:
+            fileobj = six.BytesIO(b'0' * (chunksize * 3))
+            self._client.upload_object(Fileobj=fileobj, Bucket=bucket_name,
+                                       Key=key)
+            self.check_object_presence(bucket_name=bucket_name, key=key,
+                                       chunksize=chunksize)
         self._client.put_object(Bucket=bucket_name, Key=key)
         if check:
             self.check_object_presence(bucket_name=bucket_name, key=key)
@@ -300,18 +309,25 @@ class ContainerCephSteps(base.BaseSteps):
                                        must_present=False)
 
     @steps_checker.step
-    def check_object_presence(self, bucket_name, key, must_present=True):
+    def check_object_presence(self, bucket_name, key, chunksize=None,
+                              must_present=True):
         """Step to check object presence.
 
          Args:
              bucket_name (str): bucket name
              key(str): key of object
+             chunksize(int): chunksize of bucket
              must_present (bool, optional): flag whether object should exist
              or not
 
          Raises:
             AssertionError: if check failed
         """
+        if chunksize is not None:
+            for obj in self._client.list_objects(
+                    Bucket=bucket_name)['Contents']:
+                if obj['Key'] == key:
+                    assert_that(obj['Size'], equal_to(chunksize))
         list_of_keys_objects = [
             obj['Key'] for obj in self._client.list_objects(
                 Bucket=bucket_name)['Contents']]
