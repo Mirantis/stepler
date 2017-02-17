@@ -19,6 +19,7 @@ Object Storage container steps
 
 from hamcrest import (assert_that, empty, is_in, is_not, has_items,
                       has_entries, equal_to)  # noqa H301
+import tempfile
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -265,3 +266,93 @@ class ContainerCephSteps(base.BaseSteps):
                 assert_that(bucket_name, is_in(bucket['Name']))
             else:
                 assert_that(bucket_name, is_not(is_in(bucket['Name'])))
+
+    @steps_checker.step
+    def put_object(self, bucket_name, key, check=True):
+        """Step to put object to bucket.
+
+         Args:
+            bucket_name (str): bucket name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        self._client.put_object(Bucket=bucket_name, Key=key)
+        if check:
+            self.check_object_presence(bucket_name=bucket_name, key=key)
+
+    @steps_checker.step
+    def get_object(self, bucket_name, key, check=True):
+        """Step to download object from bucket.
+
+        Args:
+            bucket_name (str): bucket name
+            key (str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if check failed
+        """
+        downloaded_key = tempfile.mktemp()
+        with open(downloaded_key, 'wb') as key_data:
+            self._client.download_fileobj(bucket_name, key, key_data)
+        if check:
+            self.check_object_hash(key, downloaded_key)
+        return downloaded_key
+
+    @steps_checker.step
+    def delete_object(self, bucket_name, key, check=True):
+        """Step to delete object from bucket.
+
+         Args:
+            bucket_name (str): bucket name
+            key(str): key of object
+            check (bool, optional): flag whether to check this step or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        self._client.delete_object(Bucket=bucket_name, Key=key)
+        if check:
+            self.check_object_presence(bucket_name=bucket_name, key=key,
+                                       must_present=False)
+
+    @steps_checker.step
+    def check_object_presence(self, bucket_name, key, must_present=True):
+        """Step to check object presence.
+
+         Args:
+             bucket_name (str): bucket name
+             key(str): key of object
+             must_present (bool, optional): flag whether object should exist
+             or not
+
+         Raises:
+            AssertionError: if check failed
+        """
+        list_of_keys_objects = [
+            obj['Key'] for obj in self._client.list_objects(
+                Bucket=bucket_name)['Contents']]
+        if must_present:
+            assert_that(key, is_in(list_of_keys_objects))
+        else:
+            assert_that(key, is_not(is_in(list_of_keys_objects)))
+
+    @steps_checker.step
+    def check_object_hash(self, created_key_name, downloaded_key_name):
+        """Step to check md5 checksum of two buckets.
+
+        Args:
+            created_key_name (str): name of object which was upload to bucket
+            downloaded_key_name (str): name of object which was download
+            from bucket
+
+        Raises:
+            AssertionError: if check failed
+        """
+        md5_sum_of_created_key = utils.get_md5sum(created_key_name)
+        md5_sum_of_downloaded_key = utils.get_md5sum(downloaded_key_name)
+        assert_that(md5_sum_of_created_key,
+                    equal_to(md5_sum_of_downloaded_key))
