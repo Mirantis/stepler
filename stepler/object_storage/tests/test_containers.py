@@ -191,3 +191,27 @@ def test_rados_bucket_presents_in_list(container_steps):
     #. Delete bucket
     """
     container_steps.create()
+
+
+@pytest.mark.idempotent_id('0a02302d-2089-42cc-abaa-f2d63fd6bee3')
+@pytest.mark.requires('glance_backend == "rbd"')
+def test_rados_download_object_from_bucket(container_steps):
+    """**Scenario:** Download object from bucket in Object Storage (RadosGW).
+
+    **Steps:**
+
+    #. Create bucket
+    #. Create object
+    #. Upload object to bucket
+    #. Download object from bucket
+    #. Check content of downloaded object is not empty
+
+    **Teardown:**
+
+    #. Delete object
+    #. Delete bucket
+    """
+    bucket_name, object_name = utils.generate_ids(count=2)
+    container_steps.create(bucket_name=bucket_name)
+    container_steps.put_object(bucket_name=bucket_name, key=object_name)
+    container_steps.get_object(bucket_name=bucket_name, key=object_name)
