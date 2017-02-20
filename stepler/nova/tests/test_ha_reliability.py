@@ -205,9 +205,6 @@ def test_power_off_cluster(cirros_image,
 
     time.sleep(config.TIME_BETWEEN_CLUSTER_RESTART)
 
-    # TODO(ssokolov): replace when os-faults supports 'for node in nodes'
-    # for node in nodes:
-    #     os_faults_steps.poweron_nodes(node)
     for fqdn in [node.fqdn for node in nodes]:
         node = os_faults_steps.get_nodes(fqdns=[fqdn])
         os_faults_steps.poweron_nodes(node)
@@ -251,8 +248,8 @@ def test_network_outage(cirros_image,
                         nova_floating_ip,
                         attach_volume_to_server,
                         volume_steps,
-                        router_steps,
                         server_steps,
+                        get_nova_client,
                         nova_service_steps,
                         rabbitmq_steps,
                         get_rabbitmq_cluster_data,
@@ -297,11 +294,12 @@ def test_network_outage(cirros_image,
     cluster_node_names, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
 
-    network, _, router = net_subnet_router
-    router_steps.update_router(router, admin_state_up=False)
+    interfaces = os_faults_steps.get_physical_interfaces()
+    os_faults_steps.block_interfaces(interfaces, config.NETWORK_OUTAGE_TIME)
 
     time.sleep(config.NETWORK_OUTAGE_TIME)
 
+    get_nova_client()
     nova_service_steps.check_services_up(
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)

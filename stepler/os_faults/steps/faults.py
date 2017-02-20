@@ -1960,3 +1960,89 @@ class OsFaultsSteps(base.BaseSteps):
             results = self.execute_cmd(node, "date", check=False)
             assert_that(results, only_contains(
                 has_properties(status=config.STATUS_UNREACHABLE)))
+
+    @steps_checker.step
+    def get_physical_interfaces(self, check=True):
+        """Step to get physical interfaces (eth, br) of nodes.
+
+        Returns:
+            list: list of tuples (node address, [interface names])
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            AssertionError: if empty list of interfaces
+        """
+        interfaces = []
+        nodes = self.get_nodes()
+        results = self.execute_cmd(nodes, "ip link show")
+        for result in results:
+            interfaces_one_node = []
+            stdout = result.payload['stdout']
+            lines = stdout.split('\n')
+            for ind in range(0, len(lines), 2):
+                line1 = lines[ind]
+                line2 = lines[ind + 1]
+                # 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue ...
+                #    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+                # 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 ...
+                #    link/ether 64:1c:c8:9b:2d:5a brd ff:ff:ff:ff:ff:ff
+                # 12: br-int: <BROADCAST,MULTICAST> mtu 1450 ...state DOWN...
+                #    link/ether ea:07:d9:ea:d9:47 brd ff:ff:ff:ff:ff:ff
+                if re.findall('state DOWN', line1):
+                    continue
+                if not re.findall('link/ether', line2):
+                    continue
+                interface_name = line1.split(':')[1].strip()
+                if not re.match('^(eth|br)', interface_name):
+                    continue
+                interfaces_one_node.append(interface_name)
+            if interfaces_one_node:
+                node_address = result.host
+                interfaces.append((node_address, interfaces_one_node))
+
+        if check:
+            assert_that(interfaces, is_not(empty()))
+
+        return interfaces
+
+    @steps_checker.step
+    def block_interfaces(self, interfaces, duration, check=True):
+        """Step to block input/forward/output of node interfaces.
+
+        This step blocks input/forward/output of node interfaces using
+        iptables. They are blocked during some time.
+        Restoration of original iptables rules is scheduled i.e. it is done
+        after finishing this step.
+
+        Args:
+            interfaces (list): list of tuples (node address, [interface names])
+            duration (int): time between block and unblock input/forward/output
+            check (bool, optional): flag whether to check step or not
+
+        Raises:
+            AnsibleExecutionException: if command execution
+                failed in case of check=True
+            AssertionError: if node is available after blocking
+        """
+        nodes = self.get_nodes()
+        for ip_address, interface_names in interfaces:
+            node = nodes.filter(lambda node: node.ip == ip_address)
+            rule_file = '/tmp/iptables.rules'
+            drop_cmd = ""
+            for name in interface_names:
+                drop_cmd += "iptables -A INPUT -i {} -j DROP; ".format(name)
+                drop_cmd += "iptables -A FORWARD -i {} -j DROP; ".format(name)
+                drop_cmd += "iptables -A OUTPUT -o {} -j DROP; ".format(name)
+            cmd = ("(sleep {0}; iptables-save > {1}; {2}"
+                   "sleep {3}; iptables-restore < {1}) &".
+                   format(config.TIME_BEFORE_NETWORK_DOWN, rule_file,
+                          drop_cmd, duration))
+            self.execute_cmd(node, cmd, check=check)
+
+        time.sleep(config.TIME_BEFORE_NETWORK_DOWN + 1)
+        if check:
+            ip_addresses = [interface[0] for interface in interfaces]
+            nodes = nodes.filter(lambda node: node.ip in ip_addresses)
+            results = self.execute_cmd(nodes, "date", check=False)
+            assert_that(results, only_contains(
+                has_properties(status=config.STATUS_UNREACHABLE)))
