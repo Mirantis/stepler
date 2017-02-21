@@ -207,3 +207,35 @@ def test_rados_bucket_does_not_present_in_list(container_steps):
     bucket_name = next(utils.generate_ids())
     container_steps.create(bucket_name=bucket_name)
     container_steps.delete(bucket_name=bucket_name)
+
+
+@pytest.mark.idempotent_id('03ed9be4-d134-4463-8e4c-c069688209eb')
+def test_download_object(container_steps):
+    """**Scenario:** Download object from Object Storage and checking that this
+    object was not changed.
+
+    **Steps:**
+
+    #. Create container
+    #. Create object
+    #. Upload object to container
+    #. Check that this object presents into the container
+    #. Download object from container
+    #. Check that object was not changed
+
+    **Teardown:**
+
+    #. Delete container
+    #. Delete object
+    """
+    container_name, file_name, content, object_name = utils.generate_ids(
+        count=4)
+    container_steps.create(name=container_name)
+    created_object_name = list(utils.generate_files())[0]
+    container_steps.put_object(container_name=container_name,
+                               object_name=created_object_name,
+                               content=content)
+    container_steps.check_object_from_container(container_name=container_name,
+                                                object_name=created_object_name,
+                                                content=content)
+    container_steps.delete(container_name=container_name)
