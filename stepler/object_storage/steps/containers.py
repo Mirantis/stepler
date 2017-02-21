@@ -190,6 +190,27 @@ class ContainerSwiftSteps(base.BaseSteps):
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
 
+    @steps_checker.step
+    def check_object_from_container(self, container_name, object_name, content,
+                                    check=True):
+        """Step to check that object was not changed after uploading into
+        container .
+
+        Args:
+            container_name (str): container name
+            object_name(str): object name
+            content (str): content to put
+            check (bool, optional): flag whether to check this step or not
+
+        Raises:
+            AssertionError: if object content is not equal to expected content
+        """
+        etag_created_object = self._client.put_object(container_name,
+                                                      object_name, content)
+        if check:
+            assert_that(etag_created_object, equal_to(self._client.get_object(
+                container_name, object_name)[0]['etag']))
+
 
 class ContainerCephSteps(base.BaseSteps):
     """Ceph container steps."""
