@@ -28,7 +28,6 @@ def test_host_resources_info(cirros_image,
                              network,
                              subnet,
                              server_steps,
-                             hypervisor_steps,
                              host_steps):
     """**Scenario:** Get info about resources' usage on nodes.
 
@@ -41,30 +40,27 @@ def test_host_resources_info(cirros_image,
     **Steps:**
 
     #. Get resource info for node-1 and node-2
-    #. Create two instances on node-1
+    #. Create two servers on node-1
     #. Get resource info for node-1 and check that resource usage is
-       changed and project_id appears in results
+       changed and project_id is present in results
     #. Get resource info for node-2 and check that resource usage is
        not changed
-    #. Create two instances on node-2
+    #. Create two servers on node-2
     #. Get resource info for node-1 and check that resource usage is
        not changed
     #. Get resource info for node-2 and check that resource usage is
-       changed and project_id appears in results
+       changed and project_id is present in results
 
     **Teardown:**
 
-    #. Delete instances
+    #. Delete servers
     #. Delete net and subnet
     #. Delete flavor
     #. Delete cirros image
     """
-    hypervisors = hypervisor_steps.get_hypervisors()
-    host_name_1 = hypervisors[0].hypervisor_hostname
-    host_name_2 = hypervisors[1].hypervisor_hostname
-    host_1 = host_steps.get_host(host_name_1)
-    host_2 = host_steps.get_host(host_name_2)
-
+    hosts = [host for host in host_steps.get_hosts() if host.zone == 'nova']
+    host_1 = hosts[0]
+    host_2 = hosts[1]
     usage_data_1 = host_steps.get_usage_data(host_1)
     usage_data_2 = host_steps.get_usage_data(host_2)
 
@@ -73,7 +69,7 @@ def test_host_resources_info(cirros_image,
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        availability_zone='nova:' + host_name_1,
+        availability_zone='nova:' + host_1.host_name,
         username=config.CIRROS_USERNAME)
 
     project_id = servers_host_1[0].tenant_id
@@ -93,7 +89,7 @@ def test_host_resources_info(cirros_image,
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        availability_zone='nova:' + host_name_2,
+        availability_zone='nova:' + host_2.host_name,
         username=config.CIRROS_USERNAME)
 
     project_id = servers_host_2[0].tenant_id
@@ -108,61 +104,49 @@ def test_host_resources_info(cirros_image,
 
 @pytest.mark.idempotent_id('ffc320c3-5688-4442-bcc5-05ae51788d2e')
 @pytest.mark.requires("computes_count >= 2")
-def test_migrate_instances(cirros_image,
-                           network,
-                           subnet,
-                           router,
-                           security_group,
-                           flavor,
-                           add_router_interfaces,
-                           keypair,
-                           hypervisor_steps,
-                           server_steps,
-                           nova_create_floating_ip):
-    """**Scenario:** Migrate instances from the specified host to other hosts.
+def test_migrate_servers(cirros_image,
+                         net_subnet_router,
+                         security_group,
+                         flavor,
+                         keypair,
+                         nova_availability_zone_hosts,
+                         server_steps,
+                         nova_create_floating_ip):
+    """**Scenario:** Migrate servers from the specified host to other hosts.
 
     **Setup:**
 
     #. Upload cirros image
-    #. Create network
-    #. Create subnet
-    #. Create router
+    #. Create network, subnet, router
     #. Create security group with allowed ping and ssh rules
     #. Create flavor
 
     **Steps:**
 
-    #. Set router default gateway to public network
-    #. Add router interface to created network
     #. Boot 3 servers on the same hypervisor
     #. Start migration for all servers
-    #. Check that every instance is rescheduled to other hypervisor
-    #. Confirm resize for every instance
-    #. Check that every migrated instance has an ACTIVE status
-    #. Assign floating ip for all servers.
+    #. Check that every server is rescheduled to other hypervisor
+    #. Confirm resize for every server
+    #. Check that every migrated server has an ACTIVE status
+    #. Assign floating ip for all servers
     #. Send pings between all servers to check network connectivity
 
     **Teardown:**
 
-    #. Delete all servers
+    #. Delete servers
     #. Delete flavor
     #. Delete security group
-    #. Delete router
-    #. Delete subnet
-    #. Delete network
+    #. Delete network, subnet, router
     #. Delete cirros image
     """
-    add_router_interfaces(router, [subnet])
-    hypervisor = hypervisor_steps.get_hypervisors()[0]
-
     servers = server_steps.create_servers(
         count=3,
         image=cirros_image,
         flavor=flavor,
-        networks=[network],
+        networks=[net_subnet_router[0]],
         keypair=keypair,
         security_groups=[security_group],
-        availability_zone='nova:' + hypervisor.hypervisor_hostname,
+        availability_zone='nova:' + nova_availability_zone_hosts[0],
         username=config.CIRROS_USERNAME)
 
     server_steps.migrate_servers(servers)

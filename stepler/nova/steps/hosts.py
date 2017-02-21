@@ -18,7 +18,7 @@ Host steps
 # limitations under the License.
 
 from hamcrest import (assert_that, is_not, equal_to, empty, has_length,
-                      greater_than_or_equal_to)  # noqa
+                      greater_than_or_equal_to, is_in)  # noqa
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -125,8 +125,7 @@ class HostSteps(base.BaseSteps):
 
         The following data are checked:
         - cp, memory_mb, disk_gb (for 'used now' and 'used max')
-        - number of elements in usage data (number of projects)
-        - project ID (only for checked=True)
+        - project ID (optional)
 
         Args:
             host (object): host
@@ -139,22 +138,18 @@ class HostSteps(base.BaseSteps):
         """
         usage_data_new = self.get_usage_data(host)
 
-        # only 'used now' (elem 1) and 'used max' (elem 2) data are checked
-        for ind in (1, 2):
-            for attr in ['cpu', 'memory_mb', 'disk_gb']:
-                value_old = getattr(usage_data_old[ind], attr)
-                value_new = getattr(usage_data_new[ind], attr)
-                if changed:
-                    assert_that(value_new, is_not(equal_to(value_old)))
-                else:
-                    assert_that(value_new, equal_to(value_old))
-
-        value_old = len(usage_data_old)
-        value_new = len(usage_data_new)
         if changed:
-            assert_that(value_new, is_not(equal_to(value_old)))
+            # only 'used now' (elem 1) and 'used max' (elem 2) data are checked
+            for ind in (1, 2):
+                for attr in ['cpu', 'memory_mb', 'disk_gb']:
+                    value_old = getattr(usage_data_old[ind], attr)
+                    value_new = getattr(usage_data_new[ind], attr)
+                    assert_that(value_new, is_not(equal_to(value_old)))
         else:
-            assert_that(value_new, equal_to(value_old))
+            assert_that(usage_data_new, equal_to(usage_data_old))
 
         if project_id:
-            assert_that(project_id, equal_to(usage_data_new[-1].project))
+            # project values: (total), (used_now), (used_max) or project id
+            project_ids = [data.project for data in usage_data_new
+                           if '(' not in data.project]
+            assert_that(project_id, is_in(project_ids))
