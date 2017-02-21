@@ -564,7 +564,31 @@ if AUTH_URL:
     TCP_VIP_CONTROLLER_CMD = "ip a | grep -w {}".format(VIP)
 
 TCP_KVM_NODE_CMD = "salt-call pillar.get salt:control:enabled | grep True"
-TCP_MON_NODE_CMD = "salt-call pillar.get nagios:server:enabled | grep True"
+TCP_MON_NODE_CMD = "salt-call pillar.get influxdb:server:enabled | grep True"
+TCP_GET_INFLUXDB_DATA_CMD = "salt-call pillar.get --out=yaml influxdb:server"
+
+INFLUX_CMD = ("/usr/bin/influx -database {database} -username {username} "
+              "-password {password} -host {host} -port {port}")
+
+TCP_CHECK_METRICS_CMD = (INFLUX_CMD +
+                         " -execute 'select * from mysql_check where "
+                         "time > now() - {time_sec}s'")
+TCP_CHECK_ALARMS_CMD1 = (INFLUX_CMD +
+                         " -execute 'select * from status where value>0 and "
+                         "hostname!='cfg' and time > now() - {time_sec}s'")
+TCP_CHECK_ALARMS_CMD2 = (INFLUX_CMD +
+                         " -execute 'select * from cluster_status where "
+                         "value>0 and time > now() - {time_sec}s'")
+TCP_EXPECTED_ALARM = 'nova_compute'
+
+# Stacklight services
+ELASTIC_SEARCH_SERVICE = 'elasticsearch'
+GRAFANA_SERVICE = 'grafana-server'
+INFLUXDB_SERVICE = 'influxdb'
+KIBANA_SERVICE = 'kibana'
+NAGIOS_SERVICE = 'nagios3'
+STACKLIGHT_SERVICES = (ELASTIC_SEARCH_SERVICE, GRAFANA_SERVICE,
+                       INFLUXDB_SERVICE, KIBANA_SERVICE, NAGIOS_SERVICE)
 
 NODE_POWEROFF_TIMEOUT = 60
 NODE_SHUTDOWN_TIMEOUT = 3 * 60
@@ -576,6 +600,9 @@ TIME_BEFORE_NETWORK_DOWN = 5
 TIME_NETWORK_DOWN = 4 * 60
 NODES_ON_KVM_START_TIMEOUT = 5 * 60
 TIME_AFTER_SHUTDOWN_KVM_NODE = 30
+TIME_AFTER_START_MON_NODE = 60
+TIME_BETWEEN_STOP_START_SERVICE = 120
+TIME_BEFORE_ALARM_CHECK = 60
 
 # Commands to create and remove file
 CREATE_FILE_CMD = 'fallocate -l {size}K {file_path}'
