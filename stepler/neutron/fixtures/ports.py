@@ -49,8 +49,8 @@ def create_port(port_steps):
     """
     ports = []
 
-    def _create_port(network):
-        port = port_steps.create(network)
+    def _create_port(network, **kwargs):
+        port = port_steps.create(network, **kwargs)
         ports.append(port)
         return port
 

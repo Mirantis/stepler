@@ -33,17 +33,18 @@ class PortSteps(base.BaseSteps):
     """Port steps."""
 
     @steps_checker.step
-    def create(self, network, check=True):
+    def create(self, network, check=True, **kwargs):
         """Step to create port.
 
         Args:
             network (dict): network to create port on
             check (bool): flag whether to check step or not
+            **kwargs: other arguments to pass to API
 
         Returns:
             dict: port
         """
-        port = self._client.create(network_id=network['id'])
+        port = self._client.create(network_id=network['id'], **kwargs)
         if check:
             self.check_presence(port)
         return port
