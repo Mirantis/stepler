@@ -769,10 +769,9 @@ class ServerSteps(base.BaseSteps):
                     transit_statuses=[config.STATUS_MIGRATING],
                     timeout=config.LIVE_MIGRATE_TIMEOUT)
                 if host is not None:
-                    self.check_instance_hypervisor_hostname(server, host)
+                    self.check_server_host_attr(server, host)
                 else:
-                    self.check_instance_hypervisor_hostname(
-                        server, old_host, equal=False)
+                    self.check_server_host_attr(server, old_host, equal=False)
 
     @steps_checker.step
     def migrate_servers(self, servers, check=True):
@@ -800,7 +799,7 @@ class ServerSteps(base.BaseSteps):
                     transit_statuses=[config.STATUS_RESIZE],
                     timeout=config.VERIFY_RESIZE_TIMEOUT)
 
-                self.check_instance_hypervisor_hostname(
+                self.check_server_host_attr(
                     server,
                     old_hosts[server.id],
                     equal=False,
@@ -830,20 +829,16 @@ class ServerSteps(base.BaseSteps):
                     timeout=config.SERVER_ACTIVE_TIMEOUT)
 
     @steps_checker.step
-    def check_instance_hypervisor_hostname(self,
-                                           server,
-                                           host,
-                                           equal=True,
-                                           timeout=0):
-        """Verify step to check that server's hypervisor hostname.
+    def check_server_host_attr(self, server, host_name, equal=True,
+                               timeout=0):
+        """Verify step to check server's host attribute value.
 
         Args:
-            server (object): nova server to check hypervisor hostname
-            host (str): name of hypervisor hostname to compare with
-                server's hypervisor
-            equal (bool): flag whether servers's hypervisor hostname should be
-                equal to `hostname` or not
-            timeout (int): seconds to wait a result of check
+            server (object): nova server
+            host_name (str): host name to compare with server's host
+            equal (bool): flag whether servers's host should be
+                equal to `host_name` or not
+            timeout (int): seconds to wait result of check
 
         Raises:
             TimeoutExpired: if check failed after timeout
@@ -852,7 +847,7 @@ class ServerSteps(base.BaseSteps):
         def predicate():
             server.get()
             server_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
-            return equal == (server_host == host)
+            return equal == (server_host == host_name)
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
@@ -1664,7 +1659,7 @@ class ServerSteps(base.BaseSteps):
                                       config.STATUS_REBUILD_SPAWNING],
                     timeout=config.SERVER_ACTIVE_TIMEOUT)
 
-                self.check_instance_hypervisor_hostname(
+                self.check_server_host_attr(
                     server,
                     failed_host[server.id],
                     equal=False,
