@@ -1599,7 +1599,7 @@ class ServerSteps(base.BaseSteps):
         else:
             fault_msg = '\n'.join(("{}:\n{}".format(k, v)
                                    for k, v in fault.items()))
-        return "Server fault:\n{}".format(fault_msg)
+        return "Server with ID {0} fault:\n{1}".format(server.id, fault_msg)
 
     @steps_checker.step
     def check_server_attribute(self,
