@@ -266,10 +266,11 @@ class Predicates(object):
             for flavor in flavors:
                 capacity = hypervisor_steps.get_hypervisor_capacity(
                     hypervisor, flavor, check=False)
-                if capacity == 0:
-                    break
+                if capacity > 0:
+                    continue
             else:
                 count += 1
+                break
         return count
 
     @property

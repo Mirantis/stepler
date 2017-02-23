@@ -47,6 +47,7 @@ __all__ = sorted([  # sort for documentation
     'small_flavor',
     'baremetal_flavor',
     'public_flavor',
+    'available_flavors_for_hypervisors',
 
     'get_nova_floating_ip_steps',
     'nova_create_floating_ip',
