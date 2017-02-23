@@ -256,24 +256,6 @@ class Predicates(object):
 
     @property
     @_store_call
-    def computes_suitable_for_all_flavors_count(self):
-        """Get count of computes suitable for any of precreated flavor."""
-        flavor_steps = self._get_fixture('flavor_steps')
-        hypervisor_steps = self._get_fixture('hypervisor_steps')
-        flavors = flavor_steps.get_flavors(check=False)
-        count = 0
-        for hypervisor in hypervisor_steps.get_hypervisors(check=False):
-            for flavor in flavors:
-                capacity = hypervisor_steps.get_hypervisor_capacity(
-                    hypervisor, flavor, check=False)
-                if capacity == 0:
-                    break
-            else:
-                count += 1
-        return count
-
-    @property
-    @_store_call
     def kvm_nodes_count(self):
         """Get count of KVM nodes."""
         os_faults_steps = self._get_fixture('os_faults_steps')
