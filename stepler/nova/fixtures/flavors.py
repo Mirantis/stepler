@@ -19,6 +19,8 @@ Flavor fixtures
 
 import pytest
 
+from hamcrest import assert_that, empty, is_not # noqa
+
 from stepler import config
 from stepler.nova.steps import FlavorSteps
 from stepler.third_party.utils import generate_ids
@@ -31,6 +33,7 @@ __all__ = [
     'small_flavor',
     'baremetal_flavor',
     'public_flavor',
+    'available_flavors_for_hypervisors',
 ]
 
 
@@ -169,3 +172,33 @@ def public_flavor(create_flavor):
     flavor_params = dict(ram=512, vcpus=1, disk=2, is_public=True)
     flavor_name = next(generate_ids('flavor'))
     return create_flavor(flavor_name, **flavor_params)
+
+
+@pytest.fixture
+def available_flavors_for_hypervisors(flavor_steps, hypervisor_steps):
+    """Function fixture to get available flavors for hypervisors.
+
+    Args:
+        flavor_steps (object): instantiated flavor steps
+        hypervisor_steps (object): instantiated hypervisor steps
+
+    Returns:
+        list: list of available flavors
+    """
+    flavors = flavor_steps.get_flavors()
+    hypervisors = hypervisor_steps.get_hypervisors(check=False)
+    available_flavors = []
+    for flavor in flavors:
+        for hypervisor in hypervisors:
+            capacity = hypervisor_steps.get_hypervisor_capacity(hypervisor,
+                                                                flavor,
+                                                                check=False)
+            if capacity > 0:
+                if flavor in available_flavors:
+                    continue
+                available_flavors.append(flavor)
+
+    err_msg = "No flavors were retrieved for presents hypervisors"
+    assert_that(available_flavors, is_not(empty()), err_msg)
+
+    return available_flavors
