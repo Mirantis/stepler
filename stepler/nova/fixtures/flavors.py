@@ -31,6 +31,7 @@ __all__ = [
     'small_flavor',
     'baremetal_flavor',
     'public_flavor',
+    'available_flavors_for_hypervisors',
 ]
 
 
@@ -169,3 +170,29 @@ def public_flavor(create_flavor):
     flavor_params = dict(ram=512, vcpus=1, disk=2, is_public=True)
     flavor_name = next(generate_ids('flavor'))
     return create_flavor(flavor_name, **flavor_params)
+
+
+@pytest.fixture
+def available_flavors_for_hypervisors(flavor_steps, hypervisor_steps):
+    """Function fixture to get available flavors for hypervisors.
+
+    Args:
+        flavor_steps (object): instantiated flavor steps
+        hypervisor_steps (object): instantiated hypervisor steps
+
+    Returns:
+        dict: list of available flavors
+    """
+    flavors = flavor_steps.get_flavors()
+    hypervisors = hypervisor_steps.get_hypervisors(check=False)
+    available_flavors = []
+    for flavor in flavors:
+        for hypervisor in hypervisors:
+            capacity = hypervisor_steps.get_hypervisor_capacity(hypervisor,
+                                                                flavor,
+                                                                check=False)
+            if capacity > 0:
+                if flavor in available_flavors:
+                    continue
+                available_flavors.append(flavor)
+    return available_flavors

@@ -31,8 +31,8 @@ def test_launch_server_from_image_using_all_flavors(
         net_subnet_router,
         cirros_image,
         keypair,
-        create_server_context,
-        flavor_steps):
+        available_flavors_for_hypervisors,
+        create_server_context):
     """**Scenario:** Launch server from image using all standard flavors.
 
     TODO(sandriichenko): launchpad can't find bug 1680616
@@ -60,9 +60,8 @@ def test_launch_server_from_image_using_all_flavors(
     #. Delete cirros image
     """
     network, _, _ = net_subnet_router
-    flavors = flavor_steps.get_flavors()
 
-    for flavor in flavors:
+    for flavor in available_flavors_for_hypervisors:
         server_name = next(utils.generate_ids(
             prefix='server', postfix=flavor.name))
 
@@ -84,9 +83,9 @@ def test_launch_vm_from_volume_using_all_flavors(
         cirros_image,
         keypair,
         nova_floating_ip,
+        available_flavors_for_hypervisors,
         create_server_context,
         volume_steps,
-        flavor_steps,
         server_steps):
     """**Scenario:** Launch VM from volume using all standard flavors.
 
@@ -119,11 +118,10 @@ def test_launch_vm_from_volume_using_all_flavors(
     #. Delete floating IP
     """
     network, _, _ = net_subnet_router
-    flavors = flavor_steps.get_flavors()
 
     volume = volume_steps.create_volumes(image=cirros_image)[0]
 
-    for flavor in flavors:
+    for flavor in available_flavors_for_hypervisors:
         with create_server_context(
                 server_name=next(utils.generate_ids()),
                 image=None,
