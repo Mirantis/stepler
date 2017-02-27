@@ -67,7 +67,8 @@ def test_evacuate_servers(servers_to_evacuate,
     #. Delete cirros image
     """
     failed_compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(servers_to_evacuate[0], config.SERVER_ATTR_HOST)])
+        fqdns=[getattr(servers_to_evacuate[0],
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
@@ -129,12 +130,11 @@ def test_evacuate_servers_with_volumes(servers_with_volumes_to_evacuate,
     servers, volumes = servers_with_volumes_to_evacuate
     failed_compute_node = os_faults_steps.get_node(
         fqdns=[getattr(servers[0],
-                       config.SERVER_ATTR_HOST)])
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
-        nova_api_node,
-        getattr(servers[0], config.SERVER_ATTR_HOST))
+        nova_api_node, getattr(servers[0], config.SERVER_ATTR_HOST))
     server_steps.evacuate_servers(servers)
 
     for volume in volumes:
@@ -195,7 +195,8 @@ def test_evacuate_locked_servers(servers_to_evacuate,
         locked_servers.append(server)
 
     failed_compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(locked_servers[0], config.SERVER_ATTR_HOST)])
+        fqdns=[getattr(locked_servers[0],
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
@@ -251,7 +252,8 @@ def test_evacuate_rescue_servers(servers_to_evacuate,
         rescue_servers.append(server)
 
     failed_compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(rescue_servers[0], config.SERVER_ATTR_HOST)])
+        fqdns=[getattr(rescue_servers[0],
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
@@ -298,7 +300,8 @@ def test_evacuate_shelved_servers(servers_to_evacuate,
         shelved_servers.append(server)
 
     failed_compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(shelved_servers[0], config.SERVER_ATTR_HOST)])
+        fqdns=[getattr(shelved_servers[0],
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
@@ -345,7 +348,8 @@ def test_evacuate_paused_servers(servers_to_evacuate,
         paused_servers.append(server)
 
     failed_compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(paused_servers[0], config.SERVER_ATTR_HOST)])
+        fqdns=[getattr(paused_servers[0],
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
@@ -393,7 +397,8 @@ def test_evacuate_resized_servers(servers_to_evacuate,
         resized_servers.append(server)
 
     failed_compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(resized_servers[0], config.SERVER_ATTR_HOST)])
+        fqdns=[getattr(resized_servers[0],
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
@@ -434,7 +439,8 @@ def test_evacuate_servers_to_initial_compute(servers_to_evacuate,
     #. Delete cirros image
     """
     failed_compute_node = os_faults_steps.get_node(
-        fqdns=[getattr(servers_to_evacuate[0], config.SERVER_ATTR_HOST)])
+        fqdns=[getattr(servers_to_evacuate[0],
+                       config.SERVER_ATTR_HYPERVISOR_HOSTNAME)])
     os_faults_steps.terminate_service(config.NOVA_COMPUTE,
                                       nodes=failed_compute_node)
     os_faults_steps.nova_compute_force_down(
