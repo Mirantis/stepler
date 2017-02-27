@@ -281,3 +281,30 @@ def test_rados_upload_big_object(container_steps):
                                chunksize=10**10)
     container_steps.delete_object(bucket_name=bucket_name, key=key)
     container_steps.delete(bucket_name=bucket_name)
+
+
+@pytest.mark.idempotent_id('7b992ce6-12ce-458c-b45f-5a93ea908486')
+@pytest.mark.requires('glance_backend == "rbd"')
+def test_rados_download_big_object_from_bucket(container_steps):
+    """**Scenario:** Download big object from bucket (RadosGW).
+
+    **Steps:**
+
+    #. Create bucket
+    #. Create big object
+    #. Upload object to the bucket
+    #. Download this object from bucket
+    #. Check md5 sum of each object are equal
+
+    **Teardown:**
+
+    #. Delete object
+    #. Delete bucket
+    """
+    bucket_name, object_name = utils.generate_ids(count=2)
+    container_steps.create(bucket_name=bucket_name)
+    container_steps.put_object(bucket_name=bucket_name, key=object_name,
+                               chunksize=10**10)
+    container_steps.get_object(bucket_name=bucket_name, key=object_name)
+    container_steps.delete_object(bucket_name, key=object_name)
+    container_steps.delete(bucket_name=bucket_name)
