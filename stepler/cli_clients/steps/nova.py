@@ -17,7 +17,8 @@ Nova CLI client steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, empty, equal_to, is_not  # noqa H301
+from hamcrest import (assert_that, empty, equal_to, is_not,
+                      has_items)  # noqa H301
 
 from stepler.cli_clients.steps import base
 from stepler import config
@@ -79,4 +80,4 @@ class CliNovaSteps(base.BaseCliSteps):
                 assert_that(accepted, equal_to('True'))
                 assert_that(err_message, equal_to(''))
             server_ids = [server.id for server in servers]
-            assert_that(sorted(ids), equal_to(sorted(server_ids)))
+            assert_that(ids, has_items(*server_ids))

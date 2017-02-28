@@ -49,61 +49,52 @@ def test_nova_list(server, cli_nova_steps, api_version):
     cli_nova_steps.nova_list(api_version=api_version)
 
 
-# TODO(ssokolov) add check of condition 'two or more nodes'
 @pytest.mark.idempotent_id('b7ca17e5-aff3-4799-9e3f-c4f0595c20b5')
+@pytest.mark.requires("computes_count >= 2")
 def test_live_evacuation(cirros_image,
                          flavor,
-                         network,
-                         subnet,
-                         router,
+                         net_subnet_router,
                          keypair,
                          security_group,
-                         add_router_interfaces,
                          nova_create_floating_ip,
-                         hypervisor_steps,
+                         nova_availability_zone_hosts,
                          cli_nova_steps,
                          server_steps):
-    """**Scenario:** Live evacuate all instances of the specified host to
-    other available hosts without shared storage.
+    """**Scenario:** Live evacuate all servers from one host to another.
 
     **Setup:**
 
     #. Create cirros image
     #. Create flavor
-    #. Create net and subnet
-    #. Create router
+    #. Create network, subnet, router
     #. Create keypair
     #. Create security group
 
     **Steps:**
 
-    #. Set router default gateway to public network
-    #. Create two instances on node-1
-    #. Assign floating ip for instances
-    #. Execute 'nova host-evacuate-live' to node-2
-    #. Check that instances are hosted on node-2
-    #. Check ping between instances
+    #. Create two servers on host-1
+    #. Assign floating ip for servers
+    #. Execute 'nova host-evacuate-live' from host-1 to host-2
+    #. Check that servers are hosted on host-2
+    #. Check ping between servers
 
     **Teardown:**
 
-    #. Delete instances
+    #. Delete servers
     #. Delete security group
     #. Delete keypair
-    #. Delete net and subnet
+    #. Delete network, subnet, router
     #. Delete flavor
     #. Delete cirros image
     """
-    add_router_interfaces(router, [subnet])
-
-    hypervisors = hypervisor_steps.get_hypervisors()
-    host_name_1 = hypervisors[0].hypervisor_hostname
-    host_name_2 = hypervisors[1].hypervisor_hostname
+    host_name_1 = nova_availability_zone_hosts[0]
+    host_name_2 = nova_availability_zone_hosts[1]
 
     servers = server_steps.create_servers(
         count=2,
         image=cirros_image,
         flavor=flavor,
-        networks=[network],
+        networks=[net_subnet_router[0]],
         keypair=keypair,
         security_groups=[security_group],
         availability_zone='nova:' + host_name_1,
@@ -129,7 +120,7 @@ def test_live_evacuation(cirros_image,
             timeout=config.LIVE_EVACUATE_TIMEOUT)
 
     for server in servers:
-        server_steps.check_instance_hypervisor_hostname(server, host_name_2)
+        server_steps.check_server_host_attr(server, host_name_2)
 
     server_steps.check_ping_between_servers_via_floating(
         servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
