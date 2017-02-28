@@ -407,7 +407,7 @@ def live_migration_servers(request,
             security_groups=[security_group],
             userdata=config.INSTALL_LM_WORKLOAD_USERDATA,
             username=config.UBUNTU_USERNAME,
-            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            availability_zone='nova:{}'.format(hypervisor.service['host']),
             check=False,
             **kwargs)[0]
         servers.append(server)
@@ -600,7 +600,7 @@ def servers_to_evacuate(request,
             networks=[network],
             security_groups=[security_group],
             username=config.CIRROS_USERNAME,
-            availability_zone='nova:{}'.format(hypervisor.hypervisor_hostname),
+            availability_zone='nova:{}'.format(hypervisor.service['host']),
             **kwargs)[0]
         servers.append(server)
 
