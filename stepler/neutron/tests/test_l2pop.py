@@ -71,7 +71,7 @@ def test_tunnels_establishing(
     #. Delete cirros image
     """
     server_1 = server
-    compute_1_fqdn = getattr(server_1, config.SERVER_ATTR_HOST)
+    compute_1_fqdn = getattr(server_1, config.SERVER_ATTR_HYPERVISOR_HOSTNAME)
     compute_1 = os_faults_steps.get_nodes(fqdns=[compute_1_fqdn])
     computes = os_faults_steps.get_nodes(service_names=[config.NOVA_COMPUTE])
 
@@ -84,15 +84,16 @@ def test_tunnels_establishing(
     os_faults_steps.check_ovs_tunnels(
         computes - compute_1, computes | controllers, must_established=False)
 
-    compute_2_fqdn = hypervisor_steps.get_another_hypervisor(
-        [server_1]).hypervisor_hostname
+    hypervisor2 = hypervisor_steps.get_another_hypervisor([server_1])
+    compute_2_fqdn = hypervisor2.hypervisor_hostname
+    compute_2_host = hypervisor2.service['host']
     compute_2 = os_faults_steps.get_nodes(fqdns=[compute_2_fqdn])
 
     server_2 = server_steps.create_servers(
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        availability_zone='nova:{}'.format(compute_2_fqdn))[0]
+        availability_zone='nova:{}'.format(compute_2_host))[0]
 
     os_faults_steps.check_ovs_tunnels(compute_1, compute_2)
     os_faults_steps.check_ovs_tunnels(compute_2, compute_1)
@@ -102,16 +103,16 @@ def test_tunnels_establishing(
         computes | controllers,
         must_established=False)
 
-    compute_3_fqdn = hypervisor_steps.get_another_hypervisor(
-        [server_1, server_2]).hypervisor_hostname
-
+    hypervisor3 = hypervisor_steps.get_another_hypervisor([server_1, server_2])
+    compute_3_fqdn = hypervisor3.hypervisor_hostname
+    compute_3_host = hypervisor3.service['host']
     compute_3 = os_faults_steps.get_nodes(fqdns=[compute_3_fqdn])
 
     server_steps.create_servers(
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        availability_zone='nova:{}'.format(compute_3_fqdn))[0]
+        availability_zone='nova:{}'.format(compute_3_host))
 
     os_faults_steps.check_ovs_tunnels(compute_3, compute_1 | compute_2)
     os_faults_steps.check_ovs_tunnels(compute_1 | compute_2, compute_3)
@@ -163,13 +164,15 @@ def test_broadcast_traffic_for_single_network(
     network_1 = neutron_2_servers_diff_nets_with_floating.networks[0]
 
     # Boot server_2
-    server_2_compute_fqdn = getattr(server_3, config.SERVER_ATTR_HOST)
+    server_2_compute_host = getattr(server_3, config.SERVER_ATTR_HOST)
+    server_2_compute_fqdn = os_faults_steps.get_fqdn_by_host_name(
+        server_2_compute_host)
     server_2_compute = os_faults_steps.get_nodes(fqdns=[server_2_compute_fqdn])
     server_2 = server_steps.create_servers(
         image=cirros_image,
         flavor=flavor,
         networks=[network_1],
-        availability_zone='nova:{}'.format(server_2_compute_fqdn))[0]
+        availability_zone='nova:{}'.format(server_2_compute_host))[0]
 
     # Get servers' ports
     server_2_port = port_steps.get_port(

@@ -254,10 +254,10 @@ def neutron_2_servers_same_network(
     """
 
     if getattr(request, 'param', None) == 'same_host':
-        server_2_hypervisor = getattr(server, config.SERVER_ATTR_HOST)
+        server_2_host = getattr(server, config.SERVER_ATTR_HOST)
     else:
         server_2_hypervisor = hypervisor_steps.get_another_hypervisor([server])
-        server_2_hypervisor = server_2_hypervisor.service['host']
+        server_2_host = server_2_hypervisor.service['host']
 
     network, subnet, router = net_subnet_router
 
@@ -265,7 +265,7 @@ def neutron_2_servers_same_network(
         image=cirros_image,
         flavor=flavor,
         networks=[network],
-        availability_zone='nova:{}'.format(server_2_hypervisor),
+        availability_zone='nova:{}'.format(server_2_host),
         security_groups=[security_group],
         username=config.CIRROS_USERNAME,
         password=config.CIRROS_PASSWORD)[0]
