@@ -24,6 +24,7 @@ from hamcrest import assert_that, is_not  # noqa
 import pytest
 
 from stepler import config
+from stepler import partitions_config
 from stepler.glance import steps
 from stepler.third_party import context
 from stepler.third_party import utils
@@ -342,6 +343,35 @@ def baremetal_ubuntu_image(create_images_context):
     else:
         image_url = config.BAREMETAL_VIRTUAL_UBUNTU
         disk_info = json.dumps(config.BAREMETAL_VIRTUAL_DISK_INFO)
+
+    with create_images_context(utils.generate_ids('baremetal-ubuntu'),
+                               image_url,
+                               disk_format='raw',
+                               container_format='bare',
+                               cpu_arch="x86_64",
+                               hypervisor_type="baremetal",
+                               fuel_disk_info=disk_info) as images:
+        yield images[0]
+
+
+@pytest.fixture(scope='session')
+def baremetal_ubuntu_image_partitioned_ext4_ext4(create_images_context):
+    """Session fixture to create baremetal ubuntu image with partition info.
+
+    Format root as EXT4, /boot as EXT2, /home/ and /media/partition as EXT4.
+
+    Args:
+        create_images_context (function): function to create images as context.
+
+    Returns:
+        object: ubuntu image
+    """
+    if config.BAREMETAL_NODE:
+        image_url = config.BAREMETAL_UBUNTU
+        disk_info = json.dumps(partitions_config.BAREMETAL_DISK_INFO_EXT4_EXT4)
+    else:
+        image_url = config.BAREMETAL_VIRTUAL_UBUNTU
+        disk_info = json.dumps(partitions_config.BAREMETAL_VIRTUAL_DISK_INFO_EXT4_EXT4)
 
     with create_images_context(utils.generate_ids('baremetal-ubuntu'),
                                image_url,
