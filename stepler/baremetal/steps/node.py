@@ -44,11 +44,9 @@ class IronicNodeSteps(BaseSteps):
 
         Args:
             driver (str): The name or UUID of the driver.
-            nodes_names (list): names of created images, if not specified
-                one image name will be generated.
-            count (int): count of created chassis, it's ignored if
-                chassis_descriptions are specified; one chassis is created if
-                both args are missing.
+            nodes_names (list): names of created nodes, if not specified
+                one node name will be generated.
+            count (int): count of nodes to be created.
             check (str): For checking node presence
             **kwargs (optional): A dictionary containing the attributes
             of the resource that will be created:
