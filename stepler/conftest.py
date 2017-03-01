@@ -95,6 +95,7 @@ __all__ = sorted([  # sort for documentation
     'api_glance_steps_v1',
     'api_glance_steps_v2',
     'cirros_image',
+    'create_images_context',
     'get_glance_steps',
     'glance_steps',
     'glance_steps_v1',
