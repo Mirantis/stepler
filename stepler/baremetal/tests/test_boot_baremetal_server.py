@@ -30,7 +30,7 @@ def test_boot_servers_concurrently_on_ironic_node(keypair,
                                                   create_floating_ip,
                                                   server_steps,
                                                   ironic_node_steps):
-    """**Scenario:** Hard reboot server on ironic node.
+    """**Scenario:** Boot two baremetal servers concurrently.
 
     **Setup:**
 
@@ -92,7 +92,7 @@ def test_boot_servers_consequently_on_ironic_node(keypair,
                                                   create_floating_ip,
                                                   server_steps,
                                                   ironic_node_steps):
-    """**Scenario:** Hard reboot server on ironic node.
+    """**Scenario:** Boot two baremetal servers consequently.
 
     **Setup:**
 
