@@ -93,7 +93,17 @@ class ServerSteps(base.BaseSteps):
             list: nova servers
         """
         server_names = server_names or utils.generate_ids(count=count)
-        sec_groups = [s.id for s in security_groups or []]
+
+        sec_groups = []
+        for group in security_groups or []:
+            if hasattr(group, 'id'):
+                sec_groups.append(group.id)
+            elif isinstance(group, collections.Mapping) and 'id' in group:
+                sec_groups.append(group['id'])
+            else:
+                raise ValueError('expected dict or object with `id`, got {!r}'.
+                                 format(group))
+
         image_id = None if image is None else image.id
         keypair_id = None if keypair is None else keypair.id
         nics = nics or []
@@ -372,19 +382,27 @@ class ServerSteps(base.BaseSteps):
 
         Args:
             server (object): nova server
-            floating_ip (object): floating IP
+            floating_ip (object|dict): floating IP
             check (bool, optional): flag whether to check step or not
 
         Raises:
             AssertionError: if floating IP is not attached to a server
         """
-        self._client.add_floating_ip(server, floating_ip)
+        if isinstance(floating_ip, collections.Mapping):
+            address = floating_ip['floating_ip_address']
+        elif hasattr(floating_ip, 'ip'):
+            address = floating_ip.ip
+        else:
+            raise ValueError(
+                'Expected object of dict, got {!r}'.format(floating_ip))
+
+        self._client.add_floating_ip(server, address)
 
         if check:
             server.get()
             floating_ips = self.get_ips(server, 'floating').keys()
             assert_that(floating_ips,
-                        has_item(floating_ip.ip),
+                        has_item(address),
                         "Floating IP not in a list of server's IPs.")
 
     @steps_checker.step
@@ -393,19 +411,27 @@ class ServerSteps(base.BaseSteps):
 
         Args:
             server (object): nova server
-            floating_ip (object): floating IP
+            floating_ip (object|dict): floating IP
             check (bool, optional): flag whether to check step or not
 
         Raises:
             AssertionError: if floating IP is still attached to a server
         """
-        self._client.remove_floating_ip(server, floating_ip)
+        if isinstance(floating_ip, collections.Mapping):
+            address = floating_ip['floating_ip_address']
+        elif hasattr(floating_ip, 'ip'):
+            address = floating_ip.ip
+        else:
+            raise ValueError(
+                'Expected object of dict, got {!r}'.format(floating_ip))
+
+        self._client.remove_floating_ip(server, address)
 
         if check:
             server.get()
             floating_ips = self.get_ips(server, 'floating', check=False).keys()
             assert_that(floating_ips,
-                        is_not(has_item(floating_ip.ip)),
+                        is_not(has_item(address)),
                         "Floating IP still in a list of server's IPs.")
 
     @steps_checker.step

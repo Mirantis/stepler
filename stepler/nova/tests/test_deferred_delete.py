@@ -30,7 +30,7 @@ def test_restore_soft_deleted_server(
         keypair,
         security_group,
         volume,
-        nova_create_floating_ip,
+        create_floating_ip,
         attach_volume_to_server,
         volume_steps,
         server_steps):
@@ -78,7 +78,7 @@ def test_restore_soft_deleted_server(
         security_groups=[security_group],
         username=config.CIRROS_USERNAME)[0]
 
-    floating_ip_1 = nova_create_floating_ip()
+    floating_ip_1 = create_floating_ip()
     server_steps.attach_floating_ip(server_1, floating_ip_1)
     server_steps.check_ping_to_server_floating(
         server_1, timeout=config.PING_CALL_TIMEOUT)
@@ -91,7 +91,7 @@ def test_restore_soft_deleted_server(
         security_groups=[security_group],
         username=config.CIRROS_USERNAME)[0]
 
-    floating_ip_2 = nova_create_floating_ip()
+    floating_ip_2 = create_floating_ip()
     server_steps.attach_floating_ip(server_2, floating_ip_2)
     server_steps.check_ping_to_server_floating(
         server_2, timeout=config.PING_CALL_TIMEOUT)

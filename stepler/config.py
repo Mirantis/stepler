@@ -332,28 +332,33 @@ GLANCE_CONFIG_PATH = '/etc/glance/glance-api.conf'
 GLANCE_IMAGES_PATH = '/var/lib/glance'
 GLANCE_USER_STORAGE_QUOTA = 604979776
 
+INGRESS = 'ingress'
+EGRESS = 'egress'
+
 SECURITY_GROUP_SSH_RULES = [
     {
         # ssh
-        'ip_protocol': 'tcp',
-        'from_port': 22,
-        'to_port': 22,
-        'cidr': '0.0.0.0/0',
+        'direction': INGRESS,
+        'protocol': 'tcp',
+        'port_range_min': 22,
+        'port_range_max': 22,
+        'remote_ip_prefix': '0.0.0.0/0',
     }
 ]
 
 SECURITY_GROUP_PING_RULES = [
     {
-        # ping
-        'ip_protocol': 'icmp',
-        'from_port': -1,
-        'to_port': -1,
-        'cidr': '0.0.0.0/0',
+        # ping IPv4
+        'direction': INGRESS,
+        'protocol': 'icmp',
+        'port_range_min': None,
+        'port_range_max': None,
+        'remote_ip_prefix': '0.0.0.0/0',
     }
 ]
 
 SECURITY_GROUP_EGRESS_PING_RULE = {
-    'direction': 'egress',
+    'direction': EGRESS,
     'protocol': 'icmp',
     'port_range_min': None,
     'port_range_max': None,

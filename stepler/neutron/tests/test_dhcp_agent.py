@@ -35,7 +35,7 @@ pytestmark = [pytest.mark.requires("computes_count >= 2"),
                            ban_count=2)
 @pytest.mark.parametrize('ban_count', [1, 2])
 def test_ban_some_dhcp_agents(network,
-                              nova_floating_ip,
+                              floating_ip,
                               server,
                               server_steps,
                               os_faults_steps,
@@ -74,7 +74,7 @@ def test_ban_some_dhcp_agents(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
 
     for _ in range(ban_count):
@@ -95,7 +95,7 @@ def test_ban_some_dhcp_agents(network,
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('d14003d7-4cd9-4f68-98e6-c88b8a2ee45d')
 def test_ban_all_dhcp_agents_restart_one(network,
-                                         nova_floating_ip,
+                                         floating_ip,
                                          server,
                                          server_steps,
                                          os_faults_steps,
@@ -143,7 +143,7 @@ def test_ban_all_dhcp_agents_restart_one(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
 
     networks_on_agents = set()
@@ -191,7 +191,7 @@ def test_ban_all_dhcp_agents_restart_one(network,
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('d89b894b-dda2-4156-a4bb-33fff229f54c')
 def test_ban_all_dhcp_agents_restart_first(network,
-                                           nova_floating_ip,
+                                           floating_ip,
                                            server,
                                            server_steps,
                                            os_faults_steps,
@@ -240,7 +240,7 @@ def test_ban_all_dhcp_agents_restart_first(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
 
     networks_on_agents = set()
@@ -296,7 +296,7 @@ def test_ban_all_dhcp_agents_restart_first(network,
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('5fea925f-e7a2-4524-80c2-c4f632c304c9')
 def test_dhcp_agent_after_drop_rabbit_port(network,
-                                           nova_floating_ip,
+                                           floating_ip,
                                            server,
                                            server_steps,
                                            os_faults_steps,
@@ -334,7 +334,7 @@ def test_dhcp_agent_after_drop_rabbit_port(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
 
     all_dhcp_agents = agent_steps.get_agents(
@@ -361,7 +361,7 @@ def test_dhcp_agent_after_drop_rabbit_port(network,
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('09a8280b-38b2-4414-bc88-665a3843ee6c')
 def test_ban_dhcp_agent_many_times(network,
-                                   nova_floating_ip,
+                                   floating_ip,
                                    server,
                                    server_steps,
                                    os_faults_steps,
@@ -401,7 +401,7 @@ def test_ban_dhcp_agent_many_times(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
 
     agent_to_ban = agent_steps.get_dhcp_agents_for_net(network)[0]
@@ -441,7 +441,7 @@ def test_ban_dhcp_agent_many_times(network,
                          ids=['primary', 'non_primary'])
 def test_destroy_controller_check_dhcp(network,
                                        server,
-                                       nova_floating_ip,
+                                       floating_ip,
                                        get_network_steps,
                                        server_steps,
                                        os_faults_steps,
@@ -484,7 +484,7 @@ def test_destroy_controller_check_dhcp(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     controller = os_faults_steps.get_node_by_cmd(controller_cmd)
     dhcp_agent = agent_steps.get_agents(node=controller,
                                         binary=config.NEUTRON_DHCP_SERVICE)[0]
@@ -515,7 +515,7 @@ def test_destroy_controller_check_dhcp(network,
 @pytest.mark.idempotent_id('eac820d1-a4b4-43da-a8c6-4514f20300d1')
 def test_dhcp_alive_after_primary_controller_reset(network,
                                                    server,
-                                                   nova_floating_ip,
+                                                   floating_ip,
                                                    get_network_steps,
                                                    server_steps,
                                                    os_faults_steps,
@@ -555,7 +555,7 @@ def test_dhcp_alive_after_primary_controller_reset(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     primary_controller = os_faults_steps.get_node_by_cmd(
         config.FUEL_PRIMARY_CONTROLLER_CMD)
     dhcp_agent = agent_steps.get_agents(node=primary_controller,
@@ -594,7 +594,7 @@ def test_dhcp_alive_after_primary_controller_reset(network,
 def test_change_default_dhcp_agents_count_for_net(
         network,
         server,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps,
         agent_steps,
@@ -641,7 +641,7 @@ def test_change_default_dhcp_agents_count_for_net(
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
     agent_steps.check_agents_count_for_net(
         network, expected_count=agents_count_for_net,
@@ -687,7 +687,7 @@ def test_change_default_dhcp_agents_count_for_net(
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 @pytest.mark.idempotent_id('a771c0e1-58c0-4b44-8fe2-a3d557504751')
 def test_kill_check_dhcp_agents(network,
-                                nova_floating_ip,
+                                floating_ip,
                                 server,
                                 server_steps,
                                 os_faults_steps,
@@ -722,7 +722,7 @@ def test_kill_check_dhcp_agents(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
     dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
     nodes_with_dhcp = os_faults_steps.get_nodes_for_agents([dhcp_agent])
@@ -744,7 +744,7 @@ def test_kill_check_dhcp_agents(network,
 @pytest.mark.idempotent_id('f103c8aa-b5b0-42bd-a173-55ca669193ee')
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
 def test_manually_rescheduling_dhcp_agent(network,
-                                          nova_floating_ip,
+                                          floating_ip,
                                           server,
                                           server_steps,
                                           port_steps,
@@ -781,7 +781,7 @@ def test_manually_rescheduling_dhcp_agent(network,
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_dhcp_on_cirros_server(server)
     dhcp_agent = agent_steps.get_dhcp_agents_for_net(network)[0]
     dhcp_agent_second = agent_steps.get_dhcp_agents_not_hosting_net(network)[0]

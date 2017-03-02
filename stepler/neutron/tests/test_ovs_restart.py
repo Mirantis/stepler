@@ -28,7 +28,7 @@ pytestmark = pytest.mark.destructive
 @pytest.mark.idempotent_id('ee080cc2-b658-42cf-ac0b-f5eab906fcf5')
 def test_restart_with_pcs_disable_enable(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps):
     """**Scenario:** Restart OVS-agents with pcs disable/enable on controllers.
@@ -63,7 +63,7 @@ def test_restart_with_pcs_disable_enable(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
@@ -83,7 +83,7 @@ def test_restart_with_pcs_disable_enable(
 @pytest.mark.idempotent_id('310c630d-38f0-402b-9423-ffb14fb766b2')
 def test_restart_with_pcs_ban_clear(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps):
     """**Scenario:** Restart OVS-agents with pcs ban/clear on controllers.
@@ -118,7 +118,7 @@ def test_restart_with_pcs_ban_clear(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
@@ -142,7 +142,7 @@ def test_restart_with_pcs_ban_clear(
 @pytest.mark.idempotent_id('ab973d26-55e0-478c-b5fd-35a3ea47e583')
 def test_restart_many_times(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps,
         agent_steps):
@@ -179,7 +179,7 @@ def test_restart_many_times(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
@@ -200,7 +200,7 @@ def test_restart_many_times(
 @pytest.mark.idempotent_id('6188b10f-c8f1-4d00-9c97-d163503592a5')
 def test_restart_with_broadcast_traffic(
         neutron_2_servers_same_network,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps,
         agent_steps):
@@ -234,7 +234,7 @@ def test_restart_with_broadcast_traffic(
     """
     server_1, server_2 = neutron_2_servers_same_network.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
@@ -319,7 +319,7 @@ def test_port_tags_immutable_after_restart(os_faults_steps):
 @pytest.mark.idempotent_id('f3935941-4262-41b3-bedb-d9777e63895f')
 def test_restart_with_iperf_traffic(
         neutron_2_servers_iperf_different_networks,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps,
         agent_steps):
@@ -356,7 +356,7 @@ def test_restart_with_iperf_traffic(
     """
     server_1, server_2 = neutron_2_servers_iperf_different_networks.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
@@ -383,7 +383,7 @@ def test_restart_with_iperf_traffic(
     'neutron_2_servers_same_network', ['same_host'], indirect=True)
 def test_restart_servers_on_single_compute(
         neutron_2_servers_same_network,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps,
         agent_steps):
@@ -420,7 +420,7 @@ def test_restart_servers_on_single_compute(
     """
     server_1, server_2 = neutron_2_servers_same_network.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)
@@ -441,7 +441,7 @@ def test_restart_servers_on_single_compute(
                          indirect=True)
 def test_no_connectivity_with_different_routers_during_restart(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps,
         agent_steps):
@@ -476,7 +476,7 @@ def test_no_connectivity_with_different_routers_during_restart(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_fixed_ip = server_steps.get_fixed_ip(server_2)
 
     ovs_agents = agent_steps.get_agents(binary=config.NEUTRON_OVS_SERVICE)

@@ -701,6 +701,10 @@ class OsFaultsSteps(base.BaseSteps):
                 failed in case of check=True or real count of lines with
                 keyword is not equal to expected one
         """
+
+        # check that file is exists
+        self.execute_cmd(node, 'ls {}'.format(file_name))
+
         if start_line_number_file:
             start_line_number_cmd = 'cat ' + start_line_number_file
         else:

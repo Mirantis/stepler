@@ -28,7 +28,7 @@ def test_ironic_api_service(keypair,
                             baremetal_flavor,
                             baremetal_network,
                             baremetal_ubuntu_image,
-                            nova_floating_ip,
+                            floating_ip,
                             ironic_api_node,
                             server_steps,
                             os_faults_steps):
@@ -73,6 +73,6 @@ def test_ironic_api_service(keypair,
                                      transit_statuses=[config.STATUS_BUILD],
                                      timeout=config.SERVER_ACTIVE_TIMEOUT)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.get_server_ssh(server)
     os_faults_steps.start_service(config.IRONIC_API, nodes=ironic_api_node)

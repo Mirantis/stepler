@@ -182,7 +182,7 @@ def neutron_2_servers_different_networks(
 @pytest.fixture
 def neutron_2_servers_diff_nets_with_floating(
         neutron_2_servers_different_networks,
-        nova_create_floating_ip,
+        create_floating_ip,
         server_steps):
     """Function fixture to prepare environment with 2 servers.
 
@@ -194,7 +194,7 @@ def neutron_2_servers_diff_nets_with_floating(
     Args:
         neutron_2_servers_different_networks (AttrDict): neutron networks,
             subnets, router(s) and servers resources AttrDict instance
-        nova_create_floating_ip (function): function to create floating IP
+        create_floating_ip (function): function to create floating IP
         server_steps (obj): instantiated nova server steps
 
     Returns:
@@ -204,7 +204,7 @@ def neutron_2_servers_diff_nets_with_floating(
 
     floating_ips = []
     for server in resources.servers:
-        floating_ip = nova_create_floating_ip()
+        floating_ip = create_floating_ip()
         server_steps.attach_floating_ip(server, floating_ip)
         floating_ips.append(floating_ip)
 
@@ -284,7 +284,7 @@ def neutron_2_servers_iperf_different_networks(
         security_group,
         neutron_2_networks,
         hypervisor_steps,
-        security_group_steps,
+        neutron_security_group_rule_steps,
         server_steps):
     """Function fixture to prepare environment with 2 ubuntu servers.
 
@@ -302,7 +302,8 @@ def neutron_2_servers_iperf_different_networks(
         neutron_2_networks (obj): neutron networks, subnets, router(s)
             resources AttrDict instance
         hypervisor_steps (obj): instantiated nova hypervisor steps
-        security_group_steps (obj): instantiated nova security group steps
+        neutron_security_group_rule_steps (obj): instantiated neutron security
+            group rules steps
         server_steps (obj): instantiated nova server steps
 
     Returns:
@@ -315,20 +316,23 @@ def neutron_2_servers_iperf_different_networks(
     rules = [
         {
             # iprf tcp
-            'ip_protocol': 'tcp',
-            'from_port': config.IPERF_TCP_PORT,
-            'to_port': config.IPERF_TCP_PORT,
-            'cidr': '0.0.0.0/0',
+            'direction': config.INGRESS,
+            'protocol': 'tcp',
+            'port_range_min': config.IPERF_TCP_PORT,
+            'port_range_max': config.IPERF_TCP_PORT,
+            'remote_ip_prefix': '0.0.0.0/0',
         },
         {
             # iperf udp
-            'ip_protocol': 'udp',
-            'from_port': config.IPERF_UDP_PORT,
-            'to_port': config.IPERF_UDP_PORT,
-            'cidr': '0.0.0.0/0',
+            'direction': config.INGRESS,
+            'protocol': 'udp',
+            'port_range_min': config.IPERF_UDP_PORT,
+            'port_range_max': config.IPERF_UDP_PORT,
+            'remote_ip_prefix': '0.0.0.0/0',
         }
     ]
-    security_group_steps.add_group_rules(security_group, rules)
+    neutron_security_group_rule_steps.add_rules_to_group(security_group['id'],
+                                                         rules)
 
     hypervisors = hypervisor_steps.get_hypervisors()[:2]
     servers = []
@@ -371,12 +375,12 @@ def neutron_conntrack_2_projects_resources(
         neutron_2_nets_diff_projects,
         conntrack_cirros_image,
         public_flavor,
-        public_network,
         sorted_hypervisors,
         hypervisor_steps,
         port_steps,
         create_floating_ip,
-        get_security_group_steps,
+        get_neutron_security_group_steps,
+        get_neutron_security_group_rule_steps,
         get_server_steps):
     """Function fixture to prepare environment for conntrack tests.
 
@@ -396,29 +400,22 @@ def neutron_conntrack_2_projects_resources(
 
     Args:
         request (obj): py.test SubRequest
-        neutron_2_nets_diff_projects(AttrDict): neutron networks, subnets,
+        neutron_2_nets_diff_projects (AttrDict): neutron networks, subnets,
             router(s) resources AttrDict instance
         conntrack_cirros_image (obj): glance image for conntrack tests
         public_flavor (obj): nova flavor with is_public=True attribute
-        public_network (dict): neutron public network
         sorted_hypervisors (list): sorted hypervisors
         hypervisor_steps (obj): instantiated nova hypervisor steps
         port_steps (obj): instantiated port steps
         create_floating_ip (function): function to create floating ip
-        get_security_group_steps (function): function to get security group
-            steps
+        get_neutron_security_group_steps (function): function to get security
+            group steps
+        get_neutron_security_group_rule_steps (function): function to get
+            security group rule steps
         get_server_steps (function): function to get server steps
 
     Returns:
         attrdict.AttrDict: created resources
-
-    Deleted Parameters:
-        cirros_image (obj): cirros image
-        flavor (obj): nova flavor
-        security_group (obj): nova security group
-        net_subnet_router (tuple): network, subnet, router
-        server (obj): nova server
-        server_steps (obj): instantiated nova server steps
     """
     base_name, = utils.generate_ids()
 
@@ -442,18 +439,20 @@ def neutron_conntrack_2_projects_resources(
         network, router = neutron_2_nets_diff_projects.resources[i].net_router
         project_id = neutron_2_nets_diff_projects.resources[i].project_id
 
-        security_group_steps = get_security_group_steps(**credentials)
+        security_group_steps = get_neutron_security_group_steps(**credentials)
+        security_group_rule_steps = get_neutron_security_group_rule_steps(
+            **credentials)
         security_group_name = "{}_{}".format(base_name, i)
-        security_group = security_group_steps.create_group(security_group_name)
+        security_group = security_group_steps.create(security_group_name)
         request.addfinalizer(
-            functools.partial(security_group_steps.delete_group,
+            functools.partial(security_group_steps.delete,
                               security_group))
         if i == 0:
-            security_group_steps.add_group_rules(
-                security_group, config.SECURITY_GROUP_SSH_PING_RULES)
+            security_group_rule_steps.add_rules_to_group(
+                security_group['id'], config.SECURITY_GROUP_SSH_PING_RULES)
         else:
-            security_group_steps.add_group_rules(
-                security_group, config.SECURITY_GROUP_SSH_RULES)
+            security_group_rule_steps.add_rules_to_group(
+                security_group['id'], config.SECURITY_GROUP_SSH_RULES)
 
         server_steps = get_server_steps(**credentials)
         project_resources.server_steps = server_steps
@@ -476,8 +475,7 @@ def neutron_conntrack_2_projects_resources(
 
         server1_port = port_steps.get_port(
             device_owner=config.PORT_DEVICE_OWNER_SERVER, device_id=server1.id)
-        create_floating_ip(
-            public_network, port=server1_port, project_id=project_id)
+        create_floating_ip(port=server1_port, project_id=project_id)
 
         server2 = server_steps.create_servers(
             server_names=[name + "_2"],
@@ -527,6 +525,8 @@ def create_max_networks_with_instances(cirros_image,
         create_subnet (function): function to create subnet with options
         add_router_interfaces (function): function to add router interfaces to
             subnets
+        current_project (obj): current project
+        neutron_quota_steps (obj): instantiated neutron quota steps
         hypervisor_steps (obj): instantiated nova hypervisor steps
         server_steps (obj): instantiated nova server steps
 
@@ -579,16 +579,17 @@ def create_max_networks_with_instances(cirros_image,
 
 
 @pytest.fixture
-def neutron_2_servers_2_nets_diff_projects(request,
-                                           neutron_2_nets_diff_projects,
-                                           sorted_hypervisors,
-                                           public_network,
-                                           cirros_image,
-                                           public_flavor,
-                                           get_security_group_steps,
-                                           get_server_steps,
-                                           get_nova_floating_ip_steps,
-                                           port_steps):
+def neutron_2_servers_2_nets_diff_projects(
+        request,
+        neutron_2_nets_diff_projects,
+        sorted_hypervisors,
+        cirros_image,
+        public_flavor,
+        get_neutron_security_group_steps,
+        get_neutron_security_group_rule_steps,
+        get_server_steps,
+        get_floating_ip_steps,
+        port_steps):
     """Function fixture to prepare environment for different projects tests.
 
     This fixture:
@@ -604,19 +605,18 @@ def neutron_2_servers_2_nets_diff_projects(request,
 
     Args:
         request (obj): py.test SubRequest
-        neutron_2_nets_diff_projects(AttrDict): neutron networks, subnets,
+        neutron_2_nets_diff_projects (AttrDict): neutron networks, subnets,
             router(s) resources AttrDict instance
         sorted_hypervisors (list): sorted hypervisors
-        public_network (dict): neutron public network
-        public_flavor (obj): nova flavor with is_public=True attribute
         cirros_image (obj): glance image
-        public_network (dict): neutron public network
-        port_steps (obj): instantiated port steps
-        get_security_group_steps (function): function to get security group
-            steps
+        public_flavor (obj): nova flavor with is_public=True attribute
+        get_neutron_security_group_steps (function): function to get security
+            group steps
+        get_neutron_security_group_rule_steps (function): function to get
+            security group rules steps
         get_server_steps (function): function to get server steps
-        get_nova_floating_ip_steps (function): function to get nova floating
-            ip steps
+        get_floating_ip_steps (function): function to get floating ip steps
+        port_steps (obj): instantiated port steps
 
     Returns:
         attrdict.AttrDict: created resources
@@ -631,14 +631,16 @@ def neutron_2_servers_2_nets_diff_projects(request,
         network, router = neutron_2_nets_diff_projects.resources[i].net_router
 
         # Create security group with ssh and ping rules
-        security_group_steps = get_security_group_steps(**credentials)
+        security_group_steps = get_neutron_security_group_steps(**credentials)
+        security_group_rule_steps = get_neutron_security_group_rule_steps(
+            **credentials)
         security_group_name = "{}_{}".format(base_name, i)
-        security_group = security_group_steps.create_group(security_group_name)
+        security_group = security_group_steps.create(security_group_name)
         request.addfinalizer(
-            functools.partial(security_group_steps.delete_group,
+            functools.partial(security_group_steps.delete,
                               security_group))
-        security_group_steps.add_group_rules(
-            security_group, config.SECURITY_GROUP_SSH_PING_RULES)
+        security_group_rule_steps.add_rules_to_group(
+            security_group['id'], config.SECURITY_GROUP_SSH_PING_RULES)
 
         # Create servers
         server_steps = get_server_steps(**credentials)
@@ -655,10 +657,10 @@ def neutron_2_servers_2_nets_diff_projects(request,
             functools.partial(server_steps.delete_servers, [server]))
 
         # Attach floating ips to servers
-        nova_floating_ip_steps = get_nova_floating_ip_steps(**credentials)
-        floating_ip = nova_floating_ip_steps.create_floating_ip()
+        floating_ip_steps = get_floating_ip_steps(**credentials)
+        floating_ip = floating_ip_steps.create()
         request.addfinalizer(functools.partial(
-            nova_floating_ip_steps.delete_floating_ip, floating_ip))
+            floating_ip_steps.delete, floating_ip))
         server_steps.attach_floating_ip(server, floating_ip)
 
         project_resources.server = server
@@ -687,16 +689,16 @@ def neutron_2_nets_diff_projects(role_steps,
     All created resources are to be deleted after test.
 
     Args:
-        public_network (dict): neutron public network
         role_steps (obj): instantiated role steps
-        router_steps (obj): instantiated router steps
         create_project (function): function to create project
         create_user (function): function to create user
         create_network (function): function to create network
         create_subnet (function): function to create subnet
         create_router (function): function to create router
+        router_steps (obj): instantiated router steps
         add_router_interfaces (function): function to add subnet interface to
             router
+        public_network (dict): neutron public network
 
     Returns:
         attrdict.AttrDict: created resources
@@ -734,22 +736,24 @@ def neutron_2_nets_diff_projects(role_steps,
 
 
 @pytest.fixture
-def neutron_2_servers_2_projects_with_shared_net(request,
-                                                 public_network,
-                                                 conntrack_cirros_image,
-                                                 public_flavor,
-                                                 create_project,
-                                                 create_user,
-                                                 create_network,
-                                                 create_subnet,
-                                                 create_router,
-                                                 add_router_interfaces,
-                                                 port_steps,
-                                                 role_steps,
-                                                 router_steps,
-                                                 get_server_steps,
-                                                 get_security_group_steps,
-                                                 get_nova_floating_ip_steps):
+def neutron_2_servers_2_projects_with_shared_net(
+        request,
+        public_network,
+        conntrack_cirros_image,
+        public_flavor,
+        create_project,
+        create_user,
+        create_network,
+        create_subnet,
+        create_router,
+        add_router_interfaces,
+        port_steps,
+        role_steps,
+        router_steps,
+        get_server_steps,
+        get_neutron_security_group_steps,
+        get_neutron_security_group_rule_steps,
+        get_floating_ip_steps):
     """Function fixture to prepare environment for different projects tests.
 
     This fixture:
@@ -779,10 +783,11 @@ def neutron_2_servers_2_projects_with_shared_net(request,
         role_steps (obj): instantiated role steps
         router_steps (obj): instantiated router steps
         get_server_steps (function): function to get server steps
-        get_security_group_steps (function): function to get security group
-            steps
-        get_nova_floating_ip_steps (function): function to get nova floating
-            ip steps
+        get_neutron_security_group_steps (function): function to get security
+            group steps
+        get_neutron_security_group_rule_steps (function): function to get
+            security group rules steps
+        get_floating_ip_steps (function): function to get floating ip steps
 
     Returns:
         attrdict.AttrDict: created resources
@@ -806,13 +811,15 @@ def neutron_2_servers_2_projects_with_shared_net(request,
         credentials = dict(
             username=name, password=name, project_name=name)
         # Create security groups with rule
-        security_group_steps = get_security_group_steps(**credentials)
+        security_group_steps = get_neutron_security_group_steps(**credentials)
+        security_group_rule_steps = get_neutron_security_group_rule_steps(
+            **credentials)
         security_group_name = "{}_{}".format(base_name, i)
-        security_group = security_group_steps.create_group(security_group_name)
+        security_group = security_group_steps.create(security_group_name)
         request.addfinalizer(functools.partial(
-            security_group_steps.delete_group, security_group))
-        security_group_steps.add_group_rules(
-            security_group, config.SECURITY_GROUP_SSH_PING_RULES)
+            security_group_steps.delete, security_group))
+        security_group_rule_steps.add_rules_to_group(
+            security_group['id'], config.SECURITY_GROUP_SSH_PING_RULES)
 
         project_resources.credentials = credentials
         project_resources.project_id = project.id
@@ -843,11 +850,10 @@ def neutron_2_servers_2_projects_with_shared_net(request,
         request.addfinalizer(
             functools.partial(server_steps.delete_servers, [server]))
         # Add floating ips to servers
-        nova_floating_ip_steps = get_nova_floating_ip_steps(
-            **resources[i].credentials)
-        floating_ip = nova_floating_ip_steps.create_floating_ip()
+        floating_ip_steps = get_floating_ip_steps(**resources[i].credentials)
+        floating_ip = floating_ip_steps.create(public_network)
         request.addfinalizer(functools.partial(
-            nova_floating_ip_steps.delete_floating_ip, floating_ip))
+            floating_ip_steps.delete, floating_ip))
         server_steps.attach_floating_ip(server, floating_ip)
 
         project_resources.server = server
