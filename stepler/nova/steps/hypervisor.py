@@ -98,8 +98,9 @@ class HypervisorSteps(base.BaseSteps):
             ValueError: if there is no one hypervisor except occupied by
                 servers
         """
-        busy_hypervisors = [getattr(server, config.SERVER_ATTR_HOST)
-                            for server in servers]
+        busy_hypervisors = [
+            getattr(server, config.SERVER_ATTR_HYPERVISOR_HOSTNAME)
+            for server in servers]
 
         for hypervisor in self.get_hypervisors():
             if hypervisor.hypervisor_hostname not in busy_hypervisors:
