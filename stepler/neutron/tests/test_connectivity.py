@@ -147,7 +147,7 @@ def test_connectivity_between_servers_diff_networks(
                          indirect=True)
 def test_connectivity_floating_between_servers(
         neutron_2_servers_different_networks,
-        nova_create_floating_ip,
+        create_floating_ip,
         server_steps):
     """**Scenario:** Check connectivity by floating IP between servers.
 
@@ -184,10 +184,10 @@ def test_connectivity_floating_between_servers(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
-    floating_ip_1 = nova_create_floating_ip()
+    floating_ip_1 = create_floating_ip()
     server_steps.attach_floating_ip(server_1, floating_ip_1)
 
-    floating_ip_2 = nova_create_floating_ip()
+    floating_ip_2 = create_floating_ip()
     server_steps.attach_floating_ip(server_2, floating_ip_2)
 
     server_steps.check_ping_between_servers_via_floating(

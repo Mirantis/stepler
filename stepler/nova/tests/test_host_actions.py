@@ -111,7 +111,7 @@ def test_migrate_servers(cirros_image,
                          keypair,
                          nova_availability_zone_hosts,
                          server_steps,
-                         nova_create_floating_ip):
+                         create_floating_ip):
     """**Scenario:** Migrate servers from the specified host to other hosts.
 
     **Setup:**
@@ -153,7 +153,7 @@ def test_migrate_servers(cirros_image,
     server_steps.confirm_resize_servers(servers)
 
     for server in servers:
-        floating_ip = nova_create_floating_ip()
+        floating_ip = create_floating_ip()
         server_steps.attach_floating_ip(server, floating_ip)
 
     server_steps.check_ping_between_servers_via_floating(

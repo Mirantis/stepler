@@ -83,7 +83,7 @@ def test_launch_vm_from_volume_using_all_flavors(
         net_subnet_router,
         cirros_image,
         keypair,
-        nova_floating_ip,
+        floating_ip,
         create_server_context,
         volume_steps,
         flavor_steps,
@@ -133,6 +133,6 @@ def test_launch_vm_from_volume_using_all_flavors(
                 keypair=keypair,
                 security_groups=[security_group]) as server:
 
-            server_steps.attach_floating_ip(server, nova_floating_ip)
+            server_steps.attach_floating_ip(server, floating_ip)
             server_steps.check_ping_to_server_floating(
                 server, timeout=config.PING_CALL_TIMEOUT)

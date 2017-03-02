@@ -63,7 +63,7 @@ def floating_ip_steps(get_floating_ip_steps):
 
 
 @pytest.fixture
-def create_floating_ip(floating_ip_steps):
+def create_floating_ip(floating_ip_steps, public_network):
     """Fixture to create floating_ip with options.
 
     Can be called several times during a test.
@@ -71,13 +71,15 @@ def create_floating_ip(floating_ip_steps):
 
     Args:
         floating_ip_steps (object): instantiated floating ip steps
+        public_network (obj): public network
 
     Returns:
         function: function to create floating_ip as batch with options
     """
     floating_ips = []
 
-    def _create_floating_ip(network, **kwargs):
+    def _create_floating_ip(network=None, **kwargs):
+        network = network or public_network
         floating_ip = floating_ip_steps.create(network=network, **kwargs)
         floating_ips.append(floating_ip)
         return floating_ip
@@ -89,15 +91,14 @@ def create_floating_ip(floating_ip_steps):
 
 
 @pytest.fixture
-def floating_ip(create_floating_ip, public_network):
+def floating_ip(create_floating_ip):
     """Fixture to create floating_ip with default options before test.
 
     Args:
         create_floating_ip (function): function to create floating_ip with
             options
-        public_network (dict): public network
 
     Returns:
         dict: floating_ip
     """
-    return create_floating_ip(public_network)
+    return create_floating_ip()

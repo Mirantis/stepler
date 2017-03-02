@@ -179,8 +179,10 @@ class RouterSteps(base.BaseSteps):
         """
         def _check_subnet_interface_presence():
             subnet_ids = self._client.get_interfaces_subnets_ids(router['id'])
-            is_present = subnet['id'] in subnet_ids
-            return waiter.expect_that(is_present, equal_to(must_present))
+            matcher = is_in(subnet_ids)
+            if not must_present:
+                matcher = is_not(matcher)
+            return waiter.expect_that(subnet['id'], matcher)
 
         waiter.wait(_check_subnet_interface_presence, timeout_seconds=timeout)
 

@@ -50,7 +50,7 @@ pytestmark = pytest.mark.requires('dvr')
     indirect=True)
 def test_check_east_west_connectivity_between_instances(
         neutron_2_servers_different_networks,
-        nova_floating_ip,
+        floating_ip,
         server_steps):
     """**Scenario:** Check east-west connectivity between instances.
 
@@ -82,7 +82,7 @@ def test_check_east_west_connectivity_between_instances(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
 
-    server_steps.attach_floating_ip(server_1, nova_floating_ip)
+    server_steps.attach_floating_ip(server_1, floating_ip)
     server_2_ip = server_steps.get_fixed_ip(server_2)
     with server_steps.get_server_ssh(server_1) as server_1_ssh:
         server_steps.check_ping_for_ip(
@@ -100,7 +100,7 @@ def test_check_east_west_connectivity_between_instances(
                          [dict(distributed=True), dict(distributed=False)],
                          ids=['distributed', 'centralized'], indirect=True)
 def test_check_connectivity_to_north_south_routing(server,
-                                                   nova_floating_ip,
+                                                   floating_ip,
                                                    server_steps):
     """**Scenario:** Check connectivity to North-South-Routing.
 
@@ -128,7 +128,7 @@ def test_check_connectivity_to_north_south_routing(server,
     #. Delete subnet
     #. Delete network
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -187,7 +187,7 @@ def test_north_south_connectivity_without_floating(
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_north_south_connectivity_after_ban_clear_l3_on_compute(
         server,
-        nova_floating_ip,
+        floating_ip,
         os_faults_steps,
         server_steps):
     """**Scenario:** Check North-South connectivity after ban/clear l3 agent.
@@ -222,7 +222,7 @@ def test_north_south_connectivity_after_ban_clear_l3_on_compute(
     #. Delete subnet
     #. Delete network
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -326,7 +326,7 @@ def test_north_south_connectivity_after_primary_controller_reset(
 def test_reschedule_router_from_snat_controller(
         net_subnet_router,
         server,
-        nova_floating_ip,
+        floating_ip,
         agent_steps,
         os_faults_steps,
         server_steps):
@@ -360,7 +360,7 @@ def test_reschedule_router_from_snat_controller(
     #. Delete network
     """
     _, _, router = net_subnet_router
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     current_agent = agent_steps.get_l3_agents_for_router(router)[0]
     current_agent_node = os_faults_steps.get_nodes_for_agents([current_agent])
@@ -395,7 +395,7 @@ def test_reschedule_router_from_snat_controller(
 def test_shutdown_controller_with_snat(
         net_subnet_router,
         server,
-        nova_floating_ip,
+        floating_ip,
         agent_steps,
         os_faults_steps,
         server_steps):
@@ -430,7 +430,7 @@ def test_shutdown_controller_with_snat(
     #. Delete network
     """
     _, _, router = net_subnet_router
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     l3_agent = agent_steps.get_l3_agents_for_router(router)[0]
     l3_agent_node = os_faults_steps.get_nodes_for_agents([l3_agent])
@@ -455,7 +455,7 @@ def test_shutdown_controller_with_snat(
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_north_south_connectivity_after_reset_compute(
         server,
-        nova_floating_ip,
+        floating_ip,
         os_faults_steps,
         server_steps):
     """**Scenario:** Check North-South connectivity after reset compute.
@@ -490,7 +490,7 @@ def test_north_south_connectivity_after_reset_compute(
     #. Delete subnet
     #. Delete network
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -715,8 +715,8 @@ def test_associate_floating_ip_after_restart_l3_on_compute(
         security_group,
         net_subnet_router,
         server,
-        nova_floating_ip,
-        nova_create_floating_ip,
+        floating_ip,
+        create_floating_ip,
         os_faults_steps,
         server_steps):
     """**Scenario:** Check floating ip association after restart l3 agent.
@@ -749,7 +749,7 @@ def test_associate_floating_ip_after_restart_l3_on_compute(
     #. Delete subnet
     #. Delete network
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         server_steps.check_ping_for_ip(
@@ -771,8 +771,8 @@ def test_associate_floating_ip_after_restart_l3_on_compute(
         username=config.CIRROS_USERNAME,
         password=config.CIRROS_PASSWORD)[0]
 
-    nova_floating_ip_2 = nova_create_floating_ip()
-    server_steps.attach_floating_ip(server_2, nova_floating_ip_2)
+    floating_ip_2 = create_floating_ip()
+    server_steps.attach_floating_ip(server_2, floating_ip_2)
     server_steps.check_ping_between_servers_via_floating(
         servers=[server, server_2],
         ip_types=(config.FLOATING_IP,),
@@ -1026,7 +1026,7 @@ def test_update_router_from_distributed_to_centralized(router, router_steps):
 def test_update_router_from_centralized_to_distributed(
         net_subnet_router,
         server,
-        nova_floating_ip,
+        floating_ip,
         os_faults_steps,
         router_steps,
         server_steps):
@@ -1063,7 +1063,7 @@ def test_update_router_from_centralized_to_distributed(
     #. Delete network
     """
     _, _, router = net_subnet_router
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     router_steps.check_type_unchangeable_for_active_router(router)
 
@@ -1165,7 +1165,7 @@ def test_connectivity_after_ban_l3_agent_many_times(
 @pytest.mark.destructive
 def test_north_south_floating_ip_shut_down_br_ex_on_controllers(
         server,
-        nova_floating_ip,
+        floating_ip,
         os_faults_steps,
         server_steps):
     """**Scenario:** Check North-South connectivity after shut-downing br-ex.
@@ -1200,7 +1200,7 @@ def test_north_south_floating_ip_shut_down_br_ex_on_controllers(
     #. Delete subnet
     #. Delete network
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_credentials = server_steps.get_server_credentials(server)
 
     with server_steps.get_server_ssh(server) as server_ssh:
@@ -1213,7 +1213,7 @@ def test_north_south_floating_ip_shut_down_br_ex_on_controllers(
 
     with server_steps.get_server_ssh(
             server,
-            ip=nova_floating_ip.ip,
+            ip=floating_ip['floating_ip_address'],
             credentials=server_credentials) as server_ssh:
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
@@ -1228,7 +1228,7 @@ def test_check_router_update_notification_for_l3_agents(
         flavor,
         security_group,
         net_subnet_router,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         host_steps,
         os_faults_steps):
@@ -1286,8 +1286,8 @@ def test_check_router_update_notification_for_l3_agents(
         availability_zone='nova:' + server_host_name,
         username=config.CIRROS_USERNAME)[0]
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
-    server_steps.detach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
+    server_steps.detach_floating_ip(server, floating_ip)
 
     server_node = os_faults_steps.get_node(fqdns=[server_host_fqdn])
     os_faults_steps.check_string_in_file(
@@ -1318,7 +1318,7 @@ def test_instance_connectivity_after_l3_agent_restart(
         create_subnet,
         create_router,
         add_router_interfaces,
-        nova_create_floating_ip,
+        create_floating_ip,
         router_steps,
         flavor_steps,
         server_steps,
@@ -1377,7 +1377,7 @@ def test_instance_connectivity_after_l3_agent_restart(
             username=config.CIRROS_USERNAME,
             password=config.CIRROS_PASSWORD)[0]
 
-        floating_ip = nova_create_floating_ip()
+        floating_ip = create_floating_ip()
         server_steps.attach_floating_ip(server, floating_ip)
 
         servers.append(server)

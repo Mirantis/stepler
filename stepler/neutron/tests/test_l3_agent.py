@@ -42,7 +42,7 @@ def test_ban_some_l3_agents(cirros_image,
                             flavor,
                             security_group,
                             neutron_2_servers_diff_nets_with_floating,
-                            nova_create_floating_ip,
+                            floating_ip,
                             server_steps,
                             os_faults_steps,
                             agent_steps,
@@ -109,7 +109,6 @@ def test_ban_some_l3_agents(cirros_image,
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    floating_ip = nova_create_floating_ip()
     server_steps.attach_floating_ip(server_3, floating_ip)
 
     server_1, server_2 = neutron_2_servers_diff_nets_with_floating.servers
@@ -140,7 +139,7 @@ def test_ban_all_l3_agents_restart_one(
         flavor,
         security_group,
         neutron_2_servers_diff_nets_with_floating,
-        nova_create_floating_ip,
+        floating_ip,
         server_steps,
         os_faults_steps,
         agent_steps,
@@ -251,7 +250,6 @@ def test_ban_all_l3_agents_restart_one(
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    floating_ip = nova_create_floating_ip()
     server_steps.attach_floating_ip(server_3, floating_ip)
 
     ping_plan = {
@@ -274,8 +272,8 @@ def test_ban_all_l3_agents_restart_one(
 def test_ban_l3_agent_many_times(cirros_image,
                                  flavor,
                                  security_group,
+                                 floating_ip,
                                  neutron_2_servers_diff_nets_with_floating,
-                                 nova_create_floating_ip,
                                  server_steps,
                                  os_faults_steps,
                                  agent_steps):
@@ -356,7 +354,6 @@ def test_ban_l3_agent_many_times(cirros_image,
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    floating_ip = nova_create_floating_ip()
     server_steps.attach_floating_ip(server_3, floating_ip)
 
     server_1, server_2 = neutron_2_servers_diff_nets_with_floating.servers
@@ -380,8 +377,8 @@ def test_ban_l3_agent_many_times(cirros_image,
 def test_kill_l3_agent_process(cirros_image,
                                flavor,
                                security_group,
+                               floating_ip,
                                neutron_2_servers_diff_nets_with_floating,
-                               nova_create_floating_ip,
                                server_steps,
                                os_faults_steps,
                                agent_steps):
@@ -446,7 +443,6 @@ def test_kill_l3_agent_process(cirros_image,
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    floating_ip = nova_create_floating_ip()
     server_steps.attach_floating_ip(server_3, floating_ip)
 
     ping_plan = {
@@ -551,8 +547,8 @@ def test_check_l3_agent_after_destroy_controller(
         cirros_image,
         flavor,
         security_group,
+        floating_ip,
         neutron_2_servers_diff_nets_with_floating,
-        nova_create_floating_ip,
         get_neutron_client,
         os_faults_steps,
         agent_steps,
@@ -636,7 +632,6 @@ def test_check_l3_agent_after_destroy_controller(
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    floating_ip = nova_create_floating_ip()
     server_steps.attach_floating_ip(server_3, floating_ip)
 
     ping_plan = {
@@ -659,8 +654,8 @@ def test_check_l3_agent_after_reset_primary_controller(
         cirros_image,
         flavor,
         security_group,
+        floating_ip,
         neutron_2_servers_diff_nets_with_floating,
-        nova_create_floating_ip,
         get_neutron_client,
         os_faults_steps,
         agent_steps,
@@ -744,7 +739,6 @@ def test_check_l3_agent_after_reset_primary_controller(
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    floating_ip = nova_create_floating_ip()
     server_steps.attach_floating_ip(server_3, floating_ip)
 
     ping_plan = {

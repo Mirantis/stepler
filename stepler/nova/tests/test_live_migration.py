@@ -33,7 +33,7 @@ pytestmark = [
 @pytest.mark.idempotent_id('12c72e88-ca87-400b-9fbb-a35c1d07cbda')
 @pytest.mark.parametrize('block_migration', [True])
 def test_network_connectivity_to_vm_after_live_migration(
-        nova_floating_ip,
+        floating_ip,
         server,
         server_steps,
         block_migration):
@@ -68,7 +68,7 @@ def test_network_connectivity_to_vm_after_live_migration(
     #. Delete network
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
@@ -86,7 +86,7 @@ def test_network_connectivity_to_vm_after_live_migration(
     indirect=['live_migration_server'])
 @pytest.mark.destructive
 def test_server_migration_with_cpu_workload(live_migration_server,
-                                            nova_floating_ip, server_steps,
+                                            floating_ip, server_steps,
                                             block_migration):
     """**Scenario:** LM of instance under CPU workload.
 
@@ -120,8 +120,8 @@ def test_server_migration_with_cpu_workload(live_migration_server,
     #. Delete ubuntu image
     """
     server = live_migration_server
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         server_steps.generate_server_cpu_workload(server_ssh)
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
@@ -143,7 +143,7 @@ def test_server_migration_with_cpu_workload(live_migration_server,
     indirect=['live_migration_server'])
 @pytest.mark.destructive
 def test_server_migration_with_memory_workload(live_migration_server,
-                                               nova_floating_ip, server_steps,
+                                               floating_ip, server_steps,
                                                block_migration):
     """**Scenario:** LM of instance under memory workload.
 
@@ -177,8 +177,8 @@ def test_server_migration_with_memory_workload(live_migration_server,
     #. Delete ubuntu image
     """
     server = live_migration_server
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         server_steps.generate_server_memory_workload(server_ssh)
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
@@ -199,7 +199,7 @@ def test_server_migration_with_memory_workload(live_migration_server,
     indirect=['live_migration_server'])
 @pytest.mark.destructive
 def test_server_migration_with_disk_workload(live_migration_server,
-                                             nova_floating_ip, server_steps,
+                                             floating_ip, server_steps,
                                              block_migration):
     """**Scenario:** LM of instance under disk workload.
 
@@ -233,8 +233,8 @@ def test_server_migration_with_disk_workload(live_migration_server,
     #. Delete ubuntu image
     """
     server = live_migration_server
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         server_steps.generate_server_disk_workload(server_ssh)
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
@@ -255,8 +255,9 @@ def test_server_migration_with_disk_workload(live_migration_server,
     indirect=['live_migration_server'])
 @pytest.mark.destructive
 def test_server_migration_with_network_workload(
-        live_migration_server, security_group, nova_floating_ip,
-        generate_traffic, security_group_steps, server_steps, block_migration):
+        live_migration_server, security_group, floating_ip,
+        generate_traffic, neutron_security_group_rule_steps, server_steps,
+        block_migration):
     """**Scenario:** LM of instance under network workload.
 
     **Setup:**
@@ -289,17 +290,18 @@ def test_server_migration_with_network_workload(
     #. Delete ubuntu image
     """
     server = live_migration_server
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         port = 5010
-        security_group_steps.add_group_rules(security_group, [{
-            'ip_protocol': 'tcp',
-            'from_port': port,
-            'to_port': port,
-            'cidr': '0.0.0.0/0',
-        }])
+        neutron_security_group_rule_steps.add_rule_to_group(
+            security_group['id'],
+            direction=config.INGRESS,
+            protocol='tcp',
+            port_range_min=port,
+            port_range_max=port,
+            remote_ip_prefix='0.0.0.0/0')
         server_steps.server_network_listen(server_ssh, port=port)
-        generate_traffic(nova_floating_ip.ip, port)
+        generate_traffic(floating_ip['floating_ip_address'], port)
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
@@ -312,7 +314,7 @@ def test_server_migration_with_network_workload(
 def test_migration_with_ephemeral_disk(
         keypair,
         security_group,
-        nova_floating_ip,
+        floating_ip,
         cirros_image,
         network,
         subnet,
@@ -366,16 +368,16 @@ def test_migration_with_ephemeral_disk(
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME)[0]
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     timestamp = str(time.time())
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         server_steps.create_timestamps_on_root_and_ephemeral_disks(
             server_ssh, timestamp=timestamp)
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         server_steps.check_timestamps_on_root_and_ephemeral_disks(
             server_ssh, timestamp=timestamp)

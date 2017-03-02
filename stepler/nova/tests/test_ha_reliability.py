@@ -40,7 +40,7 @@ def test_shutdown_vip_controller(cirros_image,
                                  tiny_flavor,
                                  security_group,
                                  net_subnet_router,
-                                 nova_floating_ip,
+                                 floating_ip,
                                  attach_volume_to_server,
                                  volume_steps,
                                  server_steps,
@@ -123,13 +123,12 @@ def test_shutdown_vip_controller(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.poweron_nodes(vip_controller)
 
@@ -150,7 +149,7 @@ def test_power_off_cluster(cirros_image,
                            tiny_flavor,
                            security_group,
                            net_subnet_router,
-                           nova_floating_ip,
+                           floating_ip,
                            attach_volume_to_server,
                            volume_steps,
                            server_steps,
@@ -224,13 +223,12 @@ def test_power_off_cluster(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
@@ -245,7 +243,7 @@ def test_network_outage(cirros_image,
                         tiny_flavor,
                         security_group,
                         net_subnet_router,
-                        nova_floating_ip,
+                        floating_ip,
                         attach_volume_to_server,
                         volume_steps,
                         server_steps,
@@ -314,13 +312,12 @@ def test_network_outage(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
@@ -340,7 +337,7 @@ def test_reboot_vip_controller(cirros_image,
                                tiny_flavor,
                                security_group,
                                net_subnet_router,
-                               nova_floating_ip,
+                               floating_ip,
                                attach_volume_to_server,
                                volume_steps,
                                server_steps,
@@ -414,13 +411,12 @@ def test_reboot_vip_controller(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
@@ -435,7 +431,7 @@ def test_graceful_shutdown_cluster(cirros_image,
                                    tiny_flavor,
                                    security_group,
                                    net_subnet_router,
-                                   nova_floating_ip,
+                                   floating_ip,
                                    attach_volume_to_server,
                                    volume_steps,
                                    server_steps,
@@ -525,12 +521,11 @@ def test_graceful_shutdown_cluster(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    server_steps.attach_floating_ip(server, floating_ip)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     mysql_nodes = os_faults_steps.get_nodes(service_names=[config.MYSQL])
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
@@ -571,7 +566,7 @@ def test_stop_rabbitmq(cirros_image,
                        tiny_flavor,
                        security_group,
                        net_subnet_router,
-                       nova_floating_ip,
+                       floating_ip,
                        attach_volume_to_server,
                        volume_steps,
                        server_steps,
@@ -647,13 +642,12 @@ def test_stop_rabbitmq(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     _, _, _, cluster_status = get_rabbitmq_cluster_data()
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names,
@@ -685,7 +679,7 @@ def test_unplug_network(cirros_image,
                         tiny_flavor,
                         security_group,
                         net_subnet_router,
-                        nova_floating_ip,
+                        floating_ip,
                         attach_volume_to_server,
                         volume_steps,
                         server_steps,
@@ -775,13 +769,12 @@ def test_unplug_network(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     delay_before_network_up = network_up_time - time.time()
     if delay_before_network_up > 0:
@@ -808,7 +801,7 @@ def test_stop_keepalived(cirros_image,
                          tiny_flavor,
                          security_group,
                          net_subnet_router,
-                         nova_floating_ip,
+                         floating_ip,
                          attach_volume_to_server,
                          volume_steps,
                          server_steps,
@@ -889,13 +882,13 @@ def test_stop_keepalived(cirros_image,
         volume = volume_steps.create_volumes()[0]
         attach_volume_to_server(server, volume)
 
-        server_steps.attach_floating_ip(server, nova_floating_ip)
+        server_steps.attach_floating_ip(server, floating_ip)
 
-        with server_steps.get_server_ssh(server,
-                                         nova_floating_ip.ip) as server_ssh:
-            server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                           server_ssh,
-                                           timeout=config.PING_CALL_TIMEOUT)
+        with server_steps.get_server_ssh(
+                server, floating_ip['floating_ip_address']) as server_ssh:
+            server_steps.check_ping_for_ip(
+                config.GOOGLE_DNS_IP, server_ssh,
+                timeout=config.PING_CALL_TIMEOUT)
 
         os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
@@ -1069,7 +1062,7 @@ def test_shutdown_kvm_node(cirros_image,
                            tiny_flavor,
                            security_group,
                            net_subnet_router,
-                           nova_floating_ip,
+                           floating_ip,
                            attach_volume_to_server,
                            volume_steps,
                            server_steps,
@@ -1147,13 +1140,12 @@ def test_shutdown_kvm_node(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
@@ -1173,7 +1165,7 @@ def test_reboot_kvm_node(cirros_image,
                          tiny_flavor,
                          security_group,
                          net_subnet_router,
-                         nova_floating_ip,
+                         floating_ip,
                          attach_volume_to_server,
                          volume_steps,
                          server_steps,
@@ -1243,13 +1235,12 @@ def test_reboot_kvm_node(cirros_image,
     volume = volume_steps.create_volumes()[0]
     attach_volume_to_server(server, volume)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP,
-                                       server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 

@@ -26,7 +26,7 @@ def test_restart_all_nova_services(cirros_image,
                                    flavor,
                                    security_group,
                                    net_subnet_router,
-                                   nova_create_floating_ip,
+                                   create_floating_ip,
                                    os_faults_steps,
                                    server_steps):
     """**Scenario:** Restart all Nova services.
@@ -75,7 +75,7 @@ def test_restart_all_nova_services(cirros_image,
 
     # Boot server_1 and check ping
     server_1 = server_steps.create_servers(**server_create_args)[0]
-    server_steps.attach_floating_ip(server_1, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_1, create_floating_ip())
     with server_steps.get_server_ssh(server_1) as server_ssh:
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
@@ -87,7 +87,7 @@ def test_restart_all_nova_services(cirros_image,
                                      check=False)
 
     server_2 = server_steps.create_servers(**server_create_args)[0]
-    server_steps.attach_floating_ip(server_2, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_2, create_floating_ip())
     ping_plan = {
         server_1: [config.GOOGLE_DNS_IP, (server_2, config.FLOATING_IP)],
         server_2: [config.GOOGLE_DNS_IP, (server_1, config.FLOATING_IP)]}
@@ -99,7 +99,7 @@ def test_restart_all_nova_services(cirros_image,
                                      check=False)
 
     server_3 = server_steps.create_servers(**server_create_args)[0]
-    server_steps.attach_floating_ip(server_3, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_3, create_floating_ip())
     ping_plan = {server_1: [config.GOOGLE_DNS_IP,
                             (server_2, config.FLOATING_IP),
                             (server_3, config.FLOATING_IP)],

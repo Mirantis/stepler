@@ -56,7 +56,7 @@ def test_live_evacuation(cirros_image,
                          net_subnet_router,
                          keypair,
                          security_group,
-                         nova_create_floating_ip,
+                         create_floating_ip,
                          nova_availability_zone_hosts,
                          cli_nova_steps,
                          server_steps):
@@ -101,7 +101,7 @@ def test_live_evacuation(cirros_image,
         username=config.CIRROS_USERNAME)
 
     for server in servers:
-        floating_ip = nova_create_floating_ip()
+        floating_ip = create_floating_ip()
         server_steps.attach_floating_ip(server, floating_ip)
 
     cli_nova_steps.live_evacuate(host_name_1, host_name_2, servers)

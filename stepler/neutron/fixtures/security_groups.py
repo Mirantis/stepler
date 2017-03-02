@@ -19,13 +19,17 @@ Neutron security groups fixtures
 
 import pytest
 
+from stepler import config
 from stepler.neutron import steps
+from stepler.third_party import utils
 
 
 __all__ = [
     'get_neutron_security_group_steps',
     'neutron_security_group_steps',
     'neutron_security_groups_cleanup',
+    'neutron_create_security_group',
+    'neutron_security_group',
 ]
 
 
@@ -84,3 +88,57 @@ def neutron_security_groups_cleanup(get_neutron_security_group_steps):
     for group in groups:
         if group['id'] not in group_ids_before:
             security_group_steps.delete(group)
+
+
+@pytest.fixture
+def neutron_create_security_group(neutron_security_group_steps):
+    """Callable function fixture to create security group with options.
+
+    Can be called several times during test.
+    After the test it destroys all created security groups
+
+    Args:
+        neutron_security_group_steps (object): instantiated security groups
+            steps
+
+    Returns:
+        function: function to create security group
+    """
+    security_groups = []
+
+    def _create_security_group(group_name, **kwargs):
+        security_group = neutron_security_group_steps.create(group_name,
+                                                             **kwargs)
+        security_groups.append(security_group)
+        return security_group
+
+    yield _create_security_group
+
+    for security_group in security_groups:
+        neutron_security_group_steps.delete(security_group)
+
+
+@pytest.fixture
+def neutron_security_group(neutron_create_security_group,
+                           neutron_security_group_rule_steps):
+    """Function fixture to create security group before test.
+
+    Can be called several times during test.
+    After the test it destroys all created security groups
+
+    Args:
+        neutron_create_security_group (function): function to create security
+            group with options
+        neutron_security_group_rule_steps (object): instantiated security
+            groups rules steps
+
+    Returns:
+        dict: security group
+    """
+    group_name = next(utils.generate_ids('security-group'))
+    group = neutron_create_security_group(group_name)
+
+    neutron_security_group_rule_steps.add_rules_to_group(
+        group['id'], config.SECURITY_GROUP_SSH_PING_RULES)
+
+    return group

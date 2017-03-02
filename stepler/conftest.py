@@ -148,6 +148,8 @@ __all__ = sorted([  # sort for documentation
     'baremetal_network',
     'net_subnet_router',
     'agent_steps',
+    'neutron_create_security_group',
+    'neutron_security_group',
 
     'create_flavor',
     'flavor',
@@ -158,7 +160,6 @@ __all__ = sorted([  # sort for documentation
     'nova_limit_steps',
     'nova_absolute_limits',
 
-    'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
     'host_steps',
@@ -168,7 +169,6 @@ __all__ = sorted([  # sort for documentation
     'nova_client',
     'get_nova_client',
     'generate_os_workload',
-    'create_security_group',
     'security_group',
     'security_group_steps',
     'nova_volume_steps',

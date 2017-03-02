@@ -195,7 +195,7 @@ def test_migration_with_network_workload(
         live_migration_servers,
         security_group,
         generate_traffic,
-        security_group_steps,
+        neutron_security_group_rule_steps,
         server_steps,
         block_migration):
     """**Scenario:** LM of servers under network workload.
@@ -226,12 +226,13 @@ def test_migration_with_network_workload(
     """
 
     port = 5010
-    security_group_steps.add_group_rules(security_group, [{
-        'ip_protocol': 'tcp',
-        'from_port': port,
-        'to_port': port,
-        'cidr': '0.0.0.0/0',
-    }])
+    neutron_security_group_rule_steps.add_rule_to_group(
+        security_group['id'],
+        direction=config.INGRESS,
+        protocol='tcp',
+        port_range_min=port,
+        port_range_max=port,
+        remote_ip_prefix='0.0.0.0/0')
 
     for server in live_migration_servers:
         with server_steps.get_server_ssh(server) as server_ssh:
