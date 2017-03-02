@@ -27,7 +27,7 @@ def test_boot_servers_concurrently_on_ironic_node(keypair,
                                                   baremetal_flavor,
                                                   baremetal_ubuntu_image,
                                                   baremetal_network,
-                                                  nova_create_floating_ip,
+                                                  create_floating_ip,
                                                   server_steps,
                                                   ironic_node_steps):
     """**Scenario:** Hard reboot server on ironic node.
@@ -76,8 +76,8 @@ def test_boot_servers_concurrently_on_ironic_node(keypair,
     ironic_node_steps.check_ironic_nodes_provision_state(
         [ironic_node_1, ironic_node_2], config.STATUS_ACTIVE)
 
-    server_steps.attach_floating_ip(server_1, nova_create_floating_ip())
-    server_steps.attach_floating_ip(server_2, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_1, create_floating_ip())
+    server_steps.attach_floating_ip(server_2, create_floating_ip())
 
     server_steps.get_server_ssh(server_1)
     server_steps.get_server_ssh(server_2)
@@ -89,7 +89,7 @@ def test_boot_servers_consequently_on_ironic_node(keypair,
                                                   baremetal_flavor,
                                                   baremetal_ubuntu_image,
                                                   baremetal_network,
-                                                  nova_create_floating_ip,
+                                                  create_floating_ip,
                                                   server_steps,
                                                   ironic_node_steps):
     """**Scenario:** Hard reboot server on ironic node.
@@ -144,8 +144,8 @@ def test_boot_servers_consequently_on_ironic_node(keypair,
     ironic_node_steps.check_ironic_nodes_provision_state(
         [ironic_node_1, ironic_node_2], config.STATUS_ACTIVE)
 
-    server_steps.attach_floating_ip(server_1, nova_create_floating_ip())
-    server_steps.attach_floating_ip(server_2, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_1, create_floating_ip())
+    server_steps.attach_floating_ip(server_2, create_floating_ip())
 
     server_steps.get_server_ssh(server_1)
     server_steps.get_server_ssh(server_2)
@@ -157,7 +157,7 @@ def test_hard_reboot_server_on_ironic_node(keypair,
                                            baremetal_flavor,
                                            baremetal_ubuntu_image,
                                            baremetal_network,
-                                           nova_floating_ip,
+                                           floating_ip,
                                            server_steps):
     """**Scenario:** Hard reboot server on ironic node.
 
@@ -192,7 +192,7 @@ def test_hard_reboot_server_on_ironic_node(keypair,
                                          networks=[baremetal_network],
                                          keypair=keypair,
                                          username=config.UBUNTU_USERNAME)[0]
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.get_server_ssh(server)
     server_steps.reboot_server(server, reboot_type=config.REBOOT_HARD)
     server_steps.get_server_ssh(server)
@@ -204,7 +204,7 @@ def test_stop_start_server_on_baremetal_node(keypair,
                                              baremetal_flavor,
                                              baremetal_ubuntu_image,
                                              baremetal_network,
-                                             nova_floating_ip,
+                                             floating_ip,
                                              server_steps):
     """**Scenario:** Shut off and restart server on baremetal node.
 
@@ -240,7 +240,7 @@ def test_stop_start_server_on_baremetal_node(keypair,
                                          networks=[baremetal_network],
                                          keypair=keypair,
                                          username=config.UBUNTU_USERNAME)[0]
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.get_server_ssh(server)
     server_steps.stop_server(server)
     server_steps.start_server(server)
@@ -253,7 +253,7 @@ def test_create_server_on_baremetal_node(keypair,
                                          baremetal_ubuntu_image,
                                          baremetal_flavor,
                                          baremetal_network,
-                                         nova_floating_ip,
+                                         floating_ip,
                                          server_steps):
     """**Scenario:** Launch server on baremetal node.
 
@@ -284,7 +284,7 @@ def test_create_server_on_baremetal_node(keypair,
                                          networks=[baremetal_network],
                                          keypair=keypair,
                                          username=config.UBUNTU_USERNAME)[0]
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.get_server_ssh(server)
 
 

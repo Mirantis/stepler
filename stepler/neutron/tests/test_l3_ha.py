@@ -37,7 +37,7 @@ pytestmark = [
 @pytest.mark.parametrize('ban_count', [1, 2])
 def test_ban_l3_agent_with_active_ha_state_for_router(
         neutron_2_servers_different_networks,
-        nova_create_floating_ip,
+        create_floating_ip,
         server_steps,
         agent_steps,
         os_faults_steps,
@@ -75,8 +75,8 @@ def test_ban_l3_agent_with_active_ha_state_for_router(
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
     router_1 = neutron_2_servers_different_networks.routers[0]
-    floating_ip_1 = nova_create_floating_ip()
-    floating_ip_2 = nova_create_floating_ip()
+    floating_ip_1 = create_floating_ip()
+    floating_ip_2 = create_floating_ip()
     server_steps.attach_floating_ip(server_1, floating_ip_1)
     server_steps.attach_floating_ip(server_2, floating_ip_2)
     with server_steps.get_server_ssh(server_1) as server_ssh:
@@ -101,7 +101,7 @@ def test_ban_l3_agent_with_active_ha_state_for_router(
 def test_ban_l3_agent_with_ping_public_ip(
         router,
         server,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         agent_steps,
         os_faults_steps):
@@ -139,7 +139,7 @@ def test_ban_l3_agent_with_ping_public_ip(
         timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
     agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     with server_steps.get_server_ssh(server) as server_ssh:
         with server_steps.check_ping_loss_context(
                 config.GOOGLE_DNS_IP,
@@ -157,7 +157,7 @@ def test_ban_l3_agent_with_ping_public_ip(
 def test_delete_ns_for_router_on_node_with_active_ha_state(
         router,
         server,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         agent_steps,
         os_faults_steps):
@@ -194,7 +194,7 @@ def test_delete_ns_for_router_on_node_with_active_ha_state(
         timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
     agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     with server_steps.get_server_ssh(server) as server_ssh:
         with server_steps.check_ping_loss_context(
@@ -211,7 +211,7 @@ def test_delete_ns_for_router_on_node_with_active_ha_state(
     'neutron_2_networks', ['different_routers'], indirect=True)
 def test_destroy_primary_controller(
         neutron_2_servers_different_networks,
-        nova_create_floating_ip,
+        create_floating_ip,
         reschedule_router_active_l3_agent,
         server_steps,
         agent_steps,
@@ -248,8 +248,8 @@ def test_destroy_primary_controller(
     #. Delete flavor
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
-    floating_ip_1 = nova_create_floating_ip()
-    floating_ip_2 = nova_create_floating_ip()
+    floating_ip_1 = create_floating_ip()
+    floating_ip_2 = create_floating_ip()
     server_steps.attach_floating_ip(server_1, floating_ip_1)
     server_steps.attach_floating_ip(server_2, floating_ip_2)
 
@@ -272,7 +272,7 @@ def test_destroy_primary_controller(
     'neutron_2_networks', ['different_routers'], indirect=True)
 def test_destroy_non_primary_controller(
         neutron_2_servers_different_networks,
-        nova_create_floating_ip,
+        create_floating_ip,
         reschedule_router_active_l3_agent,
         server_steps,
         agent_steps,
@@ -309,8 +309,8 @@ def test_destroy_non_primary_controller(
     #. Delete flavor
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
-    floating_ip_1 = nova_create_floating_ip()
-    floating_ip_2 = nova_create_floating_ip()
+    floating_ip_1 = create_floating_ip()
+    floating_ip_2 = create_floating_ip()
     server_steps.attach_floating_ip(server_1, floating_ip_1)
     server_steps.attach_floating_ip(server_2, floating_ip_2)
 
@@ -341,7 +341,7 @@ def test_destroy_non_primary_controller(
     'neutron_2_networks', ['different_routers'], indirect=True)
 def test_reset_primary_controller(
         neutron_2_servers_different_networks,
-        nova_create_floating_ip,
+        create_floating_ip,
         reschedule_router_active_l3_agent,
         server_steps,
         agent_steps,
@@ -378,8 +378,8 @@ def test_reset_primary_controller(
     #. Delete flavor
     """
     server_1, server_2 = neutron_2_servers_different_networks.servers
-    floating_ip_1 = nova_create_floating_ip()
-    floating_ip_2 = nova_create_floating_ip()
+    floating_ip_1 = create_floating_ip()
+    floating_ip_2 = create_floating_ip()
     server_steps.attach_floating_ip(server_1, floating_ip_1)
     server_steps.attach_floating_ip(server_2, floating_ip_2)
 
@@ -548,7 +548,7 @@ def test_ban_l3_agent_for_many_routers(
 def test_ping_routing_during_l3_agent_ban(
         router,
         server,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         port_steps,
         agent_steps,
@@ -584,7 +584,7 @@ def test_ping_routing_during_l3_agent_ban(
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     old_agent = agent_steps.get_l3_agents_for_router(
         router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
@@ -602,7 +602,7 @@ def test_ping_routing_during_l3_agent_ban(
     tcpdump_files = os_faults_steps.start_tcpdump(
         agent_nodes, args=args, prefix=prefix)
     with server_steps.check_ping_loss_context(
-            nova_floating_ip.ip,
+            floating_ip['floating_ip_address'],
             max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS):
         os_faults_steps.terminate_service(
             config.NEUTRON_L3_SERVICE, nodes=old_agent_node)
@@ -625,7 +625,7 @@ def test_ping_routing_during_l3_agent_ban(
 def test_move_router_ha_interface_to_down_state(
         router,
         server,
-        nova_floating_ip,
+        floating_ip,
         server_steps,
         port_steps,
         agent_steps,
@@ -659,7 +659,7 @@ def test_move_router_ha_interface_to_down_state(
     #. Delete flavor
     #. Delete cirros image
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
     agent = agent_steps.get_l3_agents_for_router(
         router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
@@ -667,7 +667,7 @@ def test_move_router_ha_interface_to_down_state(
     agent_node = os_faults_steps.get_nodes_for_agents([agent])
 
     with server_steps.check_ping_loss_context(
-            nova_floating_ip.ip,
+            floating_ip['floating_ip_address'],
             max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS):
         os_faults_steps.move_ha_router_interface_to_down_state(
             agent_node, router)

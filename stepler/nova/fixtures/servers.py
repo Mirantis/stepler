@@ -19,7 +19,7 @@ Server fixtures
 
 import logging
 
-from hamcrest import assert_that, is_not  # noqa
+from hamcrest import assert_that, is_not  # noqa: H401
 import pytest
 
 from stepler import config
@@ -324,7 +324,7 @@ def live_migration_servers(request,
                            net_subnet_router,
                            sorted_hypervisors,
                            current_project,
-                           nova_create_floating_ip,
+                           create_floating_ip,
                            cinder_quota_steps,
                            hypervisor_steps,
                            volume_steps,
@@ -356,7 +356,7 @@ def live_migration_servers(request,
         net_subnet_router (tuple): neutron network, subnet and router
         sorted_hypervisors (list): nova hypervisors list
         current_project (obj): current project
-        nova_create_floating_ip (function): function to create floating IP
+        create_floating_ip (function): function to create floating IP
         cinder_quota_steps (obj): instantiated cinder quota steps
         hypervisor_steps (obj): instantiated hypervisor steps
         volume_steps (obj): instantiated volume steps
@@ -423,7 +423,7 @@ def live_migration_servers(request,
             server,
             config.USERDATA_DONE_MARKER,
             timeout=config.USERDATA_EXECUTING_TIMEOUT)
-        server_steps.attach_floating_ip(server, nova_create_floating_ip())
+        server_steps.attach_floating_ip(server, create_floating_ip())
     return servers
 
 
@@ -461,7 +461,7 @@ def live_migration_server(request,
                           keypair,
                           flavor,
                           security_group,
-                          nova_floating_ip,
+                          floating_ip,
                           ubuntu_image,
                           net_subnet_router,
                           volume_steps,
@@ -487,7 +487,7 @@ def live_migration_server(request,
         keypair (obj): keypair
         flavor (obj): flavor
         security_group (obj): security group
-        nova_floating_ip (obj): nova floating ip
+        floating_ip (obj): floating ip
         ubuntu_image (obj): ubuntu image
         net_subnet_router (tuple): neutron network, subnet and router
         volume_steps (obj): instantiated volume steps
@@ -522,7 +522,7 @@ def live_migration_server(request,
         server,
         config.USERDATA_DONE_MARKER,
         timeout=config.USERDATA_EXECUTING_TIMEOUT)
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     return server
 
 
@@ -533,7 +533,7 @@ def servers_to_evacuate(request,
                         flavor,
                         net_subnet_router,
                         keypair,
-                        nova_create_floating_ip,
+                        create_floating_ip,
                         hypervisor_steps,
                         volume_steps,
                         server_steps):
@@ -560,9 +560,9 @@ def servers_to_evacuate(request,
         cirros_image (obj): cirros image
         security_group (obj): security group
         flavor (obj): flavor
-        keypair (obj): keypair
         net_subnet_router (tuple): neutron network, subnet and router
-        nova_create_floating_ip (function): function to create floating IP
+        keypair (obj): keypair
+        create_floating_ip (function): function to create floating IP
         hypervisor_steps (obj): instantiated hypervisor steps
         volume_steps (obj): instantiated volume steps
         server_steps (obj): instantiated server steps
@@ -605,7 +605,7 @@ def servers_to_evacuate(request,
         servers.append(server)
 
     for server in servers:
-        server_steps.attach_floating_ip(server, nova_create_floating_ip())
+        server_steps.attach_floating_ip(server, create_floating_ip())
     return servers
 
 
@@ -661,7 +661,6 @@ def cirros_server_to_rebuild(request,
         keypair (obj): keypair
         flavor (obj): flavor
         security_group (obj): security group
-        nova_floating_ip (obj): nova floating ip
         cirros_image (obj): cirros image
         net_subnet_router (tuple): neutron network, subnet and router
         volume_steps (obj): instantiated volume steps
@@ -727,7 +726,6 @@ def ubuntu_server_to_rebuild(request,
         keypair (obj): keypair
         flavor (obj): flavor
         security_group (obj): security group
-        nova_floating_ip (obj): nova floating ip
         ubuntu_image (obj): ubuntu image
         net_subnet_router (tuple): neutron network, subnet and router
         volume_steps (obj): instantiated volume steps

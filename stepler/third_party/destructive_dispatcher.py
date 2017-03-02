@@ -124,7 +124,7 @@ def pytest_runtest_teardown(item, nextitem):
     if outcome.excinfo is not None and outcome.excinfo[0] is KeyboardInterrupt:
         do_revert = False
 
-    if do_revert:
+    if do_revert and destructor:
         revert_environment(destructor, snapshot_name)
         time.sleep(item.session.config.option.revert_timeout * 60)
 
@@ -133,6 +133,8 @@ def revert_environment(destructor, snapshot_name):
     """Revert environment to original state."""
     nodes = destructor.get_nodes()
     nodes.revert(snapshot_name)
+    # Wait some time for preventing ansible freezes on time synchronization.
+    time.sleep(10)
     waiter.wait(lambda: nodes.run_task({'command': 'hwclock --hctosys'}),
                 timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
                 expected_exceptions=executor.AnsibleExecutionException)

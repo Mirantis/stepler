@@ -129,6 +129,28 @@ class NeutronSecurityGroupRuleSteps(base.BaseSteps):
         return rule
 
     @steps_checker.step
+    def add_rules_to_group(self, group_id, rules_params, check=True):
+        """Step to add rules to security group.
+
+        Args:
+            group_id (str): id of security group
+            rules_params (list of dict): params for each rule
+            check (bool): flag whether to check step or not
+
+        Returns:
+            list: security group rules
+
+        Raises:
+            AssertionError: if check failed
+        """
+        rules = []
+        for params in rules_params:
+            rule = self.add_rule_to_group(group_id, check=check, **params)
+            rules.append(rule)
+
+        return rules
+
+    @steps_checker.step
     def check_negative_create_extra_group_rule(self, group_id, **rule_params):
         """Step to check that unable to add group rules more than quota allows.
 

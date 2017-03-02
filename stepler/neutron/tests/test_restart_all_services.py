@@ -29,7 +29,7 @@ def test_restart_all_neutron_services(cirros_image,
                                       flavor,
                                       security_group,
                                       net_subnet_router,
-                                      nova_create_floating_ip,
+                                      create_floating_ip,
                                       os_faults_steps,
                                       create_network,
                                       create_subnet,
@@ -81,7 +81,7 @@ def test_restart_all_neutron_services(cirros_image,
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    server_steps.attach_floating_ip(server_1, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_1, create_floating_ip())
     with server_steps.get_server_ssh(server_1) as server_ssh:
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
@@ -104,7 +104,7 @@ def test_restart_all_neutron_services(cirros_image,
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    server_steps.attach_floating_ip(server_2, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_2, create_floating_ip())
     with server_steps.get_server_ssh(server_2) as server_ssh:
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,
@@ -126,7 +126,7 @@ def test_restart_all_neutron_services(cirros_image,
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME,
                                            password=config.CIRROS_PASSWORD)[0]
-    server_steps.attach_floating_ip(server_3, nova_create_floating_ip())
+    server_steps.attach_floating_ip(server_3, create_floating_ip())
     with server_steps.get_server_ssh(server_3) as server_ssh:
         server_steps.check_ping_for_ip(
             config.GOOGLE_DNS_IP, server_ssh,

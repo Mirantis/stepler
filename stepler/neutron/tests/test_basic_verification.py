@@ -226,7 +226,7 @@ def test_neutron_security_groups_quota(current_project,
 def test_neutron_sec_group_rules_quota(current_project,
                                        neutron_security_group_steps,
                                        neutron_security_group_rule_steps,
-                                       create_security_group,
+                                       neutron_create_security_group,
                                        change_neutron_quota):
     """**Scenario:** Negative create of security group rules more than quota.
 
@@ -246,7 +246,7 @@ def test_neutron_sec_group_rules_quota(current_project,
     #. Delete security group with rules
     #. Restore original quota
     """
-    sec_group = create_security_group(next(utils.generate_ids()))
+    sec_group = neutron_create_security_group(next(utils.generate_ids()))
     params_template = {'direction': 'egress',
                        'protocol': 'icmp',
                        'port_range_min': None,
@@ -264,8 +264,8 @@ def test_neutron_sec_group_rules_quota(current_project,
     for i in range(count_to_create):
         params_template['remote_ip_prefix'] = '0.0.{0}.0/0'.format(i)
         neutron_security_group_rule_steps.add_rule_to_group(
-            group_id=sec_group.id, **params_template)
+            group_id=sec_group['id'], **params_template)
 
     params_template['remote_ip_prefix'] = '0.0.{0}.0/0'.format(count_to_create)
     neutron_security_group_rule_steps.check_negative_create_extra_group_rule(
-        sec_group.id, **params_template)
+        sec_group['id'], **params_template)

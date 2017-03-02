@@ -36,7 +36,7 @@ from stepler import config
                          indirect=['cirros_server_to_rebuild'])
 def test_rebuild_locked_server(cirros_server_to_rebuild,
                                cirros_image,
-                               nova_floating_ip,
+                               floating_ip,
                                server_steps):
     """**Scenario:** Rebuild locked server.
 
@@ -65,7 +65,7 @@ def test_rebuild_locked_server(cirros_server_to_rebuild,
         #. Delete floating IP
         #. Delete cirros image
         """
-    server_steps.attach_floating_ip(cirros_server_to_rebuild, nova_floating_ip)
+    server_steps.attach_floating_ip(cirros_server_to_rebuild, floating_ip)
     server_steps.lock_server(cirros_server_to_rebuild)
     server_steps.rebuild_server(cirros_server_to_rebuild, cirros_image)
     server_steps.check_server_attribute(cirros_server_to_rebuild,
@@ -92,7 +92,7 @@ def test_rebuild_locked_server(cirros_server_to_rebuild,
                          indirect=['cirros_server_to_rebuild'])
 def test_rebuild_server_with_description(cirros_server_to_rebuild,
                                          cirros_image,
-                                         nova_floating_ip,
+                                         floating_ip,
                                          server_steps):
     """**Scenario:** Rebuild server with description.
 
@@ -121,7 +121,7 @@ def test_rebuild_server_with_description(cirros_server_to_rebuild,
         #. Delete floating IP
         #. Delete cirros image
         """
-    server_steps.attach_floating_ip(cirros_server_to_rebuild, nova_floating_ip)
+    server_steps.attach_floating_ip(cirros_server_to_rebuild, floating_ip)
     server_steps.rebuild_server(
         cirros_server_to_rebuild, cirros_image,
         description=config.DESCRIPTION_FOR_TEST_REBUILD
@@ -152,7 +152,7 @@ def test_rebuild_server_with_description(cirros_server_to_rebuild,
                          indirect=['ubuntu_server_to_rebuild'])
 def test_rebuild_with_user_files(ubuntu_server_to_rebuild,
                                  ubuntu_image,
-                                 nova_floating_ip,
+                                 floating_ip,
                                  server_steps):
     """**Scenario:** Rebuild server with user files.
 
@@ -182,7 +182,7 @@ def test_rebuild_with_user_files(ubuntu_server_to_rebuild,
         #. Delete floating IP
         #. Delete ubuntu image
         """
-    server_steps.attach_floating_ip(ubuntu_server_to_rebuild, nova_floating_ip)
+    server_steps.attach_floating_ip(ubuntu_server_to_rebuild, floating_ip)
     server_steps.rebuild_server(ubuntu_server_to_rebuild, ubuntu_image,
                                 files=config.USER_FILES_FOR_TEST_REBUILD)
     server_steps.check_server_log_contains_record(
@@ -191,8 +191,9 @@ def test_rebuild_with_user_files(ubuntu_server_to_rebuild,
         timeout=config.UBUNTU_BOOT_COMPLETE_TIMEOUT
     )
 
-    with server_steps.get_server_ssh(ubuntu_server_to_rebuild,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            ubuntu_server_to_rebuild,
+            floating_ip['floating_ip_address']) as server_ssh:
         for filepath in sorted(config.USER_FILES_FOR_TEST_REBUILD.keys()):
             server_steps.check_files_presence_for_fs(server_ssh, filepath)
 

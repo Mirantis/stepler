@@ -49,7 +49,6 @@ __all__ = sorted([  # sort for documentation
     'public_flavor',
 
     'get_nova_floating_ip_steps',
-    'nova_create_floating_ip',
     'nova_floating_ip',
     'nova_floating_ip_steps',
 
@@ -77,7 +76,6 @@ __all__ = sorted([  # sort for documentation
     'rabbitmq_steps',
     'get_rabbitmq_cluster_data',
 
-    'create_security_group',
     'security_group',
     'security_group_steps',
     'get_security_group_steps',

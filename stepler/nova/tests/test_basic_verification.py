@@ -26,7 +26,7 @@ from stepler.third_party import utils
 def test_boot_instance_from_volume_bigger_than_flavor(
         flavor,
         security_group,
-        nova_floating_ip,
+        floating_ip,
         cirros_image,
         network,
         subnet,
@@ -81,7 +81,7 @@ def test_boot_instance_from_volume_bigger_than_flavor(
         security_groups=[security_group],
         block_device_mapping=block_device_mapping)[0]
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_ping_to_server_floating(server, timeout=5 * 60)
 
 
@@ -130,7 +130,7 @@ def test_delete_server_with_precreated_port(
 @pytest.mark.idempotent_id('d8a8d247-3150-491a-b9e5-2f20cb0f384d')
 def test_remove_incorrect_fixed_ip_from_server(
         server,
-        nova_floating_ip,
+        floating_ip,
         server_steps):
     """**Scenario:** [negative] Remove incorrect fixed IP from an instance.
 
@@ -165,14 +165,14 @@ def test_remove_incorrect_fixed_ip_from_server(
     #. Delete cirros image
     #. Delete nova floating ip
     """
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
     ip_fake = next(utils.generate_ips())
 
     server_steps.check_server_doesnot_detach_unattached_fixed_ip(
         server, ip_fake)
     server_steps.detach_fixed_ip(server)
 
-    server_steps.get_server_ssh(server, ip=nova_floating_ip.ip)
+    server_steps.get_server_ssh(server, ip=floating_ip['floating_ip_address'])
 
 
 @pytest.mark.idempotent_id('fc37666a-1438-4bcb-82e7-6cd782e9f8ac')
@@ -238,7 +238,7 @@ def test_attach_detach_fixed_ip_to_server(
         keypair,
         cirros_image,
         net_subnet_router,
-        nova_create_floating_ip,
+        create_floating_ip,
         server_steps):
     """**Scenario:** Check server connectivity after attach/detach fixed IP.
 
@@ -280,8 +280,8 @@ def test_attach_detach_fixed_ip_to_server(
         security_groups=[security_group],
         username=config.CIRROS_USERNAME)
 
-    server_1_float = nova_create_floating_ip()
-    server_2_float = nova_create_floating_ip()
+    server_1_float = create_floating_ip()
+    server_2_float = create_floating_ip()
 
     server_steps.attach_floating_ip(server_1, server_1_float)
     server_steps.attach_floating_ip(server_2, server_2_float)
@@ -360,7 +360,7 @@ def test_image_access_host_device_when_resizing(
         net_subnet_router,
         security_group,
         keypair,
-        nova_floating_ip,
+        floating_ip,
         create_flavor,
         server_steps):
     """**Scenario:** Resize server after unmounting fs.
@@ -437,10 +437,10 @@ def test_image_access_host_device_when_resizing(
         config.USERDATA_DONE_MARKER,
         timeout=config.USERDATA_EXECUTING_TIMEOUT)
 
-    server_steps.attach_floating_ip(server, nova_floating_ip)
+    server_steps.attach_floating_ip(server, floating_ip)
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         # save names of devices before unmounting
         eph_dev = server_steps.get_block_device_by_mount(server_ssh, eph_fs)
         root_dev = server_steps.get_block_device_by_mount(server_ssh, root_fs)
@@ -453,8 +453,8 @@ def test_image_access_host_device_when_resizing(
     server_steps.resize(server, flavor_new)
     server_steps.confirm_resize_servers([server])
 
-    with server_steps.get_server_ssh(server,
-                                     nova_floating_ip.ip) as server_ssh:
+    with server_steps.get_server_ssh(
+            server, floating_ip['floating_ip_address']) as server_ssh:
         server_steps.check_files_presence_for_fs(
             server_ssh, eph_fs, must_present=False)
 

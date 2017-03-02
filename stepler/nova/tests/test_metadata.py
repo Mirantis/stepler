@@ -41,7 +41,7 @@ DEL_META_CMD_TEMPLATE = (
 @pytest.mark.idempotent_id('fb831027-2663-4b76-b81f-868a85ca08fe')
 def test_metadata_reach_all_booted_vm(
         security_group,
-        nova_floating_ip,
+        floating_ip,
         ubuntu_image,
         keypair,
         net_subnet_router,
@@ -85,9 +85,9 @@ def test_metadata_reach_all_booted_vm(
                                security_groups=[security_group],
                                username='ubuntu') as server:
 
-        server_steps.attach_floating_ip(server, nova_floating_ip)
+        server_steps.attach_floating_ip(server, floating_ip)
         server_steps.get_server_ssh(server)
-        server_steps.detach_floating_ip(server, nova_floating_ip)
+        server_steps.detach_floating_ip(server, floating_ip)
 
 
 @pytest.mark.requires("computes_count >= 2")

@@ -80,4 +80,6 @@ __all__ = sorted([  # sort for documentation
     'get_neutron_security_group_steps',
     'neutron_security_group_steps',
     'neutron_security_groups_cleanup',
+    'neutron_create_security_group',
+    'neutron_security_group',
 ])
