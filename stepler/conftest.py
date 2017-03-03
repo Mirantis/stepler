@@ -157,6 +157,7 @@ __all__ = sorted([  # sort for documentation
     'flavor_steps',
     'tiny_flavor',
     'small_flavor',
+    'baremetal_flavor',
 
     'nova_limit_steps',
     'nova_absolute_limits',
