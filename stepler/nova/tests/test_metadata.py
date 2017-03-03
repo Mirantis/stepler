@@ -44,9 +44,9 @@ def test_metadata_reach_all_booted_vm(
         floating_ip,
         ubuntu_image,
         keypair,
+        flavor,
         net_subnet_router,
         create_server_context,
-        flavor_steps,
         server_steps):
     """**Scenario:** Verify that image can be connected with SSH.
 
@@ -57,6 +57,7 @@ def test_metadata_reach_all_booted_vm(
     #. Get Glance ubuntu image OR download and create it if ubuntu image is
         not present.
     #. Create keypair
+    #. Create flavor
 
     **Steps:**
 
@@ -70,11 +71,11 @@ def test_metadata_reach_all_booted_vm(
 
     **Teardown:**
 
+    #. Delete flavor
     #. Delete keypair
     #. Release floating IP
     #. Delete security group
     """
-    flavor = flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
     network, _, _ = net_subnet_router
 
     with create_server_context(next(utils.generate_ids('server')),

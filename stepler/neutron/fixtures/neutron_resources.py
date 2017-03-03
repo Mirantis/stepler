@@ -658,7 +658,7 @@ def neutron_2_servers_2_nets_diff_projects(
 
         # Attach floating ips to servers
         floating_ip_steps = get_floating_ip_steps(**credentials)
-        floating_ip = floating_ip_steps.create()
+        floating_ip = floating_ip_steps.create(public_network)
         request.addfinalizer(functools.partial(
             floating_ip_steps.delete, floating_ip))
         server_steps.attach_floating_ip(server, floating_ip)
