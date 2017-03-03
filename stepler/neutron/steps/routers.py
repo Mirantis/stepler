@@ -18,7 +18,8 @@ Router steps
 # limitations under the License.
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
-                      has_length, is_in, is_not, raises)  # noqa H301
+                      has_length, is_in, is_not, raises, has_item
+                      )  # noqa: H301
 from neutronclient.common import exceptions
 
 from stepler import base
@@ -152,6 +153,7 @@ class RouterSteps(base.BaseSteps):
         Args:
             router (dict): router
             subnet (dict): subnet
+            check (bool, optional): flag whether to check step or not
         """
         self._client.remove_subnet_interface(router_id=router['id'],
                                              subnet_id=subnet['id'])
@@ -178,11 +180,12 @@ class RouterSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         def _check_subnet_interface_presence():
-            subnet_ids = self._client.get_interfaces_subnets_ids(router['id'])
-            matcher = is_in(subnet_ids)
+            subnet_ids = self._client.get_router_interfaces_subnets_ids(
+                router['id'])
+            matcher = has_item(subnet['id'])
             if not must_present:
                 matcher = is_not(matcher)
-            return waiter.expect_that(subnet['id'], matcher)
+            return waiter.expect_that(subnet_ids, matcher)
 
         waiter.wait(_check_subnet_interface_presence, timeout_seconds=timeout)
 

@@ -58,13 +58,14 @@ class RouterManager(base.BaseNeutronManager):
         """Get router interface ports."""
         router_ports = self.client.ports.find_all(device_id=router_id)
         dev_owner_values = ('network:router_interface',
+                            'network:ha_router_replicated_interface',
                             'network:router_interface_distributed')
         return [
             port for port in router_ports
             if port['device_owner'] in dev_owner_values
         ]
 
-    def get_interfaces_subnets_ids(self, router_id):
+    def get_router_interfaces_subnets_ids(self, router_id):
         """Get router interfaces subnets ids list."""
         ports = self.get_interfaces_ports(router_id)
         return [ip['subnet_id'] for p in ports for ip in p['fixed_ips']]
