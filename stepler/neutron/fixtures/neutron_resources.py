@@ -585,6 +585,7 @@ def neutron_2_servers_2_nets_diff_projects(
         sorted_hypervisors,
         cirros_image,
         public_flavor,
+        public_network,
         get_neutron_security_group_steps,
         get_neutron_security_group_rule_steps,
         get_server_steps,
@@ -610,6 +611,7 @@ def neutron_2_servers_2_nets_diff_projects(
         sorted_hypervisors (list): sorted hypervisors
         cirros_image (obj): glance image
         public_flavor (obj): nova flavor with is_public=True attribute
+        public_network (obj): public network
         get_neutron_security_group_steps (function): function to get security
             group steps
         get_neutron_security_group_rule_steps (function): function to get
@@ -658,7 +660,7 @@ def neutron_2_servers_2_nets_diff_projects(
 
         # Attach floating ips to servers
         floating_ip_steps = get_floating_ip_steps(**credentials)
-        floating_ip = floating_ip_steps.create()
+        floating_ip = floating_ip_steps.create(public_network)
         request.addfinalizer(functools.partial(
             floating_ip_steps.delete, floating_ip))
         server_steps.attach_floating_ip(server, floating_ip)

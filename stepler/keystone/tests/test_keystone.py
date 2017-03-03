@@ -55,7 +55,7 @@ def test_keystone_permission_lose(admin,
 
 @pytest.mark.idempotent_id('76f823ac-5c8b-4617-a4cc-9e30257a679f')
 def test_restart_keystone_service(cirros_image,
-                                  tiny_flavor,
+                                  flavor,
                                   keypair,
                                   net_subnet_router,
                                   security_group,
@@ -71,7 +71,7 @@ def test_restart_keystone_service(cirros_image,
     **Setup:**
 
     #. Create cirros image
-    #. Create tiny flavor
+    #. Create flavor
     #. Create keypair
     #. Create network with subnet and router
     #. Create security group
@@ -106,7 +106,7 @@ def test_restart_keystone_service(cirros_image,
 
     user_steps.check_user_presence(user)
     server_2 = server_steps.create_servers(image=cirros_image,
-                                           flavor=tiny_flavor,
+                                           flavor=flavor,
                                            networks=[net_subnet_router[0]],
                                            keypair=keypair,
                                            security_groups=[security_group],
