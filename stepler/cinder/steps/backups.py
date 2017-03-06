@@ -161,7 +161,9 @@ class BackupSteps(base.BaseSteps):
             AssertionError: if no BadRequest occurs or exception message is
                 unexpected
         """
-        exception_message = "Backup container has more than 255 characters"
+        exception_message = (
+            "(Backup container has more than 255 characters)|"
+            "(Backup container has \d+ characters, more than 255)")
 
         assert_that(
             calling(self.create_backup).with_args(

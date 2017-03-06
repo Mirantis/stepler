@@ -147,7 +147,9 @@ class VolumeTransferSteps(base.BaseSteps):
         Raises:
             AssertionError: if check triggered an error
         """
-        exception_message = "Transfer name has more than 255 characters"
+        exception_message = (
+            "(Transfer name has more than 255 characters)|"
+            "(Transfer name has \d+ characters, more than 255)")
 
         assert_that(
             calling(self.create_volume_transfer).with_args(
