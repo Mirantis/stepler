@@ -644,12 +644,12 @@ class ServerSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
 
-        def predicate():
+        def _check_ping_for_ip():
             result = ping.Pinger(
                 ip_to_ping, remote=remote_from).ping(count=ping_count)
-            return result.loss == 0
+            return waiter.expect_that(result.loss, equal_to(0))
 
-        waiter.wait(predicate, timeout_seconds=timeout,
+        waiter.wait(_check_ping_for_ip, timeout_seconds=timeout,
                     expected_exceptions=(paramiko.SSHException,
                                          socket.error,
                                          EOFError))
