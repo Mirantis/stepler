@@ -47,7 +47,8 @@ class VolumeSteps(base.BaseSteps):
         Raises:
             AssertionError: if check triggered an error
         """
-        exception_message = "Name has more than 255 characters"
+        exception_message = ("(Name has more than 255 characters)|"
+                             "(Name has \d+ characters, more than 255)")
 
         assert_that(
             calling(self.create_volumes).with_args(

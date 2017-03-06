@@ -17,12 +17,13 @@ Server volume steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import equal_to
 from novaclient import exceptions as nova_exceptions
-from waiting import wait
 
 from stepler import base
 from stepler import config
 from stepler.third_party import steps_checker
+from stepler.third_party import waiter
 
 __all__ = [
     'NovaVolumeSteps'
@@ -91,8 +92,9 @@ class NovaVolumeSteps(base.BaseSteps):
             volume.get()
             try:
                 self._client.get_server_volume(server.id, volume.id)
-                return is_attached
+                attached = True
             except nova_exceptions.NotFound:
-                return not is_attached
+                attached = False
+            waiter.expect_that(attached, equal_to(is_attached))
 
-        wait(predicate, timeout_seconds=timeout)
+        waiter.wait(predicate, timeout_seconds=timeout)
