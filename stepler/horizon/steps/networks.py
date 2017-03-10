@@ -128,7 +128,7 @@ class NetworksSteps(BaseSteps):
         if check:
             page_network = self.app.page_network
             self.close_notification('success')
-            page_network.table_subnets.row(
+            page_network.open_tab_subnets().table_subnets.row(
                 name=subnet_name,
                 network_address=network_address).wait_for_presence()
 

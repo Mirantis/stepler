@@ -27,30 +27,27 @@ from stepler.third_party import utils
 class TestAnyOne(object):
     """Tests for any one."""
 
-    @pytest.mark.idempotent_id('a54b457e-f3b2-4903-9702-b9e75ede5830',
-                               any_one='admin', images_count=1)
-    @pytest.mark.idempotent_id('6094e9bf-67dd-4f19-a0a3-73cf7b91603a',
-                               any_one='admin', images_count=2)
-    @pytest.mark.idempotent_id('083edf5e-ba16-414a-854d-d0ddcbbe7186',
-                               any_one='user', images_count=1)
-    @pytest.mark.idempotent_id('ace4a999-9318-4446-a957-57143e52703d',
-                               any_one='user', images_count=2)
-    @pytest.mark.parametrize('images_count', [1, 2])
-    def test_delete_images(self, images_count, create_images):
+    @pytest.mark.idempotent_id(
+        'a54b457e-f3b2-4903-9702-b9e75ede5830',
+        any_one='admin',
+        images={'count': 1})
+    @pytest.mark.idempotent_id(
+        '6094e9bf-67dd-4f19-a0a3-73cf7b91603a',
+        any_one='admin',
+        images={'count': 2})
+    @pytest.mark.idempotent_id(
+        '083edf5e-ba16-414a-854d-d0ddcbbe7186',
+        any_one='user',
+        images={'count': 1})
+    @pytest.mark.idempotent_id(
+        'ace4a999-9318-4446-a957-57143e52703d',
+        any_one='user',
+        images={'count': 2})
+    @pytest.mark.parametrize(
+        'images', [{'count': 1}, {'count': 2}], ids=['1', '2'], indirect=True)
+    def test_delete_images(self, images, images_steps):
         """Verify that user can delete images as batch."""
-        image_names = list(
-            utils.generate_ids(count=images_count, length=20))
-        create_images(*image_names)
-
-    @pytest.mark.idempotent_id('6c0cc571-857f-4846-a2b9-2a08c8ab3a14',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('8a17f2d4-42fd-46e7-a066-ace6b0b161ae',
-                               any_one='user')
-    def test_create_image_from_local_file(self, create_image):
-        """Verify that user can create image from local file."""
-        image_name = next(utils.generate_ids(length=20))
-        image_file = next(utils.generate_files(postfix='.qcow2'))
-        create_image(image_name, image_file=image_file)
+        images_steps.delete_images([image.name for image in images])
 
     @pytest.mark.idempotent_id('c4cf3c6d-45d2-4629-b9fe-3e8eed3f1e59',
                                any_one='admin')
@@ -64,11 +61,11 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('2454c803-bc07-44c7-b842-0151c510c7d2',
                                any_one='user')
-    def test_images_pagination(self, images_steps, create_images,
+    @pytest.mark.parametrize('images', [{'count': 2}], indirect=True)
+    def test_images_pagination(self, images_steps, images,
                                update_settings):
         """Verify images pagination works right and back."""
-        image_names = sorted(list(utils.generate_ids(count=2, length=20)))
-        create_images(*image_names)
+        image_names = [image.name for image in images]
         update_settings(items_per_page=1)
         images_steps.check_images_pagination(image_names)
 
@@ -89,14 +86,13 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('637b39da-5648-4d46-bf3f-d51ca858928f',
                                any_one='user')
-    def test_remove_protected_image(self, create_image, images_steps):
+    def test_remove_protected_image(self, image, images_steps):
         """Verify that user can't delete protected image."""
-        image_name = next(utils.generate_ids(length=20))
-        create_image(image_name, protected=True)
-        images_steps.delete_images([image_name], check=False)
+        images_steps.update_image(image.name, protected=True)
+        images_steps.delete_images([image.name], check=False)
         images_steps.close_notification('error')
-        images_steps.check_image_present(image_name)
-        images_steps.update_image(image_name, protected=False)
+        images_steps.check_image_present(image.name)
+        images_steps.update_image(image.name, protected=False)
 
     @pytest.mark.idempotent_id('50dcf89e-370a-47d2-a0eb-c56dd77c968e',
                                any_one='admin')
@@ -141,7 +137,7 @@ class TestAnyOne(object):
                                any_one='user')
     def test_public_image_visibility(self, images_steps):
         """Verify that public image is visible for other users."""
-        images_steps.check_public_image_visible('TestVM')
+        images_steps.check_public_image_visible(config.HORIZON_TEST_IMAGE)
 
     @pytest.mark.idempotent_id('3c98d922-df89-4701-a4b1-c5258fda5d7b',
                                any_one='admin')

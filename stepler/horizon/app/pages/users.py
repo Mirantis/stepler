@@ -35,8 +35,7 @@ class DropdownMenu(_ui.DropdownMenu):
 
 @ui.register_ui(
     checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[type="checkbox"]'),
-    dropdown_menu=DropdownMenu(),
-    link_username=ui.UI(By.CSS_SELECTOR, 'td[data-cell-name="name"] a'))
+    dropdown_menu=DropdownMenu())
 class RowUser(_ui.Row):
     """User row of users table."""
 
@@ -44,12 +43,12 @@ class RowUser(_ui.Row):
 class TableUsers(_ui.Table):
     """Users table."""
 
-    columns = {'name': 2, 'email': 4, 'enabled': 7}
+    columns = {'name': 2, 'email': 4, 'enabled': 6}
     row_cls = RowUser
 
 
 @ui.register_ui(
-    combobox_project=ui.ComboBox(By.NAME, 'project'),
+    combobox_project=_ui.combobox_by_label("Primary Project"),
     combobox_role=ui.ComboBox(By.NAME, 'role_id'),
     field_confirm_password=ui.TextField(By.NAME, 'confirm_password'),
     field_name=ui.TextField(By.NAME, 'name'),
@@ -74,7 +73,7 @@ class FormUpdateUser(_ui.Form):
 @ui.register_ui(
     button_create_user=ui.Button(By.ID, 'users__action_create'),
     button_delete_users=ui.Button(By.ID, 'users__action_delete'),
-    button_filter_users=ui.Button(By.CLASS_NAME, 'fa-search'),
+    button_filter_users=ui.Button(By.XPATH, './/button[.="Filter"]'),
     field_filter_users=ui.TextField(By.NAME, 'users__filter__q'),
     form_change_password=FormChangePassword(By.ID,
                                             'change_user_password_form'),

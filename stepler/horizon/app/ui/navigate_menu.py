@@ -17,6 +17,8 @@ Navigate menu
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
 import pom
 from pom import ui
 from selenium.webdriver.common.by import By
@@ -46,6 +48,7 @@ class NavigateMenu(ui.Block):
 
             if not item.webelement.is_displayed() and parent_item:
                 parent_item.click()
+                time.sleep(1)
                 wait(item.webelement.is_displayed,
                      timeout_seconds=10, sleep_seconds=0.1)
 

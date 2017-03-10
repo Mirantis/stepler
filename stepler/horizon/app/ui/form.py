@@ -29,7 +29,7 @@ class Form(ui.Form):
 
     timeout = config.ACTION_TIMEOUT
 
-    submit_locator = By.CSS_SELECTOR, '.btn.btn-primary'
+    submit_locator = By.CSS_SELECTOR, '.btn.btn-primary:not(:disabled)'
     cancel_locator = By.CSS_SELECTOR, '.btn.cancel'
 
     @pom.timeit

@@ -43,11 +43,10 @@ class RowFloatingIP(_ui.Row):
 class TableFloatingIPs(_ui.Table):
     """Table with floating IPs."""
 
-    columns = {'ip_address': 2, 'mapped_fixed_ip_address': 3}
     row_cls = RowFloatingIP
 
 
-@ui.register_ui(combobox_port=ui.ComboBox(By.NAME, 'instance_id'))
+@ui.register_ui(combobox_port=_ui.combobox_by_label("Port to be associated"))
 class FormAssociate(_ui.Form):
     """Form to associate."""
 

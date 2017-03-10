@@ -122,10 +122,12 @@ class ContainersSteps(BaseSteps):
         with self.app.page_containers as page:
             page.table_objects.row(
                 name=folder_name).button_delete.click()
+            # Confirm deleting
+            page.form_confirm.submit(modal_absent=False)
+            # Close modal
             page.form_confirm.submit()
 
         if check:
-            self.close_notification('success')
             self.app.page_containers.table_objects.row(
                 name=folder_name).wait_for_absence()
 
@@ -170,10 +172,12 @@ class ContainersSteps(BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
+        # Confirm deleting
+        self.app.page_containers.form_confirm.submit(modal_absent=False)
+        # Close modal
         self.app.page_containers.form_confirm.submit()
 
         if check:
-            self.close_notification('success')
             self.app.page_containers.table_objects.row(
                 name=file_name).wait_for_absence()
 

@@ -38,7 +38,6 @@ class RowSecurityGroup(_ui.Row):
 class TableSecurityGroups(_ui.Table):
     """Security groups table."""
 
-    columns = {'name': 2, 'description': 3}
     row_cls = RowSecurityGroup
 
 

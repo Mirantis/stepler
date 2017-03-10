@@ -85,6 +85,7 @@ __all__ = sorted([  # sort for documentation
 
     'create_image',
     'create_images',
+    'images',
     'image',
     'images_steps',
 

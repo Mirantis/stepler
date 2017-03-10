@@ -24,14 +24,14 @@ from stepler.horizon.app import ui as _ui
 
 from ..base import PageBase
 from ..instances.page_instances import FormLaunchInstance
-from ..volumes.tab_volumes import FormCreateVolume
 
 
 @ui.register_ui(
-    item_create_volume=ui.UI(
-        By.CSS_SELECTOR, '[id$="action_create_volume_from_image"]'),
-    item_update_metadata=ui.UI(
-        By.CSS_SELECTOR, '[id$="action_update_metadata"]'))
+    item_create_volume=ui.UI(By.XPATH, './/a[contains(., "Create Volume")]'),
+    item_update_metadata=ui.UI(By.XPATH,
+                               './/a[contains(., "Update Metadata")]'),
+    item_delete=ui.UI(By.XPATH, './/a[contains(., "Delete Image")]'),
+    item_edit=ui.UI(By.XPATH, './/a[contains(., "Edit Image")]'), )
 class DropdownMenu(_ui.DropdownMenu):
     """Dropdown menu for image row."""
 
@@ -39,7 +39,7 @@ class DropdownMenu(_ui.DropdownMenu):
 @ui.register_ui(
     checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[type="checkbox"]'),
     dropdown_menu=DropdownMenu(),
-    link_image=ui.Link(By.CSS_SELECTOR, 'td > a'))
+    link_image=ui.Link(By.CSS_SELECTOR, 'td a'))
 class RowImage(_ui.Row):
     """Row with image in images table."""
 
@@ -49,21 +49,29 @@ class RowImage(_ui.Row):
 class TableImages(_ui.Table):
     """Images table."""
 
-    columns = {'name': 2, 'type': 3, 'status': 4, 'format': 7}
     row_cls = RowImage
 
 
 @ui.register_ui(
-    checkbox_protected=_ui.CheckBox(By.NAME, 'protected'),
-    combobox_disk_format=ui.ComboBox(By.NAME, 'disk_format'),
-    combobox_source_type=ui.ComboBox(By.NAME, 'source_type'),
-    field_image_file=ui.TextField(By.NAME, 'image_file'),
-    field_image_url=ui.TextField(By.NAME, 'image_url'),
-    field_min_disk=ui.TextField(By.NAME, 'minimum_disk'),
-    field_min_ram=ui.TextField(By.NAME, 'minimum_ram'),
+    button_group_protected=_ui.button_group_by_label("Protected"),
+    field_min_disk=ui.TextField(By.NAME, 'min_disk'),
+    field_min_ram=ui.TextField(By.NAME, 'min_ram'),
     field_description=ui.TextField(By.NAME, 'description'),
-    field_name=ui.TextField(By.NAME, 'name'))
-class FormCreateImage(_ui.Form):
+    field_name=ui.TextField(By.NAME, 'name'),
+    combobox_disk_format=ui.ComboBox(By.NAME, 'format'), )
+class FormImage(_ui.Form):
+    """Base image form."""
+    submit_locator = By.CSS_SELECTOR, '.modal-footer .btn.btn-primary'
+
+
+@ui.register_ui(
+    button_group_source_type=_ui.button_group_by_label("Source Type"),
+    field_image_file=_ui.FileField(By.XPATH,
+                                   './/*[contains(@class, "form-group") and '
+                                   './label[contains(., "File")]]'
+                                   '//*[contains(@class, "input-group")]'),
+    field_image_url=ui.TextField(By.NAME, 'image_url'), )
+class FormCreateImage(FormImage):
     """Form to create image."""
 
 
@@ -96,30 +104,38 @@ class FormUpdateMetadata(_ui.Form):
     cancel_locator = By.CSS_SELECTOR, '.btn[ng-click$="modal.cancel()"]'
 
 
-@ui.register_ui(
-    field_name=ui.TextField(By.NAME, 'name'),
-    field_description=ui.TextField(By.NAME, 'description'),
-    field_min_disk=ui.TextField(By.NAME, 'minimum_disk'),
-    field_min_ram=ui.TextField(By.NAME, 'minimum_ram'),
-    checkbox_protected=_ui.CheckBox(By.NAME, 'protected'))
-class FormUpdateImage(_ui.Form):
+class FormUpdateImage(FormImage):
     """Form to update image."""
 
 
 @ui.register_ui(
-    button_create_image=ui.Button(By.ID, 'images__action_create'),
-    button_delete_images=ui.Button(By.ID, 'images__action_delete'),
+    field_name=ui.TextField(By.CSS_SELECTOR, 'input[ng-model$=".name"]'),
+    field_description=ui.TextField(By.CSS_SELECTOR,
+                                   'input[ng-model$=".description"]'),
+    field_size=ui.TextField(By.CSS_SELECTOR, 'input[ng-model$=".size"]'),
+    combobox_volume_type=ui.ComboBox(By.CSS_SELECTOR,
+                                     'input[ng-model$=".volumeType"]'))
+class FormCreateVolume(_ui.Form):
+    """Form to create volume."""
+
+
+@ui.register_ui(
+    button_create_image=ui.Button(By.XPATH,
+                                  './/button[contains(., "Create Image")]'),
+    button_delete_images=ui.Button(By.XPATH,
+                                   './/button[contains(., "Delete Images")]'),
     button_public_images=ui.Button(By.CSS_SELECTOR, 'button[value="public"]'),
-    form_create_image=FormCreateImage(By.ID, 'create_image_form'),
-    form_create_volume=FormCreateVolume(
-        By.CSS_SELECTOR, '[action*="volumes/create"]'),
+    form_create_image=FormCreateImage(By.XPATH, './/*[@ng-form="wizardForm"]'),
+    form_create_volume=FormCreateVolume(By.XPATH,
+                                        './/*[@ng-form="wizardForm"]'),
     form_launch_instance=FormLaunchInstance(
         By.CSS_SELECTOR,
         'wizard[ng-controller="LaunchInstanceWizardController"]'),
-    form_update_image=FormUpdateImage(By.ID, 'update_image_form'),
+    form_update_image=FormUpdateImage(By.XPATH, './/*[@ng-form="wizardForm"]'),
     form_update_metadata=FormUpdateMetadata(By.CSS_SELECTOR,
                                             'div.modal-content'),
-    table_images=TableImages(By.ID, 'images'))
+    table_images=TableImages(By.CSS_SELECTOR, 'table.table-detail'),
+    search_bar=_ui.SearchBar(By.CSS_SELECTOR, '.magic-search-bar'))
 class PageImages(PageBase):
     """Images Page."""
 

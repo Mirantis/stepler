@@ -59,6 +59,9 @@ class ComboBox(ui.Block):
         for element in value_elements:
 
             if value in element.get_attribute('innerHTML').strip():
+                # Scroll to element
+                self.webdriver.execute_script(
+                    "arguments[0].scrollIntoView(true);", element)
                 element.click()
 
                 wait(lambda: not values_container.is_displayed(),
@@ -81,3 +84,10 @@ class ComboBox(ui.Block):
             value = element.get_attribute('innerHTML').strip()
             _values.append(value)
         return _values
+
+
+def combobox_by_label(label):
+    """Return ComboBox instance with correct XPATH selector by field label."""
+    return ComboBox(By.XPATH, './/div[contains(@class, "form-group") and '
+                    './label[contains(., "{}")]]'
+                    '//div[contains(@class, "dropdown")]'.format(label))

@@ -17,11 +17,14 @@ Custom UI components
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .button_group import ButtonGroup, button_group_by_label  # noqa
 from .checkbox import CheckBox  # noqa
-from .combobox import ComboBox  # noqa
+from .combobox import ComboBox, combobox_by_label  # noqa
 from .dropdown_menu import DropdownMenu  # noqa
+from .filefield import FileField  # noqa
 from .form import Form  # noqa
 from .initiated_ui import InitiatedUI  # noqa
 from .navigate_menu import NavigateMenu  # noqa
+from .search_bar import SearchBar  # noqa
 from .tab import Tab  # noqa
 from .table import Cell, Row, Table  # noqa
