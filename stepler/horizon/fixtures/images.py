@@ -19,12 +19,15 @@ Fixtures for images
 
 import pytest
 
+from stepler import config
+from stepler.glance.fixtures import create_images_context
 from stepler.horizon.steps import ImagesSteps
 from stepler.third_party import utils
 
 __all__ = [
     'create_image',
     'create_images',
+    'images',
     'image',
     'images_steps'
 ]
@@ -88,7 +91,34 @@ def create_image(images_steps):
 
 
 @pytest.fixture
-def image(create_image):
-    """Fixture to create image with default options before test."""
-    image_name = next(utils.generate_ids(length=20))
-    return create_image(image_name)
+def images(request, get_glance_steps, uncleanable):
+    """Fixture to create cirros images with default options.
+
+    Args:
+        request (obj): py.test's SubRequest instance
+        get_glance_steps (function): function to get glance steps
+        uncleanable (AttrDict): data structure with skipped resources
+
+    Returns:
+        list: AttrDict instances with created images' names
+    """
+    params = {'count': 1}
+    params.update(getattr(request, 'param', {}))
+    names = utils.generate_ids('cirros', count=params['count'])
+    with create_images_context(get_glance_steps, uncleanable,
+                               names,
+                               config.CIRROS_QCOW2_URL) as images:
+        yield [utils.AttrDict(name=image['name']) for image in images]
+
+
+@pytest.fixture
+def image(images):
+    """Fixture to create cirros images with default options.
+
+    Args:
+        images (list): list of created images
+
+    Returns:
+        AttrDict: object with created image name
+    """
+    return images[0]

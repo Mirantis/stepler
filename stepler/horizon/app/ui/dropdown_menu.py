@@ -22,10 +22,10 @@ Usually used in tables to add actions for rows.
 from pom import ui
 from selenium.webdriver.common.by import By
 
-
 @ui.register_ui(
     button_toggle=ui.Button(By.CSS_SELECTOR, '.dropdown-toggle'),
-    item_default=ui.UI(By.CSS_SELECTOR, 'a:nth-of-type(1)'),
+    item_default=ui.UI(By.CSS_SELECTOR,
+                       'button:nth-of-type(1), a:nth-of-type(1)'),
     item_delete=ui.UI(By.CSS_SELECTOR, '[id$="action_delete"]'),
     item_edit=ui.UI(By.CSS_SELECTOR, '[id$="action_edit"]'))
 class DropdownMenu(ui.Block):

@@ -50,13 +50,13 @@ class TableVolumes(_ui.Table):
     row_cls = RowVolume
 
 
-@ui.register_ui(combobox_status=ui.ComboBox(By.NAME, 'status'))
+@ui.register_ui(combobox_status=_ui.combobox_by_label("Status"))
 class FormUpdateVolumeStatus(_ui.Form):
     """Form to update volume status."""
 
 
 @ui.register_ui(
-    combobox_destination_host=ui.ComboBox(By.NAME, 'host'),
+    combobox_destination_host=_ui.combobox_by_label("Destination Host"),
     field_current_host=ui.TextField(By.NAME, 'current_host'))
 class FormMigrateVolume(_ui.Form):
     """Form to migrate volume."""

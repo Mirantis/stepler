@@ -1,8 +1,4 @@
-"""
-------------
-Network page
-------------
-"""
+"""Themable file field."""
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,19 +16,24 @@ Network page
 from pom import ui
 from selenium.webdriver.common.by import By
 
-from ..base import PageBase
-from .tab_subnets import TabSubnets
 
+class FileField(ui.Block):
+    """Themable file field."""
 
-@ui.register_ui(
-    label_subnets=ui.UI(By.LINK_TEXT, 'Subnets'),
-    tab_subnets=TabSubnets())
-class PageNetwork(PageBase):
-    """Network page."""
+    input_locator = By.CSS_SELECTOR, 'input[type="file"]'
 
-    url = "/project/networks/{}/detail"
+    @property
+    def file_input(self):
+        return self.webdriver.find_element(*self.input_locator)
 
-    def open_tab_subnets(self):
-        """Open subnet_tabs."""
-        self.label_subnets.click()
-        return self.tab_subnets
+    @property
+    @ui.wait_for_presence
+    def value(self):
+        """Get file path."""
+        return self.file_input.value
+
+    @value.setter
+    @ui.wait_for_presence
+    def value(self, value):
+        """Set file to upload."""
+        self.file_input.send_keys(value)

@@ -54,3 +54,5 @@ class PageBase(pom.Page, _ui.InitiatedUI):
     def navigate(self, navigate_items):
         """Open page via navigation menu."""
         self.navigate_menu.go_to(navigate_items)
+        self.modal.wait_for_presence()
+        self.modal.wait_for_absence()

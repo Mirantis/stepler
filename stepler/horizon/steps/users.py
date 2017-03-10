@@ -123,7 +123,7 @@ class UsersSteps(BaseSteps):
             def check_rows():
                 for row in page_users.table_users.rows:
                     if not (row.is_present and
-                            query in row.link_username.value):
+                            query in row.cell('name').value):
                         is_present = False
                         break
                 is_present = True
@@ -145,7 +145,7 @@ class UsersSteps(BaseSteps):
             if check:
 
                 def check_sort():
-                    usernames = [row.link_username.value for row in table.rows]
+                    usernames = [row.cell('name').value for row in table.rows]
                     expected_usernames = sorted(usernames)
 
                     if reverse:
@@ -171,7 +171,8 @@ class UsersSteps(BaseSteps):
 
             with row.dropdown_menu as menu:
                 menu.button_toggle.click()
-                menu.item_toggle_user.click()
+                if menu.item_toggle_user.is_present:
+                    menu.item_toggle_user.click()
 
             if check:
                 self.close_notification('success')
@@ -183,7 +184,6 @@ class UsersSteps(BaseSteps):
         page_users = self._page_users()
 
         with page_users.table_users.row(name=username).dropdown_menu as menu:
-            menu.button_toggle.click()
             menu.item_default.click()
 
         with page_users.form_update_user as form:

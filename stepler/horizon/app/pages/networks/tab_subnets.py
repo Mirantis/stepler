@@ -1,7 +1,7 @@
 """
-----------
-Login page
-----------
+-----------
+Subnets tab
+-----------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,25 +17,18 @@ Login page
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pom
 from pom import ui
 from selenium.webdriver.common.by import By
 
 from stepler.horizon.app import ui as _ui
 
 
-@ui.register_ui(field_username=ui.TextField(By.NAME, 'username'),
-                field_password=ui.TextField(By.NAME, 'password'))
-class FormLogin(_ui.Form):
-    """Form to login user."""
+class TableSubnets(_ui.Table):
+    """Table of subnets."""
 
 
 @ui.register_ui(
-    form_login=FormLogin(By.CSS_SELECTOR, 'form'),
-    label_alert_message=ui.UI(By.CSS_SELECTOR, 'div.alert-danger'),
-    label_error_message=ui.UI(By.CSS_SELECTOR, 'div.error'),
-    modal=_ui.initiated_ui.Modal(By.CLASS_NAME, 'modal-backdrop'))
-class PageLogin(pom.Page):
-    """Page to login user."""
-
-    url = "/auth/login"
+    table_subnets=TableSubnets(
+        By.ID, 'subnets'))
+class TabSubnets(_ui.Tab):
+    """Subnets tab."""

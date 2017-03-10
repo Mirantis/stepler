@@ -41,7 +41,8 @@ class TableNamespaces(_ui.Table):
 
 @ui.register_ui(
     field_namespace_json=ui.TextField(By.NAME, 'direct_input'),
-    combobox_namespace_source=ui.ComboBox(By.NAME, 'source_type'))
+    combobox_namespace_source=_ui.combobox_by_label(
+        "Namespace Definition Source"))
 class FormImportNamespace(_ui.Form):
     """Form to create namespace."""
 
