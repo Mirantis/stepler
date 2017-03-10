@@ -31,7 +31,7 @@ __all__ = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def horizon():
     """Function fixture to launch browser and open horizon page.
 

@@ -20,19 +20,19 @@ Network page
 from pom import ui
 from selenium.webdriver.common.by import By
 
-from stepler.horizon.app import ui as _ui
-
 from ..base import PageBase
+from .tab_subnets import TabSubnets
 
 
-class TableSubnets(_ui.Table):
-    """Table of subnets."""
-
-    columns = {'name': 2, 'network_address': 3}
-
-
-@ui.register_ui(table_subnets=TableSubnets(By.ID, 'subnets'))
+@ui.register_ui(
+    label_subnets=ui.UI(By.LINK_TEXT, 'Subnets'),
+    tab_subnets=TabSubnets())
 class PageNetwork(PageBase):
     """Network page."""
 
     url = "/project/networks/{}/detail"
+
+    def open_tab_subnets(self):
+        """Open subnet_tabs."""
+        self.label_subnets.click()
+        return self.tab_subnets

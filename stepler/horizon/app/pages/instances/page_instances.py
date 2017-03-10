@@ -94,7 +94,7 @@ class TableAvailableFlavors(_ui.Table):
 
     columns = {'name': 2, 'ram': 4, 'root_disk': 6}
     row_cls = RowAvailable
-    row_xpath = './/tr[contains(@ng-repeat-start, "displayedItems")]'
+    row_xpath = './/tr[@ng-repeat-start]'
 
 
 @ui.register_ui(

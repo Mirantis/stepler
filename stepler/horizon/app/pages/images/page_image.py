@@ -23,22 +23,31 @@ from selenium.webdriver.common.by import By
 from ..base import PageBase
 
 
-@ui.register_ui(label_name=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(1)'),
-                description=ui.UI(
-                    By.XPATH, './/dt[text()="Description"]/following::dd'),
-                metadata_name1=ui.UI(By.CSS_SELECTOR, 'dt:nth-of-type(1)'),
-                metadata_name2=ui.UI(By.CSS_SELECTOR, 'dt:nth-of-type(2)'),
-                metadata_value1=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(1)'),
-                metadata_value2=ui.UI(By.CSS_SELECTOR, 'dd:nth-of-type(2)'))
+@ui.register_ui()
 class Info(ui.Block):
     """Image info table."""
 
+    _property_name_locator = By.TAG_NAME, 'dt'
+    _property_value_locator = By.XPATH, 'following-sibling::dd'
+
+    @property
+    def properties(self):
+        """Return dict of image properties from block."""
+        _properties = {}
+        for name_el in self.find_elements(self._property_name_locator):
+            name = name_el.get_attribute('innerText')
+            value_el = name_el.find_element(*self._property_value_locator)
+            value = value_el.get_attribute('innerText')
+            _properties[name] = value
+        return _properties
+
 
 @ui.register_ui(
-    image_info_main=Info(By.CSS_SELECTOR,
-                         'div.detail dl.dl-horizontal:nth-of-type(1)'),
-    image_info_custom=Info(By.CSS_SELECTOR,
-                           'div.detail dl.dl-horizontal:nth-of-type(3)'))
+    image_info_main=Info(By.XPATH,
+                         './/div[./h3[.="Image"]]'),
+    image_info_custom=Info(By.XPATH,
+                           './/div[./h3[.="Custom Properties"]]'),
+    label_name=ui.UI(By.CSS_SELECTOR, '.h1'))
 class PageImage(PageBase):
     """Image page."""
 

@@ -71,6 +71,7 @@ class Table(ui.Table):
     """Custom table."""
 
     row_cls = Row
+    row_xpath = './/tr[not(contains(@class, "detail-row"))]'
 
     @property
     def rows(self):
@@ -80,3 +81,15 @@ class Table(ui.Table):
             return []
         else:
             return rows
+
+    @property
+    @pom.utils.cache
+    def columns(self):
+        """Table columns {'name': position}."""
+        _columns = {}
+        for pos, cell in enumerate(self.header.cells, 1):
+            column = cell.get_attribute('innerText').strip()
+            if column:
+                column = re.sub('[ -]', '_', column).lower()
+                _columns[column] = pos
+        return _columns

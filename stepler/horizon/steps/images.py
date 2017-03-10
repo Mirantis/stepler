@@ -17,7 +17,7 @@ Images steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, equal_to, has_entries  # noqa
 
 from stepler import config
 from stepler.third_party import steps_checker
@@ -63,16 +63,15 @@ class ImagesSteps(BaseSteps):
         page_images = self._page_images()
         page_images.button_create_image.click()
 
+        if image_url:
+            image_file = utils.get_file_path(image_url)
+            image_url = None
+
         with page_images.form_create_image as form:
             form.field_name.value = image_name
 
-            if image_file:
-                form.combobox_source_type.value = 'Image File'
-                form.field_image_file.value = image_file
-
-            else:
-                form.combobox_source_type.value = 'Image Location'
-                form.field_image_url.value = image_url
+            form.button_group_source_type.value = 'File'
+            form.field_image_file.value = image_file
 
             if image_description:
                 form.field_description.value = image_description
@@ -84,11 +83,12 @@ class ImagesSteps(BaseSteps):
                 form.field_min_ram.value = min_ram
 
             if protected:
-                form.checkbox_protected.select()
+                form.button_group_protected.value = "Yes"
             else:
-                form.checkbox_protected.unselect()
+                form.button_group_protected.value = "No"
 
             form.combobox_disk_format.value = disk_format
+
             if big_image:
                 form.submit(modal_timeout=config.LONG_ACTION_TIMEOUT)
             else:
@@ -132,7 +132,9 @@ class ImagesSteps(BaseSteps):
                 name=image_name).checkbox.select()
 
         page_images.button_delete_images.click()
-        page_images.form_confirm.submit()
+
+        if page_images.form_confirm.is_present:
+            page_images.form_confirm.submit()
 
         if check:
             self.close_notification('success')
@@ -263,9 +265,9 @@ class ImagesSteps(BaseSteps):
                 form.field_min_ram.value = min_ram
 
             if protected:
-                form.checkbox_protected.select()
+                form.button_group_protected.value = "Yes"
             else:
-                form.checkbox_protected.unselect()
+                form.button_group_protected.value = "No"
 
             form.submit()
 
@@ -281,9 +283,12 @@ class ImagesSteps(BaseSteps):
         self._page_images().table_images.row(
             name=image_name).link_image.click()
 
+        self.app.page_image.image_info_main.wait_for_presence()
+
         if check:
-            assert_that(self.app.page_image.image_info_main.label_name.value,
-                        equal_to(image_name))
+            assert_that(
+                self.app.page_image.label_name.value,
+                equal_to(image_name))
 
     @steps_checker.step
     def create_volume(self, image_name, volume_name, check=True):
@@ -300,7 +305,7 @@ class ImagesSteps(BaseSteps):
             form.submit()
 
             if check:
-                self.close_notification('info')
+                self.close_notification('success')
                 form.wait_for_absence()
 
     @steps_checker.step
@@ -321,7 +326,7 @@ class ImagesSteps(BaseSteps):
             form.item_flavor.click()
             with form.tab_flavor as tab:
                 tab.table_available_flavors.row(
-                    name='m1.tiny').button_add.click()
+                    name=config.HORIZON_TEST_FLAVOR).button_add.click()
 
             form.item_network.click()
             with form.tab_network as tab:
@@ -355,7 +360,8 @@ class ImagesSteps(BaseSteps):
                     equal_to(True))
 
         page_images.table_images.link_next.click()
-        page_images.table_images.row(name='TestVM').wait_for_presence()
+        page_images.table_images.row(
+            name=config.HORIZON_TEST_IMAGE).wait_for_presence()
 
         assert_that(page_images.table_images.link_next.is_present,
                     equal_to(False))
@@ -424,8 +430,9 @@ class ImagesSteps(BaseSteps):
         """Step to check public image is visible."""
         with self._page_images() as page:
             page.open()
-            page.button_public_images.click()
+            page.search_bar.apply('Visibility', 'Public')
             page.table_images.row(name=image_name).wait_for_presence()
+            page.search_bar.clear('Visibility')
 
     @steps_checker.step
     def check_non_public_image_not_visible(self, image_name):
@@ -438,9 +445,10 @@ class ImagesSteps(BaseSteps):
             AssertionError: if image is available in public images list
         """
         with self._page_images() as page:
-            page.button_public_images.click()
+            page.search_bar.apply('Visibility', 'Public')
             assert_that(page.table_images.row(name=image_name).is_present,
                         equal_to(False))
+            page.search_bar.clear('Visibility')
 
     @steps_checker.step
     def check_image_info(self,
@@ -464,25 +472,9 @@ class ImagesSteps(BaseSteps):
         self._page_images().table_images.row(
             name=image_name).link_image.click()
 
-        description = None
-        description_field = self.app.page_image.image_info_main.description
-        if description_field.is_present:
-            description = description_field.value
-        assert_that(description, equal_to(expected_description))
+        properties = self.app.page_image.image_info_custom.properties
 
-        metadata = {}
-        ind = 1
-        while hasattr(self.app.page_image.image_info_custom,
-                      "metadata_name{}".format(ind)):
-            # NOTE: max number of metadata is limited by max N in
-            # metadata_nameN (see app.pages.images.page_image.py)
-            if getattr(self.app.page_image.image_info_custom,
-                       "metadata_name{}".format(ind)).is_present:
-                m_name = getattr(self.app.page_image.image_info_custom,
-                                 "metadata_name{}".format(ind)).value
-                m_value = getattr(self.app.page_image.image_info_custom,
-                                  "metadata_value{}".format(ind)).value
-                metadata[m_name] = m_value
-            ind += 1
-        expected_metadata = expected_metadata or {}
-        assert_that(metadata, equal_to(expected_metadata))
+        description = properties.pop('Description', None)
+
+        assert_that(description, equal_to(expected_description))
+        assert_that(properties, has_entries(**(expected_metadata or {})))

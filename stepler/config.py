@@ -521,6 +521,9 @@ EXTERNAL_ROUTER = 'router:external'
 
 XVFB_LOCK = '/tmp/xvfb.lock'
 
+HORIZON_TEST_FLAVOR = FLAVOR_MICRO
+HORIZON_TEST_IMAGE = 'TestVM'
+
 # Volume creating constants
 IMAGE_SOURCE = 'Image'
 VOLUME_SOURCE = 'Volume'

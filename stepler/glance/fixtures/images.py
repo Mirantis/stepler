@@ -20,6 +20,7 @@ Glance fixtures
 import json
 import logging
 
+from glanceclient.common import exceptions
 from hamcrest import assert_that, is_not  # noqa
 import pytest
 
@@ -225,9 +226,49 @@ def images_cleanup(uncleanable):
     return _images_cleanup
 
 
+@context.context
+def create_images_context(get_glance_steps, uncleanable, image_names,
+                          image_url, **kwargs):
+    """Context manager to create image and delete it later.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+        uncleanable (AttrDict): data structure with skipped resources
+        image_names (str): desired image name
+        image_url (str): url to download image from
+        **kwargs: Additional arguments to pass to API
+
+    Returns:
+        object: ubuntu glance image
+    """
+    images = get_glance_steps(
+        version=config.CURRENT_GLANCE_VERSION, is_api=False).create_images(
+            image_names=image_names,
+            image_path=utils.get_file_path(image_url),
+            **kwargs)
+
+    for image in images:
+        uncleanable.image_ids.add(image.id)
+
+    yield images
+
+    glance_steps = get_glance_steps(version=config.CURRENT_GLANCE_VERSION,
+                                    is_api=False)
+    for image in images:
+        try:
+            glance_steps.delete_images([image])
+        except exceptions.HTTPNotFound:
+            pass
+
+    for image in images:
+        uncleanable.image_ids.remove(image.id)
+
+
 @pytest.fixture(scope='session')
-def create_images_context(get_glance_steps, uncleanable):
-    """Session callable fixture to create image.
+def ubuntu_image(get_glance_steps, uncleanable):
+    """Session fixture to create ubuntu image.
+
+    Creates image from config.UBUNTU_QCOW2_URL with default options.
 
     Args:
         get_glance_steps (function): function to get glance steps
@@ -236,102 +277,75 @@ def create_images_context(get_glance_steps, uncleanable):
     Returns:
         object: ubuntu glance image
     """
-    @context.context
-    def _create_images_context(image_names, image_url, **kwargs):
-        images = get_glance_steps(
-            version=config.CURRENT_GLANCE_VERSION, is_api=False).create_images(
-                image_names=image_names,
-                image_path=utils.get_file_path(image_url),
-                **kwargs)
-
-        for image in images:
-            uncleanable.image_ids.add(image.id)
-
-        yield images
-
-        get_glance_steps(
-            version=config.CURRENT_GLANCE_VERSION,
-            is_api=False).delete_images(images)
-
-        for image in images:
-            uncleanable.image_ids.remove(image.id)
-
-    return _create_images_context
-
-
-@pytest.fixture(scope='session')
-def ubuntu_image(create_images_context):
-    """Session fixture to create ubuntu image.
-
-    Creates image from config.UBUNTU_QCOW2_URL with default options.
-
-    Args:
-        create_images_context (function): function to create images as context
-
-    Returns:
-        object: ubuntu glance image
-    """
-    with create_images_context(utils.generate_ids('ubuntu'),
+    with create_images_context(get_glance_steps, uncleanable,
+                               utils.generate_ids('ubuntu'),
                                config.UBUNTU_QCOW2_URL) as images:
         yield images[0]
 
 
 @pytest.fixture(scope='session')
-def ubuntu_xenial_image(create_images_context):
+def ubuntu_xenial_image(get_glance_steps, uncleanable):
     """Session fixture to create ubuntu xenial image.
 
     Creates image from config.UBUNTU_XENIAL_QCOW2_URL with default options.
 
     Args:
-        create_images_context (function): function to create images as context
+        get_glance_steps (function): function to get glance steps
+        uncleanable (AttrDict): data structure with skipped resources
 
     Returns:
         object: ubuntu xenial glance image
     """
-    with create_images_context(utils.generate_ids('ubuntu-xenial'),
+    with create_images_context(get_glance_steps, uncleanable,
+                               utils.generate_ids('ubuntu-xenial'),
                                config.UBUNTU_XENIAL_QCOW2_URL) as images:
         yield images[0]
 
 
 @pytest.fixture(scope='session')
-def cirros_image(create_images_context):
+def cirros_image(get_glance_steps, uncleanable):
     """Session fixture to create cirros image with default options.
 
     Args:
-        create_images_context (function): function to create images as context
+        get_glance_steps (function): function to get glance steps
+        uncleanable (AttrDict): data structure with skipped resources
 
     Returns:
         object: cirros glance image
     """
-    with create_images_context(utils.generate_ids('cirros'),
+    with create_images_context(get_glance_steps, uncleanable,
+                               utils.generate_ids('cirros'),
                                config.CIRROS_QCOW2_URL) as images:
         yield images[0]
 
 
 @pytest.fixture
-def conntrack_cirros_image(create_images_context, glance_steps):
+def conntrack_cirros_image(get_glance_steps, uncleanable):
     """Function fixture to create cirros image with patches for conntrack.
 
     Args:
-        create_images_context (function): function to create images as context
-        image_steps (obj): instantiated glance image steps
+        get_glance_steps (function): function to get glance steps
+        uncleanable (AttrDict): data structure with skipped resources
 
     Returns:
         object: public cirros glance image
     """
-    with create_images_context(utils.generate_ids('cirros'),
+    with create_images_context(get_glance_steps, uncleanable,
+                               utils.generate_ids('cirros'),
                                config.CONNTRACK_CIRROS_IMAGE) as images:
-        glance_steps.update_images(images,
-                                   visibility=config.IMAGE_VISIBILITY_PUBLIC)
+        glance_steps = get_glance_steps()
+        glance_steps.update_images(
+            images, visibility=config.IMAGE_VISIBILITY_PUBLIC)
         yield images[0]
 
 
 @pytest.fixture(scope='session')
-def baremetal_ubuntu_image(create_images_context):
+def baremetal_ubuntu_image(get_glance_steps, uncleanable):
     """Session fixture to create baremetal ubuntu image with default options.
 
     Args:
-        create_images_context (function): function to create images as context
+        get_glance_steps (function): function to get glance steps
+        uncleanable (AttrDict): data structure with skipped resources
 
     Returns:
         object: ubuntu image
@@ -343,11 +357,14 @@ def baremetal_ubuntu_image(create_images_context):
         image_url = config.BAREMETAL_VIRTUAL_UBUNTU
         disk_info = json.dumps(config.BAREMETAL_VIRTUAL_DISK_INFO)
 
-    with create_images_context(utils.generate_ids('baremetal-ubuntu'),
-                               image_url,
-                               disk_format='raw',
-                               container_format='bare',
-                               cpu_arch="x86_64",
-                               hypervisor_type="baremetal",
-                               fuel_disk_info=disk_info) as images:
+    with create_images_context(
+            get_glance_steps,
+            uncleanable,
+            utils.generate_ids('baremetal-ubuntu'),
+            image_url,
+            disk_format='raw',
+            container_format='bare',
+            cpu_arch="x86_64",
+            hypervisor_type="baremetal",
+            fuel_disk_info=disk_info) as images:
         yield images[0]
