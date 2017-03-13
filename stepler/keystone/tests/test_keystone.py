@@ -302,12 +302,11 @@ def test_service_list(service_steps, service_name):
 
 
 @pytest.mark.idempotent_id('cd6c32f7-759a-457e-b695-55305743020f')
-def test_list_ec2(ec2_steps, user_steps):
+def test_list_ec2(ec2_steps, ec2_credentials, current_user):
     """**Scenario:** List all ec2 credentials.
 
     **Steps:**
 
     #. Get the list of all ec2 credentials
     """
-    user = user_steps.get_user(name=config.USERNAME)
-    ec2_steps.list(user)
+    ec2_steps.list(current_user)
