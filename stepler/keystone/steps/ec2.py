@@ -17,7 +17,7 @@ Ec2 steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, is_not, empty  # noqa
+from hamcrest import assert_that, is_not, empty, has_properties  # noqa
 
 from stepler.base import BaseSteps
 from stepler.third_party import steps_checker
@@ -48,3 +48,25 @@ class Ec2Steps(BaseSteps):
         if check:
             assert_that(creds_list, is_not(empty()))
         return creds_list
+
+    @steps_checker.step
+    def create(self, user, project, check=True):
+        """Step to create EC2 credentials.
+
+        Args:
+            user (object): user
+            project (object): project
+            check (bool): flag whether to check step or not
+
+        Returns:
+            keystoneclient.v3.ec2.Ec2: ec2 credentials object
+
+        Raises:
+            AssertionError: if check failed
+        """
+        credentials = self._client.create(
+            user_id=user.id, project_id=project.id)
+        if check:
+            assert_that(credentials,
+                        has_properties(user_id=user.id, tenant_id=project.id))
+        return credentials

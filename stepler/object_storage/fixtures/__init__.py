@@ -24,4 +24,5 @@ __all__ = sorted([  # sort for documentation
     'swift_client',
     's3_client',
     'container_steps',
+    'container',
 ])

@@ -29,6 +29,7 @@ __all__ = [
     'get_user_steps',
     'user_steps',
     'user',
+    'current_user',
     'new_user_with_project',
 ]
 
@@ -146,3 +147,17 @@ def new_user_with_project(request, create_user_with_project):
         yield {'username': resource.user.name,
                'password': resource.password,
                'project_name': resource.project.name}
+
+
+@pytest.fixture
+def current_user(session, user_steps):
+    """Fixture to get current user.
+
+    Args:
+        session (obj): keystone session
+        user_steps (obj): instantiated user steps
+
+    Returns:
+        obj: current user
+    """
+    return user_steps.get_user_by_id(session.get_user_id())

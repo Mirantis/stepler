@@ -137,6 +137,25 @@ class UserSteps(BaseSteps):
         return user
 
     @steps_checker.step
+    def get_user_by_id(self, user_id, check=True):
+        """Step to find user by id.
+
+        Args:
+            user_id (str): user ID
+            check (bool): flag whether to check step or not
+
+        Raises:
+            NotFound: if user does not exist
+
+        Returns:
+            object: user
+        """
+        user = self._client.get(user_id)
+        if check:
+            assert_that(user.id, equal_to(user_id))
+        return user
+
+    @steps_checker.step
     def get_users(self, domain='default', group=None, check=True):
         """Step to get users.
 
