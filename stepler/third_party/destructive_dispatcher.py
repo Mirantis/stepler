@@ -132,7 +132,15 @@ def pytest_runtest_teardown(item, nextitem):
 def revert_environment(destructor, snapshot_name):
     """Revert environment to original state."""
     nodes = destructor.get_nodes()
-    nodes.revert(snapshot_name)
+    # Sometimes revert fails with
+    # internal error: process exited while connecting to monitor
+    # so run several times (until it pass successful)
+    for _ in range(5):
+        try:
+            nodes.revert(snapshot_name)
+            break
+        except Exception:
+            time.sleep(5)
     # Wait some time for preventing ansible freezes on time synchronization.
     time.sleep(10)
     waiter.wait(lambda: nodes.run_task({'command': 'hwclock --hctosys'}),
