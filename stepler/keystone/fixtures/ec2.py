@@ -24,6 +24,7 @@ from stepler.keystone import steps
 
 __all__ = [
     'ec2_steps',
+    'ec2_credentials',
 ]
 
 
@@ -38,3 +39,22 @@ def ec2_steps(keystone_client):
         object: object with ec2 credentials steps
     """
     return steps.Ec2Steps(keystone_client.ec2)
+
+
+@pytest.fixture
+def ec2_credentials(ec2_steps, current_project, current_user):
+    """Fixture to create EC2 credentials for current user.
+
+    After the test it destroys created credentials.
+
+    Args:
+        ec2_steps (obj): instantiated EC2 steps
+        current_project (obj): current project
+        current_user (obj): current user
+
+    Yields:
+        keystoneclient.v3.ec2.Ec2: ec2 credentials object
+    """
+    credentials = ec2_steps.create(current_user, current_project)
+    yield credentials
+    ec2_steps.delete(credentials)

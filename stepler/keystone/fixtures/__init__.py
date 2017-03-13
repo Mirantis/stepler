@@ -34,6 +34,7 @@ __all__ = sorted([  # sort for documentation
     'domain',
 
     'ec2_steps',
+    'ec2_credentials',
 
     'group_steps',
     'create_group',
@@ -60,6 +61,7 @@ __all__ = sorted([  # sort for documentation
     'get_user_steps',
     'user_steps',
     'user',
+    'current_user',
     'new_user_with_project',
 
     'token_steps',

@@ -260,12 +260,14 @@ def test_rados_download_object_from_bucket(container_steps):
 
 
 @pytest.mark.idempotent_id('03ed9be4-d134-4463-8e4c-c069688209eb')
-def test_download_object(container_steps):
+def test_download_object(container_steps, container):
     """**Scenario:** Download object from Object Storage.
+
+    **Setup:**
+    #. Create container
 
     **Steps:**
 
-    #. Create container
     #. Create object
     #. Upload object to container
     #. Check that this object is present into the container
@@ -275,18 +277,12 @@ def test_download_object(container_steps):
     **Teardown:**
 
     #. Delete container
-    #. Delete object
     """
-    container_name, file_name, content, object_name = utils.generate_ids(
-        count=4)
-    container_steps.create(name=container_name)
-    created_object_name = next(utils.generate_files())
-    container_steps.check_object_not_changed_after_upload(
-        container_name=container_name, object_name=created_object_name,
-        content=content)
-    container_steps.delete_object(container_name=container_name,
-                                  object_name=object_name)
-    container_steps.delete(container_name=container_name)
+    content, object_name = utils.generate_ids(count=2)
+    container_steps.put_object(container.name, object_name, content)
+    container_steps.check_object_content(container.name, object_name,
+                                         content)
+    container_steps.delete_object(container.name, object_name)
 
 
 @pytest.mark.idempotent_id('d2dde79c-b4fa-40e0-ad6b-8b88f4abb365')
