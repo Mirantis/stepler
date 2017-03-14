@@ -41,13 +41,13 @@ OS_FAULTS_DICT_CONFIG = {
             'private_key_file': getenv('CLOUD_DRIVER_KEYFILE')
         }
     },
-    'power_management': {
+    'power_managements': [{
         'driver': getenv('POWER_DRIVER', 'libvirt'),
         'args': {
             'connection_uri': getenv('POWER_DRIVER_URI',
                                      'qemu+unix:///system'),
         }
-    }
+    }]
 }
 
 # tcpcloud-specific

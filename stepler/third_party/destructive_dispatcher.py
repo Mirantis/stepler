@@ -143,6 +143,7 @@ def revert_environment(destructor, snapshot_name):
             time.sleep(5)
     # Wait some time for preventing ansible freezes on time synchronization.
     time.sleep(10)
-    waiter.wait(lambda: nodes.run_task({'command': 'hwclock --hctosys'}),
+    waiter.wait(nodes.run_task, args=({'command': 'hwclock --hctosys'},),
                 timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
-                expected_exceptions=executor.AnsibleExecutionException)
+                predicate_timeout=60,
+                expected_exceptions=executor.AnsibleExecutionUnreachable)

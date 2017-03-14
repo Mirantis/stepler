@@ -22,6 +22,7 @@ import sys
 
 from hamcrest import assert_that
 import six
+import timeout_decorator
 import waiting
 
 from stepler.third_party import logger
@@ -64,8 +65,16 @@ class TimeoutExpired(Exception):
         return u"{}{}".format(self.base_ex, self.message)
 
 
+class PredicateTimeout(Exception):
+    """Predicate timeout exception class."""
+
+
 @logger.log
-def wait(predicate, args=None, kwargs=None, expected_exceptions=(),
+def wait(predicate,
+         args=None,
+         kwargs=None,
+         expected_exceptions=(),
+         predicate_timeout=None,
          **wait_kwargs):
     """Wait that predicate execution returns non-falsy result.
 
@@ -98,6 +107,8 @@ def wait(predicate, args=None, kwargs=None, expected_exceptions=(),
         multiplier (int): coefficient to multiply polling time
         expected_exceptions (tuple): predicate exceptions which will be omitted
             during waiting.
+        predicate_timeout (int): max predicate execution timeout. Equals to
+            timeout_seconds by default.
         waiting_for (str): custom waiting message.
 
     Returns:
@@ -112,12 +123,15 @@ def wait(predicate, args=None, kwargs=None, expected_exceptions=(),
     raised_exceptions = []
     args = args or ()
     kwargs = kwargs or {}
+    predicate_timeout = predicate_timeout or wait_kwargs.get('timeout_seconds',
+                                                             60)
 
     if isinstance(expected_exceptions, tuple):
-        expected_exceptions += (ExpectationError,)
+        expected_exceptions += (ExpectationError, PredicateTimeout)
     elif (isinstance(expected_exceptions, type) and
           issubclass(expected_exceptions, Exception)):
-        expected_exceptions = (expected_exceptions, ExpectationError,)
+        expected_exceptions = (expected_exceptions, ExpectationError,
+                               PredicateTimeout)
     else:
         raise ValueError('expected_exceptions should be tuple or '
                          'Exception subclass')
@@ -125,7 +139,10 @@ def wait(predicate, args=None, kwargs=None, expected_exceptions=(),
     @functools.wraps(predicate)
     def wrapper():
         try:
-            return predicate(*args, **kwargs)
+            _predicate = timeout_decorator.timeout(
+                predicate_timeout,
+                timeout_exception=PredicateTimeout)(predicate)
+            return _predicate(*args, **kwargs)
         except expected_exceptions as e:
             raised_exceptions.append(e)
             return False
@@ -136,8 +153,7 @@ def wait(predicate, args=None, kwargs=None, expected_exceptions=(),
         ex = TimeoutExpired(e)
         if raised_exceptions:
             ex.message += "\n{0}: {1}".format(
-                type(raised_exceptions[-1]).__name__,
-                raised_exceptions[-1])
+                type(raised_exceptions[-1]).__name__, raised_exceptions[-1])
         else:
             ex.message += "\nNo exception raised during predicate executing"
         raise ex
