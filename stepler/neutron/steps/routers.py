@@ -294,18 +294,23 @@ class RouterSteps(base.BaseSteps):
         assert_that(router_attr, has_entries(kwargs))
 
     @steps_checker.step
-    def check_routers_count_for_agent(self, agent, expected_count):
+    def check_routers_count_for_agent(self, agent, expected_count, timeout=0):
         """Step to check routers count for L3 agent.
 
         Args:
             agent (dict): neutron agent dict to check routers count
             expected_count (int): expected routers count for L3 agent
+            timeout (int): seconds to wait a result of check
 
         Raises:
             AssertionError: if check failed
         """
-        routers = self._client.get_routers_on_l3_agent(agent['id'])
-        assert_that(routers, has_length(expected_count))
+        def _check_routers_count_for_agent():
+            routers = self._client.get_routers_on_l3_agent(agent['id'])
+            return waiter.expect_that(routers, has_length(expected_count))
+
+        return waiter.wait(_check_routers_count_for_agent,
+                           timeout_seconds=timeout)
 
     @steps_checker.step
     def update_router(self, router, check=True, **kwargs):

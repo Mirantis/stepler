@@ -457,7 +457,7 @@ AGENT_LOGS = {
                           '/var/log/neutron/neutron-openvswitch-agent.log'],
     NEUTRON_METADATA_SERVICE: ['/var/log/neutron/metadata-agent.log',
                                '/var/log/neutron/neutron-metadata-agent.log'],
-    NEUTRON_SERVER_SERVICE: ['/var/log/neutron/server.log',
+    NEUTRON_SERVER_SERVICE: ['/var/log/neutron/neutron-server.log',
                              None]
 }
 

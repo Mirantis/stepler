@@ -624,7 +624,8 @@ def test_check_l3_agent_after_destroy_controller(
     for router in (router_1, router_2):
         agent_steps.check_router_rescheduled(
             router, l3_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
-    router_steps.check_routers_count_for_agent(l3_agent, expected_count=0)
+    router_steps.check_routers_count_for_agent(
+        l3_agent, expected_count=0, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
     server_3 = server_steps.create_servers(image=cirros_image,
                                            flavor=flavor,
@@ -731,7 +732,8 @@ def test_check_l3_agent_after_reset_primary_controller(
     for router in (router_1, router_2):
         agent_steps.check_router_rescheduled(
             router, l3_agent, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
-    router_steps.check_routers_count_for_agent(l3_agent, expected_count=0)
+    router_steps.check_routers_count_for_agent(
+        l3_agent, expected_count=0, timeout=config.AGENT_RESCHEDULING_TIMEOUT)
 
     server_3 = server_steps.create_servers(image=cirros_image,
                                            flavor=flavor,
