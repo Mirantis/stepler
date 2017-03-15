@@ -1284,13 +1284,12 @@ class ServerSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        with server_ssh.sudo():
-            cmd_result = server_ssh.check_call('ls ' + fs_path)
+        cmd_result = server_ssh.execute('ls ' + fs_path)
 
         if must_present:
-            assert_that(cmd_result.stdout, is_not(empty()))
+            assert_that(cmd_result.is_ok, cmd_result.stderr)
         else:
-            assert_that(cmd_result.stdout, is_(empty()))
+            assert_that(not cmd_result.is_ok, cmd_result.stdout)
 
     @steps_checker.step
     def restore_server(self, server, check=True):
