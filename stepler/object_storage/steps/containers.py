@@ -193,25 +193,6 @@ class ContainerSwiftSteps(base.BaseSteps):
         content = self.get_object(container_name, object_name)
         assert_that(content, equal_to(expected_content))
 
-    @steps_checker.step
-    def check_object_not_changed_after_upload(self, container_name,
-                                              object_name, content):
-        """Step to check that object wasn't changed after uploading.
-
-        Args:
-            container_name (str): container name
-            object_name(str): object name
-            content (str): content to put
-
-        Raises:
-            AssertionError: if object content is not equal to expected content
-        """
-        etag_created_object = self.put_object(container_name, object_name,
-                                              content)
-        etag_downloaded_object = self.get_object(container_name,
-                                                 object_name)[0]['etag']
-        assert_that(etag_created_object, equal_to(etag_downloaded_object))
-
 
 class ContainerCephSteps(base.BaseSteps):
     """Ceph container steps."""
