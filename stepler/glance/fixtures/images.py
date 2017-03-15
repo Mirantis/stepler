@@ -333,7 +333,8 @@ def conntrack_cirros_image(get_glance_steps, uncleanable):
     with create_images_context(get_glance_steps, uncleanable,
                                utils.generate_ids('cirros'),
                                config.CONNTRACK_CIRROS_IMAGE) as images:
-        glance_steps = get_glance_steps()
+        glance_steps = get_glance_steps(version=config.CURRENT_GLANCE_VERSION,
+                                        is_api=False)
         glance_steps.update_images(
             images, visibility=config.IMAGE_VISIBILITY_PUBLIC)
         yield images[0]

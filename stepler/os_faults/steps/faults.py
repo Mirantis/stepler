@@ -1603,7 +1603,7 @@ class OsFaultsSteps(base.BaseSteps):
             ]:
                 continue
             dev_data = re.search(
-                r'match --physdev-in (?P<dev>.+?) CTzone (?P<zone>\d+)',
+                r'match --physdev-in (?P<dev>.+?) CT\s*zone (?P<zone>\d+)',
                 data[-1]).groupdict()
             if dev_data['zone'] not in zones:
                 continue
