@@ -36,6 +36,6 @@ ENV VIRTUAL_DISPLAY=1
 ENV OS_FAULTS_CLOUD_DRIVER=fuel
 ENV OS_FAULTS_CLOUD_DRIVER_KEYFILE=/opt/app/cloud.key
 # Disable ControlMaster to prevent ansible hangs after revert
-ENV ANSIBLE_SSH_ARGS = '-C -o ControlMaster=no'
+ENV ANSIBLE_SSH_ARGS='-C -o ControlMaster=no'
 
 ENTRYPOINT ["py.test", "-v", "--junit-xml=test_reports/report.xml"]
