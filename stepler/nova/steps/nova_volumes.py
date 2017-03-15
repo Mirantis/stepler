@@ -17,8 +17,7 @@ Server volume steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import equal_to
-from novaclient import exceptions as nova_exceptions
+from hamcrest import has_item, has_properties, is_not  # noqa: H301
 
 from stepler import base
 from stepler import config
@@ -88,13 +87,10 @@ class NovaVolumeSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         def predicate():
-            server.get()
-            volume.get()
-            try:
-                self._client.get_server_volume(server.id, volume.id)
-                attached = True
-            except nova_exceptions.NotFound:
-                attached = False
-            waiter.expect_that(attached, equal_to(is_attached))
+            volumes = self._client.get_server_volumes(server.id)
+            matcher = has_item(has_properties(id=volume.id))
+            if not is_attached:
+                matcher = is_not(matcher)
+            return waiter.expect_that(volumes, matcher)
 
         waiter.wait(predicate, timeout_seconds=timeout)

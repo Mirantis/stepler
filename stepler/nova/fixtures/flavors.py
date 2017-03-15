@@ -20,10 +20,11 @@ Flavor fixtures
 import pytest
 
 from hamcrest import assert_that, empty, is_not  # noqa
+from novaclient import exceptions
 
 from stepler import config
 from stepler.nova.steps import FlavorSteps
-from stepler.third_party.utils import generate_ids
+from stepler.third_party import utils
 
 __all__ = [
     'create_flavor',
@@ -105,34 +106,46 @@ def flavor(request, create_flavor):
     """
     flavor_params = dict(ram=512, vcpus=1, disk=5)
     flavor_params.update(getattr(request, 'param', {}))
-    flavor_name = next(generate_ids('flavor'))
+    flavor_name, = utils.generate_ids('flavor')
     return create_flavor(flavor_name, **flavor_params)
 
 
 @pytest.fixture
-def tiny_flavor(flavor_steps):
-    """Function fixture to find tiny flavor before test.
+def tiny_flavor(flavor_steps, create_flavor):
+    """Function fixture to find or create tiny flavor before test.
 
     Args:
         flavor_steps (object): instantiated flavor steps
+        create_flavor (function): function to create flavor with options
 
     Returns:
         object: tiny flavor
     """
-    return flavor_steps.get_flavor(name=config.FLAVOR_TINY)
+    try:
+        flavor = flavor_steps.get_flavor(name=config.FLAVOR_TINY)
+    except exceptions.NotFound:
+        name, = utils.generate_ids(config.FLAVOR_TINY)
+        flavor = create_flavor(name, ram=512, vcpus=1, disk=1)
+    return flavor
 
 
 @pytest.fixture
-def small_flavor(flavor_steps):
-    """Function fixture to find small flavor before test.
+def small_flavor(flavor_steps, create_flavor):
+    """Function fixture to find or create small flavor before test.
 
     Args:
         flavor_steps (object): instantiated flavor steps
+        create_flavor (function): function to create flavor with options
 
     Returns:
         object: small flavor
     """
-    return flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
+    try:
+        flavor = flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
+    except exceptions.NotFound:
+        name, = utils.generate_ids(config.FLAVOR_SMALL)
+        flavor = create_flavor(name, ram=2048, vcpus=1, disk=20)
+    return flavor
 
 
 @pytest.fixture
@@ -152,7 +165,7 @@ def baremetal_flavor(create_flavor):
         ram = config.BAREMETAL_VIRTUAL_RAM
         vcpus = config.BAREMETAL_VIRTUAL_VCPUS
 
-    return create_flavor(next(generate_ids('bm_flavor')),
+    return create_flavor(next(utils.generate_ids('bm_flavor')),
                          ram=ram,
                          vcpus=vcpus,
                          disk=config.BAREMETAL_DISK)
@@ -170,7 +183,7 @@ def public_flavor(create_flavor):
     """
 
     flavor_params = dict(ram=512, vcpus=1, disk=2, is_public=True)
-    flavor_name = next(generate_ids('flavor'))
+    flavor_name, = utils.generate_ids('flavor')
     return create_flavor(flavor_name, **flavor_params)
 
 
