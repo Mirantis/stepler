@@ -874,6 +874,7 @@ def neutron_2_servers_different_subnets(
         server,
         create_subnet,
         add_router_interfaces,
+        subnet_steps,
         server_steps):
     """Function fixture to prepare environment with 2 servers.
 
@@ -892,6 +893,7 @@ def neutron_2_servers_different_subnets(
         create_subnet (function): function to create subnet
         add_router_interfaces (function): function to add subnet interface to
             router
+        subnet_steps (obj): instantiated neutron subnet steps
         server_steps (obj): instantiated nova server steps
 
     Returns:
@@ -906,12 +908,13 @@ def neutron_2_servers_different_subnets(
     add_router_interfaces(router, [subnet_2])
 
     server_2_host = getattr(server, config.SERVER_ATTR_HOST)
+    ip = next(subnet_steps.get_available_fixed_ips(subnet))
     server_2 = server_steps.create_servers(
         image=cirros_image,
         flavor=flavor,
         nics=[{
             'net-id': network['id'],
-            'v4-fixed-ip': '192.168.2.10'
+            'v4-fixed-ip': ip
         }],
         availability_zone='nova:{}'.format(server_2_host),
         security_groups=[security_group],

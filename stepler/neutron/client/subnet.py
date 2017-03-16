@@ -59,11 +59,15 @@ class SubnetManager(base.BaseNeutronManager):
 
     def get_ports(self, subnet_id):
         """Return ports with interface to subnet."""
-        for port in self.client.ports.list():
+        return self.client.ports.find_all(
+            fixed_ips=u'subnet_id={}'.format(subnet_id))
+
+    def get_fixed_ips(self, subnet_id):
+        """Return subnet allocated fixed ip addresses."""
+        for port in self.get_ports(subnet_id):
             for ip in port['fixed_ips']:
-                if subnet_id == ip['subnet_id']:
-                    yield port
-                    break
+                if ip['subnet_id'] == subnet_id:
+                    yield ip['ip_address']
 
     def delete(self, subnet_id):
         """Delete subnet action.

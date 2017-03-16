@@ -629,6 +629,7 @@ class ServerSteps(base.BaseSteps):
                           ip_to_ping,
                           remote_from=None,
                           ping_count=3,
+                          must_be_success=True,
                           timeout=0):
         """Verify step to check ping for ip from remote or local host.
 
@@ -638,6 +639,9 @@ class ServerSteps(base.BaseSteps):
                 stepler.third_party.ssh.SshClient. If None - ping executing
                 from local host.
             ping_count (int): count of attempts to ping
+            must_be_success (bool): should ping loss be 0 (if
+                ``must_be_success`` is True) or ping received should be 0
+                (otherwise)
             timeout (int): seconds to wait for success ping
 
         Raises:
@@ -647,7 +651,11 @@ class ServerSteps(base.BaseSteps):
         def _check_ping_for_ip():
             result = ping.Pinger(
                 ip_to_ping, remote=remote_from).ping(count=ping_count)
-            return waiter.expect_that(result.loss, equal_to(0))
+            if must_be_success:
+                value = result.loss
+            else:
+                value = result.received
+            return waiter.expect_that(value, equal_to(0))
 
         waiter.wait(_check_ping_for_ip, timeout_seconds=timeout,
                     expected_exceptions=(paramiko.SSHException,

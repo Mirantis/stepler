@@ -17,6 +17,8 @@ Subnet steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ipaddress
+
 from hamcrest import assert_that, calling, equal_to, raises  # noqa
 from neutronclient.common import exceptions
 
@@ -109,3 +111,24 @@ class SubnetSteps(base.BaseSteps):
             "Subnet for network with ID {!r} has been created though it "
             "exceeds the quota or OverQuotaClient exception with expected "
             "error message has not been appeared".format(network['id']))
+
+    def get_available_fixed_ips(self, subnet):
+        """Step to get available fixed ips from subnet.
+
+        Args:
+            subnet (obj): subnet
+
+        Yields:
+            str: available ip address
+
+        Raises:
+            StopIteration: if there are no free ip addresses on subnet
+        """
+        used_ips = list(self._client.get_fixed_ips(subnet['id']))
+        for allocation_pool in subnet['allocation_pools']:
+            start = ipaddress.ip_address(allocation_pool['start'])
+            end = ipaddress.ip_address(allocation_pool['end'])
+            for net in ipaddress.summarize_address_range(start, end):
+                for host in net.hosts():
+                    if str(host) not in used_ips:
+                        yield str(host)

@@ -51,7 +51,7 @@ def test_ssh_unavailable_after_detach_floating_ip(
     #. Delete floating ip
     """
     server_steps.attach_floating_ip(server, floating_ip)
-    server_ssh = server_steps.get_server_ssh(server)
+    server_ssh = server_steps.get_server_ssh(server, ssh_timeout=10)
     with server_ssh:
         server_steps.check_active_ssh_connection(server_ssh)
         server_steps.detach_floating_ip(server, floating_ip)
@@ -118,7 +118,7 @@ def test_ssh_unavailable_after_deleting_tcp_rule(
         password=config.CIRROS_PASSWORD)[0]
     server_steps.attach_floating_ip(server, floating_ip)
 
-    server_ssh = server_steps.get_server_ssh(server)
+    server_ssh = server_steps.get_server_ssh(server, ssh_timeout=10)
     with server_ssh:
         server_steps.check_active_ssh_connection(server_ssh)
         neutron_security_group_rule_steps.delete_rule_from_group(
@@ -178,8 +178,9 @@ def test_ping_unavailable_after_deleting_icmp_rule(
     # Nova client has restricted functionality with security group rules:
     # it allows create and delete only => neutron client is used for security
     # group rules here
-    rules = neutron_security_group_rule_steps.get_rules(
-        {'security_group_id': security_group['id']})
+    rules = neutron_security_group_rule_steps.get_rules({
+        'security_group_id': security_group['id']
+    })
     # By default group is created with 2 egress rules:
     # Egress  IPv6  Any  Any  ::/0
     # Egress  IPv4  Any  Any  0.0.0.0/0
@@ -197,22 +198,33 @@ def test_ping_unavailable_after_deleting_icmp_rule(
     icmp_rule = neutron_security_group_rule_steps.add_rule_to_group(
         security_group['id'], **icmp_rule_params)
 
-    server = server_steps.create_servers(image=cirros_image,
-                                         flavor=flavor,
-                                         networks=[net_subnet_router[0]],
-                                         security_groups=[security_group],
-                                         username=config.CIRROS_USERNAME,
-                                         password=config.CIRROS_PASSWORD)[0]
+    server = server_steps.create_servers(
+        image=cirros_image,
+        flavor=flavor,
+        networks=[net_subnet_router[0]],
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME,
+        password=config.CIRROS_PASSWORD)[0]
     server_steps.attach_floating_ip(server, floating_ip)
 
     with server_steps.get_server_ssh(server) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh)
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP,
+            server_ssh,
+            timeout=config.NEUTRON_UPDATE_SEC_GROUP_RULES_TIMEOUT)
         neutron_security_group_rule_steps.delete_rule_from_group(
             icmp_rule['id'], security_group['id'])
-        server_steps.check_no_ping_context(config.GOOGLE_DNS_IP, server_ssh)
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP,
+            server_ssh,
+            must_be_success=False,
+            timeout=config.NEUTRON_UPDATE_SEC_GROUP_RULES_TIMEOUT)
         neutron_security_group_rule_steps.add_rule_to_group(
             security_group['id'], **icmp_rule_params)
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh)
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP,
+            server_ssh,
+            timeout=config.NEUTRON_UPDATE_SEC_GROUP_RULES_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('bf8d9694-4fbb-416f-b5b8-a073c3739b15')
