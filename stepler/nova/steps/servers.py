@@ -725,14 +725,20 @@ class ServerSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         parsed_ping_plan = self._parse_ping_plan(ping_plan)
-        for server, ips in parsed_ping_plan.items():
-            floating_ip = self.get_ips(server, config.FLOATING_IP).keys()[0]
 
-            with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
-                for ip in ips:
-                    self.check_ping_for_ip(ip,
-                                           remote_from=server_ssh,
-                                           timeout=timeout)
+        def _check_ping_by_plan():
+            for server, ips in parsed_ping_plan.items():
+                floating_ip = self.get_floating_ip(server)
+
+                with self.get_server_ssh(server, ip=floating_ip) as server_ssh:
+                    for ip in ips:
+                        self.check_ping_for_ip(ip, remote_from=server_ssh)
+            return True
+
+        waiter.wait(
+            _check_ping_by_plan,
+            timeout_seconds=timeout,
+            expected_exceptions=waiter.TimeoutExpired)
 
     def _get_ping_plan_for_servers(self, servers, ip_types):
         """Get dict which contains ip list to ping for all servers"""
