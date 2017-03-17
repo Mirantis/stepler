@@ -20,12 +20,40 @@ Object Storage CLI client steps
 from hamcrest import assert_that, empty, equal_to, is_in, is_not  # noqa H301
 from six import moves
 
+from stepler import config
 from stepler.cli_clients.steps import base
 from stepler.third_party import steps_checker
 
 
 class CliSwiftSteps(base.BaseCliSteps):
     """CLI object storage client steps."""
+
+    def execute_command(self,
+                        cmd,
+                        use_openrc=True,
+                        environ=None,
+                        **kwargs):
+        """Execute swift cli command in shell.
+
+        Swift can't determine keystone version, so we set ``OS_AUTH_URL``
+        to point to correct keystone endpoint.
+
+        Args:
+            cmd (str): client command to execute
+            use_openrc (bool): add 'source openrc' before `cmd` executing
+            environ (dict): shell environment variables to set before `cmd`
+                executing. By default it not set any variable
+            **kwargs: base class arguments
+
+        Returns:
+            tuple: (exit_code, stdout, stderr) - result of command execution
+
+        Raises:
+            AssertionError: if result check was failed
+        """
+        environ = environ or {}
+        environ['OS_AUTH_URL'] = config.AUTH_URL
+        return super(CliSwiftSteps, self).execute_command(cmd, use_openrc, environ, **kwargs)
 
     @steps_checker.step
     def create(self, container_name, check=True):
