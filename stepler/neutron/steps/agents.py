@@ -18,7 +18,7 @@ Agent steps
 # limitations under the License.
 
 from hamcrest import (assert_that, empty, is_in, is_not, only_contains,
-                      has_entries, has_length)  # noqa H301
+                      has_entries, has_length, all_of)  # noqa H301
 
 from stepler import base
 from stepler import config
@@ -153,14 +153,13 @@ class AgentSteps(base.BaseSteps):
         """
         def _get_expected_dhcp_agents_count():
             dhcp_agents = self.get_dhcp_agents_for_net(network, check=False)
-            waiter.expect_that(dhcp_agents, has_length(expected_count))
-            return dhcp_agents
+            matcher = has_length(expected_count)
+            if expected_count:
+                matcher = all_of(matcher,
+                                 only_contains(has_entries(alive=True)))
+            return waiter.expect_that(dhcp_agents, matcher)
 
-        dhcp_agents = waiter.wait(_get_expected_dhcp_agents_count,
-                                  timeout_seconds=timeout)
-
-        if expected_count and dhcp_agents:
-            self.check_alive(dhcp_agents)
+        waiter.wait(_get_expected_dhcp_agents_count, timeout_seconds=timeout)
 
     @steps_checker.step
     def check_network_rescheduled(self, network, old_dhcp_agent, timeout=0):
