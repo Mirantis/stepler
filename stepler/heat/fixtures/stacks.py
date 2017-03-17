@@ -66,10 +66,9 @@ def create_stack(stack_steps):
 
     yield _create_stack
 
-    if names:
-        stacks = [stack for stack in stack_steps.get_stacks(check=False)
-                  if stack.stack_name in names]
-        for stack in stacks:
+    for stack in stack_steps.get_stacks(check=False):
+        if (stack.stack_name in names and stack.stack_status.lower() !=
+                config.STACK_STATUS_DELETE_COMPLETE):
             stack_steps.delete(stack)
 
 
@@ -90,7 +89,9 @@ def stacks_cleanup(stack_steps):
 
     for stack in stack_steps.get_stacks(check=False):
         if (stack.id not in preserve_stacks_ids and
-                stack.stack_name.startswith(config.STEPLER_PREFIX)):
+                stack.stack_name.startswith(config.STEPLER_PREFIX) and
+                stack.stack_status.lower() !=
+                config.STACK_STATUS_DELETE_COMPLETE):
             stack_steps.delete(stack)
 
 

@@ -519,7 +519,7 @@ class OsFaultsSteps(base.BaseSteps):
                                         cmd=moves.shlex_quote(cmd))
 
         task = {'shell': cmd.encode('utf-8')}
-        result = nodes.run_task(task, raise_on_error=check)
+        result = nodes.run_task(task, raise_on_error=False)
 
         if check:
             assert_that(

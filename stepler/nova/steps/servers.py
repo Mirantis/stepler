@@ -359,7 +359,7 @@ class ServerSteps(base.BaseSteps):
             RuntimeError: if check failed
 
         Returns:
-            str: result of last command from sequence
+            str: stdout of last command from sequence
         """
         with self.get_server_ssh(server) as server_ssh:
             for command in commands:
