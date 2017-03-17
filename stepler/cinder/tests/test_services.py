@@ -37,33 +37,31 @@ def test_restart_all_cinder_services(volume,
     **Setup:**
 
     #. Create volume
-    #. Create ubuntu server
+    #. Create server
     #. Create floating IP
 
     **Steps:**
 
-    #. Attach floating IP to ubuntu server
+    #. Attach floating IP to server
     #. Check server is pinged via floating IP
-    #. Attach volume to ubuntu server
-    #. Mount volume inside ubuntu server
+    #. Attach volume to server
+    #. Mount volume inside server
     #. Create empty file inside volume
     #. Restart cinder services
     #. Check cinder services are available
     #. Create volume_2
-    #. Attache volume_2 to ubuntu server
-    #. Mount volume_2 inside ubuntu server
+    #. Attache volume_2 to server
+    #. Mount volume_2 inside server
     #. Copy empty file from volume to volume_2
 
     **Teardown:**
 
-    #. Detach volumes from ubuntu server
+    #. Detach volumes from server
     #. Delete floating IP
-    #. Delete ubuntu server
+    #. Delete server
     #. Delete created volumes
     """
     device_1, device_2 = '/dev/vdc', '/dev/vdd'
-    folder_1, folder_2 = '/mnt/volume_1', '/mnt/volume_2'
-    file_name = next(utils.generate_ids())
 
     server_steps.attach_floating_ip(server, floating_ip)
     server_steps.check_ping_to_server_floating(
@@ -72,30 +70,32 @@ def test_restart_all_cinder_services(volume,
     attach_volume_to_server(server, volume, device=device_1)
 
     server_steps.execute_commands(
-        server,
-        # TODO(schipiga): try variant via `dd`:
-        # dd if=/dev/urandom of=/dev/vdc bs=1M count=10
-        # dd if=/dev/vdc bs=1M count=10 2>/dev/null | md5sum
-        # Some actions
-        # dd if=/dev/vdc bs=1M count=10 2>/dev/null | md5sum
-        ['{} mkfs.ext2 {}'.format(config.CIRROS_ENV_PATH, device_1),
-         'mkdir {}'.format(folder_1),
-         'mount {} {}'.format(device_1, folder_1),
-         'touch {}/{}'.format(folder_1, file_name)],
+        server, [
+            'dd if=/dev/urandom of={dev} bs=1M count=10'.format(dev=device_1),
+            'dd if={dev} bs=1M count=10 2>/dev/null | md5sum'.format(
+                dev=device_1)
+        ],
         with_sudo=True)
 
     os_faults_steps.restart_services(config.CINDER_SERVICES)
     volume_steps.check_cinder_available()
 
-    volume_2 = volume_steps.create_volumes()[0]
+    # Some cinder services can start longer than cinder API.
+    # Try to create volume sometimes until it will be 'active'
+    for _ in range(10):
+        try:
+            volume_2 = volume_steps.create_volumes()[0]
+            break
+        except AssertionError:
+            pass
+
     attach_volume_to_server(server, volume_2, device=device_2)
 
     server_steps.execute_commands(
         server,
-        ['{} mkfs.ext2 {}'.format(config.CIRROS_ENV_PATH, device_2),
-         'mkdir {}'.format(folder_2),
-         'mount {} {}'.format(device_2, folder_2),
-         'cp {0}/{2} {1}/{2}'.format(folder_1, folder_2, file_name)],
+        ['dd if=/dev/urandom of={dev} bs=1M count=10'.format(dev=device_2),
+         'dd if={dev} bs=1M count=10 2>/dev/null | md5sum'.format(
+            dev=device_2)],
         with_sudo=True)
 
 
@@ -111,31 +111,30 @@ def test_stop_nova_and_cinder_services(server,
 
     **Setup:**
 
-    #. Create ubuntu server
+    #. Create server
     #. Create floating IP
 
     **Steps:**
 
-    #. Attach floating IP to ubuntu server
-    #. Check ubuntu server is pinged with floating IP
+    #. Attach floating IP to server
+    #. Check server is pinged with floating IP
     #. Create volume with size 10 Gb
-    #. Attach volume to ubuntu server
+    #. Attach volume to server
     #. Via SSH create file on attached volume
     #. Stop cinder-volume service
     #. Stop nova-compute service
     #. Via SSH copy file on attached volume and check that it's the same
     #. Start nova-compute service
     #. Start cinder-volume service
-    #. Detach volume from ubuntu server
+    #. Detach volume from server
 
     **Teardown:**
 
     #. Delete volume
     #. Delete floating IP
-    #. Delete ubuntu server
+    #. Delete server
     """
     device = '/dev/vdc'
-    folder = '/mnt/volume'
     file_name_1, file_name_2 = utils.generate_ids(count=2)
 
     server_steps.attach_floating_ip(server, floating_ip)
@@ -146,12 +145,10 @@ def test_stop_nova_and_cinder_services(server,
     volume = volume_steps.create_volumes(size=10)[0]
     attach_volume_to_server(server, volume, device=device)
 
-    server_steps.execute_commands(
+    md5sum = server_steps.execute_commands(
         server,
-        ['{} mkfs.ext2 {}'.format(config.CIRROS_ENV_PATH, device),
-         'mkdir {}'.format(folder),
-         'mount {} {}'.format(device, folder),
-         'echo "test" > {}/{}'.format(folder, file_name_1)],
+        ['dd if=/dev/urandom of={dev} bs=1M count=10'.format(dev=device),
+         'dd if={dev} bs=1M count=10 2>/dev/null | md5sum'.format(dev=device)],
         with_sudo=True)
 
     cinder_nodes = os_faults_steps.get_nodes(
@@ -164,9 +161,10 @@ def test_stop_nova_and_cinder_services(server,
     os_faults_steps.terminate_service(config.NOVA_COMPUTE, nova_nodes)
 
     server_steps.execute_commands(
-        server,
-        ['cp {0}/{1} {0}/{2}'.format(folder, file_name_1, file_name_2),
-         'diff {0}/{1} {0}/{2}'.format(folder, file_name_1, file_name_2)],
+        server, [
+            'dd if={dev} bs=1M count=10 2>/dev/null | '
+            'md5sum | grep "{old_sum}"'.format(dev=device, old_sum=md5sum)
+        ],
         with_sudo=True)
 
     os_faults_steps.start_service(config.NOVA_COMPUTE, nova_nodes)

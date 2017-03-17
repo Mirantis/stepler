@@ -598,8 +598,8 @@ class VolumeSteps(base.BaseSteps):
 
         def _check_migration_status():
             volume.get()
-            return waiter.expect_that(
-                volume.migration_status.lower(), equal_to(status.lower()))
+            return waiter.expect_that((volume.migration_status or '').lower(),
+                                      equal_to(status.lower()))
 
         waiter.wait(_check_migration_status, timeout_seconds=timeout)
 
