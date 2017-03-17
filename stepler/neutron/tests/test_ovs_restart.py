@@ -340,7 +340,7 @@ def test_restart_with_iperf_traffic(
 
     #. Attach floating IP to server_1
     #. Start iperf traffic from server_1 to server_2, wait it done
-    #. Check that iperf loss is 0
+    #. Check that iperf loss is close to 0
     #. Start iperf traffic from server_1 to server_2
     #. Restart ovs-agents
     #. Check that iperf loss is not more than 10%
@@ -365,7 +365,7 @@ def test_restart_with_iperf_traffic(
                 server_ssh,
                 ip=server_2_fixed_ip,
                 port=config.IPERF_UDP_PORT,
-                max_loss=0):
+                max_loss=0.1):
             pass
         with server_steps.check_iperf_loss_context(
                 server_ssh,
