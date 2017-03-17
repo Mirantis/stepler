@@ -653,9 +653,11 @@ class ServerSteps(base.BaseSteps):
                 ip_to_ping, remote=remote_from).ping(count=ping_count)
             if must_be_success:
                 value = result.loss
+                msg = 'Ping loss is not 0'
             else:
                 value = result.received
-            return waiter.expect_that(value, equal_to(0))
+                msg = 'Ping received is not 0'
+            return waiter.expect_that(value, equal_to(0), msg)
 
         waiter.wait(_check_ping_for_ip, timeout_seconds=timeout,
                     expected_exceptions=(paramiko.SSHException,
