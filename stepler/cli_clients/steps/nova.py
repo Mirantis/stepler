@@ -67,7 +67,7 @@ class CliNovaSteps(base.BaseCliSteps):
         Raises:
             AssertionError: if check failed
         """
-        cmd = ('nova host-evacuate-live --target-host {0} --block-migrate {1}'.
+        cmd = ('nova host-evacuate-live --target-host {0} {1}'.
                format(target_host, source_host))
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.LIVE_EVACUATE_CLI_TIMEOUT, check=check)
