@@ -109,6 +109,27 @@ class OsFaultsSteps(base.BaseSteps):
         return nodes.pick()
 
     @steps_checker.step
+    def get_compute_nodes(self, check=True):
+        """Step to get compute nodes.
+
+        In case of ironic-enabled cloud one of ``nova-compute`` service is
+        launched at one of controller nodes. This method returns real compute
+        nodes only.
+
+        Args:
+            check (bool): flag whether check step or not
+
+        Returns:
+            NodeCollection: one or more nodes
+        """
+        nodes = (
+            self.get_nodes(service_names=[config.NOVA_COMPUTE], check=False) -
+            self.get_nodes(service_names=[config.NOVA_API], check=False))
+        if check:
+            assert_that(nodes, is_not(empty()))
+        return nodes
+
+    @steps_checker.step
     def get_nodes_with_any_service(self, service_names, check=True):
         """Step to get nodes with running services.
 

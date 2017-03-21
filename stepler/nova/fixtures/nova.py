@@ -143,7 +143,7 @@ def nova_ceph_enabled(os_faults_steps):
         bool: is Ceph used by Nova or not
     """
     cmd = "grep -P '^images_type\s*=\s*rbd' {}".format(config.NOVA_CONFIG_PATH)
-    computes = os_faults_steps.get_nodes(service_names=[config.NOVA_COMPUTE])
+    computes = os_faults_steps.get_compute_nodes()
     result = os_faults_steps.execute_cmd(computes, cmd, check=False)
     return all(node_result.status == config.STATUS_OK
                for node_result in result)
