@@ -146,4 +146,8 @@ def revert_environment(destructor, snapshot_name):
     waiter.wait(nodes.run_task, args=({'command': 'hwclock --hctosys'},),
                 timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
                 predicate_timeout=60,
-                expected_exceptions=executor.AnsibleExecutionUnreachable)
+                expected_exceptions=(executor.AnsibleExecutionUnreachable,
+                                     executor.AnsibleExecutionException))
+    # Restart ceph services
+    nodes.run_task({'command': 'systemctl restart ceph-\*.service'},
+                   raise_on_error=False)

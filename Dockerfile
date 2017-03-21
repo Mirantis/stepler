@@ -18,6 +18,7 @@ apt-get install -q -y \
     libvirt-dev \
     xvfb \
     iceweasel \
+    xdotool \
     libav-tools && \
 apt-get clean  && \
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

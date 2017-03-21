@@ -558,7 +558,7 @@ class VolumesSteps(BaseSteps):
             form.submit()
 
         if check:
-            self.close_notification('success')
+            self.close_notification('info')
             row = self._tab_backups().table_backups.row(name=backup_name)
             row.wait_for_status(status='Available')
             if description is not None:

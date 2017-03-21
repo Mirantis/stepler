@@ -26,7 +26,8 @@ import time
 
 from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
                       has_item, is_, is_in, is_not, less_than_or_equal_to,
-                      raises, greater_than, has_key)  # noqa H301
+                      raises, greater_than, has_key, contains_string,
+                      has_properties)  # noqa: H301
 
 from novaclient import exceptions as nova_exceptions
 import paramiko
@@ -800,7 +801,7 @@ class ServerSteps(base.BaseSteps):
         old_hosts = []
         for server in servers:
             server.get()
-            old_hosts.append(getattr(server, 'OS-EXT-SRV-ATTR:host'))
+            old_hosts.append(getattr(server, config.SERVER_ATTR_HOST))
             server.live_migrate(host=host, block_migration=block_migration)
 
         if check:
@@ -829,7 +830,7 @@ class ServerSteps(base.BaseSteps):
         old_hosts = {}
         for server in servers:
             server.get()
-            old_hosts[server.id] = getattr(server, 'OS-EXT-SRV-ATTR:host')
+            old_hosts[server.id] = getattr(server, config.SERVER_ATTR_HOST)
             server.migrate()
 
         if check:
@@ -871,8 +872,7 @@ class ServerSteps(base.BaseSteps):
                     timeout=config.SERVER_ACTIVE_TIMEOUT)
 
     @steps_checker.step
-    def check_server_host_attr(self, server, host_name, equal=True,
-                               timeout=0):
+    def check_server_host_attr(self, server, host_name, equal=True, timeout=0):
         """Verify step to check server's host attribute value.
 
         Args:
@@ -888,8 +888,14 @@ class ServerSteps(base.BaseSteps):
 
         def predicate():
             server.get()
-            server_host = getattr(server, 'OS-EXT-SRV-ATTR:host')
-            return equal == (server_host == host_name)
+            expected_value = host_name
+            if not equal:
+                expected_value = is_not(expected_value)
+            return waiter.expect_that(server,
+                                      has_properties({
+                                          config.SERVER_ATTR_HOST:
+                                          expected_value
+                                      }))
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
@@ -1119,7 +1125,7 @@ class ServerSteps(base.BaseSteps):
         def predicate():
             server.get()
             console = server.get_console_output()
-            return substring in console
+            return waiter.expect_that(console, contains_string(substring))
 
         waiter.wait(predicate, timeout_seconds=timeout)
 
