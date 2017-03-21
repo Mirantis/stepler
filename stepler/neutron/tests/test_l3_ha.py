@@ -81,7 +81,7 @@ def test_ban_l3_agent_with_active_ha_state_for_router(
     server_steps.attach_floating_ip(server_2, floating_ip_2)
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
-                floating_ip_2.ip,
+                floating_ip_2['floating_ip_address'],
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS *
                 ban_count,
                 server_ssh=server_ssh):
@@ -260,7 +260,7 @@ def test_destroy_primary_controller(
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
-                floating_ip_2.ip,
+                floating_ip_2['floating_ip_address'],
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
                 server_ssh=server_ssh):
             os_faults_steps.poweroff_nodes(primary_controller)
@@ -390,7 +390,7 @@ def test_reset_primary_controller(
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
-                floating_ip_2.ip,
+                floating_ip_2['floating_ip_address'],
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
                 server_ssh=server_ssh):
             os_faults_steps.reset_nodes(primary_controller)
@@ -444,7 +444,7 @@ def test_disable_all_l3_agents_and_enable_them(
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
-                floating_ip_2.ip,
+                floating_ip_2['floating_ip_address'],
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
                 server_ssh=server_ssh):
             os_faults_steps.terminate_service(
