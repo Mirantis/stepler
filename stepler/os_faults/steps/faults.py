@@ -218,6 +218,9 @@ class OsFaultsSteps(base.BaseSteps):
             nodes (obj): NodeCollection instance to restart service on it
             check (bool): flag whether to check step or not
 
+        Returns:
+            NodeCollection: nodes with restarted services
+
         Raises:
             ServiceError: if wrong service name or other errors
             AssertionError: if nodes don't contain service
@@ -230,6 +233,7 @@ class OsFaultsSteps(base.BaseSteps):
             assert_that(to_restart_nodes, is_not(empty()))
         if to_restart_nodes:
             service.restart(nodes=to_restart_nodes)
+        return to_restart_nodes
 
     @steps_checker.step
     def restart_services(self, names, nodes=None, check=True):
@@ -243,8 +247,15 @@ class OsFaultsSteps(base.BaseSteps):
         Raises:
             ServiceError: if wrong service name or other errors
         """
+        affected_nodes = None
         for name in names:
-            self.restart_service(name, nodes, check=check)
+            restarted_on = self.restart_service(name, nodes, check=False)
+            if affected_nodes is None:
+                affected_nodes = restarted_on
+            else:
+                affected_nodes |= restarted_on
+        if check:
+            assert_that(affected_nodes, is_not(empty()))
 
     @steps_checker.step
     def terminate_service(self, service_name, nodes, check=True):
@@ -1003,6 +1014,20 @@ class OsFaultsSteps(base.BaseSteps):
             config.GLANCE_API_CONFIG_PATH)
         nodes = self.get_node(service_names=[config.GLANCE_API])
         result = self.execute_cmd(nodes, cmd, check=False)
+        return result[0].payload['stdout'].strip()
+
+    @steps_checker.step
+    def get_cinder_storage_protocol(self):
+        """Step to retrieve cinder storage protocol.
+
+        Returns:
+            str: cinder storage protocol
+        """
+        cmd = ("{}; cinder get-pools --detail | "
+               "awk '/storage_protocol/{{ print $4 }}'"
+               ).format(config.OPENRC_ACTIVATE_CMD)
+        node = self.get_node(service_names=[config.CINDER_API])
+        result = self.execute_cmd(node, cmd, check=False)
         return result[0].payload['stdout'].strip()
 
     @steps_checker.step

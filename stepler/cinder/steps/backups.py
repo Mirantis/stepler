@@ -19,7 +19,7 @@ Backup steps
 
 from cinderclient import exceptions
 from hamcrest import (assert_that, calling, empty, equal_to, is_not,
-                      raises)  # noqa H301
+                      raises, equal_to_ignoring_case, any_of)  # noqa: H301
 
 from stepler import base
 from stepler import config
@@ -124,14 +124,23 @@ class BackupSteps(base.BaseSteps):
 
         return backup
 
+    def _error_message(self, backup):
+        fail_reason = getattr(backup, 'fail_reason', "No information")
+        return "Backup with ID {0} fault:\n{1}".format(backup.id, fail_reason)
+
     @steps_checker.step
-    def check_backup_status(self, backup, status, timeout=0):
+    def check_backup_status(self,
+                            backup,
+                            status,
+                            transit_statuses=(config.STATUS_CREATING,),
+                            timeout=0):
         """Check step volume backup status.
 
         Args:
             backup (object or str): volume backup object or its id
                 to check status
             status (str): backup status name to check
+            transit_statuses (tuple): possible backup transitional statuses
             timeout (int): seconds to wait a result of check
 
         Raises:
@@ -140,12 +149,18 @@ class BackupSteps(base.BaseSteps):
         if not hasattr(backup, 'id'):
             backup = self.get_backup_by_id(backup)
 
+        transit_matchers = [
+            equal_to_ignoring_case(st) for st in transit_statuses
+        ]
+
         def _check_backup_status():
             backup.get()
-            return waiter.expect_that(backup.status.lower(),
-                                      equal_to(status.lower()))
+            return waiter.expect_that(backup.status,
+                                      is_not(any_of(*transit_matchers)))
 
         waiter.wait(_check_backup_status, timeout_seconds=timeout)
+        err_msg = self._error_message(backup)
+        assert_that(backup.status, equal_to_ignoring_case(status), err_msg)
 
     @steps_checker.step
     def check_backup_not_created_with_long_container_name(self, volume,

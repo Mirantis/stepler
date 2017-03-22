@@ -167,11 +167,7 @@ def test_stack_update(empty_heat_template_path,
 @pytest.mark.idempotent_id('809fdf33-e528-40dd-9042-e619072e1ab4')
 def test_cancel_stack_update(cirros_image,
                              flavor,
-                             public_network,
-                             network,
-                             subnet,
-                             router,
-                             add_router_interfaces,
+                             net_subnet_router,
                              create_flavor,
                              read_heat_template,
                              create_stack,
@@ -190,11 +186,11 @@ def test_cancel_stack_update(cirros_image,
     #. Create subnet
     #. Create router
     #. Set router default gateway to public network
+    #. Add router interface to created network
 
     **Steps:**
 
     #. Create 2'nd flavor
-    #. Add router interface to created network
     #. Read Heat resources template from file
     #. Create stack with template with parameters
     #. Start stack updating with 2'nd flavor
@@ -213,7 +209,7 @@ def test_cancel_stack_update(cirros_image,
     flavor2_name = next(utils.generate_ids('flavor'))
     flavor2 = create_flavor(flavor2_name, ram=2048, vcpus=1, disk=5)
 
-    add_router_interfaces(router, [subnet])
+    network = net_subnet_router[0]
 
     template = read_heat_template('nova_server')
     stack_name = next(utils.generate_ids('stack'))
