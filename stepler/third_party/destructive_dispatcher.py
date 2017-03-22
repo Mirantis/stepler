@@ -151,3 +151,7 @@ def revert_environment(destructor, snapshot_name):
     # Restart ceph services
     nodes.run_task({'command': 'systemctl restart ceph-\*.service'},
                    raise_on_error=False)
+    nodes.run_task({'command': 'rm -rf {}'.format(config.RADOSGW_SOCK_FILE)},
+                   raise_on_error=False)
+    nodes.run_task({'command': 'systemctl restart radosgw.service'},
+                   raise_on_error=False)

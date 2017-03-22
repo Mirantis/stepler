@@ -43,6 +43,7 @@ def test_create_volume_snapshot_backup(volume, volume_snapshot, create_backup):
     create_backup(volume, snapshot_id=volume_snapshot.id)
 
 
+@pytest.mark.requires('cinder_storage_protocol != "ceph"')
 @pytest.mark.idempotent_id('8d7b0a61-5f94-4fb9-8508-5b00680dc292')
 def test_create_volume_backup_with_container(volume, create_backup):
     """**Scenario:** Backup is created with custom container name.
@@ -65,6 +66,7 @@ def test_create_volume_backup_with_container(volume, create_backup):
     create_backup(volume, container=container_name)
 
 
+@pytest.mark.requires('cinder_storage_protocol != "ceph"')
 @pytest.mark.idempotent_id('87dbe58f-2160-4c9e-833d-d5790d7a9206')
 def test_negative_create_backup_long_container_name(volume, backup_steps):
     """**Scenario:** Backup isn't created with overlimit container name length.

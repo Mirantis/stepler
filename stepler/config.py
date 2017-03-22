@@ -646,3 +646,6 @@ MYSQL_EXPECTED_RESULT = 'count\n11'
 MYSQL_PORT = 3306
 
 S3_PORT = '8080'
+
+
+RADOSGW_SOCK_FILE = '/var/run/ceph/ceph-client.radosgw.gateway.asok'

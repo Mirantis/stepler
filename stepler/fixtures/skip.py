@@ -227,6 +227,13 @@ class Predicates(object):
 
     @property
     @_store_call
+    def cinder_storage_protocol(self):
+        """Get cinder storage protocol."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_cinder_storage_protocol()
+
+    @property
+    @_store_call
     def ceilometer(self):
         """Define whether ceilometer is enabled."""
         os_faults_steps = self._get_fixture('os_faults_steps')

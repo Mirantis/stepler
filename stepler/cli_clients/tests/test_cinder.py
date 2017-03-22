@@ -380,6 +380,7 @@ def test_show_snapshot_with_unicode_description(volume, snapshot_steps,
     cli_cinder_steps.show_volume_snapshot(snapshot)
 
 
+@pytest.mark.requires('cinder_storage_protocol != "ceph"')
 @pytest.mark.idempotent_id('955c4976-ddc7-4d8d-b5c6-1c2bc991af39')
 def test_create_backup_with_unicode_container(volume, cli_cinder_steps,
                                               backup_steps):
@@ -407,6 +408,7 @@ def test_create_backup_with_unicode_container(volume, cli_cinder_steps,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
 
 
+@pytest.mark.requires('cinder_storage_protocol != "ceph"')
 @pytest.mark.idempotent_id('815f7bf8-05e7-4556-ac46-8df267c91c75')
 def test_show_backup_with_unicode_container_name(volume,
                                                  create_backup,

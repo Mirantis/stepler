@@ -303,7 +303,8 @@ def test_negative_delete_volume_wrong_id(volume_steps):
     volume_steps.check_volume_deletion_with_wrong_id()
 
 
-@pytest.mark.requires('cinder_nodes_count >= 2')
+@pytest.mark.requires(
+    'cinder_nodes_count >= 2 and cinder_storage_protocol != "ceph"')
 @pytest.mark.idempotent_id('f0c407a3-7aa1-400c-9a9f-6c69870e3fb9')
 def test_migrate_volume(volume, volume_steps, os_faults_steps):
     """**Scenario:** Migrate volume to another host.
