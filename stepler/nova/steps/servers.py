@@ -902,7 +902,7 @@ class ServerSteps(base.BaseSteps):
     @steps_checker.step
     @contextlib.contextmanager
     def check_ping_loss_context(self, ip_to_ping, max_loss=0, server_ssh=None,
-                                connect_restore_timeout=0):
+                                connect_restore_timeout=None):
         """Step to check that ping losses inside CM is less than max_loss.
 
         Args:
@@ -917,6 +917,8 @@ class ServerSteps(base.BaseSteps):
         No Longer Raises:
             AssertionError: if ping loss is greater than `max_loss`
         """
+        if connect_restore_timeout is None:
+            connect_restore_timeout = config.CONNECT_RESTORE_TIMEOUT
         with ping.Pinger(ip_to_ping, remote=server_ssh) as result:
             yield
             self.check_ping_for_ip(ip_to_ping, remote_from=server_ssh,

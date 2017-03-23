@@ -173,11 +173,10 @@ def add_router_interfaces(router_steps):
 
 
 @pytest.fixture
-def reschedule_router_active_l3_agent(os_faults_steps, agent_steps):
+def reschedule_router_active_l3_agent(agent_steps):
     """Callable function fixture to reschedule router's active L3 agent.
 
     Args:
-        os_faults_steps (obj): instantiated os-faults steps
         agent_steps (obj): instantiated neutron agent steps
 
     Returns:
@@ -185,22 +184,26 @@ def reschedule_router_active_l3_agent(os_faults_steps, agent_steps):
     """
 
     def _reschedule_router(router, target_nodes):
-        active_agent = agent_steps.get_l3_agents_for_router(
-            router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
-            timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)[0]
-        if active_agent['host'] not in target_nodes.get_fqdns():
-            agents = agent_steps.get_l3_agents_for_router(router)
-            agents_nodes = os_faults_steps.get_nodes_for_agents(
-                agents) - target_nodes
-            os_faults_steps.terminate_service(
-                config.NEUTRON_L3_SERVICE, nodes=agents_nodes)
-            agent_steps.check_l3_ha_router_rescheduled(
-                router,
-                active_agent,
-                timeout=config.AGENT_RESCHEDULING_TIMEOUT)
-            os_faults_steps.start_service(
-                config.NEUTRON_L3_SERVICE, nodes=agents_nodes)
-            agent_steps.check_alive(agents,
-                                    timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+        agents = agent_steps.get_l3_agents_for_router(router)
+        active_l3_agent = agent_steps.get_l3_agents_for_router(
+            router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS)[0]
+
+        if active_l3_agent['host'] in target_nodes.get_fqdns():
+            return
+
+        removed_agents = []
+        for agent_to_remove in agents:
+            if agent_to_remove['host'] not in target_nodes.get_fqdns():
+                removed_agents.append(agent_to_remove)
+
+                agent_steps.remove_router_from_l3_agent(
+                    agent_to_remove, router)
+        agent_steps.check_l3_ha_router_rescheduled(
+            router,
+            active_l3_agent,
+            timeout=config.AGENT_RESCHEDULING_TIMEOUT)
+        for removed_agent in removed_agents:
+            agent_steps.add_router_to_l3_agent(
+                removed_agent, router)
 
     return _reschedule_router
