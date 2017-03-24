@@ -329,7 +329,7 @@ def test_destroy_non_primary_controller(
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
-                floating_ip_2.ip,
+                floating_ip_2['floating_ip_address'],
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
                 server_ssh=server_ssh):
             os_faults_steps.poweroff_nodes(agent_node)
@@ -530,7 +530,7 @@ def test_ban_l3_agent_for_many_routers(
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
-                floating_ip_2.ip,
+                floating_ip_2['floating_ip_address'],
                 max_loss=config.NEUTRON_L3_HA_RESTART_MAX_PING_LOSS,
                 server_ssh=server_ssh):
             agent = agent_steps.get_l3_agents_for_router(
