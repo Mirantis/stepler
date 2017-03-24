@@ -64,8 +64,15 @@ def test_vni_matching_network_segmentation_id(
     #. Delete flavor
     #. Delete cirros image
     """
-    agent = agent_steps.get_l3_agents_for_router(router)[0]
-    agent_node = os_faults_steps.get_nodes_for_agents([agent])
+
+    # For L3_HA only active agent's node has route to server
+    if os_faults_steps.get_neutron_l3_ha():
+        agents = agent_steps.get_l3_agents_for_router(
+            router, filter_attrs=config.HA_STATE_ACTIVE_ATTRS,
+            timeout=config.HA_L3_AGENT_APPEARING_TIMEOUT)
+    else:
+        agents = agent_steps.get_l3_agents_for_router(router)
+    agent_node = os_faults_steps.get_nodes_for_agents(agents[:1])
     os_faults_steps.check_vxlan_enabled(agent_node)
 
     compute_host_name = getattr(server, config.SERVER_ATTR_HOST)

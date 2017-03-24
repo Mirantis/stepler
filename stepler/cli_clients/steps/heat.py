@@ -17,6 +17,8 @@ Heat CLI steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 from hamcrest import (assert_that, equal_to, is_,
                       is_not, empty, has_entries)  # noqa H301
 import yaml
@@ -54,6 +56,7 @@ class CliHeatSteps(base.BaseCliSteps):
         Raises:
             AssertionError: if command exit_code is not 0
         """
+        warnings.warn("`heat stack-create` is deprecated")
         parameters = parameters or {}
 
         err_msg = 'One of `template_file` or `template_url` should be passed.'
@@ -83,6 +86,7 @@ class CliHeatSteps(base.BaseCliSteps):
             stack (obj): stack to delete
             check (bool): flag whether to check step or not
         """
+        warnings.warn("`heat stack-delete` is deprecated")
         cmd = 'heat stack-delete {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_DELETING_TIMEOUT, check=check)
@@ -131,6 +135,7 @@ class CliHeatSteps(base.BaseCliSteps):
         Raises:
             AssertionError: if output contains wrong stack's name or id
         """
+        warnings.warn("`heat stack-show` is deprecated")
         cmd = 'heat stack-show {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_SHOW_TIMEOUT, check=check)
@@ -153,6 +158,7 @@ class CliHeatSteps(base.BaseCliSteps):
             parameters (list, optional): additional parameters to template
             check (bool): flag whether to check step or not
         """
+        warnings.warn("`heat stack-update` is deprecated")
         parameters = parameters or {}
         cmd = 'heat stack-update {id} -f {file}'.format(id=stack.id,
                                                         file=template_file)
@@ -169,6 +175,7 @@ class CliHeatSteps(base.BaseCliSteps):
             stack (obj): heat stack to cancel update
             check (bool): flag whether to check step or not
         """
+        warnings.warn("`heat stack-cancel-update` is deprecated")
         cmd = 'heat stack-cancel-update {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
@@ -187,6 +194,7 @@ class CliHeatSteps(base.BaseCliSteps):
         Raises:
             AssertionError: if events list is empty
         """
+        warnings.warn("`heat event-list` is deprecated")
         cmd = 'heat event-list {}'.format(stack.id)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_UPDATING_TIMEOUT, check=check)
@@ -212,6 +220,7 @@ class CliHeatSteps(base.BaseCliSteps):
         Returns:
             dict: stack event
         """
+        warnings.warn("`heat event-show` is deprecated")
         cmd = 'heat event-show {stack} {resource} {event}'.format(
             stack=stack.id, resource=resource, event=event)
         exit_code, stdout, stderr = self.execute_command(
@@ -231,6 +240,7 @@ class CliHeatSteps(base.BaseCliSteps):
             stack (obj): heat stack
             check (bool): flag whether to check step or not
         """
+        warnings.warn("`heat action-suspend` is deprecated")
         cmd = 'heat action-suspend {}'.format(stack.id)
         self.execute_command(cmd, timeout=config.STACK_SUSPEND_TIMEOUT,
                              check=check)
@@ -243,6 +253,7 @@ class CliHeatSteps(base.BaseCliSteps):
             stack (obj): heat stack
             check (bool): flag whether to check step or not
         """
+        warnings.warn("`heat action-resume` is deprecated")
         cmd = 'heat action-resume {}'.format(stack.id)
         self.execute_command(cmd, timeout=config.STACK_RESUME_TIMEOUT,
                              check=check)
@@ -255,6 +266,7 @@ class CliHeatSteps(base.BaseCliSteps):
             stack (obj): heat stack
             check (bool): flag whether to check step or not
         """
+        warnings.warn("`heat action-check` is deprecated")
         cmd = 'heat action-check {}'.format(stack.id)
         self.execute_command(cmd, timeout=config.STACK_CLI_TIMEOUT,
                              check=check)
@@ -270,6 +282,7 @@ class CliHeatSteps(base.BaseCliSteps):
         Returns:
             dict: resource template
         """
+        warnings.warn("`heat resource-type-template` is deprecated")
         cmd = 'heat resource-type-template {}'.format(
             resource_type.resource_type)
         exit_code, stdout, stderr = self.execute_command(
@@ -290,6 +303,7 @@ class CliHeatSteps(base.BaseCliSteps):
         Raises:
             AssertionError: if output contains unexpected result
         """
+        warnings.warn("`heat heat output-show` is deprecated")
         cmd = 'heat output-show {0} {1}'.format(stack.id, output)
         exit_code, stdout, stderr = self.execute_command(
             cmd, timeout=config.STACK_SHOW_TIMEOUT, check=check)
