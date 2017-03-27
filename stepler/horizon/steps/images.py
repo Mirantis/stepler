@@ -133,8 +133,12 @@ class ImagesSteps(BaseSteps):
 
         page_images.button_delete_images.click()
 
-        if page_images.form_confirm.is_present:
+        # if some of images can't be deleted - modal won't show
+        try:
+            page_images.form_confirm.wait_for_presence()
             page_images.form_confirm.submit()
+        except Exception:
+            pass
 
         if check:
             self.close_notification('success')

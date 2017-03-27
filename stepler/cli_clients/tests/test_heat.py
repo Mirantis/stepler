@@ -24,7 +24,7 @@ from stepler.third_party import utils
 
 @pytest.mark.idempotent_id('61a7b0ac-2c80-44fb-b8dd-4894cd1da692')
 @pytest.mark.usefixtures('stacks_cleanup')
-def test_stack_create_from_file(empty_heat_template_path, cli_heat_steps,
+def test_stack_create_from_file(empty_heat_template_path, cli_openstack_steps,
                                 stack_steps):
     """**Scenario:** Create stack from template file with CLI.
 
@@ -43,7 +43,7 @@ def test_stack_create_from_file(empty_heat_template_path, cli_heat_steps,
     """
     parameters = {'param': 'string'}
     stack_name = next(utils.generate_ids('stack'))
-    stack = cli_heat_steps.create_stack(
+    stack = cli_openstack_steps.create_stack(
         name=stack_name,
         template_file=empty_heat_template_path,
         parameters=parameters)
@@ -75,8 +75,8 @@ def test_stack_create_from_url(cli_heat_steps, stack_steps):
 
 @pytest.mark.idempotent_id('6108fc79-7173-4e4a-a061-97acb8432717')
 @pytest.mark.usefixtures('stacks_cleanup')
-def test_stack_delete(empty_stack, cli_heat_steps, stack_steps):
-    """**Scenario:** Delete stack with heat CLI.
+def test_stack_delete(empty_stack, cli_openstack_steps, stack_steps):
+    """**Scenario:** Delete stack with openstack CLI.
 
     **Setup:**
 
@@ -87,7 +87,7 @@ def test_stack_delete(empty_stack, cli_heat_steps, stack_steps):
     #. Delete stack via cli command
     #. Check that stack is not exist
     """
-    cli_heat_steps.delete_stack(empty_stack)
+    cli_openstack_steps.delete_stack(empty_stack)
     stack_steps.check_presence(
         empty_stack, must_present=False, timeout=config.STACK_DELETING_TIMEOUT)
 
@@ -113,8 +113,8 @@ def test_stack_preview(empty_heat_template_path, cli_heat_steps):
 
 
 @pytest.mark.idempotent_id('f115c4f1-5293-46bc-9b3f-736a2a19d5ab')
-def test_stack_show(empty_stack, cli_heat_steps):
-    """**Scenario:** Show stack with heat CLI.
+def test_stack_show(empty_stack, cli_openstack_steps):
+    """**Scenario:** Show stack with openstack CLI.
 
     **Setup:**
 
@@ -122,22 +122,22 @@ def test_stack_show(empty_stack, cli_heat_steps):
 
     **Steps:**
 
-    #. Call ``heat stack-show``
+    #. Call ``openstack stack show``
     #. Check that result has correct stack_name and id
 
     **Teardown:**
 
     #. Delete stack
     """
-    cli_heat_steps.show_stack(empty_stack)
+    cli_openstack_steps.show_stack(empty_stack)
 
 
 @pytest.mark.idempotent_id('9db8f266-106d-436f-ac8b-05ee58fab674')
 def test_stack_update(empty_heat_template_path,
                       empty_stack,
-                      cli_heat_steps,
+                      cli_openstack_steps,
                       stack_steps):
-    """**Scenario:** Update stack with heat CLI.
+    """**Scenario:** Update stack with openstack CLI.
 
     **Setup:**
 
@@ -153,7 +153,7 @@ def test_stack_update(empty_heat_template_path,
     #. Delete stack
     """
     parameters = {'param': 'string2'}
-    cli_heat_steps.update_stack(
+    cli_openstack_steps.update_stack(
         empty_stack,
         template_file=empty_heat_template_path,
         parameters=parameters)
@@ -171,7 +171,7 @@ def test_cancel_stack_update(cirros_image,
                              create_flavor,
                              read_heat_template,
                              create_stack,
-                             cli_heat_steps,
+                             cli_openstack_steps,
                              stack_steps):
     """**Scenario:** Cancel stack updating with heat CLI.
 
@@ -225,7 +225,7 @@ def test_cancel_stack_update(cirros_image,
                              check=False
                              )
 
-    cli_heat_steps.cancel_stack_update(stack)
+    cli_openstack_steps.cancel_stack_update(stack)
     stack_steps.check_status(
         stack,
         config.HEAT_COMPLETE_STATUS,
@@ -234,8 +234,8 @@ def test_cancel_stack_update(cirros_image,
 
 
 @pytest.mark.idempotent_id('37599b0d-0c2f-483e-98b9-4e6756476c51')
-def test_stack_show_events_list(empty_stack, cli_heat_steps):
-    """**Scenario:** Show stack events_list with heat CLI.
+def test_stack_show_events_list(empty_stack, cli_openstack_steps):
+    """**Scenario:** Show stack events_list with openstack CLI.
 
     **Setup:**
 
@@ -243,41 +243,43 @@ def test_stack_show_events_list(empty_stack, cli_heat_steps):
 
     **Steps:**
 
-    #. Call ``heat event-list``
+    #. Call ``openstack stack event list``
     #. Check that result table is not empty
 
     **Teardown:**
 
     #. Delete stack
     """
-    cli_heat_steps.get_stack_events_list(empty_stack)
+    cli_openstack_steps.get_stack_events_list(empty_stack)
 
 
 @pytest.mark.idempotent_id('40c2aa1c-4664-4ae0-88bf-f166a985f2d2')
-def test_stack_show_event(empty_stack, cli_heat_steps, stack_steps):
-    """**Scenario:** Show stack's event details with heat CLI.
-
-    **Setup:**
-
-    #. Create stack
+def test_stack_show_event(create_stack, read_heat_template,
+                          cli_openstack_steps, stack_steps):
+    """**Scenario:** Show stack's event details with openstack CLI.
 
     **Steps:**
 
-    #. Call ``heat event-show``
+    #. Create stack
+    #. Call ``openstack stack event show``
     #. Check that result table is not empty
 
     **Teardown:**
 
     #. Delete stack
     """
-    event = stack_steps.get_events_list(empty_stack)[0]
-    cli_heat_steps.get_stack_event(empty_stack, empty_stack.stack_name,
-                                   event.id)
+    stack_name = next(utils.generate_ids('stack'))
+    template = read_heat_template('check_output')
+    stack = create_stack(stack_name, template=template)
+    event = next(
+        event for event in stack_steps.get_events_list(stack)
+        if event.resource_name != stack_name)
+    cli_openstack_steps.get_stack_event(stack, event.resource_name, event.id)
 
 
 @pytest.mark.idempotent_id('050e4422-5aa4-44da-b5f4-b69bde929037')
-def test_stack_suspend(empty_stack, cli_heat_steps, stack_steps):
-    """**Scenario:** Suspend stack with heat CLI.
+def test_stack_suspend(empty_stack, cli_openstack_steps, stack_steps):
+    """**Scenario:** Suspend stack with openstack CLI.
 
     **Setup:**
 
@@ -285,14 +287,14 @@ def test_stack_suspend(empty_stack, cli_heat_steps, stack_steps):
 
     **Steps:**
 
-    #. Call ``heat action-suspend``
+    #. Call ``openstack stack suspend``
     #. Check that stack's `stack_status` is SUSPEND_COMPLETE
 
     **Teardown:**
 
     #. Delete stack
     """
-    cli_heat_steps.suspend_stack(empty_stack)
+    cli_openstack_steps.suspend_stack(empty_stack)
     stack_steps.check_stack_status(
         empty_stack,
         config.STACK_STATUS_SUSPEND_COMPLETE,
@@ -301,9 +303,9 @@ def test_stack_suspend(empty_stack, cli_heat_steps, stack_steps):
 
 @pytest.mark.idempotent_id('8c897eeb-0916-4390-b2f5-a61551c35852')
 def test_stack_resume(empty_stack,
-                      cli_heat_steps,
+                      cli_openstack_steps,
                       stack_steps):
-    """**Scenario:** Resume stack with heat CLI.
+    """**Scenario:** Resume stack with openstack CLI.
 
     **Setup:**
 
@@ -312,7 +314,7 @@ def test_stack_resume(empty_stack,
     **Steps:**
 
     #. Suspend stack
-    #. Call ``heat action-resume``
+    #. Call ``openstack stack resume``
     #. Check that stack's `stack_status` is RESUME_COMPLETE
 
     **Teardown:**
@@ -320,7 +322,7 @@ def test_stack_resume(empty_stack,
     #. Delete stack
     """
     stack_steps.suspend(empty_stack)
-    cli_heat_steps.resume_stack(empty_stack)
+    cli_openstack_steps.resume_stack(empty_stack)
     stack_steps.check_stack_status(
         empty_stack,
         config.STACK_STATUS_RESUME_COMPLETE,
@@ -328,8 +330,8 @@ def test_stack_resume(empty_stack,
 
 
 @pytest.mark.idempotent_id('d77351ab-50da-4973-84e2-19e9bdc466c7')
-def test_stack_check_resources(empty_stack, cli_heat_steps, stack_steps):
-    """**Scenario:** Check stack resources with heat CLI.
+def test_stack_check_resources(empty_stack, cli_openstack_steps, stack_steps):
+    """**Scenario:** Check stack resources with openstack CLI.
 
     **Setup:**
 
@@ -337,14 +339,14 @@ def test_stack_check_resources(empty_stack, cli_heat_steps, stack_steps):
 
     **Steps:**
 
-    #. Call ``heat action-check``
+    #. Call ``openstack stack check``
     #. Check that stack's `stack_status` is CHECK_COMPLETE
 
     **Teardown:**
 
     #. Delete stack
     """
-    cli_heat_steps.stack_resources_check(empty_stack)
+    cli_openstack_steps.stack_resources_check(empty_stack)
     stack_steps.check_stack_status(
         empty_stack,
         config.STACK_STATUS_CHECK_COMPLETE,
@@ -352,23 +354,23 @@ def test_stack_check_resources(empty_stack, cli_heat_steps, stack_steps):
 
 
 @pytest.mark.idempotent_id('13031bc9-19e5-4ab9-8478-968f8fc925f2')
-def test_resource_type_template(cli_heat_steps, heat_resource_type_steps):
-    """**Scenario:** Show resource type template with heat CLI.
+def test_resource_type_template(cli_openstack_steps, heat_resource_type_steps):
+    """**Scenario:** Show resource type template with openstack CLI.
 
     **Steps:**
 
-    #. Call ``heat resource-type-template {resource_type_name}``
+    #. Call ``openstack orchestration resource type show {resource_type_name}``
     #. Check that template to be shown in console
     """
     resource_types = heat_resource_type_steps.get_resource_types()
-    cli_heat_steps.get_resource_type_template(resource_types[0])
+    cli_openstack_steps.get_resource_type_template(resource_types[0])
 
 
 @pytest.mark.idempotent_id('78137331-a2c6-4c0d-8079-52840a9db1df')
 def test_stack_show_particular_output(read_heat_template,
-                                      cli_heat_steps,
+                                      cli_openstack_steps,
                                       stack_steps):
-    """**Scenario:** Show only particular stack output with heat CLI.
+    """**Scenario:** Show only particular stack output with openstack CLI.
 
     **Setup:**
 
@@ -376,7 +378,7 @@ def test_stack_show_particular_output(read_heat_template,
 
     **Steps:**
 
-    #. Call ``heat output-show``
+    #. Call ``openstack stack output show``
     #. Check that result has only particular output
 
     **Teardown:**
@@ -386,4 +388,4 @@ def test_stack_show_particular_output(read_heat_template,
     name = next(utils.generate_ids())
     template = read_heat_template('check_output')
     stack = stack_steps.create(name, template)
-    cli_heat_steps.show_stack_output(stack, 'resource_id_a', 'a')
+    cli_openstack_steps.show_stack_output(stack, 'resource_id_a', 'a')
