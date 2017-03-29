@@ -253,7 +253,7 @@ class FuncValidator(object):
 
     @lru_cache()
     def _get_ast_nodes(self, node, node_type, bucket=None):
-        """Get ast nodes with specifed ast type.
+        """Get ast nodes with specified ast type.
 
         Recursive traversal of ast nodes tree to retrieve nodes by defined
         type.
@@ -511,7 +511,7 @@ class StepValidator(FuncValidator):
         return errors
 
     def validate(self):
-        """Vaildate step with default rules."""
+        """Validate step with default rules."""
         errors = []
         error = self._verify_docstring_present()
         if error:
@@ -548,7 +548,7 @@ class TestValidator(FuncValidator):
         return errors
 
     def validate(self):
-        """Vaildate test with default rules."""
+        """Validate test with default rules."""
         return self._validate_calls()
 
 

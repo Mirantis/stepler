@@ -68,7 +68,7 @@ def _parse(output):
 
 @contextlib.contextmanager
 def iperf(remote, ip, time=80, interval=20, port=5002, udp=False):
-    """Non-blocking context manager for run iperf client on backgroud.
+    """Non-blocking context manager for run iperf client on background.
 
     Args:
         remote (obj): instance of stepler.third_party.ssh.SshClient

@@ -59,10 +59,10 @@ def generate_mac_addresses(count=1):
     """Generate unique mac addresses.
 
      Arguments:
-         - count: count of uniq  mac addresses, default is 1.
+         - count: count of unique  mac addresses, default is 1.
 
     Returns:
-        - generator of uniq mac addresses.
+        - generator of unique mac addresses.
     """
     for _ in range(count):
         mac = [0x00, 0x24, 0x81,

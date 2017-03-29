@@ -24,7 +24,7 @@ import tempfile
 
 @contextlib.contextmanager
 def arping(ip, iface, remote, count=None, latency=2):
-    """Non-blocking context manager for run arping on backgroud.
+    """Non-blocking context manager for run arping on background.
 
     It yields ping results (dict) and update it with 'sent' and 'received'
     values after CM will be exited.

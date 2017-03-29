@@ -4,8 +4,8 @@ Chunk serializer
 ----------------
 
 Nova instance metadata has restriction - keys and values of it can contains not
-more than 255 symbols. This sesializer dumps passed metadata to json,
-split to to cmall chanks and makes a dict with this chunks.
+more than 255 symbols. This serializer dumps passed metadata to json,
+split to to small chunks and makes a dict with this chunks.
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ def dump(obj, prefix):
         {
             'some_prefix_0':
                 '{"keypair": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                # cutted
+                # cut
                 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
             'some_prefix_1': 'aaaaaaaaaaaaaaaaaa"}'
         }

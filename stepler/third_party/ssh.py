@@ -194,7 +194,7 @@ class SshClient(object):
 
     @contextlib.contextmanager
     def sudo(self):
-        """Context manager to run commmand with sudo."""
+        """Context manager to run command with sudo."""
         self._sudo = True
         yield self
         self._sudo = False
@@ -256,7 +256,7 @@ class SshClient(object):
         self.execute('killall {}'.format(name))
 
     def background_call(self, command, stdout='/dev/null', stderr='&1'):
-        """Start long-running command in backgroung and return it's pid.
+        """Start long-running command in background and return it's pid.
 
         Args:
             command (str): command to execute
