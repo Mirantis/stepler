@@ -17,9 +17,10 @@ Nova fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from keystoneauth1 import exceptions as keystone_exceptions
 from novaclient.api_versions import APIVersion
 from novaclient.client import Client
-from novaclient import exceptions as exc
+from novaclient import exceptions as nova_exceptions
 import pytest
 
 from stepler import config
@@ -51,8 +52,9 @@ def get_nova_client(get_session):
     """
 
     def _wait_client_availability(**credentials):
-        client = Client(version=config.CURRENT_NOVA_VERSION,
-                        session=get_session(**credentials))
+        client = Client(
+            version=config.CURRENT_NOVA_VERSION,
+            session=get_session(**credentials))
 
         current_microversion = client.versions.get_current().version
         client.api_version = APIVersion(current_microversion)
@@ -60,10 +62,12 @@ def get_nova_client(get_session):
         return client
 
     def _get_nova_client(**credentials):
-        return waiter.wait(_wait_client_availability,
-                           kwargs=credentials,
-                           timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT,
-                           expected_exceptions=exc.ClientException)
+        return waiter.wait(
+            _wait_client_availability,
+            kwargs=credentials,
+            timeout_seconds=config.NOVA_AVAILABILITY_TIMEOUT,
+            expected_exceptions=(keystone_exceptions.ClientException,
+                                 nova_exceptions.ClientException))
 
     return _get_nova_client
 

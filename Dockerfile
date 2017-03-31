@@ -27,8 +27,6 @@ WORKDIR /opt/app
 
 COPY . /opt/app/
 
-ENV OSLO_PACKAGE_VERSION=1.8
-
 RUN pip install -e .[libvirt]
 
 ENV OS_USERNAME=admin
@@ -39,4 +37,4 @@ ENV OS_FAULTS_CLOUD_DRIVER_KEYFILE=/opt/app/cloud.key
 # Disable ControlMaster to prevent ansible hangs after revert
 ENV ANSIBLE_SSH_ARGS='-C -o ControlMaster=no'
 
-ENTRYPOINT ["py.test", "-v", "--junit-xml=test_reports/report.xml"]
+ENTRYPOINT ["py.test", "-v", "--junit-xml=test_reports/report.xml", "--html=test_reports/report.html", "--self-contained-html"]
