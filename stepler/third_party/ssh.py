@@ -179,7 +179,8 @@ class SshClient(object):
         try:
             self.connect()
             return True
-        except (paramiko.SSHException, socket.error, EOFError):
+        except (paramiko.SSHException, socket.error, EOFError) as e:
+            LOGGER.debug(e)
             return False
         finally:
             self.close()
