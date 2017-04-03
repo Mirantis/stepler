@@ -78,7 +78,7 @@ def create_flavor(flavor_steps):
 
 
 @pytest.fixture
-def flavor(request, create_flavor):
+def flavor(request, create_flavor, flavor_steps):
     """Function fixture to create single nova flavor with options.
 
     Can be called several times during a test.
@@ -92,7 +92,8 @@ def flavor(request, create_flavor):
 
             @pytest.mark.parametrize('flavor', [
                 dict(ram=2048, vcpus=2),
-                dict(ram=512, disk=1),
+                dict(ram=512, disk=1, metadata={'hw:mem_page_size':
+                                                'large m1.tiny'}),
             ], indirect=['flavor'])
             def test_foo(instance):
                 # Instance will created with different flavors
@@ -100,14 +101,22 @@ def flavor(request, create_flavor):
     Args:
         request (obj): py.test SubRequest
         create_flavor (function): function to create flavor with options
+        flavor_steps (object): instantiated flavor steps
 
     Returns:
         function: function to create single flavor with options
     """
     flavor_params = dict(ram=512, vcpus=1, disk=5)
     flavor_params.update(getattr(request, 'param', {}))
+
     flavor_name, = utils.generate_ids('flavor')
-    return create_flavor(flavor_name, **flavor_params)
+    flavor = create_flavor(flavor_name, **flavor_params)
+
+    metadata = flavor_params.get('metadata')
+    if metadata:
+        flavor_steps.set_metadata(flavor, metadata)
+
+    return flavor
 
 
 @pytest.fixture
