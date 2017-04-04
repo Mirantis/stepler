@@ -26,6 +26,7 @@ import time
 
 from os_faults.ansible import executor
 import pytest
+import six
 
 from stepler import config
 from stepler.third_party import waiter
@@ -74,6 +75,13 @@ def pytest_runtest_makereport(item, call):
         setattr(item, SKIPPED, True)
 
 
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    # Cache os_faults client before test
+    if item.get_marker(DESTRUCTIVE):
+        item._request.getfixturevalue('os_faults_client')
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_teardown(item, nextitem):
     """Pytest hook to dispatch destructive scenarios."""
@@ -102,9 +110,11 @@ def pytest_runtest_teardown(item, nextitem):
                 # There are finalizers in the form of lambda function without
                 # name. That looks as internal pytest specifics. We should skip
                 # them.
-                fixture_def = getattr(finalizer, 'im_self', None)
-                if fixture_def and not hasattr(fixture_def.func,
-                                               INDESTRUCTIBLE):
+                try:
+                    fixture_def = six.get_method_self(finalizer)
+                except AttributeError:
+                    continue
+                if not hasattr(fixture_def.func, INDESTRUCTIBLE):
                     LOG.debug('Clear {} finalizers'.format(fixture_def))
                     fixture_def._finalizer[:] = []
 
