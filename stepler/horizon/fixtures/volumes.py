@@ -27,10 +27,7 @@ __all__ = [
     'create_backups',
     'create_snapshot',
     'create_snapshots',
-    'create_volume',
-    'create_volumes',
     'snapshot',
-    'volume',
     'volumes_steps_ui',
 ]
 
@@ -39,66 +36,6 @@ __all__ = [
 def volumes_steps_ui(login, horizon):
     """Fixture to get volumes steps."""
     return steps.VolumesSteps(horizon)
-
-
-@pytest.yield_fixture
-def create_volumes(volumes_steps_ui):
-    """Fixture to create volumes with options.
-
-    Can be called several times during test.
-    """
-    volumes = []
-
-    def _create_volumes(volume_names):
-        _volumes = []
-
-        for volume_name in volume_names:
-            volumes_steps_ui.create_volume(volume_name, check=False)
-            volumes_steps_ui.close_notification('info')
-            volume = utils.AttrDict(name=volume_name)
-
-            volumes.append(volume)
-            _volumes.append(volume)
-
-        tab_volumes = volumes_steps_ui._tab_volumes()
-        for volume_name in volume_names:
-            tab_volumes.table_volumes.row(
-                name=volume_name).wait_for_status('Available')
-
-        return _volumes
-
-    yield _create_volumes
-
-    if volumes:
-        volumes_steps_ui.delete_volumes([volume.name for volume in volumes])
-
-
-@pytest.yield_fixture
-def create_volume(volumes_steps_ui):
-    """Fixture to create volume with options.
-
-    Can be called several times during test.
-    """
-    volumes = []
-
-    def _create_volume(volume_name, volume_type='', *args, **kwargs):
-        volumes_steps_ui.create_volume(volume_name, volume_type=volume_type,
-                                       *args, **kwargs)
-        volume = utils.AttrDict(name=volume_name)
-        volumes.append(volume)
-        return volume
-
-    yield _create_volume
-
-    for volume in volumes:
-        volumes_steps_ui.delete_volume(volume.name)
-
-
-@pytest.fixture
-def volume(create_volume):
-    """Fixture to create volume with default options before test."""
-    volume_name = next(utils.generate_ids('volume'))
-    return create_volume(volume_name)
 
 
 @pytest.fixture

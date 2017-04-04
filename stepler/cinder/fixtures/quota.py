@@ -26,8 +26,6 @@ __all__ = [
     'get_cinder_quota_steps',
     'cinder_quota_steps',
     'big_snapshot_quota',
-    'big_volume_quota',
-    'big_backup_quota',
     'volume_size_quota',
 ]
 
@@ -80,51 +78,11 @@ def big_snapshot_quota(get_current_project, get_cinder_quota_steps):
     original_quota = _cinder_quota_steps.get_snapshots_quota(_current_project)
     _cinder_quota_steps.set_snapshots_quota(
         _current_project, config.CINDER_SNAPSHOTS_QUOTA_BIG_VALUE)
+
     yield
+
     get_cinder_quota_steps().set_snapshots_quota(_current_project,
                                                  original_quota)
-
-
-@pytest.fixture(scope='session')
-def big_volume_quota(get_current_project, get_cinder_quota_steps):
-    """Session fixture to increase cinder volumes count quota.
-
-    This fixture restore original quota value after tests.
-
-    Args:
-        get_current_project (function): function to get current project
-        get_cinder_quota_steps (function): function to get cinder quota steps
-    """
-    _current_project = get_current_project()
-    _cinder_quota_steps = get_cinder_quota_steps()
-
-    original_quota = _cinder_quota_steps.get_volumes_quota(_current_project)
-    _cinder_quota_steps.set_volumes_quota(
-        _current_project, config.CINDER_VOLUMES_QUOTA_BIG_VALUE)
-    yield
-    get_cinder_quota_steps().set_volumes_quota(_current_project,
-                                               original_quota)
-
-
-@pytest.fixture(scope='session')
-def big_backup_quota(get_current_project, get_cinder_quota_steps):
-    """Session fixture to increase cinder backups count quota.
-
-    This fixture restore original quota value after tests.
-
-    Args:
-        get_current_project (function): function to get current project
-        get_cinder_quota_steps (function): function to get cinder quota steps
-    """
-    _current_project = get_current_project()
-    _cinder_quota_steps = get_cinder_quota_steps()
-
-    original_quota = _cinder_quota_steps.get_backups_quota(_current_project)
-    _cinder_quota_steps.set_backups_quota(
-        _current_project, config.CINDER_BACKUPS_QUOTA_BIG_VALUE)
-    yield
-    get_cinder_quota_steps().set_backups_quota(_current_project,
-                                               original_quota)
 
 
 @pytest.fixture

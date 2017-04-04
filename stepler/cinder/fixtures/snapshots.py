@@ -32,11 +32,10 @@ __all__ = [
 
 
 @pytest.fixture(scope='session')
-def get_snapshot_steps(big_snapshot_quota, get_cinder_client):
+def get_snapshot_steps(get_cinder_client):
     """Callable session fixture to get snapshot steps.
 
     Args:
-        big_snapshot_quota (function): function to increase snapshots quota
         get_cinder_client (function): function to get cinder client
 
     Returns:

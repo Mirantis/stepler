@@ -31,11 +31,10 @@ __all__ = [
 
 
 @pytest.fixture(scope='session')
-def get_backup_steps(big_backup_quota, get_cinder_client):
+def get_backup_steps(get_cinder_client):
     """Callable session fixture to get volume backup steps.
 
     Args:
-        big_backup_quota (function): function to increase backups quota
         get_cinder_client (object): function to get cinder client
 
     Returns:

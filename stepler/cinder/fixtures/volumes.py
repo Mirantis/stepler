@@ -21,6 +21,7 @@ import pytest
 
 from stepler.cinder import steps
 from stepler import config
+from stepler.third_party import utils
 
 __all__ = [
     'cleanup_volumes',
@@ -29,16 +30,17 @@ __all__ = [
     'unexpected_volumes_cleanup',
     'upload_volume_to_image',
     'volume',
+    'bootable_volume',
+    'volumes',
     'volume_steps',
 ]
 
 
 @pytest.fixture(scope='session')
-def get_volume_steps(big_volume_quota, get_cinder_client):
+def get_volume_steps(get_cinder_client):
     """Callable session fixture to get volume steps.
 
     Args:
-        big_volume_quota (function): function to increase volumes quota
         get_cinder_client (function): function to get cinder client
 
     Returns:
@@ -185,3 +187,33 @@ def volume(volume_steps):
         object: cinder volume
     """
     return volume_steps.create_volumes()[0]
+
+
+@pytest.fixture
+def bootable_volume(cirros_image, volume_steps):
+    """Function fixture to create bootable volume with default options.
+
+    Args:
+        cirros_image (obj): glance image to create volume from
+        volume_steps (VolumeSteps): instantiated volume steps
+
+    Returns:
+        object: bootable cinder volume
+    """
+    return volume_steps.create_volumes(image=cirros_image)[0]
+
+
+@pytest.fixture
+def volumes(request, volume_steps):
+    """Function fixture to create volumes with default options before test.
+
+    Args:
+        request (obj): py.test's SubRequest instance
+        volume_steps (VolumeSteps): instantiated volume steps
+
+    Returns:
+        list: cinder volumes
+    """
+    count = int(getattr(request, 'param', 3))
+    names = utils.generate_ids('volume', count=count)
+    return volume_steps.create_volumes(names=names)
