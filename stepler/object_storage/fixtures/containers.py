@@ -20,7 +20,7 @@ Object Storage container fixtures
 import attrdict
 import boto3
 import pytest
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from stepler import config
 from stepler.object_storage import steps as object_storage_steps

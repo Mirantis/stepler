@@ -18,7 +18,7 @@ Settings steps
 # limitations under the License.
 
 from hamcrest import assert_that, equal_to  # noqa
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from stepler.third_party import steps_checker
 

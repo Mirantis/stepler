@@ -69,12 +69,12 @@ def test_pass_args_to_predicate():
 
 def test_log_wait_calls(caplog):
     """Check that logs contains waiting start and end records"""
-    with caplog.atLevel(logging.DEBUG):
+    with caplog.at_level(logging.DEBUG):
         waiter.wait(
             lambda: True,
             timeout_seconds=0,
             waiting_for="expected_predicate to be True")
-    assert_that(caplog.text(),
+    assert_that(caplog.text,
                 string_contains_in_order(
                     "Function 'wait' starts",
                     "'waiting_for': 'expected_predicate to be True'",

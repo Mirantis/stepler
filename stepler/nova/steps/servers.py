@@ -123,28 +123,33 @@ class ServerSteps(base.BaseSteps):
         meta = chunk_serializer.dump(credentials, config.CREDENTIALS_PREFIX)
 
         servers = []
-        for server_name in server_names:
-            server = self._client.create(
-                name=server_name,
-                image=image_id,
-                flavor=flavor.id,
-                nics=nics,
-                key_name=keypair_id,
-                availability_zone=availability_zone,
-                security_groups=sec_groups,
-                block_device_mapping=block_device_mapping,
-                userdata=userdata,
-                meta=meta)
-            servers.append(server)
+        for name_chunk in utils.grouper(server_names,
+                                        config.SERVERS_CREATE_CHUNK):
+            servers_chunk = []
+            for server_name in name_chunk:
+                server = self._client.create(
+                    name=server_name,
+                    image=image_id,
+                    flavor=flavor.id,
+                    nics=nics,
+                    key_name=keypair_id,
+                    availability_zone=availability_zone,
+                    security_groups=sec_groups,
+                    block_device_mapping=block_device_mapping,
+                    userdata=userdata,
+                    meta=meta)
+                servers_chunk.append(server)
 
-        if check:
-            for server in servers:
+            if check:
+                for server in servers_chunk:
 
-                self.check_server_status(
-                    server,
-                    expected_statuses=[config.STATUS_ACTIVE],
-                    transit_statuses=[config.STATUS_BUILD],
-                    timeout=config.SERVER_ACTIVE_TIMEOUT)
+                    self.check_server_status(
+                        server,
+                        expected_statuses=[config.STATUS_ACTIVE],
+                        transit_statuses=[config.STATUS_BUILD],
+                        timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+            servers.extend(servers_chunk)
 
         return servers
 

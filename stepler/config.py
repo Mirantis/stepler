@@ -20,8 +20,9 @@ Config
 import functools
 import os
 import socket
-from urlparse import urlparse
 import uuid
+
+from six.moves.urllib.parse import urlparse
 
 import stepler.hacking  # noqa F401
 
@@ -190,6 +191,7 @@ BACKUP_SHOW_TIMEOUT = 60
 BACKUP_DELETE_TIMEOUT = 3 * 60
 TRANSFER_CREATE_TIMEOUT = 3 * 60
 TRANSFER_SHOW_TIMEOUT = 60
+VOLUMES_CREATE_CHUNK = 5
 
 # Glance
 IMAGE_AVAILABLE_TIMEOUT = 5 * 60
@@ -325,6 +327,9 @@ USER_FILES_FOR_TEST_REBUILD = {"/home/ubuntu/file1.txt": 'Test file 1',
                                "/home/ubuntu/file4.txt": 'Test file 4',
                                "/home/ubuntu/file5.txt": 'Test file 5'}
 DESCRIPTION_FOR_TEST_REBUILD = "Description added during rebuild"
+
+SERVERS_CREATE_CHUNK = 5
+LIVE_MIGRATE_MAX_SERVERS_COUNT = 10
 
 # Glance
 GLANCE_AVAILABILITY_TIMEOUT = 15

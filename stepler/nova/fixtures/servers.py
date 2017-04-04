@@ -316,19 +316,20 @@ def get_ssh_proxy_cmd(network_steps,
 
 
 @pytest.fixture
-def live_migration_servers(request,
-                           keypair,
-                           flavor,
-                           security_group,
-                           ubuntu_image,
-                           net_subnet_router,
-                           sorted_hypervisors,
-                           current_project,
-                           create_floating_ip,
-                           cinder_quota_steps,
-                           hypervisor_steps,
-                           volume_steps,
-                           server_steps):
+def live_migration_servers(
+        request,
+        keypair,
+        flavor,
+        security_group,
+        ubuntu_image,
+        net_subnet_router,
+        sorted_hypervisors,
+        current_project,
+        create_floating_ip,
+        cinder_quota_steps,
+        hypervisor_steps,
+        volume_steps,
+        server_steps):
     """Fixture to create servers for live migration tests.
 
     This fixture creates max allowed count of servers and adds floating ip to
@@ -372,14 +373,15 @@ def live_migration_servers(request,
     network, _, _ = net_subnet_router
 
     hypervisor = sorted_hypervisors[1]
-    servers_count = hypervisor_steps.get_hypervisor_capacity(hypervisor,
-                                                             flavor,
-                                                             check=False)
+    servers_count = hypervisor_steps.get_hypervisor_capacity(
+        hypervisor, flavor, check=False)
     volumes_quota = cinder_quota_steps.get_volumes_quota(current_project)
     if attach_volume or boot_from_volume:
         servers_count = min(servers_count, volumes_quota)
     if attach_volume and boot_from_volume:
         servers_count //= 2
+
+    servers_count = min(servers_count, config.LIVE_MIGRATE_MAX_SERVERS_COUNT)
 
     if servers_count == 0:
         pytest.skip('No valid hosts found for flavor {}'.format(flavor))
@@ -387,38 +389,42 @@ def live_migration_servers(request,
     kwargs_list = []
     if boot_from_volume:
         volume_names = utils.generate_ids(count=servers_count)
-        volumes = volume_steps.create_volumes(size=5,
-                                              image=ubuntu_image,
-                                              names=volume_names)
+        volumes = volume_steps.create_volumes(
+            size=5, image=ubuntu_image, names=volume_names)
         for volume in volumes:
             block_device_mapping = {'vda': volume.id}
             kwargs_list.append(
-                dict(
-                    image=None, block_device_mapping=block_device_mapping))
+                dict(image=None, block_device_mapping=block_device_mapping))
     else:
         kwargs_list = [dict(image=ubuntu_image)] * servers_count
 
     servers = []
-    for kwargs in kwargs_list:
-        server = server_steps.create_servers(
-            flavor=flavor,
-            keypair=keypair,
-            networks=[network],
-            security_groups=[security_group],
-            userdata=config.INSTALL_LM_WORKLOAD_USERDATA,
-            username=config.UBUNTU_USERNAME,
-            availability_zone='nova:{}'.format(hypervisor.service['host']),
-            check=False,
-            **kwargs)[0]
-        servers.append(server)
+    for kwargs_group in utils.grouper(kwargs_list,
+                                      config.SERVERS_CREATE_CHUNK):
+        servers_group = []
+        for kwargs in kwargs_group:
+            server = server_steps.create_servers(
+                flavor=flavor,
+                keypair=keypair,
+                networks=[network],
+                security_groups=[security_group],
+                userdata=config.INSTALL_LM_WORKLOAD_USERDATA,
+                username=config.UBUNTU_USERNAME,
+                availability_zone='nova:{}'.format(hypervisor.service['host']),
+                check=False,
+                **kwargs)[0]
+            servers_group.append(server)
+
+        for server in servers_group:
+            server_steps.check_server_status(
+                server,
+                expected_statuses=[config.STATUS_ACTIVE],
+                transit_statuses=[config.STATUS_BUILD],
+                timeout=config.SERVER_ACTIVE_TIMEOUT)
+
+        servers.extend(servers_group)
 
     for server in servers:
-        server_steps.check_server_status(
-            server,
-            expected_statuses=[config.STATUS_ACTIVE],
-            transit_statuses=[config.STATUS_BUILD],
-            timeout=config.SERVER_ACTIVE_TIMEOUT)
-
         server_steps.check_server_log_contains_record(
             server,
             config.USERDATA_DONE_MARKER,

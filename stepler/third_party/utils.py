@@ -135,7 +135,7 @@ def generate_ids(prefix=None, postfix=None, count=1, length=None,
                 for _ in range(uid_length))
         else:
             uid_val = str(uuid.uuid4())
-            uid_val = (uid_val * (uid_length / len(uid_val) + 1))[:uid_length]
+            uid_val = (uid_val * (uid_length // len(uid_val) + 1))[:uid_length]
             uid += '-' + uid_val
 
         if postfix:
@@ -416,3 +416,24 @@ def join_process(process):
         process (Process): process
     """
     process.join()
+
+
+def grouper(iterable, chunk_size):
+    """Collect data into fixed-length chunks or blocks.
+
+    Example:
+        grouper('ABCDEFG', 3) --> ABC DEF G
+
+    Args:
+        iterable (iterable): iterable to chunk
+        chunk_size (int): size of each chunk
+
+    """
+    chunk = []
+    for item in iterable:
+        chunk.append(item)
+        if len(chunk) == chunk_size:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk

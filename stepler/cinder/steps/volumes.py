@@ -125,41 +125,46 @@ class VolumeSteps(base.BaseSteps):
         volumes = []
         _volume_names = {}
 
-        for name in names:
-            volume = self._client.create(size,
-                                         name=name,
-                                         imageRef=image_id,
-                                         volume_type=volume_type,
-                                         description=description,
-                                         source_volid=source_volid,
-                                         snapshot_id=snapshot_id,
-                                         metadata=metadata)
-            _volume_names[volume.id] = name
-            volumes.append(volume)
+        for names_chunk in utils.grouper(names, config.VOLUMES_CREATE_CHUNK):
+            volumes_chunk = []
+            for name in names_chunk:
+                volume = self._client.create(
+                    size,
+                    name=name,
+                    imageRef=image_id,
+                    volume_type=volume_type,
+                    description=description,
+                    source_volid=source_volid,
+                    snapshot_id=snapshot_id,
+                    metadata=metadata)
+                _volume_names[volume.id] = name
+                volumes_chunk.append(volume)
 
-        if check:
-            for volume in volumes:
-                self.check_volume_status(
-                    volume,
-                    [config.STATUS_AVAILABLE],
-                    transit_statuses=(config.STATUS_CREATING,
-                                      config.STATUS_DOWNLOADING,
-                                      config.STATUS_UPLOADING),
-                    timeout=config.VOLUME_AVAILABLE_TIMEOUT)
+            if check:
+                for volume in volumes_chunk:
+                    self.check_volume_status(
+                        volume, [config.STATUS_AVAILABLE],
+                        transit_statuses=(config.STATUS_CREATING,
+                                          config.STATUS_DOWNLOADING,
+                                          config.STATUS_UPLOADING),
+                        timeout=config.VOLUME_AVAILABLE_TIMEOUT)
 
-                if snapshot_id:
-                    assert_that(volume.snapshot_id, equal_to(snapshot_id))
-                if _volume_names[volume.id]:
-                    assert_that(volume.name,
-                                equal_to(_volume_names[volume.id]))
-                if size:
-                    assert_that(volume.size, equal_to(size))
-                if volume_type:
-                    assert_that(volume.volume_type, equal_to(volume_type))
-                if description:
-                    assert_that(volume.description, equal_to(description))
-                if source_volid:
-                    assert_that(volume.source_volid, equal_to(source_volid))
+                    if snapshot_id:
+                        assert_that(volume.snapshot_id, equal_to(snapshot_id))
+                    if _volume_names[volume.id]:
+                        assert_that(volume.name,
+                                    equal_to(_volume_names[volume.id]))
+                    if size:
+                        assert_that(volume.size, equal_to(size))
+                    if volume_type:
+                        assert_that(volume.volume_type, equal_to(volume_type))
+                    if description:
+                        assert_that(volume.description, equal_to(description))
+                    if source_volid:
+                        assert_that(volume.source_volid,
+                                    equal_to(source_volid))
+
+            volumes.extend(volumes_chunk)
 
         return volumes
 

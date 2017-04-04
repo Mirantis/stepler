@@ -30,7 +30,7 @@ class ContextGenerator(object):
 
     def __enter__(self):
         try:
-            return self._generator.next()
+            return next(self._generator)
         except StopIteration:
             raise RuntimeError("generator didn't yield")
 
@@ -39,7 +39,7 @@ class ContextGenerator(object):
         if ext_type is GeneratorExit:
             return
         try:
-            self._generator.next()
+            next(self._generator)
         except StopIteration:
             pass
         except Exception:

@@ -21,7 +21,7 @@ import functools
 import logging
 import time
 
-from stepler.third_party import utils
+import six
 
 LOGGER = logging.getLogger('stepler.func_logger')
 
@@ -50,11 +50,13 @@ def log(func):
 
 
 def _reject_self_from_args(func, args):
-    func_name = getattr(func, '__name__', str(func))
-    args = list(args)
-    if args:
-        arg = args[0]
-        im_func = getattr(getattr(arg, func_name, None), 'im_func', None)
-        if utils.get_unwrapped_func(im_func) is utils.get_unwrapped_func(func):
-            args.remove(arg)
-    return args
+    if len(args) == 0:
+        return args
+    try:
+        self = six.get_method_self(func)
+    except Exception:
+        return args
+    if args[0] == self:
+        return args[1:]
+    else:
+        return args
