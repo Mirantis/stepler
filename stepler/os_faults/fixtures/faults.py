@@ -46,6 +46,7 @@ def os_faults_client():
     Returns:
         object: instantiated os_faults client
     """
+    setattr(os_faults_client, 'indestructible', True)
     if os_faults_config.OS_FAULTS_CONFIG:
         destructor = os_faults.connect(
             config_filename=os_faults_config.OS_FAULTS_CONFIG)
