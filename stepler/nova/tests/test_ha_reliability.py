@@ -28,7 +28,7 @@ from stepler.third_party import utils
 pytestmark = pytest.mark.destructive
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('6d8cfa5c-c927-4916-940e-5dd57c8e8977',
                            os_workload=False)
 @pytest.mark.idempotent_id('2afbfd6f-d087-47db-81af-dea23b8c47ad',
@@ -142,7 +142,7 @@ def test_shutdown_vip_controller(cirros_image,
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('75d405d0-1f31-498c-b144-3b160b85a39e')
 def test_power_off_cluster(cirros_image,
                            keypair,
@@ -236,7 +236,7 @@ def test_power_off_cluster(cirros_image,
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('7509ac93-f0a3-4b62-84dc-ed722e3eba55')
 def test_network_outage(cirros_image,
                         keypair,
@@ -325,7 +325,7 @@ def test_network_outage(cirros_image,
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('8544c689-481c-4c1c-9163-3fad0803813a',
                            os_workload=False)
 @pytest.mark.idempotent_id('3cd46899-528e-4c58-9841-2189bb23f7ba',
@@ -424,7 +424,7 @@ def test_reboot_vip_controller(cirros_image,
     rabbitmq_steps.check_cluster_status(cluster_status, cluster_node_names)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('ad8f7436-1f00-4132-bbdd-83fc9c4764f9')
 def test_graceful_shutdown_cluster(cirros_image,
                                    keypair,
@@ -554,7 +554,7 @@ def test_graceful_shutdown_cluster(cirros_image,
         os_faults_steps.check_metrics(mon_nodes, time_start)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('76a612ca-98ae-4808-b5cc-9a8718991464',
                            os_workload=False)
 @pytest.mark.idempotent_id('5814e237-0acd-493b-b97b-8e6d5829a50f',
@@ -667,27 +667,27 @@ def test_stop_rabbitmq(cirros_image,
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('d445284f-4029-489e-b3d8-2495a4092d28',
                            os_workload=False)
 @pytest.mark.idempotent_id('238e32a2-9d85-45fb-8a6b-1b2b26d74fcc',
                            os_workload=True)
 @pytest.mark.parametrize('os_workload', [False, True],
                          ids=['without workload', 'with workload'])
-def test_unplug_network(cirros_image,
-                        keypair,
-                        tiny_flavor,
-                        security_group,
-                        net_subnet_router,
-                        floating_ip,
-                        attach_volume_to_server,
-                        volume_steps,
-                        server_steps,
-                        nova_service_steps,
-                        host_steps,
-                        os_faults_steps,
-                        generate_os_workload,
-                        os_workload):
+def test_unplug_network_on_mysql_node(cirros_image,
+                                      keypair,
+                                      tiny_flavor,
+                                      security_group,
+                                      net_subnet_router,
+                                      floating_ip,
+                                      attach_volume_to_server,
+                                      volume_steps,
+                                      server_steps,
+                                      nova_service_steps,
+                                      host_steps,
+                                      os_faults_steps,
+                                      generate_os_workload,
+                                      os_workload):
     """**Scenario:** Check functionality after network unpluging on mysql node
 
     This test has two modes: with and without Openstack workload
@@ -780,6 +780,8 @@ def test_unplug_network(cirros_image,
     if delay_before_network_up > 0:
         time.sleep(delay_before_network_up)
 
+    os_faults_steps.reset_nodes(disabled_node)
+
     nova_service_steps.check_services_up(
         timeout=config.NOVA_SERVICES_UP_TIMEOUT)
     time.sleep(config.NOVA_TIME_AFTER_SERVICES_UP)
@@ -787,7 +789,7 @@ def test_unplug_network(cirros_image,
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('509fa960-c42c-40de-bbc5-61b59391b9c5',
                            stop_command=config.STOP_KEEPALIVED_CMD)
 @pytest.mark.idempotent_id('b18754ba-a0c4-4b58-9e7e-1000b0c32ae9',
@@ -895,7 +897,7 @@ def test_stop_keepalived(cirros_image,
     time.sleep(config.TIME_AFTER_KEEPALIVED_START)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('bcb88d70-d347-45fa-9261-71732ac54523')
 def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
                                                tiny_flavor,
@@ -945,7 +947,7 @@ def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
                                 networks=[net_subnet_router[0]])
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('c2b89348-30a6-43b1-b547-9d8615f22e29')
 def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
                                                    cirros_image,
@@ -996,7 +998,7 @@ def test_reboot_node_from_galera_cluster_with_load(generate_os_workload,
                                 networks=[net_subnet_router[0]])
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.idempotent_id('e85c3844-e4ce-48d4-8dd6-0605e65001fb')
 def test_fill_root_filesystem_on_vip_controller(server,
                                                 server_steps,
@@ -1054,7 +1056,7 @@ def test_fill_root_filesystem_on_vip_controller(server,
     server_steps.get_servers()
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.requires("kvm_nodes_count > 1")
 @pytest.mark.idempotent_id('8c5ca930-d491-416a-84b7-f92461e6f78a')
 def test_shutdown_kvm_node(cirros_image,
@@ -1157,7 +1159,7 @@ def test_shutdown_kvm_node(cirros_image,
         os_faults_steps.check_alarms(mon_nodes, time_start)
 
 
-@platform.mk2x
+@platform.mcp
 @pytest.mark.requires("kvm_nodes_count >= 1")
 @pytest.mark.idempotent_id('128c1157-d395-4d0c-b01c-d674eeb1238b')
 def test_reboot_kvm_node(cirros_image,
