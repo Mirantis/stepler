@@ -26,6 +26,7 @@ from stepler import config
 from stepler.nova import steps
 from stepler.third_party import context
 from stepler.third_party import utils
+from stepler.third_party import waiter
 
 __all__ = [
     'create_server_context',
@@ -271,12 +272,14 @@ def ubuntu_server(ubuntu_image,
 
 @pytest.fixture
 def get_ssh_proxy_cmd(network_steps,
+                      agent_steps,
                       os_faults_steps,
                       server_steps):
     """Callable function fixture to get ssh proxy data of server.
 
     Args:
         network_steps (NetworkSteps): instantiated network steps
+        agent_steps (AgentSteps): instantiated agent steps
         os_faults_steps (OsFaultsSteps): initialized os-faults steps
         server_steps (ServerSteps): instantiated server steps
 
@@ -289,6 +292,11 @@ def get_ssh_proxy_cmd(network_steps,
         ssh_opts += ' -i {}'.format(
             os_faults_steps.get_cloud_param_value('private_key_file'))
 
+    def _get_dhcp_host(net_id):
+        agents = agent_steps.get_dhcp_agents_for_net({'id': net_id})
+        agent = next(agent for agent in agents if agent['alive'])
+        return agent['host']
+
     def _get_ssh_proxy_cmd(server, ip=None):
         # proxy command is actual for fixed IP only
         server_ips = server_steps.get_ips(server, 'fixed')
@@ -297,7 +305,10 @@ def get_ssh_proxy_cmd(network_steps,
         server_mac = ip_info['mac']
         net_id = network_steps.get_network_id_by_mac(server_mac)
         dhcp_netns = "qdhcp-{}".format(net_id)
-        dhcp_host = network_steps.get_dhcp_host_by_network(net_id)
+        dhcp_host = waiter.wait(
+            _get_dhcp_host, (net_id, ),
+            expected_exceptions=StopIteration,
+            timeout_seconds=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
         dhcp_fqdn = os_faults_steps.get_fqdn_by_host_name(dhcp_host)
         dhcp_server_ip = [
             node.ip for node in os_faults_steps.get_node(fqdns=[dhcp_fqdn])][0]

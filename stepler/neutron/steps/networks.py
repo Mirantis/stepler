@@ -149,14 +149,6 @@ class NetworkSteps(base.BaseSteps):
         return network_id
 
     @steps_checker.step
-    def get_dhcp_host_by_network(self, network_id):
-        """Step to get DHCP host name by network ID."""
-        result = self._client._rest_client.list_dhcp_agent_hosting_networks(
-            network_id)
-        nodes = [node for node in result['agents'] if node['alive'] is True]
-        return nodes[0]['host']
-
-    @steps_checker.step
     def get_networks_for_dhcp_agent(self, agent, check=True):
         """Step to get networks list for DHCP agent.
 

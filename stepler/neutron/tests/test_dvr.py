@@ -622,6 +622,9 @@ def test_east_west_connectivity_after_reset_computes(
             server_1_ssh,
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
+    # Do nothing some time before computes resetting
+    time.sleep(60)
+
     compute_host_1 = getattr(server_1, config.SERVER_ATTR_HOST)
     compute_fqdn_1 = os_faults_steps.get_fqdn_by_host_name(compute_host_1)
     compute_host_2 = getattr(server_2, config.SERVER_ATTR_HOST)
@@ -1304,14 +1307,15 @@ def test_check_router_update_notification_for_l3_agents(
 
 
 @pytest.mark.idempotent_id('11703a9c-2620-49c7-b834-0bffbed975d6')
+@pytest.mark.parametrize('flavor', [dict(ram=64, disk=1)], indirect=True)
 @pytest.mark.parametrize(
     'change_neutron_quota', [dict(
         network=50, router=50, subnet=50, port=200)],
     indirect=True)
 @pytest.mark.usefixtures('change_neutron_quota')
-@pytest.mark.parametrize('flavor_name', [config.FLAVOR_MICRO])
 def test_instance_connectivity_after_l3_agent_restart(
         cirros_image,
+        flavor,
         security_group,
         public_network,
         create_network,
@@ -1320,12 +1324,11 @@ def test_instance_connectivity_after_l3_agent_restart(
         add_router_interfaces,
         create_floating_ip,
         router_steps,
-        flavor_steps,
         server_steps,
         hypervisor_steps,
         host_steps,
         os_faults_steps,
-        flavor_name):
+        agent_steps):
     """**Scenario:** Check instances connectivity after restarting l3 agent.
 
     **Setup:**
@@ -1355,7 +1358,6 @@ def test_instance_connectivity_after_l3_agent_restart(
     servers = []
     host_fqdn = hypervisor_steps.get_hypervisors()[0].hypervisor_hostname
     host_name = host_steps.get_host(fqdn=host_fqdn).host_name
-    flavor = flavor_steps.get_flavor(name=flavor_name)
 
     for _ in range(10):
 
@@ -1391,6 +1393,12 @@ def test_instance_connectivity_after_l3_agent_restart(
     for _ in range(60):
         os_faults_steps.restart_services(names=[config.NEUTRON_L3_SERVICE],
                                          nodes=node)
+
+    l3_agent = next(
+        agent for agent in agent_steps.get_agents(node)
+        if agent['binary'] == config.NEUTRON_L3_SERVICE)
+    agent_steps.check_alive(
+        l3_agent, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
     for server in servers:
         with server_steps.get_server_ssh(server) as server_ssh:
