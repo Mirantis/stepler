@@ -482,7 +482,18 @@ def test_graceful_shutdown_cluster(cirros_image,
     """
     controllers = os_faults_steps.get_nodes(service_names=[config.NOVA_API])
     computes = os_faults_steps.get_nodes(service_names=[config.NOVA_COMPUTE])
-    mon_nodes = os_faults_steps.get_nodes_by_cmd(config.TCP_MON_NODE_CMD)
+
+    stacklight_nodes = {}
+    mon_nodes = []
+    for service_name in config.STACKLIGHT_SERVICES:
+        nodes = os_faults_steps.get_nodes(service_names=[service_name],
+                                          check=False)
+        if mon_nodes:
+            mon_nodes += nodes
+        else:
+            mon_nodes = nodes
+        stacklight_nodes[service_name] = nodes
+
     controller_host_names = [host_steps.get_host(fqdn=node.fqdn).host_name
                              for node in controllers]
 
@@ -538,9 +549,10 @@ def test_graceful_shutdown_cluster(cirros_image,
         os_faults_steps.poweron_nodes(mon_nodes)
         time.sleep(config.TIME_AFTER_START_MON_NODE)
 
-        for service in config.STACKLIGHT_SERVICES:
-            os_faults_steps.check_service_state(service_name=service,
-                                                nodes=mon_nodes)
+        for service_name in stacklight_nodes:
+            os_faults_steps.check_service_state(
+                service_name=service_name,
+                nodes=stacklight_nodes[service_name])
 
         time_start = time.time()
         node = os_faults_steps.get_node(service_names=[config.NOVA_COMPUTE])
@@ -549,9 +561,12 @@ def test_graceful_shutdown_cluster(cirros_image,
         os_faults_steps.start_service(config.NOVA_COMPUTE, node)
         time.sleep(config.TIME_BEFORE_ALARM_CHECK)
         os_faults_steps.check_alarms(
-            mon_nodes, time_start, expected_alarms=[config.TCP_EXPECTED_ALARM])
+            stacklight_nodes[config.INFLUXDB_SERVICE],
+            time_start, expected_alarms=[config.TCP_EXPECTED_ALARM])
 
-        os_faults_steps.check_metrics(mon_nodes, time_start)
+        os_faults_steps.check_metrics(
+            stacklight_nodes[config.INFLUXDB_SERVICE],
+            time_start)
 
 
 @platform.mcp
