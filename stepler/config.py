@@ -18,6 +18,7 @@ Config
 # limitations under the License.
 
 import functools
+import json
 import os
 import socket
 import uuid
@@ -330,6 +331,19 @@ DESCRIPTION_FOR_TEST_REBUILD = "Description added during rebuild"
 
 SERVERS_CREATE_CHUNK = 5
 LIVE_MIGRATE_MAX_SERVERS_COUNT = 10
+
+# Default flavor
+DEFAULT_FLAVOR_RAM = os.environ.get('DEFAULT_FLAVOR_RAM', 512)
+DEFAULT_FLAVOR_CPU = os.environ.get('DEFAULT_FLAVOR_CPU', 1)
+DEFAULT_FLAVOR_DISK = os.environ.get('DEFAULT_FLAVOR_DISK', 5)
+DEFAULT_FLAVOR_METADATA = json.loads(
+    os.environ.get('DEFAULT_FLAVOR_METADATA', '{}'))
+
+DEFAULT_FLAVOR_PARAMS = dict(
+    ram=DEFAULT_FLAVOR_RAM,
+    vcpus=DEFAULT_FLAVOR_CPU,
+    disk=DEFAULT_FLAVOR_DISK,
+    metadata=DEFAULT_FLAVOR_METADATA)
 
 # Glance
 GLANCE_AVAILABILITY_TIMEOUT = 15

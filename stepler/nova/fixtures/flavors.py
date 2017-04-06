@@ -106,7 +106,7 @@ def flavor(request, create_flavor, flavor_steps):
     Returns:
         function: function to create single flavor with options
     """
-    flavor_params = dict(ram=512, vcpus=1, disk=5)
+    flavor_params = config.DEFAULT_FLAVOR_PARAMS.copy()
     flavor_params.update(getattr(request, 'param', {}))
 
     flavor_name, = utils.generate_ids('flavor')
