@@ -110,9 +110,10 @@ def flavor(request, create_flavor, flavor_steps):
     flavor_params.update(getattr(request, 'param', {}))
 
     flavor_name, = utils.generate_ids('flavor')
+    metadata = flavor_params.pop('metadata', None)
+
     flavor = create_flavor(flavor_name, **flavor_params)
 
-    metadata = flavor_params.get('metadata')
     if metadata:
         flavor_steps.set_metadata(flavor, metadata)
 
