@@ -17,6 +17,7 @@ Network workload fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 
 import pytest
 
@@ -38,10 +39,15 @@ def generate_traffic():
 
     traffic_generators = []
 
+    def _stop_traffic(tg):
+        tg.stop()
+        traffic_generators.remove(tg)
+
     def _generate_traffic(ip, port):
         tg = traffic_generator.TrafficGenerator(ip, port)
         tg.start()
         traffic_generators.append(tg)
+        return functools.partial(_stop_traffic, tg)
 
     yield _generate_traffic
 

@@ -28,7 +28,7 @@ from stepler.third_party import utils
                            api_version='1')
 @pytest.mark.idempotent_id('c8c71538-4f98-4c05-b769-9da26796b01f',
                            api_version='2')
-@pytest.mark.usefixtires('set_glance_storage_to_file_with_quota')
+@pytest.mark.usefixtures('set_glance_storage_to_file_with_quota')
 @pytest.mark.parametrize('api_version', ['1', '2'], ids=['api_v1', 'api_v2'])
 def test_user_storage_quota_bypass(get_glance_steps,
                                    os_faults_steps,

@@ -9,6 +9,23 @@ Pytest plugin to check consistency
   :ref:`STEPS architecture <steps-architecture>`
 
 Checker can be disabled via ``py.test`` key ``--disable-steps-checker``.
+
+Checker can be disabled with comments:
+
+.. code:: python
+
+    def test_inline():
+        foo = 'bar'
+        baz = non_permitted_call(
+            foo
+        )  # checker: disable
+
+
+    def test_block():
+        # checker: disable
+        baz = non_permitted_call_1()
+        baz = non_permitted_call_2()
+        # checker: enable
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,22 +42,31 @@ Checker can be disabled via ``py.test`` key ``--disable-steps-checker``.
 # limitations under the License.
 
 import ast
+import collections
 import functools
 import importlib
 import inspect
 import pkgutil
+import re
+import tokenize
 
 import pytest
+import six
 
 import stepler
 from stepler.third_party import logger
 from stepler.third_party import utils
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
+
 __all__ = [
     'pytest_addoption',
     'pytest_collection_modifyitems',
     'pytest_configure',
-    'step'
+    'step',
 ]
 
 # predefined permitted calls
@@ -67,6 +93,14 @@ PERMITTED_CALLS = [
     'getfixturevalue',
 ]
 
+# Py.test decorators
+PERMITTED_CALLS += [
+    'idempotent_id',
+    'requires',
+    'parametrize',
+    'usefixtures',
+]
+
 # register utils
 PERMITTED_CALLS += utils.__all__
 
@@ -88,6 +122,9 @@ DEFAULT_VALUE = object()
 DOC_LINK = (' Visit http://stepler.readthedocs.io/steps_concept.html to get'
             ' details.')
 
+DISABLE_COMMENT = 'checker: disable'
+ENABLE_COMMENT = 'checker: enable'
+
 
 def step(func):
     """Decorator to append step method name to permitted calls.
@@ -104,10 +141,14 @@ def step(func):
 
 def pytest_addoption(parser):
     """Hook to register checker options."""
-    parser.addoption("--disable-steps-checker", action="store_true",
-                     help="disable steps checker (warning will be shown)")
-    parser.addoption("--steps-check-only", action="store_true",
-                     help="disable steps checker (warning will be shown)")
+    parser.addoption(
+        "--disable-steps-checker",
+        action="store_true",
+        help="disable steps checker (warning will be shown)")
+    parser.addoption(
+        "--steps-check-only",
+        action="store_true",
+        help="disable steps checker (warning will be shown)")
 
 
 def pytest_collection_modifyitems(config, items):
@@ -119,14 +160,8 @@ def pytest_collection_modifyitems(config, items):
     errors = []
     for item in items:
         permitted_calls = PERMITTED_CALLS + STEPS + item.funcargnames
-
-        ast_root = ast.parse(_get_source(item.function))
-        for call_name in _get_call_names(ast_root):
-            if call_name not in permitted_calls:
-
-                error = ("Calling {!r} isn't allowed".format(call_name) +
-                         _get_func_location(item.function) + DOC_LINK)
-                errors.append(error)
+        validator = TestValidator(item.function, permitted_calls)
+        errors.extend(validator.validate())
 
     if errors:
         pytest.exit("Only steps and fixtures must be called in test!\n" +
@@ -155,147 +190,366 @@ def pytest_configure(config):
             step_func = getattr(step_cls, attr_name).im_func
             step_func = utils.get_unwrapped_func(step_func)
 
-            error = _verify_docstring_present(step_func)
+            validator = StepValidator(step_func)
+
+            errors.extend(validator.validate())
+    if errors:
+        pytest.exit('Some steps are not consistent!\n' + '\n'.join(errors))
+
+
+class NodeCollectorVisitor(ast.NodeVisitor):
+    """Filter nodes by type and returns list of collected nodes."""
+    def __init__(self, node_type, bucket=None, *args, **kwargs):
+        super(NodeCollectorVisitor, self).__init__(*args, **kwargs)
+        self.node_type = node_type
+        self.bucket = bucket or []
+
+    def visit(self, node):
+        super(NodeCollectorVisitor, self).visit(node)
+        if isinstance(node, self.node_type):
+            self.bucket.append(node)
+        return self.bucket
+
+
+class NodesEndLineVisitor(ast.NodeVisitor):
+    """Add end_lineno to each node (if it has lineno)."""
+
+    def __init__(self, get_end_line, *args, **kwargs):
+        super(NodesEndLineVisitor, self).__init__(*args, **kwargs)
+        self.get_end_line = get_end_line
+
+    def visit(self, node):
+        lineno = getattr(node, 'lineno', None)
+        if lineno:
+            end_lineno = self.get_end_line(lineno)
+            node.end_lineno = end_lineno
+        return super(NodesEndLineVisitor, self).visit(node)
+
+
+class FuncValidator(object):
+    """Base function validator class."""
+    def __init__(self, func):
+        self.func = func
+
+    @lru_cache()
+    def _get_source_lines(self):
+        """Get function source lines without common indentations.
+
+        Function can be under another function or class and due to that it has
+        additional indentation. Its indentation must be deleted before
+        ast.parse().
+        """
+        lines = inspect.getsourcelines(self.func)[0]
+        offset = len(lines[0]) - len(lines[0].lstrip())
+        pattern = re.compile('^[ ]{{{}}}'.format(offset))
+        return [pattern.sub('', line) for line in lines]
+
+    @lru_cache()
+    def _get_ast_root(self):
+        """Get function AST root node."""
+        root = ast.parse(''.join(self._get_source_lines()))
+        NodesEndLineVisitor(self._get_end).visit(root)
+        return root
+
+    @lru_cache()
+    def _get_ast_nodes(self, node, node_type, bucket=None):
+        """Get ast nodes with specifed ast type.
+
+        Recursive traversal of ast nodes tree to retrieve nodes by defined
+        type.
+        """
+        collector = NodeCollectorVisitor(node_type, bucket)
+        nodes = collector.visit(node)
+        for node in reversed(nodes):
+            for pair in self._get_excluded_lines():
+                if node.lineno >= pair[0] and node.end_lineno <= pair[1]:
+                    nodes.remove(node)
+                    break
+        return nodes
+
+    @lru_cache()
+    def _get_call_names(self):
+        """Get called function names inside function."""
+        call_names = set()
+        call_nodes = self._get_ast_nodes(self._get_ast_root(), ast.Call)
+
+        for call_node in call_nodes:
+            if hasattr(call_node.func, 'attr'):
+                call_name = call_node.func.attr
+
+            else:
+                call_name = call_node.func.id
+            call_names.add(call_name)
+
+        return call_names
+
+    @lru_cache()
+    def _get_tokens(self):
+        """Get list of tokens from function."""
+        lines = iter(self._get_source_lines())
+        tokens = tokenize.generate_tokens(functools.partial(six.next, lines))
+        return list(tokens)
+
+    @lru_cache()
+    def _get_token_table(self):
+        """Get table with start lines for each token."""
+        token_table = collections.defaultdict(list)
+        for i, tok in enumerate(self._get_tokens()):
+            token_table[tok[2][0]].append(i)
+        return token_table
+
+    def _get_start(self, end):
+        """Get expression start line number by end line number."""
+        i = self._get_token_table()[end][0]
+        tokens = self._get_tokens()
+        while tokens[i][0] != tokenize.NEWLINE:
+            i -= 1
+        return tokens[i + 1][2][0]
+
+    def _get_end(self, start):
+        """Get expression end line number by start line number."""
+        i = self._get_token_table()[start][-1]
+        tokens = self._get_tokens()
+        while tokens[i][0] != tokenize.NEWLINE:
+            i += 1
+        return tokens[i][2][0]
+
+    @lru_cache()
+    def _get_excluded_lines(self):
+        """Get lines excluded from check with special comments."""
+        lines_to_exclude = []
+        starts = []
+        for toknum, tokval, (start, _), _, line in self._get_tokens():
+            if toknum != tokenize.COMMENT:
+                continue
+            line = line.strip()
+            tokval = tokval.strip()
+            if tokval == line:
+                # Block mode
+                tokval = tokval.strip('# ')
+                if tokval == DISABLE_COMMENT:
+                    starts.append(start)
+                elif tokval == ENABLE_COMMENT and starts:
+                    lines_to_exclude.append([starts[-1], start])
+                    starts = []
+            elif line.endswith(tokval):
+                # Inline mode
+                end = start
+                start = self._get_start(end)
+                lines_to_exclude.append([start, end])
+        return lines_to_exclude
+
+    @lru_cache()
+    def _get_func_location(self):
+        """Get function location for error message."""
+        return " in function {!r}, module {!r}.".format(
+            self.func.__name__, self.func.__module__)
+
+    def _verify_docstring_present(self):
+        """Rule to verify that function has docstring section."""
+        for line in self._get_source_lines():
+            if line.strip().startswith('"""'):
+                break
+        else:
+            return 'Step has no docstring' + self._get_func_location()
+
+
+class StepValidator(FuncValidator):
+    """Class to validate step method."""
+
+    def __init__(self, *args, **kwargs):
+        super(StepValidator, self).__init__(*args, **kwargs)
+        self.func_location = self._get_func_location()
+        self.ast_func_def = self._get_ast_root().body[0]
+
+    def _verify_argument_present(self,
+                                 arg_name,
+                                 arg_val=DEFAULT_VALUE,
+                                 step_type=None):
+        """Rule to verify that function has defined argument."""
+        assert step_type
+
+        argspec = inspect.getargspec(self.func)
+
+        if arg_name not in argspec.args:
+            return ("{type}-step must have argument {name!r} "
+                    "{loc} {doc}").format(
+                        type=step_type,
+                        arg=arg_name,
+                        loc=self.func_location,
+                        doc=DOC_LINK)
+
+        if arg_val == DEFAULT_VALUE:
+            return
+
+        if not argspec.defaults:
+            return ("{type}-step must have argument {name!r} "
+                    "with default value '{val}' {loc} {doc}").format(
+                        type=step_type,
+                        name=arg_name,
+                        val=arg_val,
+                        loc=self.func_location,
+                        doc=DOC_LINK)
+
+        kwgs = dict(
+            zip(argspec.args[-len(argspec.defaults):], argspec.defaults))
+
+        if not kwgs[arg_name] == arg_val:
+            return ("{type}-step must have argument {name!r} "
+                    "with default value '{val}' {loc} {doc}").format(
+                        type=step_type,
+                        name=arg_name,
+                        val=arg_val,
+                        loc=self.func_location,
+                        doc=DOC_LINK)
+
+    def _verify_step_has_code(func):
+        """Rule to verify that step has code or docstring.
+
+        It used as decorator for other rules.
+        """
+
+        @functools.wraps(func)
+        def wrapper(self, step_type):
+            func_location = self._get_func_location()
+            if len(self.ast_func_def.body) <= 1:
+                return (step_type + '-step has no code or docstring' +
+                        func_location)
+            return func(self, step_type)
+
+        return wrapper
+
+    @_verify_step_has_code
+    def _verify_step_return_something(self, step_type):
+        """Rule to verify that step returns something."""
+        ast_returns = self._get_ast_nodes(self.ast_func_def.body[-1],
+                                          ast.Return)
+        if not ast_returns:
+            return (step_type + '-step must return something' +
+                    self.func_location + DOC_LINK)
+
+        for ast_return in ast_returns:
+            if (not ast_return.value or
+                    getattr(ast_return.value, 'id', None) == 'None'):
+
+                return (step_type + '-step must return something' +
+                        self.func_location + DOC_LINK)
+
+    @_verify_step_has_code
+    def _verify_step_return_nothing(self, step_type):
+        """Rule to verify that step returns nothing."""
+        ast_returns = self._get_ast_nodes(self.ast_func_def.body[-1],
+                                          ast.Return)
+        if ast_returns:
+            return (step_type + '-step must return nothing' +
+                    self.func_location + DOC_LINK)
+
+    def _verify_step_raise_exception(self, step_type):
+        """Rule to verify that step raises exception."""
+        call_names = self._get_call_names()
+
+        for word in RAISE_WORDS:
+            for call_name in call_names:
+                if call_name.startswith(word):
+                    return
+        else:
+            return (step_type + '-step must raise error if check is failed' +
+                    self.func_location + DOC_LINK)
+
+    @_verify_step_has_code
+    def _verify_step_has_action_before_check(self, step_type):
+        """Rule to verify that step action over resource before checking."""
+        if _is_ast_check(self.ast_func_def.body[1]):
+            return (step_type + '-step has no action before check' +
+                    self.func_location + DOC_LINK)
+
+    def _verify_step_has_if_check(self, step_type):
+        """Rule to verify that step has `if check:` section."""
+        ast_ifs = self._get_ast_nodes(self.ast_func_def, ast.If)
+        if not ast_ifs:
+            return (step_type + '-step has no block "if check:"' +
+                    self.func_location + DOC_LINK)
+
+        for ast_if in ast_ifs:
+            if _is_ast_check(ast_if):
+                return
+        else:
+            return (step_type + '-step has no block "if check:"' +
+                    self.func_location + DOC_LINK)
+
+    def _validate_get_step(self):
+        errors = []
+
+        if 'check' in inspect.getargspec(self.func).args:
+            error = self._verify_argument_present('check', True, step_type=GET)
             if error:
                 errors.append(error)
 
-            if step_func.__name__.startswith('get_'):
-                errors.extend(
-                    _validate_get_step(step_func))
+        error = self._verify_step_return_something(step_type=GET)
+        if error:
+            errors.append(error)
+        return errors
 
-            elif step_func.__name__.startswith('check_'):
-                errors.extend(
-                    _validate_check_step(step_func))
+    def _validate_check_step(self):
+        errors = []
 
-            else:  # change step
-                errors.extend(
-                    _validate_change_step(step_func))
-    if errors:
-        pytest.exit('Some steps are not consistent!\n' +
-                    '\n'.join(errors))
+        error = self._verify_step_raise_exception(step_type=CHECK)
+        if error:
+            errors.append(error)
+        return errors
 
+    def _validate_change_step(self):
+        errors = []
 
-def _validate_get_step(func):
-    errors = []
-
-    if 'check' in inspect.getargspec(func).args:
-        error = _verify_argument_present(func, 'check', True, step_type=GET)
+        error = self._verify_argument_present('check', True, step_type=CHANGE)
         if error:
             errors.append(error)
 
-    ast_func_def = ast.parse(_get_source(func)).body[0]
-    func_location = _get_func_location(func)
+        error = self._verify_step_has_action_before_check(step_type=CHANGE)
+        if error:
+            errors.append(error)
+        return errors
 
-    error = _verify_step_return_something(
-        ast_func_def, func_location, step_type=GET)
-    if error:
-        errors.append(error)
-    return errors
+    def validate(self):
+        """Vaildate step with default rules."""
+        errors = []
+        error = self._verify_docstring_present()
+        if error:
+            errors.append(error)
 
+        if self.func.__name__.startswith('get_'):
+            errors.extend(self._validate_get_step())
 
-def _validate_check_step(func):
-    errors = []
+        elif self.func.__name__.startswith('check_'):
+            errors.extend(self._validate_check_step())
 
-    ast_func_def = ast.parse(_get_source(func)).body[0]
-    func_location = _get_func_location(func)
+        else:  # change step
+            errors.extend(self._validate_change_step())
 
-    error = _verify_step_raise_exception(
-        ast_func_def, func_location, step_type=CHECK)
-    if error:
-        errors.append(error)
-    return errors
-
-
-def _validate_change_step(func):
-    errors = []
-
-    error = _verify_argument_present(func, 'check', True, step_type=CHANGE)
-    if error:
-        errors.append(error)
-
-    ast_func_def = ast.parse(_get_source(func)).body[0]
-    func_location = _get_func_location(func)
-
-    error = _verify_step_has_action_before_check(
-        ast_func_def, func_location, step_type=CHANGE)
-    if error:
-        errors.append(error)
-    return errors
+        return errors
 
 
-def _get_source_lines(func):
-    """Get function source lines without common indentations.
+class TestValidator(FuncValidator):
+    """Test function/method validator class."""
 
-    Function can be under another function or class and due to that it has
-    additional indentation. Its indentation must be deleted before ast.parse().
-    """
-    lines = inspect.getsourcelines(func)[0]
-    lines = [l.rstrip() for l in lines if not l.strip().startswith('#')]
+    def __init__(self, func, permitted_calls=None, *args, **kwargs):
+        super(TestValidator, self).__init__(func, *args, **kwargs)
+        self._permitted_calls = permitted_calls or []
 
-    def_line = [l for l in lines if l.strip().startswith('def ')][0]
-    def_indent = len(def_line) - len(def_line.strip())
+    def _validate_calls(self):
+        """Validate that only permitted calls are in the test."""
+        errors = []
+        for call_name in self._get_call_names():
+            if call_name not in self._permitted_calls:
 
-    return [l[def_indent:] for l in lines]
+                error = ("Calling {!r} isn't allowed".format(call_name) +
+                         self._get_func_location() + DOC_LINK)
+                errors.append(error)
+        return errors
 
-
-def _get_source(func):
-    """Get function source lines joined to one."""
-    return '\n'.join(_get_source_lines(func))
-
-
-def _get_ast_attrs(node):
-    """Get attributes of ast node.
-
-    Some attributes are skipped because they are not related to function body
-    and just create side effect.
-    """
-    skip_list = ()
-    if isinstance(node, ast.FunctionDef):
-        skip_list = ('args', 'decorator_list')
-
-    attrs = []
-    for name in dir(node):
-        if not name.startswith('_') and name not in skip_list:
-            attrs.append(getattr(node, name))
-    return attrs
-
-
-def _get_call_names(node):
-    """Get called function names inside function."""
-    call_names = set()
-    call_nodes = _get_ast_nodes(node, ast.Call)
-
-    for call_node in call_nodes:
-        if hasattr(call_node.func, 'attr'):
-            call_name = call_node.func.attr
-
-        else:
-            call_name = call_node.func.id
-        call_names.add(call_name)
-
-    return call_names
-
-
-def _get_ast_nodes(node, node_type, bucket=None):
-    """Get ast nodes with specifed ast type.
-
-    Recursive traversal of ast nodes tree to retrieve nodes by defined type.
-    """
-    bucket = [] if bucket is None else bucket
-
-    if isinstance(node, node_type):
-        bucket.append(node)
-
-    for attr in _get_ast_attrs(node):
-        if not utils.is_iterable(attr):
-            attr = [attr]
-
-        for elem in attr:
-            if isinstance(elem, ast.AST):
-                if isinstance(elem, node_type):
-                    bucket.append(elem)
-                bucket = _get_ast_nodes(elem, node_type, bucket)
-    return bucket
+    def validate(self):
+        """Vaildate test with default rules."""
+        return self._validate_calls()
 
 
 def _get_step_classes():
@@ -321,12 +575,6 @@ def _get_step_classes():
     return step_classes
 
 
-def _get_func_location(func):
-    """Get function location for error message."""
-    return " in function {!r}, module {!r}.".format(func.__name__,
-                                                    func.__module__)
-
-
 def _get_orig_func(func):
     """Get original unwrapped function under decorator(s)."""
     if func.__name__ != func.func_code.co_name:
@@ -346,122 +594,3 @@ def _is_ast_check(node):
         if getattr(node.test, 'id', None) == 'check':
             return True
     return False
-
-
-# =============== SYNTAX RULES ===============
-
-
-def _verify_docstring_present(func):
-    """Rule to verify that function has docstring section."""
-    for line in _get_source_lines(func):
-        if line.strip().startswith('"""'):
-            break
-    else:
-        return 'Step has no docstring' + _get_func_location(func)
-
-
-def _verify_argument_present(func, arg_name, arg_val=DEFAULT_VALUE,
-                             step_type=None):
-    """Rule to verify that function has defined argument."""
-    assert step_type
-
-    argspec = inspect.getargspec(func)
-    func_location = _get_func_location(func)
-
-    if arg_name not in argspec.args:
-        return (
-            step_type + "-step must have argument {!r}".format(arg_name) +
-            func_location + DOC_LINK)
-
-    if arg_val == DEFAULT_VALUE:
-        return
-
-    if not argspec.defaults:
-        return (
-            step_type + "-step must have argument {!r} with default "
-            "value '{}'".format(arg_name, arg_val) + func_location + DOC_LINK)
-
-    kwgs = dict(
-        zip(argspec.args[-len(argspec.defaults):],
-            argspec.defaults))
-
-    if not kwgs[arg_name] == arg_val:
-        return (
-            step_type + "-step must have argument {!r} with default "
-            "value '{}'".format(arg_name, arg_val) + func_location + DOC_LINK)
-
-
-def _verify_step_has_code(func):
-    """Rule to verify that step has code or docstring.
-
-    It used as decorator for other rules.
-    """
-    @functools.wraps(func)
-    def wrapper(ast_func_def, func_location, step_type):
-        if len(ast_func_def.body) <= 1:
-            return step_type + '-step has no code or docstring' + func_location
-        return func(ast_func_def, func_location, step_type)
-
-    return wrapper
-
-
-@_verify_step_has_code
-def _verify_step_return_something(ast_func_def, func_location, step_type):
-    """Rule to verify that step returns something."""
-    ast_returns = _get_ast_nodes(ast_func_def.body[-1], ast.Return)
-    if not ast_returns:
-        return (step_type + '-step must return something' +
-                func_location + DOC_LINK)
-
-    for ast_return in ast_returns:
-        if (not ast_return.value or
-                getattr(ast_return.value, 'id', None) == 'None'):
-
-            return (step_type + '-step must return something' +
-                    func_location + DOC_LINK)
-
-
-@_verify_step_has_code
-def _verify_step_return_nothing(ast_func_def, func_location, step_type):
-    """Rule to verify that step returns nothing."""
-    ast_returns = _get_ast_nodes(ast_func_def.body[-1], ast.Return)
-    if ast_returns:
-        return (step_type + '-step must return nothing' +
-                func_location + DOC_LINK)
-
-
-def _verify_step_raise_exception(ast_func_def, func_location, step_type):
-    """Rule to verify that step raises exception."""
-    call_names = _get_call_names(ast_func_def)
-
-    for word in RAISE_WORDS:
-        for call_name in call_names:
-            if call_name.startswith(word):
-                return
-    else:
-        return (step_type + '-step must raise error if check is failed' +
-                func_location + DOC_LINK)
-
-
-@_verify_step_has_code
-def _verify_step_has_action_before_check(ast_func_def, func_location,
-                                         step_type):
-    """Rule to verify that step action over resource before check result."""
-    if _is_ast_check(ast_func_def.body[1]):
-        return (step_type + '-step has no action before check' +
-                func_location + DOC_LINK)
-
-
-def _verify_step_has_if_check(ast_func_def, func_location, step_type):
-    """Rule to verify that step has `if check:` section."""
-    ast_ifs = _get_ast_nodes(ast_func_def, ast.If)
-    if not ast_ifs:
-        return(step_type + '-step has no block "if check:"' +
-               func_location + DOC_LINK)
-
-    for ast_if in ast_ifs:
-        if _is_ast_check(ast_if):
-            return
-    else:
-        return (step_type + '-step has no block "if check:"' +
-                func_location + DOC_LINK)

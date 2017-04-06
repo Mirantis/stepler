@@ -256,7 +256,7 @@ def test_server_migration_with_disk_workload(live_migration_server,
 @pytest.mark.destructive
 def test_server_migration_with_network_workload(
         live_migration_server, security_group, floating_ip,
-        generate_traffic, neutron_security_group_rule_steps, server_steps,
+        neutron_security_group_rule_steps, server_steps, generate_traffic,
         block_migration):
     """**Scenario:** LM of instance under network workload.
 
@@ -301,11 +301,13 @@ def test_server_migration_with_network_workload(
             port_range_max=port,
             remote_ip_prefix='0.0.0.0/0')
         server_steps.server_network_listen(server_ssh, port=port)
-        generate_traffic(floating_ip['floating_ip_address'], port)
+        stop_traffic = generate_traffic(floating_ip['floating_ip_address'],
+                                        port)
     server_steps.live_migrate([server], block_migration=block_migration)
     server_steps.check_ping_to_server_floating(
         server, timeout=config.PING_CALL_TIMEOUT)
 
+    stop_traffic()  # checker: disable
     server_steps.delete_servers([server])
 
 
