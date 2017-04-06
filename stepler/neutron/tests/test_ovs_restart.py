@@ -376,6 +376,9 @@ def test_restart_with_iperf_traffic(
             agent_steps.check_alive(
                 ovs_agents,
                 timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+            server_steps.check_ping_for_ip(
+                server_2_fixed_ip, server_ssh,
+                timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('10b85297-3511-4f96-bf39-16b7b14ab7c9')
