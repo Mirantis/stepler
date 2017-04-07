@@ -62,6 +62,7 @@ __all__ = sorted([  # sort for documentation
     'snapshot_steps',
     'cleanup_snapshots',
     'volume_snapshot',
+    'volume_snapshots',
     'transfer_steps',
     'create_volume_transfer',
     'get_transfer_steps',

@@ -19,56 +19,20 @@ Fixtures to manipulate with volume types and QoS Specs
 
 import pytest
 
-from stepler.horizon.steps import VolumeTypesSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
+
 
 __all__ = [
-    'qos_spec',
-    'volume_type',
-    'volume_types_steps'
+    'volume_types_steps_ui'
 ]
 
 
 @pytest.fixture
-def volume_types_steps(horizon, login):
-    """Get volume types steps.
+def volume_types_steps_ui(horizon, login):
+    """Get volume types UI steps.
 
-    Arguments:
-        - login: log in before tests.
-        - horizon: application for steps.
+    Args:
+        horizon (Horizon): instantiated horizon web application
+        login (None): should log in horizon before steps using
     """
-    return VolumeTypesSteps(horizon)
-
-
-@pytest.yield_fixture
-def volume_type(volume_types_steps):
-    """Create volume type.
-
-    Arguments:
-        - volume_types_steps: in order to create volume type.
-    """
-    name = next(utils.generate_ids('volume-type'))
-
-    volume_types_steps.create_volume_type(name)
-    _volume_type = utils.AttrDict(name=name)
-
-    yield _volume_type
-
-    volume_types_steps.delete_volume_type(_volume_type.name)
-
-
-@pytest.yield_fixture
-def qos_spec(volume_types_steps):
-    """Create QoS Spec.
-
-    Arguments:
-        - volume_types_steps: in order to create QoS Spec.
-    """
-    name = next(utils.generate_ids('qos-spec'))
-
-    volume_types_steps.create_qos_spec(name)
-    _qos_spec = utils.AttrDict(name=name)
-
-    yield _qos_spec
-
-    volume_types_steps.delete_qos_spec(_qos_spec.name)
+    return steps.VolumeTypesSteps(horizon)

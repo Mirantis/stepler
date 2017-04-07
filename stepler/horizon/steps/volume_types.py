@@ -17,12 +17,12 @@ Volume types steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-from .base import BaseSteps
 
-
-class VolumeTypesSteps(BaseSteps):
+class VolumeTypesSteps(base.BaseSteps):
     """Volume types steps."""
 
     def _tab_volume_types(self):
@@ -32,9 +32,12 @@ class VolumeTypesSteps(BaseSteps):
             return page.tab_volume_types
 
     @steps_checker.step
-    def create_volume_type(self, volume_type_name, description=None,
+    def create_volume_type(self, volume_type_name=None, description=None,
                            check=True):
         """Step to create volume type."""
+        volume_type_name = (volume_type_name or
+                            next(utils.generate_ids('volume-type')))
+
         tab = self._tab_volume_types()
         tab.button_create_volume_type.click()
 
@@ -48,6 +51,8 @@ class VolumeTypesSteps(BaseSteps):
             self.close_notification('success')
             tab.table_volume_types.row(
                 name=volume_type_name).wait_for_presence()
+
+        return volume_type_name
 
     @steps_checker.step
     def delete_volume_type(self, volume_type_name, check=True):
@@ -84,8 +89,10 @@ class VolumeTypesSteps(BaseSteps):
                     name=volume_type_name).wait_for_absence()
 
     @steps_checker.step
-    def create_qos_spec(self, qos_spec_name, consumer=None, check=True):
+    def create_qos_spec(self, qos_spec_name=None, consumer=None, check=True):
         """Step to create qos spec."""
+        qos_spec_name = qos_spec_name or next(utils.generate_ids('qos-spec'))
+
         tab = self._tab_volume_types()
         tab.button_create_qos_spec.click()
 
@@ -98,6 +105,8 @@ class VolumeTypesSteps(BaseSteps):
         if check:
             self.close_notification('success')
             tab.table_qos_specs.row(name=qos_spec_name).wait_for_presence()
+
+        return qos_spec_name
 
     @steps_checker.step
     def delete_qos_spec(self, qos_spec_name, check=True):

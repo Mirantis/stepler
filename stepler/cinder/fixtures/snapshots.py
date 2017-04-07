@@ -28,6 +28,7 @@ __all__ = [
     'snapshot_steps',
     'cleanup_snapshots',
     'volume_snapshot',
+    'volume_snapshots',
 ]
 
 
@@ -82,6 +83,23 @@ def volume_snapshot(volume, snapshot_steps):
     """
     return snapshot_steps.create_snapshots(
         volume, names=utils.generate_ids())[0]
+
+
+@pytest.fixture
+def volume_snapshots(request, volume, snapshot_steps):
+    """Function fixture to create volume snapshots with default options.
+
+    Args:
+        request (object): py.test's SubRequest instance
+        volume (object): cinder volume
+        snapshot_steps (SnapshotSteps): instantiated snapshot steps
+
+    Returns:
+        list: cinder volume snapshots
+    """
+    count = int(getattr(request, 'param', 3))
+    names = utils.generate_ids('snapshot', count=count)
+    return snapshot_steps.create_snapshots(volume, names=names)
 
 
 @pytest.fixture(scope='session')

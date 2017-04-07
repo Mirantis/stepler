@@ -93,6 +93,7 @@ def volume_steps(unexpected_volumes_cleanup,
     volume_ids_before = {volume.id for volume in volumes}
 
     yield _volume_steps
+
     cleanup_volumes(_volume_steps, uncleanable_ids=volume_ids_before)
 
 

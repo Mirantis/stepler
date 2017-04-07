@@ -19,86 +19,29 @@ Fixtures for volumes
 
 import pytest
 
-from stepler import config
 from stepler.horizon import steps
 from stepler.third_party import utils
 
 __all__ = [
     'create_backups',
-    'create_snapshot',
-    'create_snapshots',
-    'snapshot',
     'volumes_steps_ui',
 ]
 
 
 @pytest.fixture
-def volumes_steps_ui(login, horizon):
-    """Fixture to get volumes steps."""
+def volumes_steps_ui(volume_steps, snapshot_steps, login, horizon):
+    """Fixture to get volumes steps.
+
+    volume_steps instance is used for volumes cleanup.
+    snapshot_steps instance is used for snapshots cleanup.
+
+    Args:
+        volume_steps (VolumeSteps): instantiated volume steps
+        snapshot_steps (SnapshotSteps): instantiated snapshot steps
+        horizon (Horizon): instantiated horizon web application
+        login (None): should log in horizon before steps using
+    """
     return steps.VolumesSteps(horizon)
-
-
-@pytest.fixture
-def snapshot(create_snapshot):
-    """Fixture to create volume snapshot with default options before test."""
-    snapshot_name = next(utils.generate_ids('snapshot'))
-    return create_snapshot(snapshot_name)
-
-
-@pytest.yield_fixture
-def create_snapshots(volume, volumes_steps_ui):
-    """Callable fixture to create volume snapshots with options.
-
-    Can be called several times during test.
-    """
-    snapshots = []
-
-    def _create_snapshots(snapshot_names):
-        _snapshots = []
-
-        for snapshot_name in snapshot_names:
-            volumes_steps_ui.create_snapshot(volume.name, snapshot_name,
-                                             check=False)
-            volumes_steps_ui.close_notification('info')
-            snapshot = utils.AttrDict(name=snapshot_name)
-
-            snapshots.append(snapshot)
-            _snapshots.append(snapshot)
-
-        tab_snapshots = volumes_steps_ui._tab_snapshots()
-        for snapshot_name in snapshot_names:
-            tab_snapshots.table_snapshots.row(
-                name=snapshot_name).wait_for_status('Available',
-                                                    config.EVENT_TIMEOUT)
-
-        return _snapshots
-
-    yield _create_snapshots
-
-    if snapshots:
-        volumes_steps_ui.delete_snapshots(
-            [snapshot.name for snapshot in snapshots])
-
-
-@pytest.yield_fixture
-def create_snapshot(volume, volumes_steps_ui):
-    """Callable fixture to create snapshot with options.
-
-    Can be called several times during test.
-    """
-    snapshots = []
-
-    def _create_snapshot(snapshot_name, *args, **kwargs):
-        volumes_steps_ui.create_snapshot(volume.name, snapshot_name, *args,
-                                         **kwargs)
-        snapshot = utils.AttrDict(name=snapshot_name)
-        snapshots.append(snapshot)
-        return snapshot
-
-    yield _create_snapshot
-
-    for snapshot in snapshots:
-        volumes_steps_ui.delete_snapshot(snapshot.name)
 
 
 @pytest.yield_fixture

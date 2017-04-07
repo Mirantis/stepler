@@ -122,13 +122,8 @@ __all__ = sorted([  # sort for documentation
     'user',
     'users_steps',
 
-    'qos_spec',
-    'volume_type',
-    'volume_types_steps',
+    'volume_types_steps_ui',
 
     'create_backups',
-    'create_snapshot',
-    'create_snapshots',
-    'snapshot',
     'volumes_steps_ui',
 ])

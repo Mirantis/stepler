@@ -25,9 +25,25 @@ class TestAdminOnly(object):
     """Volume type tests are available for admin only."""
 
     @pytest.mark.idempotent_id('71441c2f-5b79-43de-88bf-c026cc1f5777')
-    def test_volume_type_create(self, volume_type):
-        """Verify that volume type can be created and deleted."""
+    def test_volume_type_create(self, volume_types_steps_ui):
+        """Verify that volume type can be created and deleted.
+
+        **Steps:**
+
+        #. Create volume type using UI
+        #. Delete volume type using UI
+        """
+        volume_type_name = volume_types_steps_ui.create_volume_type()
+        volume_types_steps_ui.delete_volume_type(volume_type_name)
 
     @pytest.mark.idempotent_id('3fb20c4a-7ab6-45e1-9f08-30ec942c4a89')
-    def test_qos_spec_create(self, qos_spec):
-        """Verify that QoS Spec can be created and deleted."""
+    def test_qos_spec_create(self, volume_types_steps_ui):
+        """Verify that QoS Spec can be created and deleted.
+
+        **Steps:**
+
+        #. Create QoS Spec using UI
+        #. Delete QoS Spec using UI
+        """
+        qos_spec_name = volume_types_steps_ui.create_qos_spec()
+        volume_types_steps_ui.delete_qos_spec(qos_spec_name)
