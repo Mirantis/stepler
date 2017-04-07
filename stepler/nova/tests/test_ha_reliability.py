@@ -932,6 +932,7 @@ def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
     #. Run '/usr/bin/mysqld_safe --wsrep-new-cluster' on the one node
     #. Check that new operational cluster is created and its size 1
     #. Add nodes to cluster by start of 'mysql' service
+    #. Restart mysql as a service on the primary node
     #. Check that cluster still operational but with new size
     #. Create server to check cluster
 
@@ -950,11 +951,19 @@ def test_shutdown_and_bootstrap_galera_cluster(cirros_image,
 
     # Start galera cluster
     os_faults_steps.execute_cmd(primary_node, config.GALERA_CLUSTER_START_CMD)
+    time.sleep(config.TIME_AFTER_MYSQL_START)
     os_faults_steps.check_galera_cluster_state(member_nodes=primary_node)
 
     # Add secondary nodes to cluster
     os_faults_steps.start_service(service_name=config.MYSQL,
                                   nodes=secondary_nodes)
+    time.sleep(config.TIME_AFTER_MYSQL_START)
+
+    # Restart mysql as a service on the primary node
+    os_faults_steps.execute_cmd(primary_node, config.MYSQL_KILL_CMD)
+    os_faults_steps.start_service(service_name=config.MYSQL,
+                                  nodes=primary_node)
+    time.sleep(config.TIME_AFTER_MYSQL_START)
     os_faults_steps.check_galera_cluster_state(member_nodes=mysql_nodes)
 
     server_steps.create_servers(image=cirros_image,
