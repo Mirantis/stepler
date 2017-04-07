@@ -640,6 +640,8 @@ REMOVE_FILE_CMD = 'rm -f {file_path}'
 
 # Galera cluster
 MYSQL_CONFIG_FILE = '/etc/mysql/my.cnf'
+MYSQL_KILL_CMD = "pkill -9 mysqld && sleep 5"
+TIME_AFTER_MYSQL_START = 5
 GALERA_CLUSTER_STATUS_CHECK_CMD = "show status like 'wsrep%';"
 GALERA_CLUSTER_START_CMD = "/usr/bin/mysqld_safe --wsrep-new-cluster &"
 GALERA_CLUSTER_STATUS_PARAMS = {'wsrep_local_state_comment': 'Synced',
