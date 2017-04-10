@@ -24,7 +24,7 @@ class RouterManager(base.BaseNeutronManager):
     NAME = 'router'
     _resource_class = Router
 
-    def create(self, name, distributed=None, project_id=None):
+    def create(self, name, distributed=None, project_id=None, **kwargs):
         """Create router.
 
         Args:
@@ -34,11 +34,13 @@ class RouterManager(base.BaseNeutronManager):
                 of router depends on neutron configuration.
             project_id (str|None): project id to create router on it. If None
                 - router will create on current project
+            **kwargs: other arguments to pass to API
 
         Returns:
             dict: created router
         """
         query = {'name': name}
+        query.update(kwargs)
         if distributed is not None:
             query['distributed'] = distributed
         if project_id is not None:
