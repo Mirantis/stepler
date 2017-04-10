@@ -31,7 +31,7 @@ class FloatingIPManager(base.BaseNeutronManager):
     _resource_class = FloatingIP
 
     @base.transform_one
-    def create(self, network_id, port_id=None, project_id=None):
+    def create(self, network_id, port_id=None, project_id=None, **kwargs):
         """Create new neutron floating IP.
 
         Args:
@@ -40,11 +40,12 @@ class FloatingIPManager(base.BaseNeutronManager):
                 default created floating ip is not binded to any port.
             project_id (str|None): project id to create floating ip in it. By
                 default floating ip will be created on current project.
+            **kwargs: other arguments to pass to API
 
         Returns:
             dict: created floating ip
         """
-        kwargs = dict(floating_network_id=network_id)
+        kwargs['floating_network_id'] = network_id
         if port_id:
             kwargs['port_id'] = port_id
         if project_id:

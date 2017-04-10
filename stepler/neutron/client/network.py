@@ -25,7 +25,7 @@ class NetworkManager(base.BaseNeutronManager):
     _resource_class = Network
 
     @base.transform_one
-    def create(self, name, project_id=None, shared=False):
+    def create(self, name, project_id=None, shared=False, **kwargs):
         """Create new neutron network.
 
         Args:
@@ -33,11 +33,12 @@ class NetworkManager(base.BaseNeutronManager):
             project_id (str|None): project id to create network in it. If None
                 - network will be created on current project
             shared (bool): flag whether network should be shared or not
+            **kwargs: other arguments to pass to API
 
         Returns:
             dict: created network
         """
-        kwargs = dict(name=name, admin_state_up=True, shared=shared)
+        kwargs.update(dict(name=name, admin_state_up=True, shared=shared))
         if project_id:
             kwargs['tenant_id'] = project_id
         return super(NetworkManager, self).create(**kwargs)

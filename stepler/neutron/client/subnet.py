@@ -30,7 +30,8 @@ class SubnetManager(base.BaseNeutronManager):
                cidr,
                ip_version=4,
                dns_nameservers=('8.8.8.8', '8.8.4.4'),
-               project_id=None):
+               project_id=None,
+               **kwargs):
         """Create subnet action.
 
         Args:
@@ -41,6 +42,7 @@ class SubnetManager(base.BaseNeutronManager):
             dns_nameservers (tuple of str): dns nameservers of subnet
             project_id (str|None): project id to create subnet in it. If None
                 - subnet will be created in the current project
+            **kwargs: other arguments to pass to API
 
         Returns:
             dict: created subnet
@@ -51,6 +53,7 @@ class SubnetManager(base.BaseNeutronManager):
             "cidr": cidr,
             "name": name
         }
+        query.update(kwargs)
         if dns_nameservers is not None:
             query['dns_nameservers'] = dns_nameservers
         if project_id is not None:
