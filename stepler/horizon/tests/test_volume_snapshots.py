@@ -198,7 +198,7 @@ class TestAnyOne(object):
         #. Delete snapshots using API
         #. Delete volume using API
         """
-        snapshot_names = [snapshot.name
+        snapshot_names = [snapshot.name or snapshot.id
                           for snapshot in snapshot_steps.get_snapshots()]
 
         update_settings(items_per_page=1)

@@ -550,9 +550,11 @@ class VolumesSteps(base.BaseSteps):
                 name=snapshot_name).wait_for_status('Available')
 
     @steps_checker.step
-    def create_backup(self, volume_name, backup_name, description=None,
+    def create_backup(self, volume_name, backup_name=None, description=None,
                       container=None, check=True):
         """Step to create volume backup."""
+        backup_name = backup_name or next(utils.generate_ids('backup'))
+
         tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
@@ -578,6 +580,8 @@ class VolumesSteps(base.BaseSteps):
             if description is not None:
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
+
+        return backup_name
 
     @steps_checker.step
     def delete_backups(self, backup_names, check=True):
@@ -747,45 +751,67 @@ class VolumesSteps(base.BaseSteps):
     @steps_checker.step
     def check_backups_pagination(self, backup_names):
         """Step to check backups pagination."""
+        assert_that(backup_names, has_length(greater_than(2)))
+
+        ordered_names = []
+        count = len(backup_names)
         tab_backups = self._tab_backups()
-        tab_backups.table_backups.row(
-            name=backup_names[2]).wait_for_presence(30)
+
+        # backup names can be unordered so we should try to retrieve
+        # any backup from backup_names list
+        def _get_current_backup_name():
+            rows = tab_backups.table_backups.rows
+            assert_that(rows, has_length(1))
+
+            backup_name = rows[0].cell('name').value
+            assert_that(backup_name, is_in(backup_names))
+
+            return backup_name
+
+        backup_name = _get_current_backup_name()
+        ordered_names.append(backup_name)
 
         assert_that(tab_backups.table_backups.link_next.is_present,
                     equal_to(True))
         assert_that(tab_backups.table_backups.link_prev.is_present,
                     equal_to(False))
 
-        tab_backups.table_backups.link_next.click()
-        tab_backups.table_backups.row(
-            name=backup_names[1]).wait_for_presence(30)
+        # check all elements except for the first and the last
+        for _ in range(1, count - 1):
+            tab_backups.table_backups.link_next.click()
+            backup_name = _get_current_backup_name()
+            ordered_names.append(backup_name)
 
-        assert_that(tab_backups.table_backups.link_next.is_present,
-                    equal_to(True))
-        assert_that(tab_backups.table_backups.link_prev.is_present,
-                    equal_to(True))
+            assert_that(tab_backups.table_backups.link_next.is_present,
+                        equal_to(True))
+            assert_that(tab_backups.table_backups.link_prev.is_present,
+                        equal_to(True))
 
         tab_backups.table_backups.link_next.click()
-        tab_backups.table_backups.row(
-            name=backup_names[0]).wait_for_presence(30)
+        backup_name = _get_current_backup_name()
+        ordered_names.append(backup_name)
 
         assert_that(tab_backups.table_backups.link_next.is_present,
                     equal_to(False))
         assert_that(tab_backups.table_backups.link_prev.is_present,
                     equal_to(True))
 
+        # check that all created volume names have been checked
+        assert_that(ordered_names, contains_inanyorder(*backup_names))
+
+        for i in range(count - 2, 0, -1):
+            tab_backups.table_backups.link_prev.click()
+            tab_backups.table_backups.row(
+                name=ordered_names[i]).wait_for_presence(30)
+
+            assert_that(tab_backups.table_backups.link_next.is_present,
+                        equal_to(True))
+            assert_that(tab_backups.table_backups.link_prev.is_present,
+                        equal_to(True))
+
         tab_backups.table_backups.link_prev.click()
         tab_backups.table_backups.row(
-            name=backup_names[1]).wait_for_presence(30)
-
-        assert_that(tab_backups.table_backups.link_next.is_present,
-                    equal_to(True))
-        assert_that(tab_backups.table_backups.link_prev.is_present,
-                    equal_to(True))
-
-        tab_backups.table_backups.link_prev.click()
-        tab_backups.table_backups.row(
-            name=backup_names[2]).wait_for_presence(30)
+            name=ordered_names[0]).wait_for_presence(30)
 
         assert_that(tab_backups.table_backups.link_next.is_present,
                     equal_to(True))
