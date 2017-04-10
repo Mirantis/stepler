@@ -332,12 +332,21 @@ DESCRIPTION_FOR_TEST_REBUILD = "Description added during rebuild"
 SERVERS_CREATE_CHUNK = 5
 LIVE_MIGRATE_MAX_SERVERS_COUNT = 10
 
+DPDK_ENABLED = bool(os.environ.get('DPDK_ENABLED', False))
+
 # Default flavor
-DEFAULT_FLAVOR_RAM = int(os.environ.get('DEFAULT_FLAVOR_RAM', 512))
-DEFAULT_FLAVOR_CPU = int(os.environ.get('DEFAULT_FLAVOR_CPU', 1))
-DEFAULT_FLAVOR_DISK = int(os.environ.get('DEFAULT_FLAVOR_DISK', 5))
-DEFAULT_FLAVOR_METADATA = json.loads(
-    os.environ.get('DEFAULT_FLAVOR_METADATA', '{}'))
+if DPDK_ENABLED:
+    DEFAULT_FLAVOR_RAM = int(os.environ.get('DEFAULT_FLAVOR_RAM', 2048))
+    DEFAULT_FLAVOR_CPU = int(os.environ.get('DEFAULT_FLAVOR_CPU', 1))
+    DEFAULT_FLAVOR_DISK = int(os.environ.get('DEFAULT_FLAVOR_DISK', 10))
+    DEFAULT_FLAVOR_METADATA = json.loads(os.environ.get(
+        'DEFAULT_FLAVOR_METADATA', '{"hw:mem_page_size": "large"}'))
+else:
+    DEFAULT_FLAVOR_RAM = int(os.environ.get('DEFAULT_FLAVOR_RAM', 512))
+    DEFAULT_FLAVOR_CPU = int(os.environ.get('DEFAULT_FLAVOR_CPU', 1))
+    DEFAULT_FLAVOR_DISK = int(os.environ.get('DEFAULT_FLAVOR_DISK', 5))
+    DEFAULT_FLAVOR_METADATA = json.loads(os.environ.get(
+        'DEFAULT_FLAVOR_METADATA', '{}'))
 
 DEFAULT_FLAVOR_PARAMS = dict(
     ram=DEFAULT_FLAVOR_RAM,
