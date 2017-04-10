@@ -195,7 +195,7 @@ def test_rebuild_with_user_files(ubuntu_server_to_rebuild,
             ubuntu_server_to_rebuild,
             floating_ip['floating_ip_address']) as server_ssh:
         for filepath in sorted(config.USER_FILES_FOR_TEST_REBUILD.keys()):
-            server_steps.check_files_presence_for_fs(server_ssh, filepath)
+            server_steps.check_files_presence_for_path(server_ssh, filepath)
 
 
 @pytest.mark.idempotent_id('280559ac-d000-4132-ab7e-6b75b1dfb1fd')
