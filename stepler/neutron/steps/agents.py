@@ -50,9 +50,12 @@ class AgentSteps(base.BaseSteps):
         """
         if node:
             assert_that('host', is_not(is_in(kwargs)))
-            kwargs['host'] = node.get_fqdns()[0]
 
         agents = list(self._client.find_all(**kwargs))
+        if node:
+            fqdn = node.get_fqdns()[0]
+            agents = [agent for agent in agents
+                      if fqdn.startswith(agent['host'])]
         if check:
             assert_that(agents, is_not(empty()))
         return agents

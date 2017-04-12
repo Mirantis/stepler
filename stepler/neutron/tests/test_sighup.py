@@ -42,7 +42,7 @@ def test_restart_agent_controller_with_sighup(agent_steps,
 
     **Steps:**
 
-    #. Find a controller with running neutron agent
+    #. Find a controller or gtw node with running neutron agent
     #. Get PID of agent process
     #. Send SIGHUP to process and wait for 10 seconds
     #. Check state of agent
@@ -50,11 +50,22 @@ def test_restart_agent_controller_with_sighup(agent_steps,
     #. Check that no new ERROR and TRACE messages appear in log
     #. Check that only one SIGHUP message appear in log
     """
-    node = os_faults_steps.get_node(service_names=[config.NOVA_API,
-                                                   agent_name])
-    host_name = node.hosts[0].fqdn
+    nodes = os_faults_steps.get_nodes(service_names=[agent_name])
+    compute_nodes = os_faults_steps.get_compute_nodes()
+    nodes -= compute_nodes
+    fqdn = nodes.hosts[0].fqdn
+    node = os_faults_steps.get_nodes(fqdns=[fqdn])
 
-    log_file = config.AGENT_LOGS[agent_name][0]
+    ctl_node = os_faults_steps.get_nodes(fqdns=[fqdn],
+                                         service_names=[config.NOVA_API],
+                                         check=False)
+    if len(ctl_node) > 0:
+        # agent is running on controller
+        log_file = config.AGENT_LOGS[agent_name][0]
+    else:
+        # agent is running on gtw node
+        log_file = config.AGENT_LOGS[agent_name][2]
+
     line_count_file_path = os_faults_steps.store_file_line_count(node,
                                                                  log_file)
 
@@ -64,7 +75,7 @@ def test_restart_agent_controller_with_sighup(agent_steps,
                                            signal=signal.SIGHUP,
                                            delay=10)
 
-    agent_steps.get_agents(name=agent_name, host_name=host_name, alive=True)
+    agent_steps.get_agents(node=node, binary=agent_name, alive=True)
 
     os_faults_steps.check_process_pid(node, process_name=agent_name,
                                       expected_pid=pid)
@@ -172,7 +183,7 @@ def test_restart_metadata_agent_controller_with_sighup(agent_steps,
 
     **Steps:**
 
-    #. Find a controller with running metadata agent
+    #. Find a controller or gtw node with running metadata agent
     #. Get PID of metadata agent process (parent or child)
     #. Send SIGHUP to process and wait for 10 seconds
     #. Check state of agent
@@ -181,11 +192,22 @@ def test_restart_metadata_agent_controller_with_sighup(agent_steps,
     #. Check that only one SIGHUP message appear in log
     """
     agent_name = config.NEUTRON_METADATA_SERVICE
-    node = os_faults_steps.get_node(service_names=[config.NOVA_API,
-                                                   agent_name])
-    host_name = node.hosts[0].fqdn
+    nodes = os_faults_steps.get_nodes(service_names=[agent_name])
+    compute_nodes = os_faults_steps.get_compute_nodes()
+    nodes -= compute_nodes
+    fqdn = nodes.hosts[0].fqdn
+    node = os_faults_steps.get_nodes(fqdns=[fqdn])
 
-    log_file = config.AGENT_LOGS[agent_name][0]
+    ctl_node = os_faults_steps.get_nodes(fqdns=[fqdn],
+                                         service_names=[config.NOVA_API],
+                                         check=False)
+    if len(ctl_node) > 0:
+        # agent is running on controller
+        log_file = config.AGENT_LOGS[agent_name][0]
+    else:
+        # agent is running on gtw node
+        log_file = config.AGENT_LOGS[agent_name][2]
+
     line_count_file_path = os_faults_steps.store_file_line_count(node,
                                                                  log_file)
 
@@ -196,7 +218,7 @@ def test_restart_metadata_agent_controller_with_sighup(agent_steps,
                                            signal=signal.SIGHUP,
                                            delay=10)
 
-    agent_steps.get_agents(name=agent_name, host_name=host_name, alive=True)
+    agent_steps.get_agents(node=node, binary=agent_name, alive=True)
 
     os_faults_steps.check_process_pid(node, process_name=agent_name,
                                       check_parent=is_parent,
@@ -247,7 +269,6 @@ def test_restart_metadata_agent_compute_with_sighup(agent_steps,
     agent_name = config.NEUTRON_METADATA_SERVICE
     node = os_faults_steps.get_node(service_names=[config.NOVA_COMPUTE,
                                                    agent_name])
-    host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][1]
     line_count_file_path = os_faults_steps.store_file_line_count(node,
@@ -260,7 +281,7 @@ def test_restart_metadata_agent_compute_with_sighup(agent_steps,
                                            signal=signal.SIGHUP,
                                            delay=10)
 
-    agent_steps.get_agents(name=agent_name, host_name=host_name, alive=True)
+    agent_steps.get_agents(node=node, binary=agent_name, alive=True)
 
     os_faults_steps.check_process_pid(node, process_name=agent_name,
                                       check_parent=is_parent,
@@ -306,7 +327,6 @@ def test_restart_l3_agent_compute_with_sighup(agent_steps,
     agent_name = config.NEUTRON_L3_SERVICE
     node = os_faults_steps.get_node(service_names=[config.NOVA_COMPUTE,
                                                    agent_name])
-    host_name = node.hosts[0].fqdn
 
     log_file = config.AGENT_LOGS[agent_name][1]
     line_count_file_path = os_faults_steps.store_file_line_count(node,
@@ -318,7 +338,7 @@ def test_restart_l3_agent_compute_with_sighup(agent_steps,
                                            signal=signal.SIGHUP,
                                            delay=10)
 
-    agent_steps.get_agents(name=agent_name, host_name=host_name, alive=True)
+    agent_steps.get_agents(node=node, binary=agent_name, alive=True)
 
     os_faults_steps.check_process_pid(node, process_name=agent_name,
                                       expected_pid=pid)

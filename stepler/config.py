@@ -478,17 +478,22 @@ TAP_INTERFACE_UP_TIMEOUT = 3 * 60
 CONNECT_RESTORE_TIMEOUT = 3 * 60
 
 AGENT_LOGS = {
-    # logs on controllers and computes
+    # logs on controllers, computes and gtw nodes
     NEUTRON_L3_SERVICE: ['/var/log/neutron/l3-agent.log',  # controller
-                         '/var/log/neutron/neutron-l3-agent.log'],  # compute
+                         '/var/log/neutron/neutron-l3-agent.log',  # compute
+                         '/var/log/neutron/neutron-l3-agent.log'],  # gtw
     NEUTRON_DHCP_SERVICE: ['/var/log/neutron/dhcp-agent.log',  # controller
-                           None],  # file is absent on compute
+                           None,  # file is absent on compute
+                           '/var/log/neutron/neutron-dhcp-agent.log'],  # gtw
     NEUTRON_OVS_SERVICE: ['/var/log/neutron/openvswitch-agent.log',
+                          '/var/log/neutron/neutron-openvswitch-agent.log',
                           '/var/log/neutron/neutron-openvswitch-agent.log'],
     NEUTRON_METADATA_SERVICE: ['/var/log/neutron/metadata-agent.log',
+                               '/var/log/neutron/neutron-metadata-agent.log',
                                '/var/log/neutron/neutron-metadata-agent.log'],
     NEUTRON_SERVER_SERVICE: ['/var/log/neutron/neutron-server.log',
-                             None]
+                             None,
+                             None],
 }
 
 NEUTRON_ML2_CONFIG_PATH = '/etc/neutron/plugins/ml2/ml2_conf.ini'
