@@ -1398,7 +1398,7 @@ def test_instance_connectivity_after_l3_agent_restart(
         agent for agent in agent_steps.get_agents(node)
         if agent['binary'] == config.NEUTRON_L3_SERVICE)
     agent_steps.check_alive(
-        l3_agent, timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
+        [l3_agent], timeout=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
 
     for server in servers:
         with server_steps.get_server_ssh(server) as server_ssh:
