@@ -62,8 +62,11 @@ class SubnetManager(base.BaseNeutronManager):
 
     def get_ports(self, subnet_id):
         """Return ports with interface to subnet."""
-        return self.client.ports.find_all(
-            fixed_ips=u'subnet_id={}'.format(subnet_id))
+        subnet_ports = []
+        for port in self.client.ports.list():
+            if subnet_id in [ip['subnet_id'] for ip in port['fixed_ips']]:
+                subnet_ports.append(port)
+        return subnet_ports
 
     def get_fixed_ips(self, subnet_id):
         """Return subnet allocated fixed ip addresses."""
