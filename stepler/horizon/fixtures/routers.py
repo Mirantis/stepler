@@ -19,53 +19,26 @@ Fixtures to manipulate with routers
 
 import pytest
 
-from stepler.horizon.steps import RoutersSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_router',
-    'router',
-    'routers_steps'
+    'routers_steps_ui'
 ]
 
 
 @pytest.fixture
-def routers_steps(network_setup, login, horizon):
+def routers_steps_ui(network_setup, router_steps, login, horizon):
     """Function fixture to get routers steps.
 
+    router_steps instance is used for routers cleanup.
+
     Args:
-        network_setup (None): Should set up network before steps using.
-        login (None): Should log in horizon before steps using.
-        horizon (Horizon): Instantiated horizon web application.
+        network_setup (None): should set up network before steps using
+        router_steps (RouterSteps): instantiated router steps
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
     Returns:
-        RoutersSteps: Instantiated routers steps.
+        RoutersSteps: instantiated routers steps
     """
-    return RoutersSteps(horizon)
-
-
-@pytest.yield_fixture
-def create_router(routers_steps):
-    """Fixture to router with options.
-
-    Can be called several times during test.
-    """
-    routers = []
-
-    def _create_router(router_name):
-        routers_steps.create_router(router_name)
-        router = utils.AttrDict(name=router_name)
-        routers.append(router)
-        return router
-
-    yield _create_router
-
-    for router in routers:
-        routers_steps.delete_router(router.name)
-
-
-@pytest.fixture
-def router(create_router):
-    """Fixture to create router with default options."""
-    router_name = next(utils.generate_ids('router'))
-    return create_router(router_name)
+    return steps.RoutersSteps(horizon)

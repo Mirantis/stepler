@@ -17,12 +17,12 @@ Horizon steps for authentication
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-from .base import BaseSteps
 
-
-class AccessSteps(BaseSteps):
+class AccessSteps(base.BaseSteps):
     """Access & security steps."""
 
     def _page_access(self):
@@ -36,8 +36,11 @@ class AccessSteps(BaseSteps):
             return page.tab_security_groups
 
     @steps_checker.step
-    def create_security_group(self, group_name, description=None, check=True):
+    def create_security_group(self, group_name=None, description=None,
+                              check=True):
         """Step to create security group."""
+        group_name = group_name or next(utils.generate_ids('security-group'))
+
         tab_security_groups = self._tab_security_groups()
         tab_security_groups.button_create_security_group.click()
 
@@ -53,6 +56,8 @@ class AccessSteps(BaseSteps):
             self.close_notification('success')
             tab_security_groups.table_security_groups.row(
                 name=group_name).wait_for_presence(30)
+
+        return group_name
 
     @steps_checker.step
     def delete_security_group(self, group_name, check=True):

@@ -28,5 +28,13 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('64927ee0-25a4-4b43-8bfe-097ae7d4a3b6',
                                any_one='user')
-    def test_create_router(self, router):
-        """Verify that user can create router."""
+    def test_create_delete_router(self, routers_steps_ui):
+        """**Scenario:** Verify that user can create and delete router.
+
+        **Steps:**
+
+        #. Create router using UI
+        #. Delete router using UI
+        """
+        router_name = routers_steps_ui.create_router()
+        routers_steps_ui.delete_router(router_name)

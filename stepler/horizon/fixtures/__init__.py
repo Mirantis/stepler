@@ -41,9 +41,7 @@ from .volumes import *  # noqa
 
 
 __all__ = sorted([  # sort for documentation
-    'access_steps',
-    'create_security_group',
-    'security_group',
+    'access_steps_ui',
 
     'api_access_steps',
 
@@ -101,18 +99,13 @@ __all__ = sorted([  # sort for documentation
     'namespace',
     'namespaces_steps',
 
-    'create_network',
-    'create_networks',
-    'network',
-    'networks_steps',
+    'networks_steps_ui',
 
     'create_project',
     'project',
     'projects_steps',
 
-    'create_router',
-    'router',
-    'routers_steps',
+    'routers_steps_ui',
 
     'settings_steps',
     'update_settings',

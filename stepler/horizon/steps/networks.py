@@ -21,13 +21,13 @@ import time
 
 from hamcrest import assert_that, equal_to  # noqa
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
-from .base import BaseSteps
 
-
-class NetworksSteps(BaseSteps):
+class NetworksSteps(base.BaseSteps):
     """networks steps."""
 
     def _page_networks(self):
@@ -39,10 +39,17 @@ class NetworksSteps(BaseSteps):
         return self._open(self.app.page_admin_networks)
 
     @steps_checker.step
-    def create_network(self, network_name, shared=False, create_subnet=False,
-                       subnet_name='subnet', network_adress='192.168.0.0/24',
-                       gateway_ip='192.168.0.1', check=True):
+    def create_network(self,
+                       network_name=None,
+                       shared=False,
+                       create_subnet=False,
+                       subnet_name='subnet',
+                       network_adress='192.168.0.0/24',
+                       gateway_ip='192.168.0.1',
+                       check=True):
         """Step to create network."""
+        network_name = network_name or next(utils.generate_ids('network'))
+
         page_networks = self._page_networks()
         page_networks.button_create_network.click()
 
@@ -72,6 +79,8 @@ class NetworksSteps(BaseSteps):
             self.close_notification('success')
             page_networks.table_networks.row(
                 name=network_name).wait_for_presence()
+
+        return network_name
 
     @steps_checker.step
     def delete_network(self, network_name, check=True):
@@ -109,9 +118,11 @@ class NetworksSteps(BaseSteps):
                     name=network_name).wait_for_absence()
 
     @steps_checker.step
-    def add_subnet(self, network_name, subnet_name,
+    def add_subnet(self, network_name, subnet_name=None,
                    network_address='10.109.3.0/24', check=True):
         """Step to add subnet for network."""
+        subnet_name = subnet_name or next(utils.generate_ids('subnet'))
+
         page_networks = self._page_networks()
 
         with page_networks.table_networks.row(
@@ -131,6 +142,8 @@ class NetworksSteps(BaseSteps):
             page_network.open_tab_subnets().table_subnets.row(
                 name=subnet_name,
                 network_address=network_address).wait_for_presence()
+
+        return subnet_name
 
     @steps_checker.step
     def admin_update_network(self, network_name, new_network_name=False,
