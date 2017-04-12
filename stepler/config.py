@@ -228,10 +228,10 @@ GLANCE_USER = 'glance'
 
 # Nova
 CREDENTIALS_PREFIX = 'stepler_credentials_'
-EPHEMERAL_MNT_FS_PATH = '/mnt/'
+EPHEMERAL_MNT_FS_PATH = '/mnt'
 DISK_TIMESTAMP_FILE = 'timestamp.txt'
-DISK_TIMESTAMP_FILE_FULL_PATH = '%s%s' % (EPHEMERAL_MNT_FS_PATH,
-                                          DISK_TIMESTAMP_FILE)
+DISK_TIMESTAMP_FILE_FULL_PATH = (EPHEMERAL_MNT_FS_PATH + '/' +
+                                 DISK_TIMESTAMP_FILE)
 NOVA_API_LOG_FILE = '/var/log/nova/nova-api.log'
 NOVA_CONFIG_PATH = '/etc/nova/nova.conf'
 EPHEMERAL_ROOT_FS_PATH = '/'

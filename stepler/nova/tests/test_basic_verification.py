@@ -455,7 +455,7 @@ def test_image_access_host_device_when_resizing(
 
     with server_steps.get_server_ssh(
             server, floating_ip['floating_ip_address']) as server_ssh:
-        server_steps.check_files_presence_for_fs(
+        server_steps.check_files_presence_for_path(
             server_ssh, eph_fs, must_present=False)
 
 

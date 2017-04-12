@@ -1202,7 +1202,7 @@ class ServerSteps(base.BaseSteps):
             server_ssh.check_call('touch ' + file_path)
 
         if check:
-            self.check_files_presence_for_fs(server_ssh, file_dir)
+            self.check_files_presence_for_path(server_ssh, file_dir)
 
     @steps_checker.step
     def get_block_device_by_mount(self, server_ssh, fs_path, check=True):
@@ -1220,13 +1220,12 @@ class ServerSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         with server_ssh.sudo():
-            cmd_result = server_ssh.check_call('cat /proc/mounts')
+            cmd_result = server_ssh.check_call('grep -E "^/dev" /proc/mounts')
 
         fs_dev = None
-        for row in cmd_result.stdout.split('\n'):
-            cells = row.split()
-            dev, mount_point = cells[:2]
-            if mount_point == fs_path and dev.startswith('/dev'):
+        for row in cmd_result.stdout.splitlines():
+            dev, mount_point = row.split()[:2]
+            if mount_point == fs_path:
                 fs_dev = dev
                 break
 
@@ -1301,19 +1300,20 @@ class ServerSteps(base.BaseSteps):
         assert_that('image: ' + filename, is_in(cmd_result.stdout))
 
     @steps_checker.step
-    def check_files_presence_for_fs(self, server_ssh, fs_path,
-                                    must_present=True):
+    def check_files_presence_for_path(self, server_ssh, fs_path,
+                                      must_present=True):
         """Verify step to check that fs doesn't contain any files.
 
         Args:
             server_ssh (ssh.SshClient): ssh connection to nova server
-            fs_path (str): fs path to check
+            fs_path (str): directory path to check files within or file path
+                to check presence
             must_present (bool): flag whether fs should have any files or not
 
         Raises:
             AssertionError: if check failed
         """
-        cmd_result = server_ssh.execute('ls ' + fs_path)
+        cmd_result = server_ssh.execute('ls {} | grep .'.format(fs_path))
 
         if must_present:
             assert_that(cmd_result.is_ok, cmd_result.stderr)
