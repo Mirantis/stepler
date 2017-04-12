@@ -17,7 +17,7 @@ Security group rules steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, calling, empty, equal_to, has_entries,
+from hamcrest import (assert_that, calling, empty, has_items, has_entries,
                       is_not, raises)  # noqa H301
 from neutronclient.common import exceptions
 
@@ -89,11 +89,14 @@ class NeutronSecurityGroupRuleSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed after timeout
         """
+
         def _check_presence():
-            is_present = bool(self._client.find_all(
-                security_group_id=group_id,
-                id=rule_id))
-            return waiter.expect_that(is_present, equal_to(must_present))
+            rules = self._client.list()
+            matcher = has_items(
+                has_entries(id=rule_id, security_group_id=group_id))
+            if not must_present:
+                matcher = is_not(matcher)
+            return waiter.expect_that(rules, matcher)
 
         waiter.wait(
             _check_presence,
