@@ -21,13 +21,12 @@ import time
 
 from hamcrest import assert_that, equal_to  # noqa H301
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
-from .base import BaseSteps
 
-
-class UsersSteps(BaseSteps):
+class UsersSteps(base.BaseSteps):
     """Users steps."""
 
     def _page_users(self):

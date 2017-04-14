@@ -20,72 +20,46 @@ Fixtures for users
 import pytest
 
 from stepler import config
-from stepler.horizon.steps import UsersSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_user',
-    'create_users',
-    'user',
-    'users_steps'
+    'users_steps_ui',
+    'new_user_login',
 ]
 
 
 @pytest.fixture
-def users_steps(login, horizon):
-    """Fixture to get users steps."""
-    return UsersSteps(horizon)
+def users_steps_ui(login, horizon):
+    """Fixture to get users steps.
 
+    Args:
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
-@pytest.yield_fixture
-def create_user(users_steps):
-    """Callable fixture to create user with options.
-
-    Can be called several times during test.
+    Returns:
+        stepler.horizon.steps.UsersSteps: instantiated users steps
     """
-    users = []
-
-    def _create_user(username, password, project):
-        users_steps.create_user(username, password, project)
-        user = utils.AttrDict(name=username, password=password)
-
-        users.append(user)
-        return user
-
-    yield _create_user
-
-    for user in users:
-        users_steps.delete_user(user.name)
-
-
-@pytest.yield_fixture
-def create_users(users_steps):
-    """Callable fixture to create users with options.
-
-    Can be called several times during test.
-    """
-    users = []
-
-    def _create_users(usernames):
-        _users = []
-
-        for username in usernames:
-            users_steps.create_user(username, username, config.USER_PROJECT)
-            user = utils.AttrDict(name=username, password=username)
-
-            users.append(user)
-            _users.append(user)
-
-        return _users
-
-    yield _create_users
-
-    if users:
-        users_steps.delete_users([user.name for user in users])
+    return steps.UsersSteps(horizon)
 
 
 @pytest.fixture
-def user(create_user):
-    """Fixture to create user with default options before test."""
-    username = next(utils.generate_ids('user'))
-    return create_user(username, username, config.USER_PROJECT)
+def new_user_login(login, new_user_with_project, auth_steps):
+    """Fixture to log in as new user.
+
+    Args:
+        login (None): should log in horizon before steps using
+        new_user_with_project (AttrDict): dict with username, password
+            and project name
+        auth_steps (AuthSteps): instantiated auth steps
+
+    Yields:
+        AttrDict: dict with username, password and project name
+    """
+    auth_steps.logout()
+    auth_steps.login(new_user_with_project.username,
+                     new_user_with_project.password)
+
+    yield new_user_with_project
+
+    auth_steps.logout()
+    auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)
