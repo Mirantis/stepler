@@ -28,10 +28,7 @@ def test_boot_instance_from_volume_bigger_than_flavor(
         security_group,
         floating_ip,
         cirros_image,
-        network,
-        subnet,
-        router,
-        add_router_interfaces,
+        net_subnet_router,
         volume_steps,
         server_steps):
     """**Scenario:** Boot instance from volume bigger than flavor size.
@@ -66,7 +63,6 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     #. Delete network
     #. Delete cirros image
     """
-    add_router_interfaces(router, [subnet])
     volume_size = flavor.disk + 1
 
     volume = volume_steps.create_volumes(size=volume_size,
@@ -77,7 +73,7 @@ def test_boot_instance_from_volume_bigger_than_flavor(
     server = server_steps.create_servers(
         image=None,
         flavor=flavor,
-        networks=[network],
+        networks=[net_subnet_router[0]],
         security_groups=[security_group],
         block_device_mapping=block_device_mapping)[0]
 

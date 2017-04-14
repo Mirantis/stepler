@@ -17,6 +17,8 @@ Routers fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 import pytest
 
 from stepler import config
@@ -140,7 +142,6 @@ def add_router_interfaces(router_steps):
     """Fixture to add interfaces to router.
 
     Can be called several times during a test.
-    After the test remove added interfaces from router.
 
     Args:
         router_steps (object): instantiated router steps
@@ -148,28 +149,21 @@ def add_router_interfaces(router_steps):
     Returns:
         function: function to add interfaces to router
     """
-    _cleanup_subnet_data = []
-    _cleanup_port_data = []
+
+    warnings.warn("This fixture is deprecated and will be removed soon. "
+                  "Use `router_steps.add_subnet_interface` or "
+                  "`router_steps.add_port_interface` instead",
+                  DeprecationWarning)
 
     def _add_router_interfaces(router, subnets=(), ports=()):
 
-        _cleanup_subnet_data.append([router, subnets])
         for subnet in subnets:
             router_steps.add_subnet_interface(router, subnet)
 
-        _cleanup_port_data.append([router, ports])
         for port in ports:
             router_steps.add_port_interface(router, port)
 
-    yield _add_router_interfaces
-
-    for router, subnets in _cleanup_subnet_data:
-        for subnet in subnets:
-            router_steps.remove_subnet_interface(router, subnet)
-
-    for router, ports in _cleanup_port_data:
-        for port in ports:
-            router_steps.remove_port_interface(router, port)
+    return _add_router_interfaces
 
 
 @pytest.fixture

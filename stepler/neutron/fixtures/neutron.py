@@ -72,7 +72,7 @@ def neutron_client(get_neutron_client):
 
 
 @pytest.fixture
-def net_subnet_router(network, subnet, router, add_router_interfaces):
+def net_subnet_router(network, subnet, router, router_steps):
     """Function fixture to create net, subnet, router and link them.
 
     It deletes all created resources after test.
@@ -81,13 +81,12 @@ def net_subnet_router(network, subnet, router, add_router_interfaces):
         network (obj): network object
         subnet (obj): subnet object
         router (obj): router object
-        add_router_interfaces (function): function to add router interfaces to
-            subnets
+        router_steps (obj): instantiated router steps
 
     Returns:
         tuple: network, subnet, router objects
     """
-    add_router_interfaces(router, [subnet])
+    router_steps.add_subnet_interface(router, subnet)
     return network, subnet, router
 
 

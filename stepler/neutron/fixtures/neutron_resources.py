@@ -49,7 +49,6 @@ def neutron_2_networks(
         create_network,
         create_subnet,
         create_router,
-        add_router_interfaces,
         router_steps):
     """Function fixture to prepare environment with 2 networks.
 
@@ -77,8 +76,6 @@ def neutron_2_networks(
         create_network (function): function to create network
         create_subnet (function): function to create subnet
         create_router (function): function to create router
-        add_router_interfaces (function): function to add subnet interface to
-            router
         router_steps (obj): instantiated router steps
 
     Returns:
@@ -96,9 +93,9 @@ def neutron_2_networks(
         router_2 = create_router(next(utils.generate_ids()))
         router_steps.set_gateway(router_2, public_network)
         routers.append(router_2)
-        add_router_interfaces(router_2, [subnet_2])
+        router_steps.add_subnet_interface(router_2, subnet_2)
     else:
-        add_router_interfaces(router, [subnet_2])
+        router_steps.add_subnet_interface(router, subnet_2)
 
     return attrdict.AttrDict(
         networks=[network, network_2],
@@ -504,8 +501,8 @@ def create_max_networks_with_instances(cirros_image,
                                        sorted_hypervisors,
                                        create_network,
                                        create_subnet,
-                                       add_router_interfaces,
                                        current_project,
+                                       router_steps,
                                        neutron_quota_steps,
                                        hypervisor_steps,
                                        server_steps):
@@ -523,9 +520,8 @@ def create_max_networks_with_instances(cirros_image,
         sorted_hypervisors (list): nova hypervisors list
         create_network (function): function to create network
         create_subnet (function): function to create subnet with options
-        add_router_interfaces (function): function to add router interfaces to
-            subnets
         current_project (obj): current project
+        router_steps (obj): instantiated router steps
         neutron_quota_steps (obj): instantiated neutron quota steps
         hypervisor_steps (obj): instantiated nova hypervisor steps
         server_steps (obj): instantiated nova server steps
@@ -555,7 +551,7 @@ def create_max_networks_with_instances(cirros_image,
                 subnet = create_subnet(next(utils.generate_ids()),
                                        network,
                                        cidr="192.168.{0}.0/24".format(i))
-                add_router_interfaces(router, [subnet])
+                router_steps.add_subnet_interface(router, subnet)
                 net_list.append(network)
 
                 if len(servers) >= max_instances:
@@ -679,12 +675,10 @@ def neutron_2_nets_diff_projects(role_steps,
                                  create_subnet,
                                  create_router,
                                  router_steps,
-                                 add_router_interfaces,
                                  public_network):
     """Function fixture to prepare environment for different projects tests.
 
     This fixture:
-
         * creates 2 projects;
         * creates net, subnet, router in each project;
 
@@ -698,8 +692,6 @@ def neutron_2_nets_diff_projects(role_steps,
         create_subnet (function): function to create subnet
         create_router (function): function to create router
         router_steps (obj): instantiated router steps
-        add_router_interfaces (function): function to add subnet interface to
-            router
         public_network (dict): neutron public network
 
     Returns:
@@ -728,7 +720,7 @@ def neutron_2_nets_diff_projects(role_steps,
             cidr=config.LOCAL_CIDR)
         router = create_router(name, project_id=project.id)
         router_steps.set_gateway(router, public_network)
-        add_router_interfaces(router, [subnet])
+        router_steps.add_subnet_interface(router, subnet)
         project_resources.credentials = credentials
         project_resources.net_router = [network, router]
         project_resources.project_id = project.id
@@ -748,7 +740,6 @@ def neutron_2_servers_2_projects_with_shared_net(
         create_network,
         create_subnet,
         create_router,
-        add_router_interfaces,
         port_steps,
         role_steps,
         router_steps,
@@ -779,8 +770,6 @@ def neutron_2_servers_2_projects_with_shared_net(
         create_network (function): function to create network
         create_subnet (function): function to create subnet
         create_router (function): function to create router
-        add_router_interfaces (function): function to add subnet interface to
-            router
         port_steps (obj): instantiated port steps
         role_steps (obj): instantiated role steps
         router_steps (obj): instantiated router steps
@@ -835,7 +824,7 @@ def neutron_2_servers_2_projects_with_shared_net(
                            cidr=config.LOCAL_CIDR)
     router = create_router(base_name, project_id=project_id)
     router_steps.set_gateway(router, public_network)
-    add_router_interfaces(router, [subnet])
+    router_steps.add_subnet_interface(router, subnet)
 
     for i in range(2):
         project_resources = attrdict.AttrDict()
@@ -873,7 +862,7 @@ def neutron_2_servers_different_subnets(
         net_subnet_router,
         server,
         create_subnet,
-        add_router_interfaces,
+        router_steps,
         subnet_steps,
         server_steps):
     """Function fixture to prepare environment with 2 servers.
@@ -891,8 +880,7 @@ def neutron_2_servers_different_subnets(
         net_subnet_router (tuple): network, subnet, router
         server (obj): nova server
         create_subnet (function): function to create subnet
-        add_router_interfaces (function): function to add subnet interface to
-            router
+        router_steps (function): instantiated neutron subnet steps
         subnet_steps (obj): instantiated neutron subnet steps
         server_steps (obj): instantiated nova server steps
 
@@ -905,7 +893,7 @@ def neutron_2_servers_different_subnets(
         subnet_name=next(utils.generate_ids()),
         network=network,
         cidr='192.168.2.0/24')
-    add_router_interfaces(router, [subnet_2])
+    router_steps.add_subnet_interface(router, subnet_2)
 
     server_2_host = getattr(server, config.SERVER_ATTR_HOST)
     ip = next(subnet_steps.get_available_fixed_ips(subnet))

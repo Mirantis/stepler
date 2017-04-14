@@ -318,10 +318,7 @@ def test_migration_with_ephemeral_disk(
         security_group,
         floating_ip,
         cirros_image,
-        network,
-        subnet,
-        router,
-        add_router_interfaces,
+        net_subnet_router,
         create_flavor,
         server_steps,
         block_migration):
@@ -359,14 +356,13 @@ def test_migration_with_ephemeral_disk(
     #. Delete network
     #. Delete cirros image
     """
-    add_router_interfaces(router, [subnet])
     flavor = create_flavor(
         next(generate_ids('flavor')), ram=64, disk=1, vcpus=1, ephemeral=1)
 
     server = server_steps.create_servers(image=cirros_image,
                                          flavor=flavor,
                                          keypair=keypair,
-                                         networks=[network],
+                                         networks=[net_subnet_router[0]],
                                          security_groups=[security_group],
                                          username=config.CIRROS_USERNAME)[0]
 
