@@ -83,7 +83,6 @@ class Table(ui.Table):
             return rows
 
     @property
-    @pom.utils.cache
     def columns(self):
         """Table columns {'name': position}."""
         _columns = {}

@@ -37,8 +37,6 @@ __all__ = sorted([  # sort for documentation
     'get_cinder_quota_steps',
     'cinder_quota_steps',
     'big_snapshot_quota',
-    'big_volume_quota',
-    'big_backup_quota',
     'volume_size_quota',
 
     'get_snapshot_steps',
@@ -61,5 +59,7 @@ __all__ = sorted([  # sort for documentation
     'unexpected_volumes_cleanup',
     'upload_volume_to_image',
     'volume',
+    'bootable_volume',
+    'volumes',
     'volume_steps',
 ])

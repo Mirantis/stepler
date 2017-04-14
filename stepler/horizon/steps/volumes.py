@@ -17,7 +17,9 @@ Volumes steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, starts_with, has_length, any_of  # noqa H301
+from hamcrest import (any_of, assert_that, contains_inanyorder, equal_to,
+                      greater_than, has_length, is_in,
+                      starts_with)   # noqa H301
 
 from stepler import config
 from stepler.third_party import steps_checker
@@ -592,45 +594,68 @@ class VolumesSteps(BaseSteps):
     @steps_checker.step
     def check_volumes_pagination(self, volume_names):
         """Step to check volumes pagination."""
+        assert_that(volume_names, has_length(greater_than(2)))
+
+        ordered_names = []
+        count = len(volume_names)
         tab_volumes = self._tab_volumes()
-        tab_volumes.table_volumes.row(
-            name=volume_names[2]).wait_for_presence(30)
+
+        # volume names can be unordered so we should try to retrieve
+        # any volume from volume_names list
+        def _get_current_volume_name():
+            rows = tab_volumes.table_volumes.rows
+            assert_that(rows, has_length(1))
+
+            volume_name = rows[0].cell('name').value
+            assert_that(volume_name, is_in(volume_names))
+
+            return volume_name
+
+        volume_name = _get_current_volume_name()
+        ordered_names.append(volume_name)
 
         assert_that(tab_volumes.table_volumes.link_next.is_present,
                     equal_to(True))
         assert_that(tab_volumes.table_volumes.link_prev.is_present,
                     equal_to(False))
 
-        tab_volumes.table_volumes.link_next.click()
-        tab_volumes.table_volumes.row(
-            name=volume_names[1]).wait_for_presence(30)
+        # check all elements except for the first and the last
+        for _ in range(1, count - 1):
+            tab_volumes.table_volumes.link_next.click()
+            volume_name = _get_current_volume_name()
+            ordered_names.append(volume_name)
 
-        assert_that(tab_volumes.table_volumes.link_next.is_present,
-                    equal_to(True))
-        assert_that(tab_volumes.table_volumes.link_prev.is_present,
-                    equal_to(True))
+            assert_that(tab_volumes.table_volumes.link_next.is_present,
+                        equal_to(True))
+            assert_that(tab_volumes.table_volumes.link_prev.is_present,
+                        equal_to(True))
 
         tab_volumes.table_volumes.link_next.click()
-        tab_volumes.table_volumes.row(
-            name=volume_names[0]).wait_for_presence(30)
+        volume_name = _get_current_volume_name()
+        ordered_names.append(volume_name)
 
         assert_that(tab_volumes.table_volumes.link_next.is_present,
                     equal_to(False))
         assert_that(tab_volumes.table_volumes.link_prev.is_present,
                     equal_to(True))
 
+        # check that all created volume names have been checked
+        assert_that(ordered_names, contains_inanyorder(*volume_names))
+
+        # check all elements except for the first and the last
+        for i in range(count - 2, 0, -1):
+            tab_volumes.table_volumes.link_prev.click()
+            tab_volumes.table_volumes.row(
+                name=ordered_names[i]).wait_for_presence(30)
+
+            assert_that(tab_volumes.table_volumes.link_next.is_present,
+                        equal_to(True))
+            assert_that(tab_volumes.table_volumes.link_prev.is_present,
+                        equal_to(True))
+
         tab_volumes.table_volumes.link_prev.click()
         tab_volumes.table_volumes.row(
-            name=volume_names[1]).wait_for_presence(30)
-
-        assert_that(tab_volumes.table_volumes.link_next.is_present,
-                    equal_to(True))
-        assert_that(tab_volumes.table_volumes.link_prev.is_present,
-                    equal_to(True))
-
-        tab_volumes.table_volumes.link_prev.click()
-        tab_volumes.table_volumes.row(
-            name=volume_names[2]).wait_for_presence(30)
+            name=ordered_names[0]).wait_for_presence(30)
 
         assert_that(tab_volumes.table_volumes.link_next.is_present,
                     equal_to(True))

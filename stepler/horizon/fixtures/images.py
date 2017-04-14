@@ -91,13 +91,14 @@ def create_image(images_steps):
 
 
 @pytest.fixture
-def images(request, get_glance_steps, uncleanable):
+def images(request, get_glance_steps, uncleanable, credentials):
     """Fixture to create cirros images with default options.
 
     Args:
         request (obj): py.test's SubRequest instance
         get_glance_steps (function): function to get glance steps
         uncleanable (AttrDict): data structure with skipped resources
+        credentials (object): CredentialsManager instance
 
     Returns:
         list: AttrDict instances with created images' names
@@ -105,7 +106,9 @@ def images(request, get_glance_steps, uncleanable):
     params = {'count': 1}
     params.update(getattr(request, 'param', {}))
     names = utils.generate_ids('cirros', count=params['count'])
-    with create_images_context(get_glance_steps, uncleanable,
+    with create_images_context(get_glance_steps,
+                               uncleanable,
+                               credentials,
                                names,
                                config.CIRROS_QCOW2_URL) as images:
         yield [utils.AttrDict(name=image['name']) for image in images]

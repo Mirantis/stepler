@@ -75,6 +75,8 @@ __all__ = sorted([  # sort for documentation
     'unexpected_volumes_cleanup',
     'upload_volume_to_image',
     'volume',
+    'bootable_volume',
+    'volumes',
     'volume_steps',
 
     'heat_client',
