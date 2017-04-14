@@ -95,7 +95,8 @@ class TestAnyOne(object):
 
         #. Delete volumes using API
         """
-        volumes_names = [volume.name for volume in volume_steps.get_volumes()]
+        volumes_names = [volume.name or volume.id
+                         for volume in volume_steps.get_volumes()]
 
         update_settings(items_per_page=1)
         volumes_steps_ui.check_volumes_pagination(volumes_names)

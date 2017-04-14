@@ -21,11 +21,13 @@ import pytest
 
 from stepler.cinder import steps
 from stepler import config
+from stepler.third_party import utils
 
 __all__ = [
     'get_backup_steps',
     'backup_steps',
     'create_backup',
+    'volume_backups',
     'cleanup_backups',
 ]
 
@@ -92,6 +94,23 @@ def create_backup(backup_steps):
 
     for backup in backups:
         backup_steps.delete_backup(backup)
+
+
+@pytest.fixture
+def volume_backups(request, volume, backup_steps):
+    """Function fixture to create volume backups with default options.
+
+    Args:
+        request (obj): py.test's SubRequest instance
+        volume (obj): cinder volume
+        backup_steps (VolumeSteps): instantiated backup steps
+
+    Returns:
+        list: cinder volume backups
+    """
+    count = int(getattr(request, 'param', 3))
+    names = utils.generate_ids('backup', count=count)
+    return [backup_steps.create_backup(volume, name=name) for name in names]
 
 
 @pytest.fixture(scope='session')

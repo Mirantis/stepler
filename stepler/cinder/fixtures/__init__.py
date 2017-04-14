@@ -29,6 +29,7 @@ __all__ = sorted([  # sort for documentation
     'get_backup_steps',
     'backup_steps',
     'create_backup',
+    'volume_backups',
     'cleanup_backups',
 
     'cinder_client',
