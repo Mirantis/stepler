@@ -22,13 +22,13 @@ from hamcrest import (any_of, assert_that, contains_inanyorder, equal_to,
                       starts_with)   # noqa H301
 
 from stepler import config
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
-from .base import BaseSteps
 
-
-class VolumesSteps(BaseSteps):
+class VolumesSteps(base.BaseSteps):
     """Volumes steps."""
 
     def _page_volumes(self):
@@ -42,7 +42,7 @@ class VolumesSteps(BaseSteps):
             return page.tab_volumes
 
     @steps_checker.step
-    def create_volume(self, volume_name,
+    def create_volume(self, volume_name=None,
                       source_type=config.IMAGE_SOURCE,
                       source_name=None,
                       volume_type=None,
@@ -62,13 +62,19 @@ class VolumesSteps(BaseSteps):
             description (str): description of volume
             check (bool): flag whether to check step or not
 
+        Returns:
+            str: name of created volume
+
         Raises:
-            AssertionError: if check was falsed
+            AssertionError: if check failed
         """
         assert_that(source_type,
                     any_of(config.IMAGE_SOURCE, config.VOLUME_SOURCE),
                     'source_type should be one of {}'.format(
                         [config.IMAGE_SOURCE, config.VOLUME_SOURCE]))
+
+        volume_name = volume_name or next(utils.generate_ids('volume'))
+
         tab_volumes = self._tab_volumes()
         tab_volumes.button_create_volume.click()
 
@@ -109,6 +115,8 @@ class VolumesSteps(BaseSteps):
             if description is not None:
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
+
+        return volume_name
 
     @steps_checker.step
     def delete_volume(self, volume_name, check=True):
@@ -437,9 +445,11 @@ class VolumesSteps(BaseSteps):
             return page.tab_backups
 
     @steps_checker.step
-    def create_snapshot(self, volume_name, snapshot_name, description=None,
-                        check=True):
+    def create_snapshot(self, volume_name, snapshot_name=None,
+                        description=None, check=True):
         """Step to create volume snapshot."""
+        snapshot_name = snapshot_name or next(utils.generate_ids('snapshot'))
+
         tab_volumes = self._tab_volumes()
 
         with tab_volumes.table_volumes.row(
@@ -461,6 +471,8 @@ class VolumesSteps(BaseSteps):
             if description is not None:
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
+
+        return snapshot_name
 
     @steps_checker.step
     def delete_snapshot(self, snapshot_name, check=True):
@@ -665,45 +677,67 @@ class VolumesSteps(BaseSteps):
     @steps_checker.step
     def check_snapshots_pagination(self, snapshot_names):
         """Step to check snapshots pagination."""
+        assert_that(snapshot_names, has_length(greater_than(2)))
+
+        ordered_names = []
+        count = len(snapshot_names)
         tab_snapshots = self._tab_snapshots()
-        tab_snapshots.table_snapshots.row(
-            name=snapshot_names[2]).wait_for_presence(30)
+
+        # snapshot names can be unordered so we should try to retrieve
+        # any snapshot from snapshot_names list
+        def _get_current_snapshot_name():
+            rows = tab_snapshots.table_snapshots.rows
+            assert_that(rows, has_length(1))
+
+            snapshot_name = rows[0].cell('name').value
+            assert_that(snapshot_name, is_in(snapshot_names))
+
+            return snapshot_name
+
+        snapshot_name = _get_current_snapshot_name()
+        ordered_names.append(snapshot_name)
 
         assert_that(tab_snapshots.table_snapshots.link_next.is_present,
                     equal_to(True))
         assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
                     equal_to(False))
 
-        tab_snapshots.table_snapshots.link_next.click()
-        tab_snapshots.table_snapshots.row(
-            name=snapshot_names[1]).wait_for_presence(30)
+        # check all elements except for the first and the last
+        for _ in range(1, count - 1):
+            tab_snapshots.table_snapshots.link_next.click()
+            snapshot_name = _get_current_snapshot_name()
+            ordered_names.append(snapshot_name)
 
-        assert_that(tab_snapshots.table_snapshots.link_next.is_present,
-                    equal_to(True))
-        assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
-                    equal_to(True))
+            assert_that(tab_snapshots.table_snapshots.link_next.is_present,
+                        equal_to(True))
+            assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
+                        equal_to(True))
 
         tab_snapshots.table_snapshots.link_next.click()
-        tab_snapshots.table_snapshots.row(
-            name=snapshot_names[0]).wait_for_presence(30)
+        snapshot_name = _get_current_snapshot_name()
+        ordered_names.append(snapshot_name)
 
         assert_that(tab_snapshots.table_snapshots.link_next.is_present,
                     equal_to(False))
         assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
                     equal_to(True))
 
+        # check that all created volume names have been checked
+        assert_that(ordered_names, contains_inanyorder(*snapshot_names))
+
+        for i in range(count - 2, 0, -1):
+            tab_snapshots.table_snapshots.link_prev.click()
+            tab_snapshots.table_snapshots.row(
+                name=ordered_names[i]).wait_for_presence(30)
+
+            assert_that(tab_snapshots.table_snapshots.link_next.is_present,
+                        equal_to(True))
+            assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
+                        equal_to(True))
+
         tab_snapshots.table_snapshots.link_prev.click()
         tab_snapshots.table_snapshots.row(
-            name=snapshot_names[1]).wait_for_presence(30)
-
-        assert_that(tab_snapshots.table_snapshots.link_next.is_present,
-                    equal_to(True))
-        assert_that(tab_snapshots.table_snapshots.link_prev.is_present,
-                    equal_to(True))
-
-        tab_snapshots.table_snapshots.link_prev.click()
-        tab_snapshots.table_snapshots.row(
-            name=snapshot_names[2]).wait_for_presence(30)
+            name=ordered_names[0]).wait_for_presence(30)
 
         assert_that(tab_snapshots.table_snapshots.link_next.is_present,
                     equal_to(True))

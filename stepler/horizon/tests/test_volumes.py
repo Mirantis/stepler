@@ -227,8 +227,6 @@ class TestAnyOne(object):
     def test_create_volume_with_description(self, volumes_steps_ui):
         """**Scenario:** Create volume with description.
 
-        volume_steps instance is used for volume cleanup.
-
         **Steps:**
 
         #. Create volume with description using UI
@@ -239,10 +237,8 @@ class TestAnyOne(object):
 
         #. Delete volume using API
         """
-        volume_name = next(utils.generate_ids('volume'))
         volume_description = next(utils.generate_ids('volume_description'))
-        volumes_steps_ui.create_volume(volume_name,
-                                       description=volume_description)
+        volumes_steps_ui.create_volume(description=volume_description)
 
     @pytest.mark.idempotent_id('4e019917-e519-4fbd-956d-5b5df83a5de1',
                                any_one='admin')
@@ -264,9 +260,7 @@ class TestAnyOne(object):
 
         #. Delete volumes
         """
-        volume_name = next(utils.generate_ids('volume'))
-        volumes_steps_ui.create_volume(volume_name,
-                                       source_type=config.VOLUME_SOURCE,
+        volumes_steps_ui.create_volume(source_type=config.VOLUME_SOURCE,
                                        source_name=volume.name,
                                        volume_size=volume.size + 1)
 
