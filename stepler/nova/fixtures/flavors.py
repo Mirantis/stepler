@@ -77,47 +77,63 @@ def create_flavor(flavor_steps):
         flavor_steps.delete_flavor(flavor)
 
 
-@pytest.fixture
-def flavor(request, create_flavor, flavor_steps):
-    """Function fixture to create single nova flavor with options.
-
-    Can be called several times during a test.
-    After the test it destroys all created nodes.
-
-    Can be parametrized with dict of create_flavor arguments.
-
-
-    Example:
-        .. code:: python
-
-            @pytest.mark.parametrize('flavor', [
-                dict(ram=2048, vcpus=2),
-                dict(ram=512, disk=1, metadata={'hw:mem_page_size':
-                                                'large m1.tiny'}),
-            ], indirect=['flavor'])
-            def test_foo(instance):
-                # Instance will created with different flavors
+def flavor_builder(**kwargs):
+    """Function to generate flavor fixture function.
 
     Args:
-        request (obj): py.test SubRequest
-        create_flavor (function): function to create flavor with options
-        flavor_steps (object): instantiated flavor steps
+        **kwargs: any arguments to be passed to create flavor method
 
     Returns:
-        function: function to create single flavor with options
+        function: flavor fixture
     """
-    flavor_params = config.DEFAULT_FLAVOR_PARAMS.copy()
-    flavor_params.update(getattr(request, 'param', {}))
 
-    flavor_name, = utils.generate_ids('flavor')
-    metadata = flavor_params.pop('metadata', None)
+    @pytest.fixture
+    def _flavor(request, create_flavor, flavor_steps):
+        """Function fixture to create single nova flavor with options.
 
-    flavor = create_flavor(flavor_name, **flavor_params)
+        Can be called several times during a test.
+        After the test it destroys all created nodes.
 
-    if metadata:
-        flavor_steps.set_metadata(flavor, metadata)
+        Can be parametrized with dict of create_flavor arguments.
 
-    return flavor
+
+        Example:
+            .. code:: python
+
+                @pytest.mark.parametrize('flavor', [
+                    dict(ram=2048, vcpus=2),
+                    dict(ram=512, disk=1, metadata={'hw:mem_page_size':
+                                                    'large m1.tiny'}),
+                ], indirect=['flavor'])
+                def test_foo(instance):
+                    # Instance will created with different flavors
+
+        Args:
+            request (obj): py.test SubRequest
+            create_flavor (function): function to create flavor with options
+            flavor_steps (object): instantiated flavor steps
+
+        Returns:
+            function: function to create single flavor with options
+        """
+        flavor_params = config.DEFAULT_FLAVOR_PARAMS.copy()
+        flavor_params.update(**kwargs)
+        flavor_params.update(getattr(request, 'param', {}))
+
+        flavor_name, = utils.generate_ids('flavor')
+        metadata = flavor_params.pop('metadata', None)
+
+        flavor = create_flavor(flavor_name, **flavor_params)
+
+        if metadata:
+            flavor_steps.set_metadata(flavor, metadata)
+
+        return flavor
+
+    return _flavor
+
+flavor = flavor_builder()
+public_flavor = flavor_builder(is_public=True)
 
 
 @pytest.fixture
@@ -179,22 +195,6 @@ def baremetal_flavor(create_flavor):
                          ram=ram,
                          vcpus=vcpus,
                          disk=config.BAREMETAL_DISK)
-
-
-@pytest.fixture
-def public_flavor(create_flavor):
-    """Function fixture to create public flavor before test.
-
-     Args:
-        create_flavor (function): function to create flavor with options
-
-    Returns:
-        object: public flavor
-    """
-
-    flavor_params = dict(ram=512, vcpus=1, disk=2, is_public=True)
-    flavor_name, = utils.generate_ids('flavor')
-    return create_flavor(flavor_name, **flavor_params)
 
 
 @pytest.fixture
