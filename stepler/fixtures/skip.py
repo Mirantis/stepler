@@ -285,3 +285,10 @@ class Predicates(object):
         """Get count of KVM nodes."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(os_faults_steps.get_nodes_by_cmd(config.TCP_KVM_NODE_CMD))
+
+    @property
+    @_store_call
+    def cpu_pinning_computes_count(self):
+        """Get count of computes with CPU pinning."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return len(os_faults_steps.get_cpu_pinning_computes())

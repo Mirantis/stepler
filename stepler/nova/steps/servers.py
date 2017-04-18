@@ -1833,3 +1833,51 @@ class ServerSteps(base.BaseSteps):
             return waiter.expect_that(is_available, equal_to(False))
 
         waiter.wait(_is_servers_action_unavailable, timeout_seconds=timeout)
+
+    @steps_checker.step
+    def check_create_server_negative(self,
+                                     image,
+                                     flavor,
+                                     networks=(),
+                                     keypair=None,
+                                     security_groups=None,
+                                     availability_zone='nova',
+                                     exp_exception=None,
+                                     exp_error_message=None):
+        """Step to check server creation with wrong conditions.
+
+        This step checks that some error occurs during server creation:
+        exception or server status = ERROR.
+
+        Args:
+            image (object): image
+            flavor (object): flavor
+            networks (list): networks objects
+            keypair (object): keypair
+            security_groups (list|tuple): security groups
+            availability_zone (str): name of availability zone
+            exp_exception (Exception, optional): expected exception
+            exp_error_message (str, optional): expected message (status=ERROR)
+        """
+        if exp_exception:
+            # error during creation is expected
+            assert_that(
+                calling(self.create_servers).with_args(
+                    image=image, flavor=flavor, networks=networks,
+                    keypair=keypair, security_groups=security_groups,
+                    availability_zone=availability_zone),
+                raises(exp_exception))
+        else:
+            # status error is expected
+            server = self.create_servers(image=image, flavor=flavor,
+                                         networks=networks, keypair=keypair,
+                                         security_groups=security_groups,
+                                         availability_zone=availability_zone,
+                                         check=False)[0]
+            self.check_server_status(server,
+                                     expected_statuses=[config.STATUS_ERROR],
+                                     transit_statuses=[config.STATUS_BUILD],
+                                     timeout=config.SERVER_ERROR_TIMEOUT)
+            fault_message = getattr(server,
+                                    config.SERVER_ATTR_FAULT)['message']
+            assert_that(exp_error_message, is_in(fault_message))

@@ -26,6 +26,7 @@ from stepler.glance.conftest import *  # noqa
 from stepler.heat.conftest import *  # noqa
 from stepler.keystone.conftest import *  # noqa
 from stepler.neutron.conftest import *  # noqa
+from stepler.nfv.conftest import *  # noqa
 from stepler.nova.conftest import *  # noqa
 from stepler.object_storage.conftest import *  # noqa
 from stepler.os_faults.conftest import *  # noqa
@@ -155,6 +156,12 @@ __all__ = sorted([  # sort for documentation
     'agent_steps',
     'neutron_create_security_group',
     'neutron_security_group',
+
+    'nfv_steps',
+
+    'aggregate_steps',
+    'create_aggregate',
+    'pinned_aggregate',
 
     'create_flavor',
     'flavor',

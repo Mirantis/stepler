@@ -2211,3 +2211,132 @@ class OsFaultsSteps(base.BaseSteps):
         if expected_alarms:
             assert_that(present, is_(expected),
                         "expected alarms didn't appear")
+
+    @steps_checker.step
+    def get_cpu_pinning_computes(self, check=True):
+        """Step to retrieve compute nodes with the CPU pinning.
+
+        Returns:
+            obj: NodeCollection of compute nodes with CPU pinning
+
+        Raises:
+            AssertionError: if no nodes with CPU pinning are found
+        """
+        nodes = self.get_compute_nodes()
+        results = self.execute_cmd(nodes, config.CPU_PINNING_CMD_1,
+                                   check=False)
+        numa_hosts_ips = []
+        for result in results:
+            if result.status == config.STATUS_OK:
+                stdout = result.payload['stdout']
+                # ex: NUMA node(s):          2
+                if 'NUMA node' in stdout and int(stdout.split()[-1]) > 1:
+                    numa_hosts_ips.append(result.host)
+
+        if check:
+            assert_that(numa_hosts_ips, is_not(empty()),
+                        'no computes with NUMA are found')
+
+        fqdns = []
+        for node in nodes:
+            if node.ip in numa_hosts_ips:
+                fqdns.append(node.fqdn)
+        if not fqdns:
+            return NodeCollection(hosts=[])
+        return self.get_nodes(fqdns=fqdns)
+
+    @steps_checker.step
+    def get_cpu_distribition_per_numa_node(self, node):
+        """Step to get CPU distribution on compute.
+
+        Args:
+            node (NodeCollection): compute node
+
+        Returns:
+            dict: cpu values, ex: {'numa0': [0, 1, 2], 'numa1': [3]}
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            AssertionError: if inconsistent results of commands
+        """
+        def convert_vcpu(s):
+            result = []
+            for item in s.split(','):
+                bounds = item.split('-')
+                if len(bounds) == 2:
+                    result.extend(range(int(bounds[0]), int(bounds[1]) + 1))
+                else:
+                    result.append(int(bounds[0]))
+            return result
+
+        result = self.execute_cmd(node, config.CPU_PINNING_CMD_2)[0]
+        cpus = {}
+        for line in result.payload['stdout_lines']:
+            # BOOT_IMAGE=/boot/vmlinuz-4.4.0-47-generic ... isolcpus=0,1
+            # NUMA node(s):          1
+            # NUMA node0 CPU(s):     0-3
+            if 'isolcpus' in line:
+                values = re.findall("isolcpus=(\S+)", line)
+                assert_that(values, is_not(empty()))
+                # ex: '0,1' or '0-3'
+                isol_cpus = convert_vcpu(values[0])
+                # ex: [0, 1, 2, 3]
+            elif 'NUMA node(s)' in line:
+                numa_count = int(line.split()[-1])
+            else:
+                values = re.findall("NUMA node(\d+) .+:\s+(\S+)", line)
+                assert_that(values, is_not(empty()))
+                values = values[0]
+                numa_id = values[0]
+                numa_cpus = convert_vcpu(values[1])
+                vcpus = list(set(numa_cpus) & set(isol_cpus))
+                assert_that(vcpus, is_not(empty()))
+                cpus["numa{}".format(numa_id)] = vcpus
+        assert_that(cpus, has_length(numa_count))
+        return cpus
+
+    @steps_checker.step
+    def get_memory_distribition_per_numa_node(self, node):
+        """Step to get memory distribution on compute node.
+
+        Args:
+            node (NodeCollection): compute node
+
+        Returns:
+            dict: memory values, ex: {'numa0': 32847336, 'numa1': 33011796}
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            AssertionError: if inconsistent results of commands
+        """
+        result = self.execute_cmd(node, config.CPU_PINNING_CMD_3)[0]
+        memories = {}
+        for line in result.payload['stdout_lines']:
+            # /sys/devices/system/node/node0/meminfo:Node 0 MemTotal: 328473 kB
+            # /sys/devices/system/node/node1/meminfo:Node 1 MemTotal: 330116 kB
+            # or
+            # Node 0 MemTotal:        4046280 kB
+            values = re.findall("Node (\d+) .*:\s+(\d+)", line)
+            assert_that(values, is_not(empty()))
+            values = values[0]
+            memories["numa{}".format(values[0])] = int(values[1])
+        assert_that(memories, is_not(empty()))
+        return memories
+
+    @steps_checker.step
+    def get_server_dump(self, server):
+        """Step to get server dump using 'virsh dumpxml'
+
+        Args:
+            server (obj): nova server
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+        """
+        host_name = getattr(server, config.SERVER_ATTR_HOST)
+        fqdn = self.get_fqdn_by_host_name(host_name)
+        node = self.get_nodes(fqdns=[fqdn])
+        instance_name = getattr(server, config.SERVER_ATTR_INSTANCE_NAME)
+        cmd = "virsh dumpxml {}".format(instance_name)
+        stdout = self.execute_cmd(node, cmd)[0].payload['stdout']
+        return stdout
