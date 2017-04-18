@@ -22,7 +22,7 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('5a3a0b95-20c7-403a-9b2b-4d26fc10669a')
-def test_networks_list(network_steps):
+def test_networks_list(network_steps, network):
     """**Scenario:** Request list of networks.
 
     **Steps:**

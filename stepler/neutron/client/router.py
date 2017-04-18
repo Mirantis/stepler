@@ -58,7 +58,8 @@ class RouterManager(base.BaseNeutronManager):
 
     def get_interfaces_ports(self, router_id):
         """Get router interface ports."""
-        router_ports = self.client.ports.find_all(device_id=router_id)
+        router_ports = self.client.ports.find_all(device_id=router_id,
+                                                  current_project_only=False)
         dev_owner_values = ('network:router_interface',
                             'network:ha_router_replicated_interface',
                             'network:router_interface_distributed')
@@ -131,3 +132,7 @@ class RouterManager(base.BaseNeutronManager):
         """Get a routers list of L3 agent."""
         routers = self._rest_client.list_routers_on_l3_agent(l3_agent_id)
         return routers[self.NAME + 's']
+
+    @base.filter_by_project
+    def find_all(self, **kwargs):
+        return super(RouterManager, self).find_all(**kwargs)

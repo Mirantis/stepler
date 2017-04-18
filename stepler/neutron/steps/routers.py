@@ -79,8 +79,11 @@ class RouterSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
+
         def _check_router_presence():
-            is_present = bool(self._client.find_all(id=router['id']))
+            is_present = bool(
+                self._client.find_all(id=router['id'],
+                                      current_project_only=False))
             return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_router_presence, timeout_seconds=timeout)

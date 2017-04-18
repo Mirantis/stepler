@@ -76,8 +76,11 @@ class NetworkSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
+
         def _check_network_presence():
-            is_present = bool(self._client.find_all(id=network['id']))
+            is_present = bool(
+                self._client.find_all(
+                    id=network['id'], current_project_only=False))
             return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_network_presence, timeout_seconds=timeout)

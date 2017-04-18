@@ -70,6 +70,24 @@ def transform_many(f):
     return wrapper
 
 
+def filter_by_project(f):
+    """Decorator to filter list of objects by current project."""
+    @functools.wraps(f)
+    def wrapper(self, current_project_only=True, *args, **kwargs):
+        result = f(self, *args, **kwargs)
+        if current_project_only:
+            current_project_id = self._rest_client.get_auth_info()[
+                'auth_tenant_id']
+            filtered_objs = []
+            for item in result:
+                if current_project_id in (item.get('project_id'),
+                                          item.get('tenant_id')):
+                    filtered_objs.append(item)
+            result = filtered_objs
+        return result
+    return wrapper
+
+
 class BaseNeutronManager(object):
     """Base Neutron components manager."""
 

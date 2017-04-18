@@ -63,3 +63,7 @@ class NetworkManager(base.BaseNeutronManager):
         networks = self._rest_client.list_networks_on_dhcp_agent(
             dhcp_agent_id)
         return networks[self.NAME + 's']
+
+    @base.filter_by_project
+    def find_all(self, **kwargs):
+        return super(NetworkManager, self).find_all(**kwargs)
