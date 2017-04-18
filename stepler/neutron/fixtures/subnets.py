@@ -77,9 +77,9 @@ def create_subnet(subnet_steps):
     """
     subnets = []
 
-    def _create_subnet(subnet_name, network, cidr, project_id=None):
+    def _create_subnet(subnet_name, network, cidr, project_id=None, **kwargs):
         subnet = subnet_steps.create(subnet_name, network=network, cidr=cidr,
-                                     project_id=project_id)
+                                     project_id=project_id, **kwargs)
         subnets.append(subnet)
         return subnet
 
