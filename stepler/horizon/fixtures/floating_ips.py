@@ -19,41 +19,47 @@ Fixtures for floating IPs
 
 import pytest
 
-from stepler.horizon.steps import FloatingIPsSteps
+from stepler.horizon import steps
 from stepler.third_party import utils
 
 __all__ = [
     'allocate_floating_ip',
     'floating_ip',
-    'floating_ips_steps'
+    'floating_ips_steps_ui',
 ]
 
 
 @pytest.fixture
-def floating_ips_steps(network_setup, login, horizon):
+def floating_ips_steps_ui(network_setup, login, horizon):
     """Fixture to get floating IPs steps.
 
     Args:
-        network_setup (None): Should set up network before steps using.
-        login (None): Should log in horizon before steps using.
-        horizon (Horizon): Instantiated horizon web application.
+        network_setup (None): should set up network before steps using
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
     Returns:
-        FloatingIPsSteps: Instantiated floating IP steps.
+        stepler.horizon.steps.FloatingIPsSteps: instantiated floating IP steps
     """
-    return FloatingIPsSteps(horizon)
+    return steps.FloatingIPsSteps(horizon)
 
 
-@pytest.yield_fixture
-def allocate_floating_ip(floating_ips_steps):
+@pytest.fixture
+def allocate_floating_ip(floating_ips_steps_ui):
     """Fixture to create floating IP with options.
 
     Can be called several times during test.
+
+    Args:
+        floating_ips_steps_ui (object): instantiated floating ips steps
+
+    Yields:
+        function: function to allocate floating IP
     """
     floating_ips = []
 
     def _allocate_floating_ip():
-        ip = floating_ips_steps.allocate_floating_ip()
+        ip = floating_ips_steps_ui.allocate_floating_ip()
         floating_ip = utils.AttrDict(ip=ip)
         floating_ips.append(floating_ip)
         return floating_ip
@@ -61,10 +67,17 @@ def allocate_floating_ip(floating_ips_steps):
     yield _allocate_floating_ip
 
     for floating_ip in floating_ips:
-        floating_ips_steps.release_floating_ip(floating_ip.ip)
+        floating_ips_steps_ui.release_floating_ip(floating_ip.ip)
 
 
 @pytest.fixture
 def floating_ip(allocate_floating_ip):
-    """Fixture to create floating IP with default options before test."""
+    """Fixture to create floating IP with default options before test.
+
+    Args:
+        allocate_floating_ip (function): function to allocate floating IP
+
+    Returns:
+        AttrDict: floating IP
+    """
     return allocate_floating_ip()

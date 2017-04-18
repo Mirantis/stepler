@@ -257,7 +257,7 @@ class TestAnyOne(object):
     @pytest.mark.idempotent_id('782940f1-f958-4275-b716-232a56fea743',
                                any_one='user')
     def test_launch_instance_from_image(self, horizon_image, images_steps_ui,
-                                        instances_steps):
+                                        instances_steps_ui):
         """**Scenario:** Verify that user can launch instance from image.
 
         **Setup:**
@@ -279,8 +279,8 @@ class TestAnyOne(object):
             horizon_image.name,
             instance_name,
             network_name=config.INTERNAL_NETWORK_NAME)
-        instances_steps.check_instance_active(instance_name)
-        instances_steps.delete_instance(instance_name)
+        instances_steps_ui.check_instance_active(instance_name)
+        instances_steps_ui.delete_instance(instance_name)
 
     @pytest.mark.idempotent_id('db36570f-c87e-4629-a83b-80eed6cbcab3',
                                any_one='admin')

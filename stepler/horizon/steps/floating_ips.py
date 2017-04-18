@@ -19,12 +19,11 @@ Floating IPs steps
 
 from hamcrest import assert_that, equal_to  # noqa
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 
-from .base import BaseSteps
 
-
-class FloatingIPsSteps(BaseSteps):
+class FloatingIPsSteps(base.BaseSteps):
     """Floating IPs steps."""
 
     def _tab_floating_ips(self):

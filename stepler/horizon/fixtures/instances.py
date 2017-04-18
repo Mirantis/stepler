@@ -20,65 +20,74 @@ Fixtures for instances
 import pytest
 
 from stepler import config
-from stepler.horizon.steps import InstancesSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_instance',
-    'instance',
-    'instances_steps'
+    'instances_steps_ui',
+    'horizon_servers',
+    'horizon_server',
 ]
 
 
-@pytest.yield_fixture
-def create_instance(instances_steps):
-    """Create instances."""
-    instances = []
+@pytest.fixture
+def instances_steps_ui(network_setup, server_steps, login, horizon):
+    """Function fixture to get instances steps.
 
-    def _create_instance(instance_name,
-                         network_name=config.INTERNAL_NETWORK_NAME,
-                         count=1):
-        _instances = []
-        instance_names = instances_steps.create_instance(
-            instance_name, network_name=network_name, count=count)
+    server_steps instance is used for servers cleanup.
 
-        for name in instance_names:
-            instance = utils.AttrDict(name=name)
-            instances.append(instance)
-            _instances.append(instance)
+    Args:
+        network_setup (None): should set up network before steps using
+        server_steps (ServerSteps): instantiated server steps
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
-        return _instances
-
-    yield _create_instance
-
-    if instances:
-        instances_steps.delete_instances([i.name for i in instances])
+    Returns:
+        stepler.horizon.steps.InstancesSteps: instantiated instances steps
+    """
+    return steps.InstancesSteps(horizon)
 
 
 @pytest.fixture
-def instances_steps(network_setup, login, horizon):
-    """Function fixture to get instances steps.
+def horizon_servers(request,
+                    cirros_image,
+                    security_group,
+                    net_subnet_router,
+                    flavor_steps,
+                    server_steps):
+    """Function fixture to create servers with default options before test.
 
     Args:
-        network_setup (None): Should set up network before steps using.
-        login (None): Should log in horizon before steps using.
-        horizon (Horizon): Instantiated horizon web application.
+        request (object): py.test's SubRequest instance
+        cirros_image (object): cirros image from glance
+        security_group (object): nova security group
+        net_subnet_router (tuple): neutron network, subnet, router
+        flavor_steps (FlavorSteps): instantiated flavor steps
+        server_steps (ServerSteps): instantiated server steps
 
     Returns:
-        InstancesSteps: Instantiated instances steps.
+        list: nova servers
     """
-    return InstancesSteps(horizon)
+    count = int(getattr(request, 'param', 3))
+    network, _, _ = net_subnet_router
+    flavor = flavor_steps.get_flavor(name=config.HORIZON_TEST_FLAVOR)
+    return server_steps.create_servers(image=cirros_image,
+                                       flavor=flavor,
+                                       count=count,
+                                       networks=[network],
+                                       security_groups=[security_group],
+                                       username=config.CIRROS_USERNAME,
+                                       password=config.CIRROS_PASSWORD)
 
 
-@pytest.yield_fixture
-def instance(instances_steps):
-    """Create instance."""
-    instance_name = next(utils.generate_ids('instance'))
+@pytest.fixture
+@pytest.mark.parametrize('horizon_servers', [1])
+def horizon_server(horizon_servers):
+    """Function fixture to create server with default options before test.
 
-    instances_steps.create_instance(
-        instance_name, network_name=config.INTERNAL_NETWORK_NAME)
-    instance = utils.AttrDict(name=instance_name)
+    Args:
+        horizon_servers (list): list with one nova server
 
-    yield instance
-
-    instances_steps.delete_instance(instance.name)
+    Returns:
+        object: nova server
+    """
+    return horizon_servers[0]

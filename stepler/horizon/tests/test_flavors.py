@@ -82,7 +82,7 @@ class TestAdminOnly(object):
 
     @pytest.mark.idempotent_id('9833c67c-9aff-416f-90f7-7eeadc29993c')
     def test_modify_flavor_access(self, flavor, auth_steps, flavors_steps_ui,
-                                  instances_steps):
+                                  instances_steps_ui):
         """**Scenario:** Verify that admin can modify flavor access.
 
         **Setup:**
@@ -108,7 +108,7 @@ class TestAdminOnly(object):
         auth_steps.logout()
         auth_steps.login(config.USER_NAME, config.USER_PASSWD)
 
-        instances_steps.check_flavor_absent_in_instance_launch_form(flavor)
+        instances_steps_ui.check_flavor_absent_in_instance_launch_form(flavor)
 
         auth_steps.logout()
         auth_steps.login(config.ADMIN_NAME, config.ADMIN_PASSWD)

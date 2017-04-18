@@ -19,64 +19,146 @@ Instance tests
 
 import pytest
 
-from stepler.third_party import utils
+from stepler import config
 
 
 @pytest.mark.usefixtures('any_one')
 class TestAnyOne(object):
     """Tests for anyone."""
 
+    @pytest.mark.idempotent_id('54a6c9d9-09c8-4f74-a670-b1c0d4bb1d74',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('a3cd86a4-70c4-4a3e-b9b6-d9774d8aeae3',
+                               any_one='user')
+    def test_create_instance(self, instances_steps_ui):
+        """**Scenario:** Verify that user can create and delete instance.
+
+        **Steps:**
+
+        #. Create server using UI
+        #. Delete server using UI
+        """
+        instance_name = instances_steps_ui.create_instance(
+            network_name=config.INTERNAL_NETWORK_NAME)[0]
+        instances_steps_ui.delete_instance(instance_name)
+
     @pytest.mark.idempotent_id('53c038f0-b63c-461c-983b-7db82fd0d626',
-                               any_one='admin', instances_count=2)
+                               any_one='admin', horizon_servers=2)
     @pytest.mark.idempotent_id('ecb6230a-3062-46af-af06-4f9208ae2961',
-                               any_one='admin', instances_count=1)
+                               any_one='admin', horizon_servers=1)
     @pytest.mark.idempotent_id('acf99c3a-c22c-4e33-a58e-58a49d94877f',
-                               any_one='user', instances_count=2)
+                               any_one='user', horizon_servers=2)
     @pytest.mark.idempotent_id('bf0ea67b-fe0a-4be3-bc83-e9ca8ba0b3e2',
-                               any_one='user', instances_count=1)
-    @pytest.mark.parametrize('instances_count', [2, 1])
-    def test_delete_instances(self, instances_count, create_instance):
-        """Verify that user can delete instances as batch."""
-        instance_name = utils.generate_ids('instance').next()
-        create_instance(instance_name, count=instances_count)
+                               any_one='user', horizon_servers=1)
+    @pytest.mark.parametrize('horizon_servers', [2, 1], indirect=True)
+    def test_delete_instances(self, horizon_servers, instances_steps_ui):
+        """**Scenario:** Verify that user can delete instances as bunch.
+
+        **Setup:**
+
+        #. Create servers using API
+
+        **Steps:**
+
+        #. Delete servers as bunch using UI
+        """
+        server_names = [server.name for server in horizon_servers]
+        instances_steps_ui.delete_instances(server_names)
 
     @pytest.mark.idempotent_id('005870b0-73fd-4c56-a6ec-8c4bad46f058',
                                any_one='admin')
     @pytest.mark.idempotent_id('e534aeb2-b0d4-407c-9f89-64a5c0739513',
                                any_one='user')
-    def test_lock_instance(self, instance, instances_steps):
-        """Verify that user can lock instance."""
-        instances_steps.lock_instance(instance.name)
-        instances_steps.unlock_instance(instance.name)
+    def test_lock_instance(self, horizon_server, instances_steps_ui):
+        """**Scenario:** Verify that user can lock instance.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Lock server using UI
+        #. Unlock server using UI
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.lock_instance(horizon_server.name)
+        instances_steps_ui.unlock_instance(horizon_server.name)
 
     @pytest.mark.idempotent_id('6a01661b-c7af-47ad-9aaa-8b185dda8d3c',
                                any_one='admin')
     @pytest.mark.idempotent_id('48649a7b-6496-4ff9-9041-dcb52f1324f3',
                                any_one='user')
-    def test_view_instance(self, instance, instances_steps):
-        """Verify that user can view instance details."""
-        instances_steps.view_instance(instance.name)
+    def test_view_instance(self, horizon_server, instances_steps_ui):
+        """**Scenario:** Verify that user can view instance details.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. View server using UI
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.view_instance(horizon_server.name)
 
     @pytest.mark.idempotent_id('8867776e-ff19-49a7-8d10-ea78cc02cfc6',
                                any_one='admin')
     @pytest.mark.idempotent_id('de45feb0-85bb-4b54-b8dc-0ead39620bfa',
                                any_one='user')
-    def test_instances_pagination(self, instances_steps, create_instance,
-                                  update_settings):
-        """Verify that instances pagination works right and back."""
-        instance_name = next(utils.generate_ids('instance'))
-        instances = create_instance(instance_name, count=3)
+    @pytest.mark.parametrize('horizon_servers', [3], ids=[''], indirect=True)
+    def test_instances_pagination(self,
+                                  server_steps,
+                                  horizon_servers,
+                                  update_settings,
+                                  instances_steps_ui):
+        """**Scenario:** Verify that instances pagination works.
+
+        **Setup:**
+
+        #. Create servers using API
+
+        **Steps:**
+
+        #. Update ``items_per_page`` parameter to 1 using UI
+        #. Check instances pagination using UI
+
+        **Teardown:**
+
+        #. Delete servers using API
+        """
+        instance_names = [instance.name
+                          for instance in server_steps.get_servers()]
         update_settings(items_per_page=1)
-        instances_steps.check_instances_pagination(instances)
+        instances_steps_ui.check_instances_pagination(instance_names)
 
     @pytest.mark.idempotent_id('060136f-d477-4177-a387-8e8d01ec4ecd',
                                any_one='admin')
     @pytest.mark.idempotent_id('edc5f03d-ea66-4dae-8322-7cd679c2d829',
                                any_one='user')
-    def test_filter_instances(self, instances_steps, create_instance):
-        """Verify that user can filter instances."""
-        instance_name = next(utils.generate_ids('instance'))
-        instances = create_instance(instance_name, count=2)
+    @pytest.mark.parametrize('horizon_servers', [2], ids=[''], indirect=True)
+    def test_filter_instances(self, horizon_servers, instances_steps_ui):
+        """**Scenario:** Verify that user can filter instances.
 
-        instances_steps.filter_instances(query=instances[0].name)
-        instances_steps.reset_instances_filter()
+        **Setup:**
+
+        #. Create servers using API
+
+        **Steps:**
+
+        #. Filter servers using UI
+        #. Reset filter using UI
+
+        **Teardown:**
+
+        #. Delete servers using API
+        """
+        instances_steps_ui.filter_instances(query=horizon_servers[0].name)
+        instances_steps_ui.reset_instances_filter()
