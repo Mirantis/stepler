@@ -17,11 +17,15 @@ Keypair tests
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from os import path
+import os
 
 import pytest
 
-with open(path.join(path.dirname(__file__), 'test_data', 'key.pub')) as f:
+from stepler.third_party import utils
+
+
+with open(os.path.join(os.path.dirname(__file__), 'test_data',
+                       'key.pub')) as f:
     PUBLIC_KEY = f.read()
 
 
@@ -33,13 +37,31 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('4e1445fd-c820-4d6b-a9a8-f95a764d7ec4',
                                any_one='user')
-    def test_create_keypair(self, keypair):
-        """Verify that user can create keypair."""
+    def test_create_keypair(self, keypairs_steps_ui):
+        """**Scenario:** Verify that user can create keypair.
+
+        **Steps:**
+
+        #. Create keypair using UI
+        #. Delete keypair using UI
+        """
+        keypair_name = keypairs_steps_ui.create_keypair()
+        keypairs_steps_ui.delete_keypair(keypair_name)
 
     @pytest.mark.idempotent_id('b5701a3c-1ee2-4a0e-9d19-c03f160424ca',
                                any_one='admin')
     @pytest.mark.idempotent_id('5475edda-e404-4887-afe0-ef3d249de09c',
                                any_one='user')
-    def test_import_keypair(self, import_keypair):
-        """Verify that user cat import keypair."""
-        import_keypair(PUBLIC_KEY)
+    def test_import_keypair(self, keypairs_steps_ui):
+        """**Scenario:** Verify that user can import keypair.
+
+        **Steps:**
+
+        #. Import keypair using UI
+
+        **Teardown:**
+
+        #. Delete keypair using API
+        """
+        keypair_name = next(utils.generate_ids('keypair'))
+        keypairs_steps_ui.import_keypair(keypair_name, PUBLIC_KEY)

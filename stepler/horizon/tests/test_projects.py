@@ -25,5 +25,13 @@ class TestAdminOnly(object):
     """Tests for admin only."""
 
     @pytest.mark.idempotent_id('fc80ee7d-ce5a-45eb-b476-427990b3b61d')
-    def test_create_project(self, project):
-        """Verify that admin can create project."""
+    def test_create_project(self, projects_steps_ui):
+        """**Scenario:** Verify that admin can create project.
+
+        **Steps:**
+
+        #. Create project using UI
+        #. Delete project using UI
+        """
+        project_name = projects_steps_ui.create_project()
+        projects_steps_ui.delete_project(project_name)

@@ -19,44 +19,22 @@ Fixtures to manipulate with projects
 
 import pytest
 
-from stepler.horizon.steps import ProjectsSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_project',
-    'project',
-    'projects_steps'
+    'projects_steps_ui'
 ]
 
 
 @pytest.fixture
-def projects_steps(horizon, login):
-    """Fixture to get projects steps."""
-    return ProjectsSteps(horizon)
+def projects_steps_ui(login, horizon):
+    """Fixture to get projects steps.
 
+    Args:
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
-@pytest.yield_fixture
-def create_project(projects_steps):
-    """Fixture to project with options.
-
-    Can be called several times during test.
+    Returns:
+        stepler.horizon.steps.ProjectsSteps: instantiated UI projects steps
     """
-    projects = []
-
-    def _create_project(project_name):
-        projects_steps.create_project(project_name)
-        project = utils.AttrDict(name=project_name)
-        projects.append(project)
-        return project
-
-    yield _create_project
-
-    for project in projects:
-        projects_steps.delete_project(project.name)
-
-
-@pytest.fixture
-def project(create_project):
-    """Fixture to create project with default options."""
-    project_name = next(utils.generate_ids('project'))
-    return create_project(project_name)
+    return steps.ProjectsSteps(horizon)

@@ -21,13 +21,13 @@ import time
 
 from hamcrest import equal_to
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
-from .base import BaseSteps
 
-
-class ProjectsSteps(BaseSteps):
+class ProjectsSteps(base.BaseSteps):
     """Projects steps."""
 
     def _page_projects(self):
@@ -35,8 +35,9 @@ class ProjectsSteps(BaseSteps):
         return self._open(self.app.page_projects)
 
     @steps_checker.step
-    def create_project(self, project_name, check=True):
+    def create_project(self, project_name=None, check=True):
         """Step to create project."""
+        project_name = project_name or next(utils.generate_ids('project'))
         page_projects = self._page_projects()
         page_projects.button_create_project.click()
 
@@ -48,6 +49,8 @@ class ProjectsSteps(BaseSteps):
             self.close_notification('success')
             page_projects.table_projects.row(
                 name=project_name).wait_for_presence()
+
+        return project_name
 
     @steps_checker.step
     def delete_project(self, project_name, check=True):

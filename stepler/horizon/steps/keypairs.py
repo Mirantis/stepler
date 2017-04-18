@@ -17,12 +17,12 @@ Keypairs steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-from .base import BaseSteps
 
-
-class KeypairsSteps(BaseSteps):
+class KeypairsSteps(base.BaseSteps):
     """Keypairs steps."""
 
     def _tab_keypairs(self):
@@ -32,8 +32,10 @@ class KeypairsSteps(BaseSteps):
             return page.tab_keypairs
 
     @steps_checker.step
-    def create_keypair(self, keypair_name, check=True):
+    def create_keypair(self, keypair_name=None, check=True):
         """Step to create keypair."""
+        keypair_name = keypair_name or next(utils.generate_ids('keypair'))
+
         tab_keypairs = self._tab_keypairs()
         tab_keypairs.button_create_keypair.click()
 
@@ -44,6 +46,8 @@ class KeypairsSteps(BaseSteps):
         if check:
             self._tab_keypairs().table_keypairs.row(
                 name=keypair_name).wait_for_presence()
+
+        return keypair_name
 
     @steps_checker.step
     def delete_keypair(self, keypair_name, check=True):

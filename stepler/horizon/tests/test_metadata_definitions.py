@@ -25,5 +25,13 @@ class TestAdminOnly(object):
     """Tests for admin only."""
 
     @pytest.mark.idempotent_id('8b4d92cc-5b31-4fd7-80dc-935925f664f4')
-    def test_create_namespace(self, namespace):
-        """Verify that user can create namespace."""
+    def test_create_namespace(self, namespaces_steps_ui):
+        """**Scenario:** Verify that user can create namespace.
+
+        **Steps:**
+
+        #. Create namespace using UI
+        #. Delete namespace using UI
+        """
+        namespace_name = namespaces_steps_ui.create_namespace()
+        namespaces_steps_ui.delete_namespace(namespace_name)

@@ -17,9 +17,10 @@ Metadata definitions steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-from .base import BaseSteps
 
 NAMESPACE_TEMPLATE = '''{
     "namespace": "%(name)s",
@@ -44,7 +45,7 @@ NAMESPACE_TEMPLATE = '''{
 }'''
 
 
-class NamespacesSteps(BaseSteps):
+class NamespacesSteps(base.BaseSteps):
     """Namespaces steps."""
 
     def _page_metadata_definitions(self):
@@ -52,9 +53,13 @@ class NamespacesSteps(BaseSteps):
         return self._open(self.app.page_metadata_definitions)
 
     @steps_checker.step
-    def create_namespace(self, namespace_name, namespace_source='Direct Input',
+    def create_namespace(self, namespace_name=None,
+                         namespace_source='Direct Input',
                          check=True):
         """Step to create namespace."""
+        namespace_name = (namespace_name or
+                          next(utils.generate_ids('namespace')))
+
         page_metadata_definitions = self._page_metadata_definitions()
         page_metadata_definitions.button_import_namespace.click()
 
@@ -68,6 +73,8 @@ class NamespacesSteps(BaseSteps):
             self.close_notification('success')
             page_metadata_definitions.table_namespaces.row(
                 name=namespace_name).wait_for_presence()
+
+        return namespace_name
 
     @steps_checker.step
     def delete_namespace(self, namespace_name, check=True):
