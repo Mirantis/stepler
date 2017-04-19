@@ -147,7 +147,7 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('a4ab8682-eed6-4d00-8975-4289e2aac4d3',
                                any_one='user')
-    def test_upload_volume_to_image(self, volume, images_steps,
+    def test_upload_volume_to_image(self, volume, images_steps_ui,
                                     volumes_steps_ui):
         """**Scenario:** Verify that user can upload volume to image.
 
@@ -167,8 +167,8 @@ class TestAnyOne(object):
         """
         image_name = next(utils.generate_ids(length=20))
         volumes_steps_ui.upload_volume_to_image(volume.name, image_name)
-        images_steps.check_image_present(image_name, timeout=30)
-        images_steps.delete_image(image_name)
+        images_steps_ui.check_image_present(image_name, timeout=30)
+        images_steps_ui.delete_image(image_name)
 
     @pytest.mark.idempotent_id('e343b260-b840-4345-ab19-8dabee3478c7',
                                any_one='admin')

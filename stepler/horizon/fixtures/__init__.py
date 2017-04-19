@@ -81,11 +81,9 @@ __all__ = sorted([  # sort for documentation
     'host_aggregate',
     'host_aggregates_steps',
 
-    'create_image',
-    'create_images',
-    'images',
-    'image',
-    'images_steps',
+    'horizon_images',
+    'horizon_image',
+    'images_steps_ui',
 
     'create_instance',
     'instance',
