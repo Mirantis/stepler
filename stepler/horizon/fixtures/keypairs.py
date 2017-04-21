@@ -19,50 +19,25 @@ Fixtures for keypairs
 
 import pytest
 
-from stepler.horizon.steps import KeypairsSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'import_keypair',
-    'keypair',
-    'keypairs_steps'
+    'keypairs_steps_ui'
 ]
 
 
 @pytest.fixture
-def keypairs_steps(login, horizon):
-    """Get keypairs steps."""
-    return KeypairsSteps(horizon)
+def keypairs_steps_ui(keypair_steps, login, horizon):
+    """Fixture to get keypairs steps.
 
+    keypair_steps instance is used for keypairs cleanup.
 
-@pytest.yield_fixture
-def keypair(keypairs_steps):
-    """Create keypair."""
-    name = next(utils.generate_ids('keypair'))
+    Args:
+        keypair_steps (object): instantiated keypair steps
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
-    keypairs_steps.create_keypair(name)
-    _keypair = utils.AttrDict(name=name)
-
-    yield _keypair
-
-    keypairs_steps.delete_keypair(_keypair.name)
-
-
-@pytest.yield_fixture
-def import_keypair(keypairs_steps):
-    """Import keypair."""
-    keypairs = []
-
-    def _import_keypair(public_key):
-        name = next(utils.generate_ids('keypair'))
-
-        keypairs_steps.import_keypair(name, public_key)
-        keypair = utils.AttrDict(name=name)
-
-        keypairs.append(keypair)
-        return keypair
-
-    yield _import_keypair
-
-    if keypairs:
-        keypairs_steps.delete_keypairs([k.name for k in keypairs])
+    Returns:
+        stepler.horizon.steps.KeypairsSteps: instantiated UI keypairs steps
+    """
+    return steps.KeypairsSteps(horizon)

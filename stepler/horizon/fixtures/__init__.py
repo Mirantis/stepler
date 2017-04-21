@@ -93,22 +93,15 @@ __all__ = sorted([  # sort for documentation
     'instance',
     'instances_steps',
 
-    'import_keypair',
-    'keypair',
-    'keypairs_steps',
-
-    'create_namespace',
-    'namespace',
-    'namespaces_steps',
+    'keypairs_steps_ui',
+    'namespaces_steps_ui',
 
     'create_network',
     'create_networks',
     'network',
     'networks_steps',
 
-    'create_project',
-    'project',
-    'projects_steps',
+    'projects_steps_ui',
 
     'create_router',
     'router',

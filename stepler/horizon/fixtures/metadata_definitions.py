@@ -19,44 +19,22 @@ Fixtures for metadata definitions
 
 import pytest
 
-from stepler.horizon.steps import NamespacesSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_namespace',
-    'namespace',
-    'namespaces_steps',
+    'namespaces_steps_ui',
 ]
 
 
 @pytest.fixture
-def namespaces_steps(horizon, login):
-    """Fixture to get namespaces steps."""
-    return NamespacesSteps(horizon)
+def namespaces_steps_ui(login, horizon):
+    """Fixture to get namespaces steps.
 
+    Args:
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
-@pytest.yield_fixture
-def create_namespace(namespaces_steps):
-    """Fixture to namespace with options.
-
-    Can be called several times during test.
+    Returns:
+        stepler.horizon.steps.NamespacesSteps: instantiated UI namespaces steps
     """
-    namespaces = []
-
-    def _create_namespace(namespace_name):
-        namespaces_steps.create_namespace(namespace_name)
-        namespace = utils.AttrDict(name=namespace_name)
-        namespaces.append(namespace)
-        return namespace
-
-    yield _create_namespace
-
-    for namespace in namespaces:
-        namespaces_steps.delete_namespace(namespace.name)
-
-
-@pytest.fixture
-def namespace(create_namespace):
-    """Fixture to create namespace with default options."""
-    namespace_name = next(utils.generate_ids('namespace'))
-    return create_namespace(namespace_name)
+    return steps.NamespacesSteps(horizon)
