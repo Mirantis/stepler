@@ -107,13 +107,11 @@ __all__ = sorted([  # sort for documentation
     'router',
     'routers_steps',
 
-    'settings_steps',
+    'settings_steps_ui',
     'update_settings',
 
-    'create_user',
-    'create_users',
-    'user',
-    'users_steps',
+    'users_steps_ui',
+    'new_user_login',
 
     'volume_types_steps_ui',
     'volumes_steps_ui',

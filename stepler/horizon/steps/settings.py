@@ -20,12 +20,11 @@ Settings steps
 from hamcrest import assert_that, equal_to  # noqa
 from six.moves.urllib.parse import urlparse
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 
-from .base import BaseSteps
 
-
-class SettingsSteps(BaseSteps):
+class SettingsSteps(base.BaseSteps):
     """Settings steps."""
 
     def _page_settings(self):

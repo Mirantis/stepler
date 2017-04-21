@@ -17,6 +17,7 @@ User fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import attrdict
 import pytest
 
 from stepler import config
@@ -29,6 +30,7 @@ __all__ = [
     'get_user_steps',
     'user_steps',
     'user',
+    'users',
     'current_user',
     'new_user_with_project',
 ]
@@ -76,7 +78,7 @@ def admin(user_steps):
     return user_steps.get_user(name='admin')
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def create_user(user_steps):
     """Session callable fixture to create user with options.
 
@@ -123,6 +125,29 @@ def user(create_user):
 
 
 @pytest.fixture
+def users(request, user_steps):
+    """Function fixture to create users with default options before test.
+
+    Args:
+        request (obj): py.test's SubRequest instance
+        user_steps (UserSteps): instantiated user steps
+
+    Returns:
+        list: users
+    """
+    count = int(getattr(request, 'param', 3))
+
+    users = []
+    for _ in range(count):
+        user_name = next(utils.generate_ids('user'))
+        password = next(utils.generate_ids('password'))
+        user = user_steps.create_user(user_name, password)
+        users.append(user)
+
+    return users
+
+
+@pytest.fixture
 def new_user_with_project(request, create_user_with_project):
     """Fixture to create new project with new '_member_' user.
 
@@ -144,9 +169,9 @@ def new_user_with_project(request, create_user_with_project):
 
     with create_user_with_project(creds_alias,
                                   role_type=role_type) as resource:
-        yield {'username': resource.user.name,
-               'password': resource.password,
-               'project_name': resource.project.name}
+        yield attrdict.AttrDict(username=resource.user.name,
+                                password=resource.password,
+                                project_name=resource.project.name)
 
 
 @pytest.fixture

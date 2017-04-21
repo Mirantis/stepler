@@ -70,9 +70,10 @@ def create_user_with_project(credentials,
         else:
             role = role_steps.create_role()
 
-        user = get_user_steps().create_user(user_name=username,
-                                            password=password)
         project = get_project_steps().create_project(project_name)
+        user = get_user_steps().create_user(user_name=username,
+                                            password=password,
+                                            default_project=project)
         role_steps.grant_role(role, user, project=project)
 
         resources = attrdict.AttrDict({'alias': creds_alias,
