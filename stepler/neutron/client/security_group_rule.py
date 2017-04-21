@@ -29,3 +29,7 @@ class SecurityGroupRuleManager(base.BaseNeutronManager):
 
     NAME = 'security_group_rule'
     _resource_class = SecurityGroupRule
+
+    @base.filter_by_project
+    def find_all(self, **kwargs):
+        return super(SecurityGroupRuleManager, self).find_all(**kwargs)

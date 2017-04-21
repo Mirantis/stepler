@@ -84,3 +84,7 @@ class SubnetManager(base.BaseNeutronManager):
         for port in self.get_ports(subnet_id):
             self.client.ports.delete(port['id'])
         return super(SubnetManager, self).delete(subnet_id)
+
+    @base.filter_by_project
+    def find_all(self, **kwargs):
+        return super(SubnetManager, self).find_all(**kwargs)

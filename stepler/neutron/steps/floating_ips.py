@@ -85,8 +85,11 @@ class FloatingIPSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
+
         def _check_floating_ip_presence():
-            is_present = bool(self._client.find_all(id=floating_ip['id']))
+            is_present = bool(
+                self._client.find_all(
+                    id=floating_ip['id'], current_project_only=False))
             return waiter.expect_that(is_present, equal_to(must_present))
 
         waiter.wait(_check_floating_ip_presence, timeout_seconds=timeout)

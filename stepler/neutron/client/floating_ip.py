@@ -51,3 +51,7 @@ class FloatingIPManager(base.BaseNeutronManager):
         if project_id:
             kwargs['tenant_id'] = project_id
         return super(FloatingIPManager, self).create(**kwargs)
+
+    @base.filter_by_project
+    def find_all(self, **kwargs):
+        return super(FloatingIPManager, self).find_all(**kwargs)

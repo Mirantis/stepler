@@ -43,3 +43,7 @@ class PortManager(base.BaseNeutronManager):
         # If port wasn't deleted - delete it
         if self.find_all(id=port_id):
             super(PortManager, self).delete(port_id)
+
+    @base.filter_by_project
+    def find_all(self, **kwargs):
+        return super(PortManager, self).find_all(**kwargs)
