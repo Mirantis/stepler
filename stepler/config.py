@@ -29,7 +29,9 @@ import stepler.hacking  # noqa F401
 
 from stepler.third_party.utils import generate_ids
 
-STEPLER_PREFIX = 'stepler-' + str(uuid.uuid4())[:4]  # resources unique prefix
+BASE_PREFIX = os.environ.get('BASE_PREFIX', 'stepler')
+STEPLER_PREFIX = '{}-{}'.format(
+    BASE_PREFIX, str(uuid.uuid4())[:4])  # resources unique prefix
 # TODO(schipiga): inject STEPLER_PREFIX to prevent cross imports problem.
 generate_ids = functools.partial(generate_ids, _stepler_prefix=STEPLER_PREFIX)
 

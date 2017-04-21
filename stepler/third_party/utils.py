@@ -21,7 +21,7 @@ import email.utils
 import hashlib
 import inspect
 import logging
-from multiprocessing import dummy as mp
+import multiprocessing as mp
 import os
 import random
 import tempfile
@@ -48,7 +48,6 @@ __all__ = [
     'get_file_path',
     'get_size',
     'get_unwrapped_func',
-    'is_iterable',
     'slugify',
     'background',
     'join_process',
@@ -296,26 +295,6 @@ def get_unwrapped_func(func):
                 else:
                     return get_unwrapped_func(obj)
     return func
-
-
-def is_iterable(obj):
-    """Define whether object is iterable or no (skip strings).
-
-    Args:
-        obj (object): obj to define whether it's iterable or not
-
-    Returns:
-        bool: True or False
-    """
-    if isinstance(obj, basestring):
-        return False
-
-    try:
-        iter(obj)
-        return True
-
-    except TypeError:
-        return False
 
 
 def slugify(string):
