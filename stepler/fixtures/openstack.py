@@ -175,4 +175,6 @@ def uncleanable():
     data.snapshot_ids = set()
     data.transfer_ids = set()
     data.volume_ids = set()
+    data.network_ids = set()
+    data.router_ids = set()
     return data

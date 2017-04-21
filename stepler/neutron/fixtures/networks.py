@@ -51,20 +51,44 @@ def get_network_steps(get_neutron_client):
 
 
 @pytest.fixture
-def network_steps(get_network_steps):
+def network_steps(get_network_steps, uncleanable):
     """Function fixture to get network steps.
 
     Args:
         get_network_steps (function): function to get instantiated network
             steps
+        uncleanable (AttrDict): data structure with skipped resources
 
-    Returns:
+    Yields:
         stepler.neutron.steps.NetworkSteps: instantiated network steps
     """
-    return get_network_steps()
+    _network_steps = get_network_steps()
+
+    networks = _network_steps.get_networks(check=False)
+    network_ids_before = {network['id'] for network in networks}
+
+    yield _network_steps
+
+    uncleanable_ids = network_ids_before | uncleanable.network_ids
+    _cleanup_networks(_network_steps, uncleanable_ids=uncleanable_ids)
 
 
-@pytest.yield_fixture
+def _cleanup_networks(_network_steps, uncleanable_ids=None):
+    """Function to cleanup networks.
+
+    Args:
+        _network_steps (object): instantiated network steps
+        uncleanable_ids (AttrDict): resources ids to skip cleanup
+    """
+    uncleanable_ids = uncleanable_ids or []
+
+    for network in _network_steps.get_networks(check=False):
+        if (network['id'] not in uncleanable_ids and
+                network['status'] != config.STATUS_DELETING):
+            _network_steps.delete(network)
+
+
+@pytest.fixture
 def create_network(network_steps):
     """Callable fixture to create network with default options.
 
@@ -90,17 +114,17 @@ def create_network(network_steps):
 
 
 @pytest.fixture
-def network(create_network):
+def network(network_steps):
     """Function fixture to create network with default options before test.
 
     Args:
-        create_network (function): function to create network
+        network_steps (object): instantiated network steps
 
     Returns:
         object: network
     """
     network_name = next(generate_ids('network'))
-    return create_network(network_name)
+    return network_steps.create(network_name)
 
 
 @pytest.fixture

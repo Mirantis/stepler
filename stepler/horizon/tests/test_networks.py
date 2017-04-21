@@ -19,8 +19,6 @@ Network tests
 
 import pytest
 
-from stepler.third_party import utils
-
 
 @pytest.mark.usefixtures('any_one')
 class TestAnyOne(object):
@@ -30,10 +28,23 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('6467bf60-2ee3-4abd-9f00-7471f7985a32',
                                any_one='user')
-    def test_subnet_add(self, network, networks_steps):
-        """Verify that user can add subnet."""
-        subnet_name = next(utils.generate_ids('subnet'))
-        networks_steps.add_subnet(network.name, subnet_name)
+    def test_subnet_add(self, network, networks_steps_ui):
+        """**Scenario:** Verify that user can add subnet.
+
+        **Setup:**
+
+        #. Create network using API
+
+        **Steps:**
+
+        #. Add subnet to network using UI
+
+        **Teardown:**
+
+        #. Delete subnet using API
+        #. Delete network using API
+        """
+        networks_steps_ui.add_subnet(network['name'])
 
 
 @pytest.mark.usefixtures('admin_only')
@@ -41,15 +52,22 @@ class TestAdminOnly(object):
     """Tests for admin only."""
 
     @pytest.mark.idempotent_id('ce3c02b9-ecb3-48c9-9ef4-b48172c6c111')
-    def test_create_shared_network(self, networks_steps):
-        """Verify that admin can create shared network."""
-        network_name = next(utils.generate_ids('network'))
-        networks_steps.create_network(network_name, shared=True)
+    def test_create_shared_network(self, networks_steps_ui):
+        """**Scenario:** Verify that admin can create shared network.
 
-        networks_steps.delete_networks([network_name], check=False)
-        networks_steps.close_notification('error')
-        networks_steps.check_network_present(network_name)
-        networks_steps.admin_delete_network(network_name)
+        **Steps:**
+
+        #. Create shared network using UI
+        #. Try to delete network from network tab using UI
+        #. Close error notification
+        #. Check that network is still present
+        #. Delete network from admin network tab using UI
+        """
+        network_name = networks_steps_ui.create_network(shared=True)
+        networks_steps_ui.delete_networks([network_name], check=False)
+        networks_steps_ui.close_notification('error')
+        networks_steps_ui.check_network_present(network_name)
+        networks_steps_ui.admin_delete_network(network_name)
 
 
 @pytest.mark.usefixtures('user_only')
@@ -57,9 +75,18 @@ class TestUserOnly(object):
     """Tests for demo only."""
 
     @pytest.mark.idempotent_id('81869139-da99-4595-9bee-55862112ae1b')
-    def test_not_create_shared_network(self, create_network, networks_steps):
-        """Verify that demo can not create shared network."""
-        network_name = next(utils.generate_ids('network'))
-        create_network(network_name, shared=True)
-        networks_steps.check_network_share_status(network_name,
-                                                  is_shared=False)
+    def test_not_create_shared_network(self, networks_steps_ui):
+        """**Scenario:** Verify that demo can not create shared network.
+
+        **Steps:**
+
+        #. Try to create shared network as user using UI
+        #. Check that network status is not shared
+
+        **Teardown:**
+
+        #. Delete network using API
+        """
+        network_name = networks_steps_ui.create_network(shared=True)
+        networks_steps_ui.check_network_share_status(network_name,
+                                                     is_shared=False)

@@ -19,44 +19,19 @@ Fixtures to manipulate with access
 
 import pytest
 
-from stepler.horizon.steps import AccessSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'access_steps',
-    'create_security_group',
-    'security_group'
+    'access_steps_ui',
 ]
 
 
 @pytest.fixture
-def access_steps(horizon, login):
-    """Fixture to get access steps."""
-    return AccessSteps(horizon)
+def access_steps_ui(horizon, login):
+    """Fixture to get access steps.
 
-
-@pytest.yield_fixture
-def create_security_group(access_steps):
-    """Fixture to create security group with options.
-
-    Can be called several times during test.
+    Args:
+        horizon (Horizon): instantiated horizon web application
+        login (None): should log in horizon before steps using
     """
-    security_groups = []
-
-    def _create_security_group(group_name):
-        access_steps.create_security_group(group_name)
-        security_group = utils.AttrDict(name=group_name)
-        security_groups.append(security_group)
-        return security_group
-
-    yield _create_security_group
-
-    for security_group in security_groups:
-        access_steps.delete_security_group(security_group.name)
-
-
-@pytest.fixture
-def security_group(create_security_group):
-    """Fixture to create security group with default options."""
-    group_name = next(utils.generate_ids('security-group'))
-    return create_security_group(group_name)
+    return steps.AccessSteps(horizon)

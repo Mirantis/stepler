@@ -19,80 +19,26 @@ Fixtures for networks
 
 import pytest
 
-from stepler.horizon.steps import NetworksSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_network',
-    'create_networks',
-    'network',
-    'networks_steps'
+    'networks_steps_ui'
 ]
 
 
 @pytest.fixture
-def networks_steps(network_setup, login, horizon):
+def networks_steps_ui(network_setup, network_steps, login, horizon):
     """Functional fixture to get UI networks steps.
 
+    network_steps instance is used for networks cleanup.
+
     Args:
-        network_setup (None): Should set up network before steps using.
-        login (None): Should log in horizon before steps using.
-        horizon (Horizon): Instantiated horizon web application.
+        network_setup (None): should set up network before steps using
+        network_steps (NetworkSteps): instantiated network steps
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
     Returns:
-        NetworkSteps: Instantiated UI network steps.
+        NetworkSteps: instantiated UI network steps
     """
-    return NetworksSteps(horizon)
-
-
-@pytest.yield_fixture
-def create_networks(networks_steps, horizon):
-    """Fixture to create networks with options.
-
-    Can be called several times during test.
-    """
-    networks = []
-
-    def _create_networks(network_names):
-        _networks = []
-
-        for network_name in network_names:
-            networks_steps.create_network(network_name)
-
-            network = utils.AttrDict(name=network_name)
-            networks.append(network)
-            _networks.append(network)
-
-        return _networks
-
-    yield _create_networks
-
-    if networks:
-        networks_steps.delete_networks([network.name for network in networks])
-
-
-@pytest.yield_fixture
-def create_network(networks_steps):
-    """Fixture to create network with options.
-
-    Can be called several times during test.
-    """
-    networks = []
-
-    def _create_network(network_name, shared=False):
-        networks_steps.create_network(network_name, shared=shared)
-        network = utils.AttrDict(name=network_name)
-        networks.append(network)
-        return network
-
-    yield _create_network
-
-    for network in networks:
-        networks_steps.delete_network(network.name)
-
-
-@pytest.fixture
-def network(create_network):
-    """Fixture to create network with default options before test."""
-    network_name = next(utils.generate_ids('network'))
-    return create_network(network_name)
+    return steps.NetworksSteps(horizon)

@@ -17,12 +17,12 @@ Routers steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-from .base import BaseSteps
 
-
-class RoutersSteps(BaseSteps):
+class RoutersSteps(base.BaseSteps):
     """Routers steps."""
 
     def _page_routers(self):
@@ -30,9 +30,11 @@ class RoutersSteps(BaseSteps):
         return self._open(self.app.page_routers)
 
     @steps_checker.step
-    def create_router(self, router_name, admin_state=None,
+    def create_router(self, router_name=None, admin_state=None,
                       external_network=None, check=True):
         """Step to create router."""
+        router_name = router_name or next(utils.generate_ids('router'))
+
         page_routers = self._page_routers()
         page_routers.button_create_router.click()
 
@@ -51,6 +53,8 @@ class RoutersSteps(BaseSteps):
             self.close_notification('success')
             page_routers.table_routers.row(
                 name=router_name).wait_for_presence(30)
+
+        return router_name
 
     @steps_checker.step
     def delete_router(self, router_name, check=True):
