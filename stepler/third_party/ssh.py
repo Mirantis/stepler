@@ -46,8 +46,8 @@ class CommandResult(object):
         super(CommandResult, self).__init__(*args, **kwargs)
         self.command = None
         self.exit_code = None
-        self.stdout_bytes = ''
-        self.stderr_bytes = ''
+        self.stdout_bytes = b''
+        self.stderr_bytes = b''
 
     def __repr__(self):
         return (u'`{0.command}` result:\n'

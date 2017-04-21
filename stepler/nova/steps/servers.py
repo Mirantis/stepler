@@ -270,9 +270,9 @@ class ServerSteps(base.BaseSteps):
         """
         if not ip:
             if not proxy_cmd:  # server is available via floating IP directly
-                ip = self.get_ips(server, 'floating').keys()[0]
+                ip = self.get_floating_ip(server)
             else:
-                ip = self.get_ips(server, 'fixed').keys()[0]
+                ip = self.get_fixed_ip(server)
 
         if credentials is None:
             credentials = self.get_server_credentials(server)
@@ -485,7 +485,7 @@ class ServerSteps(base.BaseSteps):
             TimeoutExpired: if check failed after timeout
         """
         if not fixed_ip:
-            fixed_ip = self.get_ips(server, 'fixed').keys()[0]
+            fixed_ip = self.get_fixed_ip(server)
 
         self._client.remove_fixed_ip(server.id, fixed_ip)
 
@@ -686,7 +686,7 @@ class ServerSteps(base.BaseSteps):
         Raises:
             TimeoutExpired: if check failed after timeout
         """
-        floating_ip = self.get_ips(server, 'floating').keys()[0]
+        floating_ip = self.get_floating_ip(server)
         self.check_ping_for_ip(floating_ip, timeout=timeout)
 
     def _parse_ping_plan(self, ping_plan):

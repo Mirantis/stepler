@@ -286,11 +286,11 @@ def get_unwrapped_func(func):
     if not inspect.isfunction(func) and not inspect.ismethod(func):
         return func
 
-    if func.__name__ != func.func_code.co_name:
-        for cell in func.func_closure:
+    if func.__name__ != six.get_function_code(func).co_name:
+        for cell in six.get_function_closure(func):
             obj = cell.cell_contents
             if inspect.isfunction(obj):
-                if func.__name__ == obj.func_code.co_name:
+                if func.__name__ == six.get_function_code(obj).co_name:
                     return obj
                 else:
                     return get_unwrapped_func(obj)

@@ -49,7 +49,8 @@ def get_cinder_client(get_session):
         if config.FORCE_API or is_api:
             return api_client(session)
         else:
-            return cinderclient.Client(version=version, session=session)
+            return cinderclient.Client(version=version, session=session,
+                                       retries=0)
 
     return _get_cinder_client
 

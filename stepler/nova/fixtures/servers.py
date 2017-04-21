@@ -300,7 +300,7 @@ def get_ssh_proxy_cmd(network_steps,
     def _get_ssh_proxy_cmd(server, ip=None):
         # proxy command is actual for fixed IP only
         server_ips = server_steps.get_ips(server, 'fixed')
-        ip_info = server_ips[ip] if ip else server_ips.values()[0]
+        ip_info = server_ips[ip] if ip else next(iter(server_ips.values()))
         server_ip = ip_info['ip']
         server_mac = ip_info['mac']
         net_id = network_steps.get_network_id_by_mac(server_mac)
