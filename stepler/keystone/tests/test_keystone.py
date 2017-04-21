@@ -16,6 +16,8 @@ Keystone tests
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import time
+
 import pytest
 
 from stepler import config
@@ -60,7 +62,7 @@ def test_restart_keystone_service(cirros_image,
                                   net_subnet_router,
                                   security_group,
                                   server,
-                                  get_ssh_proxy_cmd,
+                                  floating_ip,
                                   user,
                                   create_user,
                                   user_steps,
@@ -80,10 +82,13 @@ def test_restart_keystone_service(cirros_image,
 
     **Steps:**
 
+    #. Attach floating IP
     #. Check that ping from server_1 to 8.8.8.8 is successful
     #. Restart keystone services
     #. Check that user_1 is in user list
-    #. Create server_2 and check ping to 8.8.8.8 and to server_1 as well
+    #. Create server_2
+    #. Attach floating IP
+    #. Check ping from server_2 to 8.8.8.8 and to server_1
     #. Create user_2 and check its presence in user list
 
     **Teardown:**
@@ -96,13 +101,14 @@ def test_restart_keystone_service(cirros_image,
     #. Delete flavor
     #. Delete cirros image
     """
-    proxy_cmd = get_ssh_proxy_cmd(server)
+    server_steps.attach_floating_ip(server, floating_ip)
     with server_steps.get_server_ssh(
-            server, proxy_cmd=proxy_cmd) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
-                                       timeout=config.PING_CALL_TIMEOUT)
+            server, floating_ip['floating_ip_address']) as server_ssh:
+        server_steps.check_ping_for_ip(
+            config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.restart_services([config.KEYSTONE])
+    time.sleep(config.TIME_AFTER_KEYSTONE_RESTART)
 
     user_steps.check_user_presence(user)
     server_2 = server_steps.create_servers(image=cirros_image,
@@ -111,13 +117,14 @@ def test_restart_keystone_service(cirros_image,
                                            keypair=keypair,
                                            security_groups=[security_group],
                                            username=config.CIRROS_USERNAME)[0]
-    proxy_cmd = get_ssh_proxy_cmd(server_2)
+    server_steps.detach_floating_ip(server, floating_ip)
+    server_steps.attach_floating_ip(server_2, floating_ip)
     server_1_ip = server_steps.get_fixed_ip(server)
     with server_steps.get_server_ssh(
-            server_2, proxy_cmd=proxy_cmd) as server_ssh:
-        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_ssh,
+            server_2, floating_ip['floating_ip_address']) as server_2_ssh:
+        server_steps.check_ping_for_ip(config.GOOGLE_DNS_IP, server_2_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
-        server_steps.check_ping_for_ip(server_1_ip, server_ssh,
+        server_steps.check_ping_for_ip(server_1_ip, server_2_ssh,
                                        timeout=config.PING_CALL_TIMEOUT)
 
     name_2, password_2 = utils.generate_ids(count=2)
