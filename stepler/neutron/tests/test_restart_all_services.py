@@ -34,7 +34,6 @@ def test_restart_all_neutron_services(cirros_image,
                                       create_network,
                                       create_subnet,
                                       create_router,
-                                      add_router_interfaces,
                                       router_steps,
                                       public_network,
                                       server_steps):
@@ -119,7 +118,7 @@ def test_restart_all_neutron_services(cirros_image,
                              cidr="192.168.2.0/24")
     router_2 = create_router(next(utils.generate_ids()))
     router_steps.set_gateway(router_2, public_network)
-    add_router_interfaces(router_2, [subnet_2])
+    router_steps.add_subnet_interface(router_2, subnet_2)
     server_3 = server_steps.create_servers(image=cirros_image,
                                            flavor=flavor,
                                            networks=[network_2],

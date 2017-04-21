@@ -102,11 +102,8 @@ def test_stack_output_list(create_stack,
 
 @pytest.mark.idempotent_id('d23ef04a-6db0-4729-97ac-3a8302951f69')
 def test_create_stack_with_aws(
-        network,
-        subnet,
-        router,
+        net_subnet_router,
         read_heat_template,
-        add_router_interfaces,
         public_network,
         create_stack,
         port_steps):
@@ -118,10 +115,10 @@ def test_create_stack_with_aws(
     #. Create subnet
     #. Create router
     #. Set router default gateway to public network
+    #. Add router interface to created network
 
     **Steps:**
 
-    #. Add router interface to created network
     #. Read AWS template from file
     #. Create stack with template with parameters:
             internal_network, internal_subnet, external_network
@@ -134,7 +131,7 @@ def test_create_stack_with_aws(
     #. Delete subnet
     #. Delete network
     """
-    add_router_interfaces(router, [subnet])
+    network, subnet, _ = net_subnet_router
     template = read_heat_template('aws')
     stack_name = next(utils.generate_ids('stack'))
     create_stack(
@@ -170,10 +167,7 @@ def test_create_stack_with_heat_resources(read_heat_template, create_stack):
 def test_create_stack_with_wait_condition(
         cirros_image,
         flavor,
-        network,
-        subnet,
-        router,
-        add_router_interfaces,
+        net_subnet_router,
         read_heat_template,
         create_stack,
         port_steps):
@@ -201,7 +195,6 @@ def test_create_stack_with_wait_condition(
     #. Delete flavor
     #. Delete image
     """
-    add_router_interfaces(router, [subnet])
     template = read_heat_template('wait_condition')
     stack_name = next(utils.generate_ids('stack'))
     create_stack(
@@ -210,7 +203,7 @@ def test_create_stack_with_wait_condition(
         parameters={
             'image': cirros_image.id,
             'flavor': flavor.id,
-            'private_net': network['id'],
+            'private_net': net_subnet_router[0]['id'],
         })
 
 
@@ -219,10 +212,7 @@ def test_create_stack_with_neutron_resources(
         cirros_image,
         flavor,
         public_network,
-        network,
-        subnet,
-        router,
-        add_router_interfaces,
+        net_subnet_router,
         read_heat_template,
         create_stack):
     """**Scenario:** Create stack with Neutron resources.
@@ -234,10 +224,10 @@ def test_create_stack_with_neutron_resources(
     #. Create subnet
     #. Create router
     #. Set router default gateway to public network
+    #. Add router interface to created network
 
     **Steps:**
 
-    #. Add router interface to created network
     #. Read Heat resources template from file
     #. Create stack with template with parameters:
             image, flavor, public_net_id, private_net_id, private_subnet_id
@@ -251,7 +241,7 @@ def test_create_stack_with_neutron_resources(
     #. Delete network
     #. Delete cirros image
     """
-    add_router_interfaces(router, [subnet])
+    network, subnet, _ = net_subnet_router
     template = read_heat_template('neutron_resources')
     stack_name = next(utils.generate_ids('stack'))
     create_stack(
@@ -271,10 +261,7 @@ def test_create_stack_with_nova_resources(
         cirros_image,
         flavor,
         public_network,
-        network,
-        subnet,
-        router,
-        add_router_interfaces,
+        net_subnet_router,
         read_heat_template,
         create_stack):
     """**Scenario:** Create stack with Nova resources.
@@ -287,10 +274,10 @@ def test_create_stack_with_nova_resources(
     #. Create subnet
     #. Create router
     #. Set router default gateway to public network
+    #. Add router interface to created network
 
     **Steps:**
 
-    #. Add router interface to created network
     #. Read Heat resources template from file
     #. Create stack with template with parameters:
             image, flavor, public_net_id, private_net_id, private_subnet_id
@@ -305,7 +292,6 @@ def test_create_stack_with_nova_resources(
     #. Delete flavor
     #. Delete cirros image
     """
-    add_router_interfaces(router, [subnet])
     template = read_heat_template('nova_resources')
     additional_template = read_heat_template('volume_with_attachment')
     stack_name = next(utils.generate_ids('stack'))
@@ -315,7 +301,7 @@ def test_create_stack_with_nova_resources(
         parameters={
             'image': cirros_image.id,
             'flavor': flavor.id,
-            'int_network': network['id'],
+            'int_network': net_subnet_router[0]['id'],
         },
         files={'volume_with_attachment.yaml': additional_template})
 
@@ -324,12 +310,9 @@ def test_create_stack_with_nova_resources(
 def test_create_stack_with_docker(
         keypair,
         flavor,
-        network,
-        subnet,
-        router,
+        net_subnet_router,
         ubuntu_xenial_image,
         read_heat_template,
-        add_router_interfaces,
         public_network,
         create_stack,
         stack_steps):
@@ -341,10 +324,10 @@ def test_create_stack_with_docker(
     #. Create subnet
     #. Create router
     #. Set router default gateway to public network
+    #. Add router interface to created network
 
     **Steps:**
 
-    #. Add router interface to created network
     #. Read docker host template from file
     #. Create stack with template with parameters:
        key, flavor, image, public_net, int_network_id
@@ -361,7 +344,6 @@ def test_create_stack_with_docker(
     #. Delete subnet
     #. Delete network
     """
-    add_router_interfaces(router, [subnet])
     docker_port = 2376
     template = read_heat_template('docker_host')
     docker_host_stack = create_stack(
@@ -372,7 +354,7 @@ def test_create_stack_with_docker(
             'flavor': flavor.name,
             'image': ubuntu_xenial_image.id,
             'public_net': public_network['id'],
-            'int_network_id': network['id'],
+            'int_network_id': net_subnet_router[0]['id'],
             'docker_port': docker_port,
         })
     floating_ip = stack_steps.get_output(docker_host_stack,

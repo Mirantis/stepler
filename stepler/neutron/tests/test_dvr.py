@@ -1321,7 +1321,6 @@ def test_instance_connectivity_after_l3_agent_restart(
         create_network,
         create_subnet,
         create_router,
-        add_router_interfaces,
         create_floating_ip,
         router_steps,
         server_steps,
@@ -1368,7 +1367,7 @@ def test_instance_connectivity_after_l3_agent_restart(
             cidr=config.LOCAL_CIDR)
         router = create_router(next(utils.generate_ids()), distributed=True)
         router_steps.set_gateway(router, public_network)
-        add_router_interfaces(router, [subnet])
+        router_steps.add_subnet_interface(router, subnet)
 
         server = server_steps.create_servers(
             image=cirros_image,
@@ -1410,7 +1409,7 @@ def test_instance_connectivity_after_l3_agent_restart(
 @pytest.mark.idempotent_id('849ce63d-6fe9-44ec-ad4a-d795c3fe0626')
 def test_add_router_interface_with_port_id(create_router,
                                            port,
-                                           add_router_interfaces,
+                                           router_steps,
                                            os_faults_steps):
     """**Scenario:** Add router interface with port_id parameter.
 
@@ -1448,7 +1447,7 @@ def test_add_router_interface_with_port_id(create_router,
 
     router_name = next(utils.generate_ids())
     router = create_router(router_name, distributed=True)
-    add_router_interfaces(router, ports=[port])
+    router_steps.add_port_interface(router, port)
 
     time.sleep(config.ERROR_GATEWAY_PORT_CHECK_TIME)
 

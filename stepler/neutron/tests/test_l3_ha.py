@@ -475,7 +475,6 @@ def test_ban_l3_agent_for_many_routers(
         create_network,
         create_subnet,
         create_router,
-        add_router_interfaces,
         router_steps,
         server_steps,
         agent_steps,
@@ -526,7 +525,7 @@ def test_ban_l3_agent_for_many_routers(
             cidr=config.LOCAL_CIDR)
         router = create_router(next(utils.generate_ids()))
         router_steps.set_gateway(router, public_network)
-        add_router_interfaces(router, [subnet])
+        router_steps.add_subnet_interface(router, subnet)
 
     with server_steps.get_server_ssh(server_1) as server_ssh:
         with server_steps.check_ping_loss_context(
