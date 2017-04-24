@@ -43,8 +43,8 @@ class ExpectationError(Exception):
 def expect_that(*args, **kwargs):
     """Wrapper for hamcrest's ``assert_that``.
 
-    It raises ExpectationError instead of AssetionError and can be used with
-    wait function below to retrive more verbose messages about predicates
+    It raises ExpectationError instead of AssertionError and can be used with
+    wait function below to retrieve more verbose messages about predicates
     failures.
     """
     try:
@@ -76,7 +76,7 @@ def wait(predicate,
          expected_exceptions=(),
          predicate_timeout=None,
          **wait_kwargs):
-    """Wait that predicate execution returns non-falsy result.
+    """Wait that predicate execution returns non-false result.
 
     It catches all raised ExpectationError and uses last exception to construct
     TimeoutException. It also can pass arguments to predicate.
@@ -116,7 +116,7 @@ def wait(predicate,
             (predicate result, "Error message" or None)
 
     Raises:
-        TimeoutExpired: if predicate execution has falsy value after timeout
+        TimeoutExpired: if predicate execution has false value after timeout
     """
 
     __tracebackhide__ = True

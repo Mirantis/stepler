@@ -34,7 +34,7 @@ class TrafficGenerator(object):
             ip (str): ip address to send traffic to
             port (int): port to send traffic to
             block_size (int): size of data chunk
-            socket_timeout (int): socker timeout
+            socket_timeout (int): socket timeout
         """
         self._ip = ip
         self._port = port
