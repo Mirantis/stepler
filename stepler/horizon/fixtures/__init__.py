@@ -67,10 +67,7 @@ __all__ = sorted([  # sort for documentation
     'defaults_steps',
     'update_defaults',
 
-    'create_flavor',
-    'create_flavors',
-    'flavor',
-    'flavors_steps',
+    'flavors_steps_ui',
 
     'allocate_floating_ip',
     'floating_ip',

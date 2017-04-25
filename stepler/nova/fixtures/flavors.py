@@ -17,18 +17,18 @@ Flavor fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
 from hamcrest import assert_that, empty, is_not  # noqa
 from novaclient import exceptions
+import pytest
 
 from stepler import config
-from stepler.nova.steps import FlavorSteps
+from stepler.nova import steps
 from stepler.third_party import utils
 
 __all__ = [
     'create_flavor',
     'flavor',
+    'flavors',
     'flavor_steps',
     'tiny_flavor',
     'small_flavor',
@@ -40,18 +40,40 @@ __all__ = [
 
 @pytest.fixture
 def flavor_steps(nova_client):
-    """Callable function fixture to get nova flavor steps.
+    """Function fixture to get nova flavor steps.
 
     Args:
         nova_client (function): function to get nova client
 
-    Returns:
-        function: function to instantiated flavor steps
+    Yields:
+        stepler.nova.steps.FlavorSteps: instantiated flavor steps
     """
-    return FlavorSteps(nova_client.flavors)
+    _flavor_steps = steps.FlavorSteps(nova_client.flavors)
+
+    flavors = _flavor_steps.get_flavors(check=False)
+    flavor_ids_before = {flavor.id for flavor in flavors}
+
+    yield _flavor_steps
+
+    uncleanable_ids = flavor_ids_before
+    _cleanup_flavors(_flavor_steps, uncleanable_ids=uncleanable_ids)
 
 
-@pytest.yield_fixture
+def _cleanup_flavors(_flavor_steps, uncleanable_ids=None):
+    """Function to cleanup flavors.
+
+    Args:
+        _flavor_steps (object): instantiated flavor steps
+        uncleanable_ids (AttrDict): resources ids to skip cleanup
+    """
+    uncleanable_ids = uncleanable_ids or []
+
+    for flavor in _flavor_steps.get_flavors(check=False):
+        if flavor.id not in uncleanable_ids:
+            _flavor_steps.delete_flavor(flavor)
+
+
+@pytest.fixture
 def create_flavor(flavor_steps):
     """Callable function fixture to create nova flavor with options.
 
@@ -88,7 +110,7 @@ def flavor_builder(**kwargs):
     """
 
     @pytest.fixture
-    def _flavor(request, create_flavor, flavor_steps):
+    def _flavor(request, flavor_steps):
         """Function fixture to create single nova flavor with options.
 
         Can be called several times during a test.
@@ -109,8 +131,7 @@ def flavor_builder(**kwargs):
                     # Instance will created with different flavors
 
         Args:
-            request (obj): py.test SubRequest
-            create_flavor (function): function to create flavor with options
+            request (object): py.test SubRequest
             flavor_steps (object): instantiated flavor steps
 
         Returns:
@@ -123,7 +144,7 @@ def flavor_builder(**kwargs):
         flavor_name, = utils.generate_ids('flavor')
         metadata = flavor_params.pop('metadata', None)
 
-        flavor = create_flavor(flavor_name, **flavor_params)
+        flavor = flavor_steps.create_flavor(flavor_name, **flavor_params)
 
         if metadata:
             flavor_steps.set_metadata(flavor, metadata)
@@ -137,12 +158,36 @@ public_flavor = flavor_builder(is_public=True)
 
 
 @pytest.fixture
-def tiny_flavor(flavor_steps, create_flavor):
+def flavors(request, flavor_steps):
+    """Function fixture to create flavor with default options before test.
+
+    Args:
+        request (object): py.test's SubRequest instance
+        create_flavor (function): function to create flavor with options
+
+    Returns:
+        list: nova flavors
+    """
+    count = int(getattr(request, 'param', 3))
+
+    flavors = []
+    flavor_names = utils.generate_ids(prefix='flavor', count=count)
+    flavor_params = config.DEFAULT_FLAVOR_PARAMS.copy()
+    flavor_params.pop('metadata')
+
+    for flavor_name in flavor_names:
+        flavor = flavor_steps.create_flavor(flavor_name, **flavor_params)
+        flavors.append(flavor)
+
+    return flavors
+
+
+@pytest.fixture
+def tiny_flavor(flavor_steps):
     """Function fixture to find or create tiny flavor before test.
 
     Args:
         flavor_steps (object): instantiated flavor steps
-        create_flavor (function): function to create flavor with options
 
     Returns:
         object: tiny flavor
@@ -151,17 +196,16 @@ def tiny_flavor(flavor_steps, create_flavor):
         flavor = flavor_steps.get_flavor(name=config.FLAVOR_TINY)
     except exceptions.NotFound:
         name, = utils.generate_ids(config.FLAVOR_TINY)
-        flavor = create_flavor(name, ram=512, vcpus=1, disk=1)
+        flavor = flavor_steps.create_flavor(name, ram=512, vcpus=1, disk=1)
     return flavor
 
 
 @pytest.fixture
-def small_flavor(flavor_steps, create_flavor):
+def small_flavor(flavor_steps):
     """Function fixture to find or create small flavor before test.
 
     Args:
         flavor_steps (object): instantiated flavor steps
-        create_flavor (function): function to create flavor with options
 
     Returns:
         object: small flavor
@@ -170,16 +214,16 @@ def small_flavor(flavor_steps, create_flavor):
         flavor = flavor_steps.get_flavor(name=config.FLAVOR_SMALL)
     except exceptions.NotFound:
         name, = utils.generate_ids(config.FLAVOR_SMALL)
-        flavor = create_flavor(name, ram=2048, vcpus=1, disk=20)
+        flavor = flavor_steps.create_flavor(name, ram=2048, vcpus=1, disk=20)
     return flavor
 
 
 @pytest.fixture
-def baremetal_flavor(create_flavor):
+def baremetal_flavor(flavor_steps):
     """Function fixture to create baremetal flavor before test.
 
      Args:
-        create_flavor (function): function to create flavor with options
+        flavor_steps (object): instantiated flavor steps
 
     Returns:
         object: baremetal flavor
@@ -198,7 +242,8 @@ def baremetal_flavor(create_flavor):
             'disk': config.BAREMETAL_VIRTUAL_DISK,
         })
 
-    return create_flavor(next(utils.generate_ids('bm_flavor')), **params)
+    return flavor_steps.create_flavor(next(utils.generate_ids('bm_flavor')),
+                                      **params)
 
 
 @pytest.fixture
