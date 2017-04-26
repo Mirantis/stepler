@@ -19,72 +19,23 @@ Fixtures for host aggregates
 
 import pytest
 
-from stepler.horizon.steps import HostAggregatesSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_host_aggregate',
-    'create_host_aggregates',
-    'host_aggregate',
-    'host_aggregates_steps'
+    'host_aggregates_steps_ui'
 ]
 
 
 @pytest.fixture
-def host_aggregates_steps(login, horizon):
-    """Fixture to get host aggregates steps."""
-    return HostAggregatesSteps(horizon)
+def host_aggregates_steps_ui(login, horizon):
+    """Fixture to get host aggregates steps.
 
+    Args:
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
-@pytest.yield_fixture
-def create_host_aggregates(host_aggregates_steps, horizon):
-    """Fixture to create host aggregates with options.
-
-    Can be called several times during test.
+    Returns:
+        stepler.horizon.steps.HostAggregatesSteps: instantiated UI
+            host aggregates steps
     """
-    host_aggregates = []
-
-    def _create_host_aggregates(*host_aggregate_names):
-        _host_aggregates = []
-
-        for host_aggregate_name in host_aggregate_names:
-            host_aggregates_steps.create_host_aggregate(host_aggregate_name)
-
-            host_aggregate = utils.AttrDict(name=host_aggregate_name)
-            host_aggregates.append(host_aggregate)
-            _host_aggregates.append(host_aggregate)
-
-        return _host_aggregates
-
-    yield _create_host_aggregates
-
-    if host_aggregates:
-        host_aggregates_steps.delete_host_aggregates(
-            [host_aggregate.name for host_aggregate in host_aggregates])
-
-
-@pytest.yield_fixture
-def create_host_aggregate(host_aggregates_steps):
-    """Fixture to create host aggregate with options.
-
-    Can be called several times during test.
-    """
-    host_aggregates = []
-
-    def _create_host_aggregate(host_aggregate_name):
-        host_aggregates_steps.create_host_aggregate(host_aggregate_name)
-        host_aggregate = utils.AttrDict(name=host_aggregate_name)
-        host_aggregates.append(host_aggregate)
-        return host_aggregate
-
-    yield _create_host_aggregate
-
-    for host_aggregate in host_aggregates:
-        host_aggregates_steps.delete_host_aggregate(host_aggregate.name)
-
-
-@pytest.fixture
-def host_aggregate(create_host_aggregate):
-    """Fixture to create host aggregate with default options before test."""
-    host_aggregate_name = next(utils.generate_ids('host-aggregate'))
-    return create_host_aggregate(host_aggregate_name)
+    return steps.HostAggregatesSteps(horizon)

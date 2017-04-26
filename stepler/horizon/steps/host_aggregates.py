@@ -17,12 +17,12 @@ Host aggregates steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-from .base import BaseSteps
 
-
-class HostAggregatesSteps(BaseSteps):
+class HostAggregatesSteps(base.BaseSteps):
     """Host aggregates steps."""
 
     def _page_host_aggregates(self):
@@ -30,8 +30,11 @@ class HostAggregatesSteps(BaseSteps):
         return self._open(self.app.page_host_aggregates)
 
     @steps_checker.step
-    def create_host_aggregate(self, host_aggregate_name, check=True):
+    def create_host_aggregate(self, host_aggregate_name=None, check=True):
         """Step to create host aggregate."""
+        host_aggregate_name = (host_aggregate_name or
+                               next(utils.generate_ids('host-aggregate')))
+
         page_host_aggregates = self._page_host_aggregates()
         page_host_aggregates.button_create_host_aggregate.click()
 
@@ -43,6 +46,8 @@ class HostAggregatesSteps(BaseSteps):
             self.close_notification('success')
             page_host_aggregates.table_host_aggregates.row(
                 name=host_aggregate_name).wait_for_presence()
+
+        return host_aggregate_name
 
     @steps_checker.step
     def delete_host_aggregate(self, host_aggregate_name, check=True):

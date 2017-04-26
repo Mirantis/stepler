@@ -27,11 +27,11 @@ __all__ = [
 
 
 @pytest.fixture
-def access_steps_ui(horizon, login):
+def access_steps_ui(login, horizon):
     """Fixture to get access steps.
 
     Args:
-        horizon (Horizon): instantiated horizon web application
         login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
     """
     return steps.AccessSteps(horizon)

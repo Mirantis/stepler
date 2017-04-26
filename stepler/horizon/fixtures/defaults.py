@@ -19,32 +19,47 @@ Fixtures for defaults
 
 import pytest
 
-from stepler.horizon.steps import DefaultsSteps
+from stepler.horizon import steps
 
 __all__ = [
-    'defaults_steps',
+    'defaults_steps_ui',
     'update_defaults'
 ]
 
 
 @pytest.fixture
-def defaults_steps(login, horizon):
-    """Fixture to get defaults steps."""
-    return DefaultsSteps(horizon)
+def defaults_steps_ui(login, horizon):
+    """Fixture to get defaults steps.
+
+    Args:
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
+
+    Returns:
+        stepler.horizon.steps.DefaultsSteps: instantiated UI defaults steps
+    """
+    return steps.DefaultsSteps(horizon)
 
 
-@pytest.yield_fixture
-def update_defaults(defaults_steps):
-    """Callable fixture to update defaults."""
+@pytest.fixture
+def update_defaults(defaults_steps_ui):
+    """Callable fixture to update defaults.
+
+    Args:
+        defaults_steps_ui (DefaultsSteps): instantiated defaults steps
+
+    Yields:
+        function: function to update defaults
+    """
     current_defaults = {}
 
     def _update_defaults(defaults):
         if not current_defaults:
             current_defaults.update(
-                defaults_steps.get_defaults(defaults))
-        defaults_steps.update_defaults(defaults)
+                defaults_steps_ui.get_defaults(defaults))
+        defaults_steps_ui.update_defaults(defaults)
 
     yield _update_defaults
 
     if current_defaults:
-        defaults_steps.update_defaults(current_defaults)
+        defaults_steps_ui.update_defaults(current_defaults)

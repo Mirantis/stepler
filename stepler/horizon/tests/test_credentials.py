@@ -28,22 +28,37 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('3b793f66-6e89-4ac7-b359-ad8c9787593f',
                                any_one='user')
-    def test_download_rc_v2(self, api_access_steps):
-        """Verify that one can download RCv2."""
-        api_access_steps.download_rc_v2()
+    def test_download_rc_v2(self, api_access_steps_ui):
+        """**Scenario:** Verify that one can download RCv2.
+
+        **Steps:**
+
+        #. Download rc v2 file using UI
+        """
+        api_access_steps_ui.download_rc_v2()
 
     @pytest.mark.idempotent_id('3d850ba2-a4c7-4b20-b1dc-5b2b00dc7017',
                                any_one='admin')
     @pytest.mark.idempotent_id('8bd7424a-db01-4978-b933-380afa68f78d',
                                any_one='user')
-    def test_download_rc_v3(self, api_access_steps):
-        """Verify that one can download RCv2."""
-        api_access_steps.download_rc_v3()
+    def test_download_rc_v3(self, api_access_steps_ui):
+        """**Scenario:** Verify that one can download RCv3.
+
+        **Steps:**
+
+        #. Download rc v3 file using UI
+        """
+        api_access_steps_ui.download_rc_v3()
 
     @pytest.mark.idempotent_id('c414f5b0-c098-48ea-b99b-6e37597bcd7a',
                                any_one='admin')
     @pytest.mark.idempotent_id('5bf8ab88-2839-42af-afa0-c2cc5211f774',
                                any_one='user')
-    def test_view_credentials(self, api_access_steps):
-        """Verify that one can view credentials."""
-        api_access_steps.view_credentials()
+    def test_view_credentials(self, api_access_steps_ui):
+        """**Scenario:** Verify that one can view credentials.
+
+        **Steps:**
+
+        #. View credentials using UI
+        """
+        api_access_steps_ui.view_credentials()

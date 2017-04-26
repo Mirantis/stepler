@@ -19,14 +19,22 @@ Fixtures for api access
 
 import pytest
 
-from stepler.horizon.steps import ApiAccessSteps
+from stepler.horizon import steps
 
 __all__ = [
-    'api_access_steps'
+    'api_access_steps_ui',
 ]
 
 
 @pytest.fixture
-def api_access_steps(login, horizon):
-    """Get api access steps."""
-    return ApiAccessSteps(horizon)
+def api_access_steps_ui(login, horizon):
+    """Fixture to get api access steps.
+
+    Args:
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
+
+    Returns:
+        stepler.horizon.steps.ApiAccessSteps: instantiated UI api access steps
+    """
+    return steps.ApiAccessSteps(horizon)
