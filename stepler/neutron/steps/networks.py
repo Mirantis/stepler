@@ -65,6 +65,24 @@ class NetworkSteps(base.BaseSteps):
             self.check_presence(network, must_present=False)
 
     @steps_checker.step
+    def update(self, network, check=True, **kwargs):
+        """Step to update network.
+
+        Args:
+            network (dict): network
+            check (bool): flag whether to check step or not
+            **kwargs: other arguments to pass to API
+
+        Raises:
+            AssertionError: if check failed
+        """
+        self._client.update(network['id'], **kwargs)
+
+        if check:
+            net = self._client.get(network['id'])
+            assert_that(net, has_entries(**kwargs))
+
+    @steps_checker.step
     def check_presence(self, network, must_present=True, timeout=0):
         """Verify step to check network is present.
 
@@ -137,6 +155,22 @@ class NetworkSteps(base.BaseSteps):
         if check:
             assert_that(networks, is_not(empty()))
         return networks
+
+    @steps_checker.step
+    def get_public_network(self, check=True):
+        """Step to get public network.
+
+        Args:
+            check (bool, optional): flag whether to check step or not
+
+        Returns:
+            dict: network
+
+        Raises:
+            AssertionError: if check failed
+        """
+        params = {'router:external': True, 'status': 'ACTIVE'}
+        return self.get_networks(check=check, **params)[0]
 
     @steps_checker.step
     def get_network_id_by_mac(self, mac):

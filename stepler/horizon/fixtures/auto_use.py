@@ -179,8 +179,7 @@ def network_setup(credentials,
         router_steps = get_router_steps()
 
         # before all define that external network is present
-        external_network = network_steps.get_network_by_name(
-            config.FLOATING_NETWORK_NAME)
+        external_network = network_steps.get_public_network()
 
         for project in projects:
             internal_network = network_steps.create(

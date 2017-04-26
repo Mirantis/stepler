@@ -27,24 +27,42 @@ __all__ = [
     'keypair',
     'keypair_steps',
     'keypairs_cleanup',
+    'get_keypair_steps',
 ]
 
 
+@pytest.fixture(scope="session")
+def get_keypair_steps(get_nova_client):
+    """Callable session fixture to get nova keypair steps.
+
+    Args:
+        get_nova_client (function): function to get instantiated nova client
+
+    Returns:
+        function: function to get instantiated nova keypair steps
+    """
+
+    def _get_steps(**credentials):
+        return steps.KeypairSteps(get_nova_client(**credentials).keypairs)
+
+    return _get_steps
+
+
 @pytest.fixture
-def keypair_steps(nova_client, keypairs_cleanup):
+def keypair_steps(get_keypair_steps, keypairs_cleanup):
     """Function fixture to get keypair steps.
 
     Can be called several times during test.
     After the test it destroys all created security groups
 
     Args:
-        nova_client (object): instantiated nova client
+        get_keypair_steps (function): function to get instantiated nova client
         keypairs_cleanup (function): function to cleanup keypairs
 
-    Returns:
+    Yields:
         KeypairSteps: instantiated keypair steps
     """
-    _keypair_steps = steps.KeypairSteps(nova_client.keypairs)
+    _keypair_steps = get_keypair_steps()
     with keypairs_cleanup(_keypair_steps):
         yield _keypair_steps
 

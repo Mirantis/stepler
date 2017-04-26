@@ -17,10 +17,12 @@ Project fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import attrdict
 import pytest
 
+from stepler import config
 from stepler.keystone import steps
-from stepler.third_party.utils import generate_ids
+from stepler.third_party import utils
 
 __all__ = [
     'create_project',
@@ -29,6 +31,7 @@ __all__ = [
     'get_current_project',
     'project',
     'current_project',
+    'two_projects',
 ]
 
 
@@ -83,7 +86,7 @@ def create_project(project_steps):
 @pytest.fixture
 def project(create_project):
     """Fixture to create project with default options before test."""
-    project_name = next(generate_ids('project'))
+    project_name = next(utils.generate_ids('project'))
     return create_project(project_name)
 
 
@@ -117,3 +120,39 @@ def current_project(get_current_project):
         obj: current project
     """
     return get_current_project()
+
+
+@pytest.fixture
+def two_projects(role_steps, create_project, create_user):
+    """Function fixture to create different projects.
+
+    All created resources are to be deleted after test.
+
+    Args:
+        role_steps (obj): instantiated role steps
+        create_project (function): function to create project
+        create_user (function): function to create user
+
+    Returns:
+        attrdict.AttrDict: created resources
+    """
+    base_name, = utils.generate_ids()
+    resources = []
+    admin_role = role_steps.get_role(name=config.ROLE_ADMIN)
+
+    for i in range(2):
+        project_resources = attrdict.AttrDict()
+        name = "{}_{}".format(base_name, i)
+        # Create project
+        project = create_project(name)
+        user = create_user(user_name=name, password=name)
+        role_steps.grant_role(admin_role, user, project=project)
+        credentials = dict(
+            username=name, password=name, project_name=name)
+
+        project_resources.credentials = credentials
+        project_resources.project_id = project.id
+        project_resources.name = name
+        resources.append(project_resources)
+
+    return attrdict.AttrDict(resources=resources)

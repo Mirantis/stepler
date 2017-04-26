@@ -17,12 +17,14 @@ Ironic fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .api_node_steps import *  # noqa
 from .chassis import *  # noqa
+from .clients import *  # noqa
+from .ironic import *  # noqa
+from .multitenancy_resources import *  # noqa
 from .node import *  # noqa
 from .port import *  # noqa
-from .ironic import *  # noqa
-from .clients import *  # noqa
-from .api_node_steps import *  # noqa
+
 
 __all__ = sorted([  # sort for documentation
     'ironic_client',
@@ -52,4 +54,7 @@ __all__ = sorted([  # sort for documentation
     'ironic_steps_v1',
     'api_ironic_steps_v1',
     'api_ironic_steps',
+
+    'multitenancy_networks',
+    'multitenancy_resources',
 ])

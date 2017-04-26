@@ -66,7 +66,7 @@ FEDORA_QCOW2_URL = 'https://download.fedoraproject.org/pub/fedora/linux/releases
 CIRROS_QCOW2_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'  # noqa E501
 UBUNTU_ISO_URL = 'http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-amd64/current/images/netboot/mini.iso'  # noqa E501
 BAREMETAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/dib-user-image-dkms-grub.raw'  # noqa E501
-BAREMETAL_VIRTUAL_UBUNTU = 'http://mos-ironic.vm.mirantis.net/ipukha/trusty-server-cloudimg-amd64.img'  # noqa E501
+BAREMETAL_VIRTUAL_UBUNTU = UBUNTU_XENIAL_QCOW2_URL
 CONNTRACK_CIRROS_IMAGE = 'https://github.com/gdyuldin/ping/raw/master/cirros-0.3.4-x86_64-disk.img'  # noqa E501
 CUSTOM_PING_COMMAND_PATH = '/usr/bin/fix_id_ping'
 
@@ -211,14 +211,14 @@ BAREMETAL_DISK_INFO = [{"name": "sda",
                                      "size": 10000}]}]
 BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
                                 "extra": [],
-                                "free_space": 11000,
+                                "free_space": 9000,
                                 "type": "disk",
                                 "id": "vda",
-                                "size": 11000,
+                                "size": 9000,
                                 "volumes": [{"mount": "/",
                                              "type": "partition",
                                              "file_system": "ext4",
-                                             "size": 10000}]}]
+                                             "size": 8000}]}]
 
 IMAGE_VISIBILITY_PUBLIC = 'public'
 GLANCE_API_CONFIG_PATH = os.environ.get('GLANCE_API_CONFIG_PATH',
@@ -246,8 +246,9 @@ BAREMETAL_RAM = 8192
 BAREMETAL_VCPUS = 4
 BAREMETAL_DISK = 150
 
-BAREMETAL_VIRTUAL_RAM = 3072
+BAREMETAL_VIRTUAL_RAM = 1024
 BAREMETAL_VIRTUAL_VCPUS = 1
+BAREMETAL_VIRTUAL_DISK = 10
 
 ROLE_MEMBER = '_member_'
 ROLE_ADMIN = 'admin'
@@ -474,6 +475,7 @@ SERVICE_TERMINATE_TIMEOUT = 60
 SERVICE_START_TIMEOUT = 60
 AGENT_RESCHEDULING_TIMEOUT = 3 * 60
 FLOATING_IP_DETACH_TIMEOUT = 30
+FLOATING_IP_BIND_TIMEOUT = 5 * 60
 
 NEUTRON_UPDATE_SEC_GROUP_RULES_TIMEOUT = 30
 
@@ -519,7 +521,7 @@ HA_STATE_ACTIVE_ATTRS = {'ha_state': 'active'}
 
 ROUTER_AVAILABLE_TIMEOUT = 60
 
-LOCAL_CIDR = '192.168.3.0/24'
+LOCAL_CIDR = u'192.168.3.0/24'
 LOCAL_IPS = ['192.168.3.{}'.format(i) for i in range(1, 254)]
 
 PORT_DEVICE_OWNER_ROUTER_GATEWAY = 'network:router_gateway'
