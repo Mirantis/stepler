@@ -64,7 +64,8 @@ class IronicPortSteps(base.BaseSteps):
         Raises:
             TimeoutExpired|AssertionError: if check failed after timeout
         """
-        addresses = addresses or utils.generate_mac_addresses(count=count)
+        addresses = addresses or list(
+            utils.generate_mac_addresses(count=count))
         ports = []
         _port_addresses = {}
 

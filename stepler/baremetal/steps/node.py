@@ -65,7 +65,7 @@ class IronicNodeSteps(BaseSteps):
         Returns:
             nodes_list (list): list of created ironic nodes
         """
-        nodes_names = nodes_names or utils.generate_ids(count=count)
+        nodes_names = nodes_names or list(utils.generate_ids(count=count))
         nodes_list = []
         _nodes_names = {}
 
