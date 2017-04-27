@@ -267,6 +267,7 @@ SERVER_ACTIVE_TIMEOUT = 14 * 60
 SERVER_UPDATE_TIMEOUT = 2 * 60
 SERVER_SHELVE_TIMEOUT = 5 * 60
 SERVER_SHUTOFF_TIMEOUT = 3 * 60
+SERVER_ERROR_TIMEOUT = 60
 UBUNTU_BOOT_COMPLETE_TIMEOUT = 10 * 60
 
 REBOOT_SOFT = 'SOFT'
@@ -319,6 +320,7 @@ SERVER_ATTR_HYPERVISOR_HOSTNAME = 'OS-EXT-SRV-ATTR:hypervisor_hostname'
 SERVER_ATTR_INSTANCE_NAME = 'OS-EXT-SRV-ATTR:instance_name'
 SERVER_ATTR_LOCKED = 'locked'
 SERVER_ATTR_DESCRIPTION = 'description'
+SERVER_ATTR_FAULT = 'fault'
 
 
 IO_SPEC_LIMIT = 10240000
@@ -688,3 +690,11 @@ S3_PORT = '8080'
 
 
 RADOSGW_SOCK_FILE = '/var/run/ceph/ceph-client.radosgw.gateway.asok'
+
+# NFV
+CPU_PINNING_CMD_1 = ("grep isolcpus /proc/cmdline > /dev/null && "
+                     "lscpu | grep 'NUMA node(s)'")
+CPU_PINNING_CMD_2 = "grep isolcpus /proc/cmdline && lscpu | grep 'NUMA node'"
+CPU_PINNING_CMD_3 = "grep MemTotal /sys/devices/system/node/node*/meminfo"
+CANNOT_FIT_NUMA_TOPOLOGY = ('Requested instance NUMA topology cannot fit '
+                            'the given host NUMA topology')

@@ -17,6 +17,7 @@ Nova fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .aggregates import *  # noqa
 from .availability_zones import *  # noqa
 from .flavors import *  # noqa
 from .floating_ips import *  # noqa
@@ -35,6 +36,10 @@ from .services import *  # noqa
 
 
 __all__ = sorted([  # sort for documentation
+    'aggregate_steps',
+    'create_aggregate',
+    'pinned_aggregate',
+
     'get_availability_zone_steps',
     'availability_zone_steps',
     'nova_availability_zone',
