@@ -52,7 +52,7 @@ class IronicChassisSteps(BaseSteps):
             list: list of the created chassis or None in case of exception,
             and an exception, if it appears.
         """
-        descriptions = descriptions or utils.generate_ids(count=count)
+        descriptions = descriptions or list(utils.generate_ids(count=count))
         chassis_list = []
         _chassis_descriptions = {}
 
@@ -65,8 +65,8 @@ class IronicChassisSteps(BaseSteps):
         if check:
             self.check_ironic_chassis_presence(chassis_list)
             for chassis in chassis_list:
-                assert_that(_chassis_descriptions[chassis.uuid],
-                            equal_to(descriptions))
+                assert_that(chassis.description,
+                            equal_to(_chassis_descriptions[chassis.uuid]))
 
         return chassis_list
 

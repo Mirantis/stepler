@@ -38,7 +38,7 @@ OS_FAULTS_DICT_CONFIG = {
         'args': {
             'address': getenv('CLOUD_DRIVER_ADDRESS', 'devstack.local'),
             'username': getenv('CLOUD_DRIVER_USERNAME', 'root'),
-            'private_key_file': getenv('CLOUD_DRIVER_KEYFILE')
+            'private_key_file': getenv('CLOUD_DRIVER_KEYFILE', '')
         }
     },
     'power_managements': [{
@@ -55,4 +55,11 @@ if OS_FAULTS_DICT_CONFIG['cloud_management']['driver'] == 'tcpcloud':
     OS_FAULTS_DICT_CONFIG['cloud_management']['args'].update({
         'master_sudo': get_bool(getenv('CLOUD_DRIVER_MASTER_SUDO', 'True')),
         'slave_username': getenv('CLOUD_DRIVER_SLAVE_USERNAME', 'root'),
+    })
+
+# devstack-specific
+if OS_FAULTS_DICT_CONFIG['cloud_management']['driver'] == 'devstack':
+    OS_FAULTS_DICT_CONFIG['cloud_management']['args'].update({
+        'password': getenv('CLOUD_DRIVER_PASSWORD', 'password'),
+        'iface': getenv('CLOUD_DRIVER_IFACE', 'eth0'),
     })

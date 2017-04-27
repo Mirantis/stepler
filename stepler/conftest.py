@@ -127,6 +127,7 @@ __all__ = sorted([  # sort for documentation
     'users',
     'new_user_with_project',
     'ec2_steps',
+    'two_projects',
 
     'create_network',
     'network',
@@ -177,6 +178,7 @@ __all__ = sorted([  # sort for documentation
     'hypervisor_steps',
     'keypair',
     'keypair_steps',
+    'get_keypair_steps',
     'nova_client',
     'get_nova_client',
     'generate_os_workload',

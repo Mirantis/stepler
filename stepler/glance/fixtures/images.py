@@ -371,9 +371,11 @@ def baremetal_ubuntu_image(get_glance_steps, uncleanable, credentials):
     if config.BAREMETAL_NODE:
         image_url = config.BAREMETAL_UBUNTU
         disk_info = json.dumps(config.BAREMETAL_DISK_INFO)
+        disk_format = 'raw'
     else:
         image_url = config.BAREMETAL_VIRTUAL_UBUNTU
         disk_info = json.dumps(config.BAREMETAL_VIRTUAL_DISK_INFO)
+        disk_format = 'qcow2'
 
     with create_images_context(
             get_glance_steps,
@@ -381,7 +383,7 @@ def baremetal_ubuntu_image(get_glance_steps, uncleanable, credentials):
             credentials,
             utils.generate_ids('baremetal-ubuntu'),
             image_url,
-            disk_format='raw',
+            disk_format=disk_format,
             container_format='bare',
             cpu_arch="x86_64",
             hypervisor_type="baremetal",

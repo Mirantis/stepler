@@ -66,6 +66,7 @@ __all__ = sorted([  # sort for documentation
     'keypair',
     'keypair_steps',
     'keypairs_cleanup',
+    'get_keypair_steps',
 
     'get_nova_client',
     'nova_client',

@@ -184,17 +184,21 @@ def baremetal_flavor(create_flavor):
     Returns:
         object: baremetal flavor
     """
+    params = {'is_public': True}
     if config.BAREMETAL_NODE:
-        ram = config.BAREMETAL_RAM
-        vcpus = config.BAREMETAL_VCPUS
+        params.update({
+            'ram': config.BAREMETAL_RAM,
+            'vcpus': config.BAREMETAL_VCPUS,
+            'disk': config.BAREMETAL_DISK,
+        })
     else:
-        ram = config.BAREMETAL_VIRTUAL_RAM
-        vcpus = config.BAREMETAL_VIRTUAL_VCPUS
+        params.update({
+            'ram': config.BAREMETAL_VIRTUAL_RAM,
+            'vcpus': config.BAREMETAL_VIRTUAL_VCPUS,
+            'disk': config.BAREMETAL_VIRTUAL_DISK,
+        })
 
-    return create_flavor(next(utils.generate_ids('bm_flavor')),
-                         ram=ram,
-                         vcpus=vcpus,
-                         disk=config.BAREMETAL_DISK)
+    return create_flavor(next(utils.generate_ids('bm_flavor')), **params)
 
 
 @pytest.fixture

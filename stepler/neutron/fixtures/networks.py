@@ -137,8 +137,7 @@ def public_network(network_steps):
     Returns:
         dict: public network
     """
-    params = {'router:external': True, 'status': 'ACTIVE'}
-    return network_steps.get_network(**params)
+    return network_steps.get_public_network()
 
 
 @pytest.fixture

@@ -18,6 +18,7 @@ Neutron tests fixtures
 # limitations under the License.
 
 import functools
+import ipaddress
 
 import attrdict
 from neutronclient.common import exceptions
@@ -668,26 +669,18 @@ def neutron_2_servers_2_nets_diff_projects(
 
 
 @pytest.fixture
-def neutron_2_nets_diff_projects(role_steps,
-                                 create_project,
-                                 create_user,
-                                 create_network,
-                                 create_subnet,
-                                 create_router,
-                                 router_steps,
+def neutron_2_nets_diff_projects(request, two_projects, create_network,
+                                 create_subnet, create_router, router_steps,
                                  public_network):
     """Function fixture to prepare environment for different projects tests.
 
     This fixture:
-        * creates 2 projects;
         * creates net, subnet, router in each project;
 
     All created resources are to be deleted after test.
 
     Args:
-        role_steps (obj): instantiated role steps
-        create_project (function): function to create project
-        create_user (function): function to create user
+        two_projects (obj): keystone 2 projects with 2 users fixture
         create_network (function): function to create network
         create_subnet (function): function to create subnet
         create_router (function): function to create router
@@ -696,34 +689,32 @@ def neutron_2_nets_diff_projects(role_steps,
 
     Returns:
         attrdict.AttrDict: created resources
+
     """
-    base_name, = utils.generate_ids()
+    params = dict(same_cidr=False)
+    params.update(getattr(request, 'param', {}))
+
+    if params['same_cidr']:
+        cidrs = [config.LOCAL_CIDR] * 2
+    else:
+        net = ipaddress.ip_network(config.LOCAL_CIDR)
+        cidrs = [str(network) for network in net.supernet().subnets()]
     resources = []
-    admin_role = role_steps.get_role(name=config.ROLE_ADMIN)
 
-    for i in range(2):
-        project_resources = attrdict.AttrDict()
-        name = "{}_{}".format(base_name, i)
-        # Create project
-        project = create_project(name)
-        user = create_user(user_name=name, password=name)
-        role_steps.grant_role(admin_role, user, project=project)
-        credentials = dict(
-            username=name, password=name, project_name=name)
-
+    for project_resources, cidr in zip(two_projects.resources, cidrs):
         # Create network with subnet and router
-        network = create_network(name, project_id=project.id)
+        network = create_network(
+            project_resources.name, project_id=project_resources.project_id)
         subnet = create_subnet(
-            name,
+            project_resources.name,
             network=network,
-            project_id=project.id,
-            cidr=config.LOCAL_CIDR)
-        router = create_router(name, project_id=project.id)
+            project_id=project_resources.project_id,
+            cidr=cidr)
+        router = create_router(
+            project_resources.name, project_id=project_resources.project_id)
         router_steps.set_gateway(router, public_network)
         router_steps.add_subnet_interface(router, subnet)
-        project_resources.credentials = credentials
         project_resources.net_router = [network, router]
-        project_resources.project_id = project.id
         resources.append(project_resources)
 
     return attrdict.AttrDict(resources=resources)
