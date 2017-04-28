@@ -170,7 +170,8 @@ class NetworkSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         params = {'router:external': True, 'status': 'ACTIVE'}
-        return self.get_networks(check=check, **params)[0]
+        return self.get_networks(current_project_only=False, check=check,
+                                 **params)[0]
 
     @steps_checker.step
     def get_network_id_by_mac(self, mac):
