@@ -19,71 +19,25 @@ Fixtures for flavors
 
 import pytest
 
-from stepler.horizon.steps import FlavorsSteps
-from stepler.third_party import utils
+from stepler.horizon import steps
 
 __all__ = [
-    'create_flavor',
-    'create_flavors',
-    'flavor',
-    'flavors_steps'
+    'flavors_steps_ui',
 ]
 
 
 @pytest.fixture
-def flavors_steps(login, horizon):
-    """Fixture to get flavors steps."""
-    return FlavorsSteps(horizon)
+def flavors_steps_ui(flavor_steps, login, horizon):
+    """Fixture to get flavors steps.
 
+    flavor_steps instance is used for flavors cleanup.
 
-@pytest.yield_fixture
-def create_flavors(flavors_steps, horizon):
-    """Fixture to create flavors with options.
+    Args:
+        flavor_steps (object): instantiated flavor steps
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
 
-    Can be called several times during test.
+    Returns:
+        stepler.horizon.steps.FlavorsSteps: instantiated flavors steps
     """
-    flavors = []
-
-    def _create_flavors(*flavor_names):
-        _flavors = []
-
-        for flavor_name in flavor_names:
-            flavors_steps.create_flavor(flavor_name)
-            flavor = utils.AttrDict(name=flavor_name)
-
-            flavors.append(flavor)
-            _flavors.append(flavor)
-
-        return _flavors
-
-    yield _create_flavors
-
-    if flavors:
-        flavors_steps.delete_flavors([flavor.name for flavor in flavors])
-
-
-@pytest.yield_fixture
-def create_flavor(flavors_steps):
-    """Fixture to create flavor with options.
-
-    Can be called several times during test.
-    """
-    flavors = []
-
-    def _create_flavor(flavor_name):
-        flavors_steps.create_flavor(flavor_name)
-        flavor = utils.AttrDict(name=flavor_name)
-        flavors.append(flavor)
-        return flavor
-
-    yield _create_flavor
-
-    for flavor in flavors:
-        flavors_steps.delete_flavor(flavor.name)
-
-
-@pytest.fixture
-def flavor(create_flavor):
-    """Fixture to create flavor with default options before test."""
-    flavor_name = next(utils.generate_ids('flavor'))
-    return create_flavor(flavor_name)
+    return steps.FlavorsSteps(horizon)

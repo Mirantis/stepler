@@ -164,6 +164,7 @@ __all__ = sorted([  # sort for documentation
 
     'create_flavor',
     'flavor',
+    'flavors',
     'flavor_steps',
     'tiny_flavor',
     'small_flavor',

@@ -17,12 +17,14 @@ Flavors steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, equal_to  # noqa H301
+
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 
-from .base import BaseSteps
 
-
-class FlavorsSteps(BaseSteps):
+class FlavorsSteps(base.BaseSteps):
     """Flavors steps."""
 
     def _page_flavors(self):
@@ -30,9 +32,11 @@ class FlavorsSteps(BaseSteps):
         return self._open(self.app.page_flavors)
 
     @steps_checker.step
-    def create_flavor(self, flavor_name, cpu_count=1, ram=1024, root_disk=1,
-                      check=True):
+    def create_flavor(self, flavor_name=None, cpu_count=1, ram=1024,
+                      root_disk=1, check=True):
         """Step to create flavor."""
+        flavor_name = flavor_name or next(utils.generate_ids('flavor'))
+
         page_flavors = self._page_flavors()
         page_flavors.button_create_flavor.click()
 
@@ -47,6 +51,8 @@ class FlavorsSteps(BaseSteps):
             self.close_notification('success')
             page_flavors.table_flavors.row(
                 name=flavor_name).wait_for_presence()
+
+        return flavor_name
 
     @steps_checker.step
     def delete_flavor(self, flavor_name, check=True):
@@ -123,6 +129,8 @@ class FlavorsSteps(BaseSteps):
         if check:
             page_flavors.table_flavors.row(
                 name=flavor_name).wait_for_presence()
+            flavor_metadata = self.get_metadata(flavor_name)
+            assert_that(flavor_metadata, equal_to(metadata))
 
     @steps_checker.step
     def get_metadata(self, flavor_name):
