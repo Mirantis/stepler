@@ -237,3 +237,25 @@ class FlavorSteps(BaseSteps):
             err_msg = "Flavor with ID {!r} doesn't have " \
                       "set metadata".format(flavor.id)
             assert_that(flavor.get_keys(), has_entries(metadata), err_msg)
+
+    @steps_checker.step
+    def get_metadata(self, flavor, check=True):
+        """Step to get metadata on a flavor.
+
+        Args:
+            flavor (object): nova flavor
+            check (bool): flag whether to check step or not
+
+        Raises:
+            AssertionError: if check failed
+
+        Returns:
+            dict: key/value pairs
+        """
+        metadata = flavor.get_keys()
+
+        if check:
+            err_msg = "Flavor {!r} doesn't have metadata".format(flavor.id)
+            assert_that(metadata, is_not(empty()), err_msg)
+
+        return metadata
