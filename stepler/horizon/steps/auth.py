@@ -17,12 +17,11 @@ Horizon steps for authentication
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 
-from .base import BaseSteps
 
-
-class AuthSteps(BaseSteps):
+class AuthSteps(base.BaseSteps):
     """Authentication steps."""
 
     def _page_login(self):

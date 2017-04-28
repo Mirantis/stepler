@@ -56,9 +56,9 @@ __all__ = sorted([  # sort for documentation
     'video_capture',
     'virtual_display',
 
-    'create_container',
+    'create_container_ui',
+    'containers_steps_ui',
     'container',
-    'containers_steps',
 
     'admin_only',
     'any_one',

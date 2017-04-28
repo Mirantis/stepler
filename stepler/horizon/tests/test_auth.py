@@ -25,5 +25,15 @@ import pytest
 @pytest.mark.idempotent_id('ca21eba8-932d-4a8b-b691-fbdc54448c8d',
                            any_one='user')
 @pytest.mark.usefixtures('any_one')
-def test_login(login):
-    """Verify that one can login and logout."""
+def test_login(credentials, auth_steps):
+    """**Scenario:** Verify that one can login and logout.
+
+    **Steps:**
+
+    #. Login to horizon
+    #. Switch to user project
+    #. Logout
+    """
+    auth_steps.login(credentials.username, credentials.password)
+    auth_steps.switch_project(credentials.project_name)
+    auth_steps.logout()
