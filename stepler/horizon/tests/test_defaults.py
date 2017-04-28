@@ -26,5 +26,14 @@ class TestAdminOnly(object):
 
     @pytest.mark.idempotent_id('5b2ce43c-924c-4bae-bac0-f5d6ed69d72e')
     def test_update_defaults(self, update_defaults):
-        """Verify that admin can update default quotas."""
+        """**Scenario:** Verify that admin can update default quotas.
+
+        **Steps:**
+
+        #. Update ``volumes`` parameter using UI
+
+        **Teardown:**
+
+        #. Restore original value for ``volumes`` parameter
+        """
         update_defaults({'volumes': 100000})

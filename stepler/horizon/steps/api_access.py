@@ -19,16 +19,15 @@ Horizon steps for api access
 
 import os
 
-from hamcrest import (assert_that, equal_to, contains_string,
+from hamcrest import (assert_that, contains_string, equal_to,
                       greater_than)  # noqa H301
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
 
-from .base import BaseSteps
 
-
-class ApiAccessSteps(BaseSteps):
+class ApiAccessSteps(base.BaseSteps):
     """Api access steps."""
 
     def _tab_api_access(self):
@@ -95,8 +94,8 @@ class ApiAccessSteps(BaseSteps):
         tab_api_access = self._tab_api_access()
         tab_api_access.button_view_credentials.click()
 
-        with tab_api_access.form_user_credentials as form:
-            if check:
+        if check:
+            with tab_api_access.form_user_credentials as form:
                 assert_that(form.field_username.value,
                             equal_to(self._username))
                 assert_that(form.field_project_name.value,

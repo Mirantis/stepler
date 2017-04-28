@@ -43,7 +43,7 @@ from .volumes import *  # noqa
 __all__ = sorted([  # sort for documentation
     'access_steps_ui',
 
-    'api_access_steps',
+    'api_access_steps_ui',
 
     'auth_steps',
     'horizon',
@@ -64,7 +64,7 @@ __all__ = sorted([  # sort for documentation
     'any_one',
     'user_only',
 
-    'defaults_steps',
+    'defaults_steps_ui',
     'update_defaults',
 
     'flavors_steps_ui',
@@ -73,10 +73,7 @@ __all__ = sorted([  # sort for documentation
     'floating_ip',
     'floating_ips_steps',
 
-    'create_host_aggregate',
-    'create_host_aggregates',
-    'host_aggregate',
-    'host_aggregates_steps',
+    'host_aggregates_steps_ui',
 
     'horizon_images',
     'horizon_image',

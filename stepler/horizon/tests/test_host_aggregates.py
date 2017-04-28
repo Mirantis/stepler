@@ -25,5 +25,13 @@ class TestAdminOnly(object):
     """Tests for admin only."""
 
     @pytest.mark.idempotent_id('8afb843e-1c38-4d21-b977-b45704cb74ad')
-    def test_host_aggregate_create(self, host_aggregate):
-        """Verify that admin can create host aggregation."""
+    def test_create_delete_host_aggregate(self, host_aggregates_steps_ui):
+        """**Scenario:** Admin can create and delete host aggregate.
+
+        **Steps:**
+
+        #. Create host aggregate using UI
+        #. Delete host aggregate using UI
+        """
+        host_aggregate_name = host_aggregates_steps_ui.create_host_aggregate()
+        host_aggregates_steps_ui.delete_host_aggregate(host_aggregate_name)

@@ -19,12 +19,11 @@ Horizon steps for defaults
 
 from hamcrest import assert_that, equal_to  # noqa
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 
-from .base import BaseSteps
 
-
-class DefaultsSteps(BaseSteps):
+class DefaultsSteps(base.BaseSteps):
     """Access & security steps."""
 
     def _page_defaults(self):
