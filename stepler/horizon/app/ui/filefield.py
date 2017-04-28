@@ -38,6 +38,6 @@ class FileField(ui.Block):
         """Set file to upload."""
         self.browse_button.click()
         # Choose file with opened dialog
-        os.system('xdotool type "{}"'.format(value))
+        os.system('xdotool type --clearmodifiers "{}"'.format(value))
         os.system('xdotool key Return')
         assert value.endswith(self.value)

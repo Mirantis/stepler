@@ -17,17 +17,17 @@ Images steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, has_entries  # noqa
+from hamcrest import (assert_that, contains_inanyorder, equal_to, greater_than,
+                      has_entries, has_length, is_in)  # noqa
 
 from stepler import config
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
 from stepler.third_party import waiter
 
-from .base import BaseSteps
 
-
-class ImagesSteps(BaseSteps):
+class ImagesSteps(base.BaseSteps):
     """Images steps."""
 
     def _page_images(self):
@@ -96,14 +96,25 @@ class ImagesSteps(BaseSteps):
 
         if check:
             self.close_notification('success')
+
+            def _check_image_active():
+                # workaround for bug
+                # https://bugs.launchpad.net/mos/+bug/1675786
+                self.refresh_page()
+                try:
+                    page_images.table_images.row(
+                        name=image_name).wait_for_status(config.STATUS_ACTIVE,
+                                                         timeout=0)
+                    return True
+                except waiter.TimeoutExpired:
+                    return False
+
             if big_image:
-                page_images.table_images.row(
-                    name=image_name).wait_for_status(
-                    config.STATUS_ACTIVE,
-                    timeout=config.LONG_EVENT_TIMEOUT)
+                waiter.wait(_check_image_active,
+                            timeout_seconds=config.LONG_EVENT_TIMEOUT)
             else:
-                page_images.table_images.row(
-                    name=image_name).wait_for_status(config.STATUS_ACTIVE)
+                waiter.wait(_check_image_active,
+                            timeout_seconds=config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def delete_image(self, image_name, check=True):
@@ -157,6 +168,7 @@ class ImagesSteps(BaseSteps):
 
         Raises:
             TimeoutExpired: if image status is not 'Active'
+            AssertionError: if check failed
         """
         page_images = self._page_images()
         with page_images.table_images.row(
@@ -176,6 +188,8 @@ class ImagesSteps(BaseSteps):
         if check:
             page_images.table_images.row(
                 name=image_name).wait_for_status(config.STATUS_ACTIVE)
+            image_metadata = self.get_metadata(image_name)
+            assert_that(image_metadata, equal_to(metadata))
 
     @steps_checker.step
     def delete_metadata(self, image_name, metadata, check=True):
@@ -347,25 +361,45 @@ class ImagesSteps(BaseSteps):
     @steps_checker.step
     def check_images_pagination(self, image_names):
         """Step to check images pagination."""
+        assert_that(image_names, has_length(greater_than(2)))
+
+        ordered_names = []
+        count = len(image_names)
         page_images = self._page_images()
-        page_images.table_images.row(name=image_names[0]).wait_for_presence()
+
+        # image names can be unordered so we should try to retrieve
+        # any image from image_names list
+        def _get_current_image_name():
+            rows = page_images.table_images.rows
+            assert_that(rows, has_length(1))
+
+            image_name = rows[0].cell('name').value
+            assert_that(image_name, is_in(image_names))
+
+            return image_name
+
+        image_name = _get_current_image_name()
+        ordered_names.append(image_name)
 
         assert_that(page_images.table_images.link_next.is_present,
                     equal_to(True))
         assert_that(page_images.table_images.link_prev.is_present,
                     equal_to(False))
 
-        page_images.table_images.link_next.click()
-        page_images.table_images.row(name=image_names[1]).wait_for_presence()
+        # check all elements except for the first and the last
+        for _ in range(1, count - 1):
+            page_images.table_images.link_next.click()
+            image_name = _get_current_image_name()
+            ordered_names.append(image_name)
 
-        assert_that(page_images.table_images.link_next.is_present,
-                    equal_to(True))
-        assert_that(page_images.table_images.link_prev.is_present,
-                    equal_to(True))
+            assert_that(page_images.table_images.link_next.is_present,
+                        equal_to(True))
+            assert_that(page_images.table_images.link_prev.is_present,
+                        equal_to(True))
 
         page_images.table_images.link_next.click()
-        page_images.table_images.row(
-            name=config.HORIZON_TEST_IMAGE).wait_for_presence()
+        volume_name = _get_current_image_name()
+        ordered_names.append(volume_name)
 
         assert_that(page_images.table_images.link_next.is_present,
                     equal_to(False))
@@ -380,8 +414,21 @@ class ImagesSteps(BaseSteps):
         assert_that(page_images.table_images.link_prev.is_present,
                     equal_to(True))
 
+        # check that all created image names have been checked
+        assert_that(ordered_names, contains_inanyorder(*image_names))
+
+        for i in range(count - 2, 0, -1):
+            page_images.table_images.link_prev.click()
+            page_images.table_images.row(
+                name=ordered_names[i]).wait_for_presence()
+
+            assert_that(page_images.table_images.link_next.is_present,
+                        equal_to(True))
+            assert_that(page_images.table_images.link_prev.is_present,
+                        equal_to(True))
+
         page_images.table_images.link_prev.click()
-        page_images.table_images.row(name=image_names[0]).wait_for_presence()
+        page_images.table_images.row(name=ordered_names[0]).wait_for_presence()
 
         assert_that(page_images.table_images.link_next.is_present,
                     equal_to(True))
