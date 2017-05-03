@@ -22,4 +22,6 @@ from .nfv import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'nfv_steps',
+    'computes_without_hp',
+    'computes_with_hp_2mb',
 ])

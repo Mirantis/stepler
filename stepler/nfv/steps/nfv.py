@@ -20,7 +20,8 @@ NFV steps
 import math
 import xml.etree.ElementTree as ElementTree
 
-from hamcrest import (assert_that, equal_to, greater_than, has_length)  # noqa
+from hamcrest import (assert_that, equal_to, is_not, greater_than,
+                      has_length, has_key)  # noqa
 
 from stepler.third_party import steps_checker
 
@@ -151,3 +152,70 @@ class NfvSteps(object):
                              for cell in numa_cells}
         assert_that(memory_allocation, equal_to(exp_mem),
                     "Unexpected memory allocation")
+
+    @steps_checker.step
+    def check_server_page_size(self, server_dump, exp_size):
+        """Step to check server page size.
+
+        Args:
+            server_dump (str): server dump (result of 'virsh dumpxml')
+            exp_size (int): expected page size on server
+
+        Raises:
+            AssertionError: if unexpected page size in server dump
+        """
+        root = ElementTree.fromstring(server_dump)
+        if exp_size is None:
+            assert_that(root.find('memoryBacking'), equal_to(None),
+                        "Unexpected element 'memoryBacking' in server dump")
+        else:
+            assert_that(root.find('memoryBacking'), is_not(equal_to(None)),
+                        "Element 'memoryBacking' is not found in server dump")
+            page_size = int(root.find('memoryBacking').find('hugepages').find(
+                'page').get('size'))
+            assert_that(page_size, equal_to(exp_size),
+                        "Unexpected page size")
+
+    @steps_checker.step
+    def check_hugepage_diff(self, hp_data_old, hp_data_new, diff_hps):
+        """Step to check differences between old and new HP sizes on computes.
+
+        Total sizes are constant, but free sizes can be changed, and
+        differences must be equal to expected values.
+
+        Args:
+            hp_data_old (list): list [[fqdn1, hp_data1] ...], where
+                hp_data - dict like {2048: {'nr': 1024, 'free': 512},
+                                     1048576: {'nr': 0, 'free': 0}
+            hp_data_new (list): list of the same structure
+            diff_hps (dict): differences between old and new states, ex:
+                {fqdn1: {2048: 512}, fqdn2: {2048: 256}}
+
+        Raises:
+            AssertionError: if unexpected size values or some inconsistency
+                between old, new data and expected differences
+        """
+        data_old = dict(hp_data_old)
+        data_new = dict(hp_data_new)
+
+        for fqdn in data_old:
+            assert_that(data_new, has_key(fqdn))
+            assert_that(len(data_new[fqdn]), equal_to(len(data_old[fqdn])))
+            for size in data_old[fqdn]:
+                assert_that(data_new[fqdn], has_key(size))
+                assert_that(data_new[fqdn][size]['nr'],
+                            equal_to(data_old[fqdn][size]['nr']),
+                            'unexpected change of total memory')
+                if fqdn in diff_hps and size in diff_hps[fqdn]:
+                    assert_that(data_old[fqdn][size]['nr'],
+                                is_not(equal_to(0)),
+                                'some differences are expected for hosts'
+                                ' without HP of size={}'.format(size))
+                    assert_that(data_new[fqdn][size]['free'],
+                                equal_to(data_old[fqdn][size]['free'] -
+                                         diff_hps[fqdn][size]),
+                                'unexpected value of free memory')
+                else:
+                    assert_that(data_new[fqdn][size]['free'],
+                                equal_to(data_old[fqdn][size]['free']),
+                                'unexpected change of free memory')

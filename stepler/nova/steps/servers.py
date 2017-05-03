@@ -877,12 +877,21 @@ class ServerSteps(base.BaseSteps):
                     timeout=config.SERVER_ACTIVE_TIMEOUT)
 
     @steps_checker.step
-    def check_server_host_attr(self, server, host_name, equal=True, timeout=0):
+    def check_server_host_attr(self, server, host_name=None, host_names=None,
+                               equal=True, timeout=0):
         """Verify step to check server's host attribute value.
+
+        There are several modes of check:
+        - host name must be equal to a value
+        - host name must be not equal to a value
+        - host name must be equal to a value from list
+        - host name must be not equal to values of list
 
         Args:
             server (object): nova server
-            host_name (str): host name to compare with server's host
+            host_name (str, optional): host name to compare with server's host
+            host_names (list, optional): host names to compare with server's
+                host. It's ignored if host_name is set.
             equal (bool): flag whether servers's host should be
                 equal to `host_name` or not
             timeout (int): seconds to wait result of check
@@ -893,7 +902,10 @@ class ServerSteps(base.BaseSteps):
 
         def predicate():
             server.get()
-            expected_value = host_name
+            if host_name:
+                expected_value = host_name
+            else:
+                expected_value = is_in(host_names)
             if not equal:
                 expected_value = is_not(expected_value)
             return waiter.expect_that(server,

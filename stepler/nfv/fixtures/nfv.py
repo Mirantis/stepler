@@ -19,11 +19,14 @@ NFV fixtures
 
 import pytest
 
+from stepler import config
 from stepler.nfv import steps
 
 
 __all__ = [
-    'nfv_steps'
+    'nfv_steps',
+    'computes_without_hp',
+    'computes_with_hp_2mb',
 ]
 
 
@@ -35,3 +38,49 @@ def nfv_steps():
         stepler.nfv.steps.NvfSteps: instantiated NFV steps
     """
     return steps.NfvSteps()
+
+
+@pytest.fixture
+def computes_without_hp(os_faults_steps):
+    """Function fixture to get computes without hugepages.
+
+    Args:
+        os_faults_steps (OsFaultsSteps): initialized os-faults steps
+
+    Returns:
+        list: FQDNs of computes without HP
+    """
+    fqdns = []
+    for fqdn, hp_data in os_faults_steps.get_hugepages_data():
+        if sum(hp_data) == 0:
+            fqdns.append(fqdn)
+    return fqdns
+
+
+@pytest.fixture
+def computes_with_hp_2mb(request, os_faults_steps):
+    """Function fixture to get computes without hugepages.
+
+    Can be parametrized with 'host_count' and 'hp_count_per_host'.
+    Example:
+        @pytest.mark.parametrize('computes_with_hp_2mb',
+                                [{'host_count': 2, 'hp_count_per_host': 1024}],
+                                indirect=['computes_with_hp_2mb'])
+
+    Args:
+        request (obj): py.test SubRequest
+        os_faults_steps (OsFaultsSteps): initialized os-faults steps
+
+    Returns:
+        list: FQDNs of computes with HP 2MB
+    """
+    min_count = getattr(request, 'param', {'host_count': 1,
+                                           'hp_count_per_host': 1024})
+    fqdns = []
+    for fqdn, hp_data in os_faults_steps.get_hugepages_data(
+            sizes=[config.page_2mb]):
+        if hp_data[config.page_2mb]['nr'] >= min_count['hp_count_per_host']:
+            fqdns.append(fqdn)
+    if len(fqdns) < min_count['host_count']:
+        pytest.skip("Insufficient count of compute nodes with 2Mb huge pages")
+    return fqdns
