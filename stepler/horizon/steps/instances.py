@@ -17,16 +17,17 @@ Instances steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, equal_to, is_not  # noqa
+from hamcrest import (assert_that, contains_inanyorder, equal_to, greater_than,
+                      has_length, is_in, is_not)  # noqa
 
 from stepler import config
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party import utils
 from stepler.third_party import waiter
 
-from .base import BaseSteps
 
-
-class InstancesSteps(BaseSteps):
+class InstancesSteps(base.BaseSteps):
     """Instances steps."""
 
     def _page_instances(self):
@@ -34,9 +35,13 @@ class InstancesSteps(BaseSteps):
         return self._open(self.app.page_instances)
 
     @steps_checker.step
-    def create_instance(self, instance_name, network_name='admin_internal_net',
-                        count=1, check=True):
+    def create_instance(self, instance_name=None,
+                        network_name='admin_internal_net',
+                        count=1,
+                        check=True):
         """Step to create instance."""
+        instance_name = instance_name or next(utils.generate_ids('instance'))
+
         page_instances = self._page_instances()
 
         page_instances.button_launch_instance.click()
@@ -209,38 +214,61 @@ class InstancesSteps(BaseSteps):
             name=instance_name).wait_for_status('Active')
 
     @steps_checker.step
-    def check_instances_pagination(self, instances):
+    def check_instances_pagination(self, instance_names):
         """Step to check instances pagination."""
+        assert_that(instance_names, has_length(greater_than(2)))
+
+        ordered_names = []
+        count = len(instance_names)
         page_instances = self._page_instances()
-        page_instances.table_instances.row(
-            name=instances[2].name).wait_for_presence(30)
+
+        # instances can be unordered so we should try to retrieve
+        # any instance from instances list
+        def _get_current_instance_name():
+            rows = page_instances.table_instances.rows
+            assert_that(rows, has_length(1))
+
+            instance_name = rows[0].cell('name').value
+            assert_that(instance_name, is_in(instance_names))
+
+            return instance_name
+
+        instance_name = _get_current_instance_name()
+        ordered_names.append(instance_name)
+
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_absence()
 
+        # check all elements except for the first and the last
+        for _ in range(1, count - 1):
+            page_instances.table_instances.link_next.click()
+
+            instance_name = _get_current_instance_name()
+            ordered_names.append(instance_name)
+            page_instances.table_instances.link_next.wait_for_presence()
+            page_instances.table_instances.link_prev.wait_for_presence()
+
         page_instances.table_instances.link_next.click()
 
-        page_instances.table_instances.row(
-            name=instances[1].name).wait_for_presence(30)
-        page_instances.table_instances.link_next.wait_for_presence()
-        page_instances.table_instances.link_prev.wait_for_presence()
-
-        page_instances.table_instances.link_next.click()
-
-        page_instances.table_instances.row(
-            name=instances[0].name).wait_for_presence(30)
+        instance_name = _get_current_instance_name()
+        ordered_names.append(instance_name)
         page_instances.table_instances.link_next.wait_for_absence()
         page_instances.table_instances.link_prev.wait_for_presence()
 
+        # check that all created instance names have been checked
+        assert_that(ordered_names, contains_inanyorder(*instance_names))
+
+        for i in range(count - 2, 0, -1):
+            page_instances.table_instances.link_prev.click()
+
+            page_instances.table_instances.row(
+                name=ordered_names[i]).wait_for_presence(30)
+            page_instances.table_instances.link_next.wait_for_presence()
+            page_instances.table_instances.link_prev.wait_for_presence()
+
         page_instances.table_instances.link_prev.click()
 
         page_instances.table_instances.row(
-            name=instances[1].name).wait_for_presence(30)
-        page_instances.table_instances.link_next.wait_for_presence()
-        page_instances.table_instances.link_prev.wait_for_presence()
-
-        page_instances.table_instances.link_prev.click()
-
-        page_instances.table_instances.row(
-            name=instances[2].name).wait_for_presence(30)
+            name=ordered_names[0]).wait_for_presence(30)
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_absence()

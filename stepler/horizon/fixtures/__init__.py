@@ -71,7 +71,7 @@ __all__ = sorted([  # sort for documentation
 
     'allocate_floating_ip',
     'floating_ip',
-    'floating_ips_steps',
+    'floating_ips_steps_ui',
 
     'host_aggregates_steps_ui',
 
@@ -79,9 +79,9 @@ __all__ = sorted([  # sort for documentation
     'horizon_image',
     'images_steps_ui',
 
-    'create_instance',
-    'instance',
-    'instances_steps',
+    'instances_steps_ui',
+    'horizon_servers',
+    'horizon_server',
 
     'keypairs_steps_ui',
     'namespaces_steps_ui',

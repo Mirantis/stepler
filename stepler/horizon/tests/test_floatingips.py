@@ -28,7 +28,23 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('57d7c23a-463e-49b7-843f-09ded9686fb9',
                                any_one='user')
-    def test_floating_ip_associate(self, instance, floating_ip,
-                                   floating_ips_steps):
-        """Verify that user can associate floating IP."""
-        floating_ips_steps.associate_floating_ip(floating_ip.ip, instance.name)
+    def test_floating_ip_associate(self, horizon_server, floating_ip,
+                                   floating_ips_steps_ui):
+        """**Scenario:** Verify that user can associate floating IP.
+
+        **Setup:**
+
+        #. Create floating IP using API
+        #. Create server using API
+
+        **Steps:**
+
+        #. Associate floating IP to server using UI
+
+        **Teardown:**
+
+        #. Delete floating IP using API
+        #. Delete server using API
+        """
+        floating_ips_steps_ui.associate_floating_ip(floating_ip.ip,
+                                                    horizon_server.name)

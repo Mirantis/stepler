@@ -195,7 +195,8 @@ class TestAnyOne(object):
                                any_one='admin')
     @pytest.mark.idempotent_id('439e8ca5-0d87-49aa-9458-a239fa6ff1e1',
                                any_one='user')
-    def test_launch_volume_as_instance(self, bootable_volume, instances_steps,
+    def test_launch_volume_as_instance(self, bootable_volume,
+                                       instances_steps_ui,
                                        volumes_steps_ui):
         """**Scenario:** Verify that admin can launch volume as instance.
 
@@ -218,8 +219,8 @@ class TestAnyOne(object):
             bootable_volume.name,
             instance_name,
             network_name=config.INTERNAL_NETWORK_NAME)
-        instances_steps.check_instance_active(instance_name)
-        instances_steps.delete_instance(instance_name)
+        instances_steps_ui.check_instance_active(instance_name)
+        instances_steps_ui.delete_instance(instance_name)
 
     @pytest.mark.idempotent_id('cdb362e0-4447-4f89-9af2-5e6f0e80e859',
                                any_one='admin')
