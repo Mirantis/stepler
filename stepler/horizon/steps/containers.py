@@ -20,12 +20,11 @@ Containers steps
 from hamcrest import assert_that, contains_string  # noqa
 import requests
 
+from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 
-from .base import BaseSteps
 
-
-class ContainersSteps(BaseSteps):
+class ContainersSteps(base.BaseSteps):
     """Containers steps."""
 
     def _page_containers(self):

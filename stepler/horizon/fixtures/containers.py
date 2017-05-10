@@ -19,32 +19,46 @@ Fixtures for containers
 
 import pytest
 
-from stepler.horizon.steps import ContainersSteps
+from stepler.horizon import steps
 from stepler.third_party import utils
 
 __all__ = [
-    'create_container',
+    'create_container_ui',
+    'containers_steps_ui',
     'container',
-    'containers_steps'
 ]
 
 
 @pytest.fixture
-def containers_steps(login, horizon):
-    """Fixture to get containers steps."""
-    return ContainersSteps(horizon)
+def containers_steps_ui(login, horizon):
+    """Fixture to get containers steps.
+
+    Args:
+        login (None): should log in horizon before steps using
+        horizon (Horizon): instantiated horizon web application
+
+    Returns:
+        stepler.horizon.steps.ContainersSteps: instantiated containers steps
+    """
+    return steps.ContainersSteps(horizon)
 
 
-@pytest.yield_fixture
-def create_container(containers_steps):
-    """Fixture to create container with options.
+@pytest.fixture
+def create_container_ui(containers_steps_ui):
+    """Callable fixture to create container with options.
 
     Can be called several times during test.
+
+    Args:
+        containers_steps_ui (obj): instantiated containers steps
+
+    Yields:
+        function: function to create container with options
     """
     containers = []
 
     def _create_container(container_name, public=False):
-        containers_steps.create_container(container_name, public=public)
+        containers_steps_ui.create_container(container_name, public=public)
         container = utils.AttrDict(name=container_name)
         containers.append(container)
         return container
@@ -52,11 +66,18 @@ def create_container(containers_steps):
     yield _create_container
 
     for container in containers:
-        containers_steps.delete_container(container.name)
+        containers_steps_ui.delete_container(container.name)
 
 
 @pytest.fixture
-def container(create_container):
-    """Fixture to create container with default options before test."""
+def container(create_container_ui):
+    """Fixture to create container with default options before test.
+
+    Args:
+        create_container(fucntion): function to create container with options
+
+    Returns:
+        AttrDict: dict with container name
+    """
     container_name = next(utils.generate_ids('container'))
-    return create_container(container_name)
+    return create_container_ui(container_name)

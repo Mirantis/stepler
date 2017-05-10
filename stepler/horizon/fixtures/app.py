@@ -19,15 +19,14 @@ Fixtures to run horizon, login, create demo user, etc
 
 import pytest
 
-from stepler.horizon.app import Horizon
-from stepler.horizon.steps import AuthSteps
-
 from stepler import config
+from stepler.horizon import app as horizon_app
+from stepler.horizon import steps
 
 __all__ = [
     'auth_steps',
     'horizon',
-    'login'
+    'login',
 ]
 
 
@@ -38,9 +37,9 @@ def horizon():
     It launches browser before tests and closes after.
 
     Yields:
-        Horizon: Instantiated horizon web application.
+        stepler.horizon.app.Horizon: instantiated horizon web application
     """
-    app = Horizon(config.OS_DASHBOARD_URL)
+    app = horizon_app.Horizon(config.OS_DASHBOARD_URL)
     yield app
     app.quit()
 
@@ -50,12 +49,12 @@ def auth_steps(horizon):
     """Function fixture to get auth steps.
 
     Args:
-        horizon (object): Instantiated horizon web application.
+        horizon (object): instantiated horizon web application
 
     Returns:
-        AuthSteps: instantiated auth steps.
+        stepler.horizon.steps.AuthSteps: instantiated auth steps
     """
-    return AuthSteps(horizon)
+    return steps.AuthSteps(horizon)
 
 
 @pytest.fixture
@@ -66,7 +65,7 @@ def login(auth_steps, credentials):
     Logs out after test.
 
     Args:
-        auth_steps (AuthSteps): instantiated auth steps.
+        auth_steps (AuthSteps): instantiated auth steps
     """
     auth_steps.login(credentials.username, credentials.password)
     auth_steps.switch_project(credentials.project_name)
