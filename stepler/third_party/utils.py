@@ -28,10 +28,12 @@ import tempfile
 import uuid
 
 import attrdict
+from hamcrest import equal_to
 import requests
 import six
 
 from stepler.third_party import context
+from stepler.third_party import waiter
 
 
 if six.PY3:
@@ -51,6 +53,7 @@ __all__ = [
     'slugify',
     'background',
     'join_process',
+    'check_ssh_connection_establishment',
 ]
 
 
@@ -416,3 +419,29 @@ def grouper(iterable, chunk_size):
             chunk = []
     if chunk:
         yield chunk
+
+
+def check_ssh_connection_establishment(server_ssh, must_work=True,
+                                       timeout=0):
+    """Function to check that ssh connection can be established.
+
+    Args:
+        server_ssh (ssh.SshClient): ssh connection
+        must_work (bool, optional): flag whether 'server_ssh' should be
+            able to connect or not
+        timeout (int, optional): seconds to wait a result of check
+
+    Raises:
+        RuntimeError: if `server_ssh` is not closed
+        TimeoutExpired: if check failed after timeout
+    """
+    err_msg = "Invalid SSH connection status to {}".format(server_ssh)
+    if timeout:
+        err_msg += " during polling time {} second(s)".format(timeout)
+
+    def _check_ssh_connection_establishment():
+        return waiter.expect_that(
+            server_ssh.check(), equal_to(must_work), err_msg)
+
+    waiter.wait(_check_ssh_connection_establishment,
+                timeout_seconds=timeout)

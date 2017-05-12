@@ -290,32 +290,6 @@ class ServerSteps(base.BaseSteps):
         return server_ssh
 
     @steps_checker.step
-    def check_ssh_connection_establishment(self, server_ssh, must_work=True,
-                                           timeout=0):
-        """Step to check that ssh connection can be established.
-
-        Args:
-            server_ssh (ssh.SshClient): ssh connection
-            must_work (bool, optional): flag whether 'server_ssh' should be
-                able to connect or not
-            timeout (int, optional): seconds to wait a result of check
-
-        Raises:
-            RuntimeError: if `server_ssh` is not closed
-            TimeoutExpired: if check failed after timeout
-        """
-        err_msg = "Invalid SSH connection status to {}".format(server_ssh)
-        if timeout:
-            err_msg += " during polling time {} second(s)".format(timeout)
-
-        def _check_ssh_connection_establishment():
-            return waiter.expect_that(
-                server_ssh.check(), equal_to(must_work), err_msg)
-
-        waiter.wait(_check_ssh_connection_establishment,
-                    timeout_seconds=timeout)
-
-    @steps_checker.step
     def check_active_ssh_connection(self, server_ssh, must_operable=True,
                                     timeout=0):
         """Step to check active ssh connection.

@@ -59,7 +59,7 @@ def test_ssh_unavailable_after_detach_floating_ip(
             server_ssh,
             must_operable=False,
             timeout=config.FLOATING_IP_DETACH_TIMEOUT)
-    server_steps.check_ssh_connection_establishment(
+    utils.check_ssh_connection_establishment(
         server_ssh, must_work=False)
 
 
@@ -125,12 +125,12 @@ def test_ssh_unavailable_after_deleting_tcp_rule(
             ssh_rule['id'], security_group['id'])
         server_steps.check_active_ssh_connection(
             server_ssh, must_operable=False, timeout=config.SSH_CLIENT_TIMEOUT)
-    server_steps.check_ssh_connection_establishment(
+    utils.check_ssh_connection_establishment(
         server_ssh, must_work=False)
 
     neutron_security_group_rule_steps.add_rules_to_group(
         security_group['id'], config.SECURITY_GROUP_SSH_RULES)
-    server_steps.check_ssh_connection_establishment(server_ssh)
+    utils.check_ssh_connection_establishment(server_ssh)
 
 
 @pytest.mark.idempotent_id('d8eb0e19-a3b0-4c14-a1b5-087a4e9c8c96')
