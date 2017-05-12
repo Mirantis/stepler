@@ -1741,8 +1741,9 @@ class OsFaultsSteps(base.BaseSteps):
         return self.execute_cmd(glance_nodes.pick(), cmd)[0].payload['stdout']
 
     @steps_checker.step
-    def nova_compute_force_down(self, nova_api_node, failed_node, check=True):
-        """Step to set nova-compute service to Forced down status.
+    def nova_compute_force_down(self, nova_api_node, failed_node, unset=False,
+                                check=True):
+        """Step to set nova-compute service to Forced down status and back.
 
            It's executed on compute node where nova-compute service is stopped.
            It's required for nova evacuate tests.
@@ -1752,8 +1753,13 @@ class OsFaultsSteps(base.BaseSteps):
             failed_node (str): fqdn of node with stopped nova-compute service
             check (bool, optional): flag whether to check this step or not
         """
-        cmd = '{0} && nova service-force-down {1} {2}'.format(
+        if unset:
+            unset_option = "--unset "
+        else:
+            unset_option = ''
+        cmd = '{0} && nova service-force-down {1}{2} {3}'.format(
             config.OPENRC_ACTIVATE_CMD,
+            unset_option,
             failed_node,
             config.NOVA_COMPUTE)
 
@@ -2340,3 +2346,48 @@ class OsFaultsSteps(base.BaseSteps):
         cmd = "virsh dumpxml {}".format(instance_name)
         stdout = self.execute_cmd(node, cmd)[0].payload['stdout']
         return stdout
+
+    @steps_checker.step
+    def get_hugepages_data(self, fqdns=None, sizes=None):
+        """Step to get hugepage configuration data on computes.
+
+        Args:
+            fqdns (list, optional): list of FQDNs. If not set, hugepage data
+                are got from all compute nodes.
+            sizes (list, optional): list of page sizes, ex: [2048]. If not set,
+                data are got for all pages (2Mb, 1Gb)
+
+        Returns:
+            list: [[fqdn1, hp_data1], [fqdn2, hp_data2] ...], where
+                hp_data - dict like {2048: {'nr': 1024, 'free': 512},
+                                     1048576: {'nr': 0, 'free': 0}}
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            ValueError: wrong output of command (not single integer)
+        """
+        if fqdns:
+            nodes = self.get_nodes(fqdns=fqdns)
+        else:
+            nodes = self.get_compute_nodes()
+
+        sizes = sizes or [config.page_2mb, config.page_1gb]
+        hp_data = {}
+        for node in nodes:
+            hp_data[node.ip] = {size: {type: None for type in ['nr', 'free']}
+                                for size in sizes}
+
+        for size in sizes:
+            for type in ['nr', 'free']:
+                cmd = config.HP_GET_CONFIG_CMD.format(size=size, type=type)
+                results = self.execute_cmd(nodes, cmd)
+                for result in results:
+                    value = int(result.payload['stdout'])
+                    hp_data[result.host][size][type] = value
+
+        hp_config_data = []
+        for node in nodes:
+            if node.ip in hp_data:
+                hp_config_data.append([node.fqdn, hp_data[node.ip]])
+
+        return hp_config_data

@@ -169,6 +169,8 @@ __all__ = sorted([  # sort for documentation
     'neutron_security_group',
 
     'nfv_steps',
+    'computes_without_hp',
+    'computes_with_hp_2mb',
 
     'aggregate_steps',
     'create_aggregate',
