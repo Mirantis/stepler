@@ -52,13 +52,21 @@ AUTH_URL = os.environ.get('OS_AUTH_URL')
 
 if AUTH_URL:  # figure out keystone API version
     AUTH_URL = AUTH_URL.rstrip('/')  # remove last slash if it is present
-    version = AUTH_URL.rsplit('/')[-1]
-
+    version = AUTH_URL.rsplit('/')[-1]  # get version tail
     versions = ('v2.0', 'v3')
-    assert version in versions, \
-        "OS_AUTH_URL must have tail among values {!r}.".format(versions)
+    # Versionless AUTH_URL looks like http://1.2.3.4/identity
+    if version not in versions:
+        KEYSTONE_API_VERSION = int(
+            os.environ.get('OS_IDENTITY_API_VERSION', 3))
+        AUTH_URL = '{}/v{}'.format(AUTH_URL, KEYSTONE_API_VERSION)
+        if KEYSTONE_API_VERSION == 2:
+            AUTH_URL = '{}/v{}'.format(AUTH_URL, '2.0')
 
-    KEYSTONE_API_VERSION = 3 if version == 'v3' else 2
+    else:
+        assert version in versions, \
+            "OS_AUTH_URL must have tail among values {!r}.".format(versions)
+
+        KEYSTONE_API_VERSION = 3 if version == 'v3' else 2
 
 UBUNTU_QCOW2_URL = 'https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img'  # noqa E501
 UBUNTU_XENIAL_QCOW2_URL = 'https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img'  # noqa E501
