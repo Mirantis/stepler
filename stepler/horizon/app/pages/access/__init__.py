@@ -18,3 +18,4 @@ Access page
 # limitations under the License.
 
 from .page_access import PageAccess  # noqa
+from .page_manage_rules import PageManageRules  # noqa

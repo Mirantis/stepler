@@ -75,3 +75,41 @@ class AccessSteps(base.BaseSteps):
             self.close_notification('success')
             tab_security_groups.table_security_groups.row(
                 name=group_name).wait_for_absence()
+
+    @steps_checker.step
+    def add_group_rule(self, group_name, port_number='25', check=True):
+        """Step to add rule to the security group."""
+        with self._tab_security_groups().table_security_groups.row(
+                name=group_name).dropdown_menu as menu:
+            menu.item_default.click()
+
+        page_rules = self.app.page_manage_rules
+
+        page_rules.button_add_rule.click()
+
+        with page_rules.form_add_rule as form:
+            form.field_port.value = port_number
+            form.submit()
+
+        if check:
+            self.close_notification('success')
+            page_rules.table_rules.row(
+                port_range=port_number).wait_for_presence(30)
+
+        return port_number
+
+    @steps_checker.step
+    def delete_group_rule(self, port_number, check=True):
+        """Step to remove rule from the security group."""
+        page_rules = self.app.page_manage_rules
+
+        with page_rules.table_rules.row(port_range=port_number) as page:
+            page.checkbox.click()
+            page_rules.button_delete_rules.click()
+
+        page_rules.form_confirm.submit()
+
+        if check:
+            self.close_notification('success')
+            page_rules.table_rules.row(
+                port_range=port_number).wait_for_absence()
