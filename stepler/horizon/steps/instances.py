@@ -274,6 +274,36 @@ class InstancesSteps(base.BaseSteps):
         page_instances.table_instances.link_prev.wait_for_absence()
 
     @steps_checker.step
+    def nova_associate_floating_ip(self, instance_name, ip, check=True):
+        """Step to associate floating IP."""
+        page_instances = self._page_instances()
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_associate.click()
+
+        with page_instances.form_associate_floating_ip as form:
+            form.combobox_float_ip.value = ip
+            form.submit()
+
+        if check:
+            self.close_notification('success')
+
+    @steps_checker.step
+    def nova_disassociate_floating_ip(self, instance_name, check=True):
+        """Step to disassociate floating IP."""
+        page_instances = self._page_instances()
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_disassociate.click()
+
+        page_instances.form_confirm.submit()
+
+        if check:
+            self.close_notification('success')
+
+    @steps_checker.step
     def create_instance_snapshot(self, instance_name,
                                  snapshot_name=None,
                                  check=True):

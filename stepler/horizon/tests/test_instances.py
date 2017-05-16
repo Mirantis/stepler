@@ -163,6 +163,37 @@ class TestAnyOne(object):
         instances_steps_ui.filter_instances(query=horizon_servers[0].name)
         instances_steps_ui.reset_instances_filter()
 
+    @pytest.mark.idempotent_id('d6fc41ea-3a05-11e7-a867-ab2bfc1dfe61',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('df175266-3a05-11e7-9adf-2ba1863bd2b4',
+                               any_one='user')
+    def test_nova_associate_ip(self,
+                               horizon_server,
+                               floating_ip,
+                               instances_steps_ui):
+        """**Scenario:** Verify associate/disassociate ip to instance.
+
+        **Setup:**
+
+        #. Create server using API
+        #. Create floating IP using API
+
+        **Steps:**
+
+        #. Associate floating ip to instance
+        #. Disassociate floating ip from instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        #. Delete floating IP using API
+        """
+        instances_steps_ui.nova_associate_floating_ip(
+            horizon_server.name,
+            floating_ip.ip)
+        instances_steps_ui.nova_disassociate_floating_ip(
+            horizon_server.name)
+
     @pytest.mark.idempotent_id('886b9820-3ef4-11e7-b7fb-938b7d064835',
                                any_one='admin')
     @pytest.mark.idempotent_id('89e672f6-3ef4-11e7-95a1-b7df5a42063f',

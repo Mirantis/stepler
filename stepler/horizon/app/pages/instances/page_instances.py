@@ -148,7 +148,9 @@ class FormLaunchInstance(_ui.Form):
 
 @ui.register_ui(
     item_lock=ui.UI(By.CSS_SELECTOR, '*[id*="action_lock"]'),
-    item_unlock=ui.UI(By.CSS_SELECTOR, '*[id*="action_unlock"]'))
+    item_unlock=ui.UI(By.CSS_SELECTOR, '*[id*="action_unlock"]'),
+    item_associate=ui.UI(By.CSS_SELECTOR, '*[id*="action_associate"]'),
+    item_disassociate=ui.UI(By.CSS_SELECTOR, '*[id*="action_disassociate"]'))
 class DropdownMenu(_ui.DropdownMenu):
     """Dropdown menu for instance row."""
 
@@ -170,6 +172,12 @@ class TableInstances(_ui.Table):
     row_cls = RowInstance
 
 
+@ui.register_ui(combobox_port=ui.ComboBox(By.NAME, "instance_id"),
+                combobox_float_ip=ui.ComboBox(By.NAME, "ip_id"))
+class FormAssociateFloatingIP(_ui.Form):
+    """Form to associate."""
+
+
 @ui.register_ui(
     item_snapshot_name=ui.TextField(By.NAME, 'name'))
 class FormCreateInstanceSnapshot(_ui.Form):
@@ -185,6 +193,8 @@ class FormCreateInstanceSnapshot(_ui.Form):
         By.CSS_SELECTOR,
         'wizard[ng-controller="LaunchInstanceWizardController"]'),
     table_instances=TableInstances(By.ID, 'instances'),
+    form_associate_floating_ip=FormAssociateFloatingIP(
+        By.CSS_SELECTOR, '[action*="floating_ips/associate"]'),
     form_create_instance_snapshot=FormCreateInstanceSnapshot(
         By.CSS_SELECTOR,
         'form[action*="/create"]'))
