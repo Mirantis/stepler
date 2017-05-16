@@ -41,6 +41,8 @@ class FormUserCredentials(_ui.Form):
         By.ID, 'endpoints__action_download_openrc_v2'),
     button_download_v3_file=ui.Button(
         By.ID, 'endpoints__action_download_openrc'),
+    button_download_ec2=ui.Button(
+        By.ID, 'endpoints__action_download_ec2'),
     button_view_credentials=ui.Button(
         By.ID, 'endpoints__action_view_credentials'),
     form_user_credentials=FormUserCredentials(By.CSS_SELECTOR,

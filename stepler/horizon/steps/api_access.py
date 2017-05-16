@@ -19,8 +19,8 @@ Horizon steps for api access
 
 import os
 
-from hamcrest import (assert_that, contains_string, equal_to,
-                      greater_than)  # noqa H301
+from hamcrest import (assert_that, contains_string, equal_to, empty,
+                      greater_than, is_not)  # noqa H301
 
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
@@ -89,6 +89,15 @@ class ApiAccessSteps(base.BaseSteps):
                 contains_string('OS_PROJECT_ID={}'.format(self._project_id)))
 
     @steps_checker.step
+    def download_ec2(self, check=True):
+        """Step to download ec2 file."""
+        tab_api_access = self._tab_api_access()
+        tab_api_access.button_download_ec2.click()
+
+        if check:
+            self._wait_ec2_file_downloaded()
+
+    @steps_checker.step
     def view_credentials(self, check=True):
         """Step to view credentials."""
         tab_api_access = self._tab_api_access()
@@ -111,6 +120,16 @@ class ApiAccessSteps(base.BaseSteps):
         return os.path.join(self.app.download_dir,
                             self._project_name + '-openrc.sh')
 
+    @property
+    def _ec2_path(self):
+        waiter.expect_that(os.listdir(self.app.download_dir), is_not(empty))
+        path_files = os.listdir(self.app.download_dir)
+        ec2_path = self.app.download_dir
+        for f in path_files:
+            if ('.zip' in f) and ('stepler' in f):
+                ec2_path = os.path.join(ec2_path, f)
+        return ec2_path
+
     def _remove_rc_file(self):
         if os.path.exists(self._rc_path):
             os.remove(self._rc_path)
@@ -125,8 +144,8 @@ class ApiAccessSteps(base.BaseSteps):
 
     @property
     def _project_id(self):
-        return self.app.page_access.tab_api_access \
-            .label_volume.value.split('/')[-1]
+        return (self.app.page_access.tab_api_access.
+                label_volume.value.split('/')[-1])
 
     @property
     def _auth_url(self):
@@ -140,5 +159,15 @@ class ApiAccessSteps(base.BaseSteps):
                                       greater_than(0))
 
         waiter.wait(_is_rc_file_downloaded,
+                    timeout_seconds=30,
+                    sleep_seconds=0.1)
+
+    def _wait_ec2_file_downloaded(self):
+
+        def _is_ec2_file_downloaded():
+            return waiter.expect_that(os.stat(self._ec2_path).st_size,
+                                      greater_than(0))
+
+        waiter.wait(_is_ec2_file_downloaded,
                     timeout_seconds=30,
                     sleep_seconds=0.1)
