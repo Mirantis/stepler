@@ -21,21 +21,23 @@ import pytest
 from stepler import config
 from stepler.third_party import utils
 
-TEST_METADATA_INFO = {'key': next(utils.generate_ids('test_meta'))}
+METADATA_KEY = 'key'
+METADATA_VALUE = next(utils.generate_ids('test_meta'))
+TEST_METADATA_INFO = {METADATA_KEY: METADATA_VALUE}
 
 SET_META_CMD_TEMPLATE = (
     '/bin/bash -c '
     '"{openrc_cmd}; nova host-meta {host} set {key}={value}"'.format(
         openrc_cmd=config.OPENRC_ACTIVATE_CMD,
         host='{host}',
-        key=TEST_METADATA_INFO.keys()[0],
-        value=TEST_METADATA_INFO.values()[0]))
+        key=METADATA_KEY,
+        value=METADATA_VALUE))
 DEL_META_CMD_TEMPLATE = (
     '/bin/bash -c '
     '"{openrc_cmd}; nova host-meta {host} delete {key}"'.format(
         openrc_cmd=config.OPENRC_ACTIVATE_CMD,
         host='{host}',
-        key=TEST_METADATA_INFO.keys()[0]))
+        key=METADATA_KEY))
 
 
 @pytest.mark.idempotent_id('fb831027-2663-4b76-b81f-868a85ca08fe')

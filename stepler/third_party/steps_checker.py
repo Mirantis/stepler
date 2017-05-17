@@ -189,7 +189,7 @@ def pytest_configure(config):
             if attr_name not in STEPS:
                 continue
 
-            step_func = getattr(step_cls, attr_name).im_func
+            step_func = six.get_unbound_function(getattr(step_cls, attr_name))
             step_func = utils.get_unwrapped_func(step_func)
 
             validator = StepValidator(step_func)
@@ -575,19 +575,6 @@ def _get_step_classes():
                 step_classes.append(obj)
 
     return step_classes
-
-
-def _get_orig_func(func):
-    """Get original unwrapped function under decorator(s)."""
-    if func.__name__ != func.func_code.co_name:
-        for cell in func.func_closure:
-            obj = cell.cell_contents
-            if inspect.isfunction(obj):
-                if func.__name__ == obj.func_code.co_name:
-                    return obj
-                else:
-                    return _get_orig_func(obj)
-    return func
 
 
 def _is_ast_check(node):

@@ -149,19 +149,33 @@ def revert_environment(destructor, snapshot_name):
         try:
             nodes.revert(snapshot_name)
             break
-        except Exception:
+        except Exception as e:
+            LOG.error(e)
             time.sleep(5)
+    else:
+        raise Exception("Can't revert snapshot {}".format(snapshot_name))
     # Wait some time for preventing ansible freezes on time synchronization.
     time.sleep(10)
-    waiter.wait(nodes.run_task, args=({'command': 'hwclock --hctosys'},),
-                timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
-                predicate_timeout=60,
-                expected_exceptions=(executor.AnsibleExecutionUnreachable,
-                                     executor.AnsibleExecutionException))
+    waiter.wait(
+        nodes.run_task,
+        args=({
+            'command': 'hwclock --hctosys --directisa'
+        }, ),
+        timeout_seconds=config.NODES_AVAILABILITY_TIMEOUT,
+        predicate_timeout=60,
+        expected_exceptions=(executor.AnsibleExecutionUnreachable,
+                             executor.AnsibleExecutionException))
     # Restart ceph services
-    nodes.run_task({'command': 'systemctl restart ceph-\*.service'},
-                   raise_on_error=False)
-    nodes.run_task({'command': 'rm -rf {}'.format(config.RADOSGW_SOCK_FILE)},
-                   raise_on_error=False)
-    nodes.run_task({'command': 'systemctl restart radosgw.service'},
-                   raise_on_error=False)
+    nodes.run_task(
+        {
+            'command': 'systemctl restart ceph-\*.service'
+        }, raise_on_error=False)
+    nodes.run_task(
+        {
+            'command': 'rm -rf {}'.format(config.RADOSGW_SOCK_FILE)
+        },
+        raise_on_error=False)
+    nodes.run_task(
+        {
+            'command': 'systemctl restart radosgw.service'
+        }, raise_on_error=False)

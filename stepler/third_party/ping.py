@@ -24,6 +24,7 @@ import signal
 import sys
 import tempfile
 
+import six
 import waiting
 
 if os.name == 'posix' and sys.version_info[0] < 3:
@@ -42,7 +43,7 @@ class PingResult(object):
     _received_count_re = r'(?P<count>\d+)(?:( packets)? received)'
 
     def __init__(self):
-        self.stdout = ''
+        self._stdout = ''
 
     @property
     def transmitted(self):
@@ -63,6 +64,16 @@ class PingResult(object):
     @property
     def loss(self):
         return self.transmitted - self.received
+
+    @property
+    def stdout(self):
+        return self._stdout
+
+    @stdout.setter
+    def stdout(self, value):
+        if isinstance(value, six.binary_type):
+            value = value.decode('utf-8')
+        self._stdout = value
 
 
 class Pinger(object):

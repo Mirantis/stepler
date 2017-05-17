@@ -268,4 +268,4 @@ _plugins = [
     'supported_platforms',
 ]
 
-pytest_plugins = map(lambda plugin: 'stepler.third_party.' + plugin, _plugins)
+pytest_plugins = ['stepler.third_party.' + plugin for plugin in _plugins]

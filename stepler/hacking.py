@@ -19,6 +19,8 @@ Some hacks for tests
 
 import socket
 
+import six
+
 
 def settimeout():
     """Function to return wrapper over ``socket.socket.set_timeout``."""
@@ -35,7 +37,7 @@ def settimeout():
             return
         settimeout_func(self, timeout)
 
-    settimeout_func = socket.socket.settimeout.im_func
+    settimeout_func = six.get_unbound_function(socket.socket.settimeout)
     wrapper.__doc__ = settimeout_func.__doc__
     wrapper.__name__ = settimeout_func.__name__
     return wrapper
