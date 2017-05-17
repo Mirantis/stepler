@@ -17,6 +17,7 @@ Subnets fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from neutronclient.common import exceptions
 import pytest
 
 from stepler.neutron import steps
@@ -86,7 +87,10 @@ def create_subnet(subnet_steps):
     yield _create_subnet
 
     for subnet in subnets:
-        subnet_steps.delete(subnet)
+        try:
+            subnet_steps.delete(subnet)
+        except exceptions.NotFound:
+            pass
 
 
 @pytest.fixture

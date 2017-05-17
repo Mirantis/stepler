@@ -19,6 +19,9 @@ Neutron client wrapper
 
 from stepler.neutron.client import agent
 from stepler.neutron.client import floating_ip
+from stepler.neutron.client import lbaas_listener
+from stepler.neutron.client import lbaas_loadbalancer
+from stepler.neutron.client import lbaas_pool
 from stepler.neutron.client import network
 from stepler.neutron.client import port
 from stepler.neutron.client import quota
@@ -36,6 +39,18 @@ class NeutronClient(object):
     @property
     def agents(self):
         return agent.AgentManager(self)
+
+    @property
+    def lbaas_listeners(self):
+        return lbaas_listener.ListenerManager(self)
+
+    @property
+    def lbaas_loadbalancers(self):
+        return lbaas_loadbalancer.LoadBalancerManager(self)
+
+    @property
+    def lbaas_pools(self):
+        return lbaas_pool.PoolManager(self)
 
     @property
     def floating_ips(self):

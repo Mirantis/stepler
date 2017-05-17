@@ -57,7 +57,7 @@ def transform_one(f):
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
         result = f(self, *args, **kwargs)
-        return self._resource_class(result)
+        return self._make_resource(result)
     return wrapper
 
 
@@ -66,7 +66,7 @@ def transform_many(f):
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
         result = f(self, *args, **kwargs)
-        return [self._resource_class(item) for item in result]
+        return [self._make_resource(item) for item in result]
     return wrapper
 
 
@@ -92,6 +92,7 @@ class BaseNeutronManager(object):
     """Base Neutron components manager."""
 
     NAME = ''
+    API_NAME = None
     _resource_class = Resource
 
     def __init__(self, client):
@@ -104,34 +105,39 @@ class BaseNeutronManager(object):
         self.client = client
         self._rest_client = self.client._rest_client
 
+    def _make_resource(self, result):
+        resource = self._resource_class(result)
+        resource.client = self.client
+        return resource
+
     @property
     def _create_method(self):
         """Returns resource create callable."""
-        methodname = 'create_{}'.format(self.NAME)
+        methodname = 'create_{}'.format(self.API_NAME or self.NAME)
         return getattr(self._rest_client, methodname)
 
     @property
     def _delete_method(self):
         """Returns resource delete callable."""
-        methodname = 'delete_{}'.format(self.NAME)
+        methodname = 'delete_{}'.format(self.API_NAME or self.NAME)
         return getattr(self._rest_client, methodname)
 
     @property
     def _list_method(self):
         """Returns resource list callable."""
-        methodname = 'list_{}s'.format(self.NAME)
+        methodname = 'list_{}s'.format(self.API_NAME or self.NAME)
         return getattr(self._rest_client, methodname)
 
     @property
     def _show_method(self):
         """Returns resource show callable."""
-        methodname = 'show_{}'.format(self.NAME)
+        methodname = 'show_{}'.format(self.API_NAME or self.NAME)
         return getattr(self._rest_client, methodname)
 
     @property
     def _update_method(self):
         """Returns resource update callable."""
-        methodname = 'update_{}'.format(self.NAME)
+        methodname = 'update_{}'.format(self.API_NAME or self.NAME)
         return getattr(self._rest_client, methodname)
 
     @transform_one
