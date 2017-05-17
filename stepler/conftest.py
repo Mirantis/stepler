@@ -139,7 +139,7 @@ __all__ = sorted([  # sort for documentation
 
     'token_steps',
     'get_service_steps',
-    'service_steps'
+    'service_steps',
 
     'create_network',
     'network',
