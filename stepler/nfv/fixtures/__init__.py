@@ -24,4 +24,7 @@ __all__ = sorted([  # sort for documentation
     'nfv_steps',
     'computes_without_hp',
     'computes_with_hp_2mb',
+    'computes_with_hp_1gb',
+    'computes_with_hp_mixed',
+    'create_servers_to_allocate_hp',
 ])

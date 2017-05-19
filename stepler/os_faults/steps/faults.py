@@ -2379,7 +2379,7 @@ class OsFaultsSteps(base.BaseSteps):
 
         for size in sizes:
             for type in ['nr', 'free']:
-                cmd = config.HP_GET_CONFIG_CMD.format(size=size, type=type)
+                cmd = config.HP_GET_DATA_CMD_1.format(size=size, type=type)
                 results = self.execute_cmd(nodes, cmd)
                 for result in results:
                     value = int(result.payload['stdout'])
@@ -2391,3 +2391,32 @@ class OsFaultsSteps(base.BaseSteps):
                 hp_config_data.append([node.fqdn, hp_data[node.ip]])
 
         return hp_config_data
+
+    @steps_checker.step
+    def get_hugepage_distribition_per_numa_node(self, node, numa_count,
+                                                sizes=None):
+        """Step to get hugepage distribution for numa on compute node.
+
+        Args:
+            node (NodeCollection): compute node
+
+        Returns:
+            dict: "numa<i>" -> dict like {2048: {'nr': 1024, 'free': 512},
+                                     1048576: {'nr': 0, 'free': 0}}
+
+        Raises:
+            AnsibleExecutionException: if command execution failed
+            ValueError: wrong output of command (not single integer)
+        """
+        sizes = sizes or [config.page_2mb, config.page_1gb]
+        hp_data = collections.defaultdict(
+            lambda: collections.defaultdict(dict))
+        for numa_id in range(numa_count):
+            for size in sizes:
+                for type in ['nr', 'free']:
+                    cmd = config.HP_GET_DATA_CMD_2.format(
+                        numa_id=numa_id, size=size, type=type)
+                    results = self.execute_cmd(node, cmd)
+                    value = int(results[0].payload['stdout'])
+                    hp_data["numa{}".format(numa_id)][size][type] = value
+        return hp_data

@@ -21,12 +21,15 @@ import pytest
 
 from stepler import config
 from stepler.nfv import steps
-
+from stepler.third_party import utils
 
 __all__ = [
     'nfv_steps',
     'computes_without_hp',
     'computes_with_hp_2mb',
+    'computes_with_hp_1gb',
+    'computes_with_hp_mixed',
+    'create_servers_to_allocate_hp',
 ]
 
 
@@ -59,7 +62,7 @@ def computes_without_hp(os_faults_steps):
 
 @pytest.fixture
 def computes_with_hp_2mb(request, os_faults_steps):
-    """Function fixture to get computes without hugepages.
+    """Function fixture to get computes with hugepages 2Mb.
 
     Can be parametrized with 'host_count' and 'hp_count_per_host'.
     Example:
@@ -72,7 +75,7 @@ def computes_with_hp_2mb(request, os_faults_steps):
         os_faults_steps (OsFaultsSteps): initialized os-faults steps
 
     Returns:
-        list: FQDNs of computes with HP 2MB
+        list: FQDNs of computes with HP 2Mb
     """
     min_count = getattr(request, 'param', {'host_count': 1,
                                            'hp_count_per_host': 1024})
@@ -84,3 +87,125 @@ def computes_with_hp_2mb(request, os_faults_steps):
     if len(fqdns) < min_count['host_count']:
         pytest.skip("Insufficient count of compute nodes with 2Mb huge pages")
     return fqdns
+
+
+@pytest.fixture
+def computes_with_hp_1gb(request, os_faults_steps):
+    """Function fixture to get computes with hugepages 1Gb.
+
+    Can be parametrized with 'host_count' and 'hp_count_per_host'.
+    Example:
+        @pytest.mark.parametrize('computes_with_hp_1gb',
+                                [{'host_count': 2, 'hp_count_per_host': 4}],
+                                indirect=['computes_with_hp_1gb'])
+
+    Args:
+        request (obj): py.test SubRequest
+        os_faults_steps (OsFaultsSteps): initialized os-faults steps
+
+    Returns:
+        list: FQDNs of computes with HP 1Gb
+    """
+    min_count = getattr(request, 'param', {'host_count': 1,
+                                           'hp_count_per_host': 4})
+    fqdns = []
+    for fqdn, hp_data in os_faults_steps.get_hugepages_data(
+            sizes=[config.page_1gb]):
+        if hp_data[config.page_1gb]['nr'] >= min_count['hp_count_per_host']:
+            fqdns.append(fqdn)
+    if len(fqdns) < min_count['host_count']:
+        pytest.skip("Insufficient count of compute nodes with 1Gb huge pages")
+    return fqdns
+
+
+@pytest.fixture
+def computes_with_hp_mixed(request, os_faults_steps):
+    """Function fixture to get computes with hugepages 2Mb and 1Gb both.
+
+    Can be parametrized with 'host_count', 'hp_count_2mb' and 'hp_count_1gb'
+    Example:
+        @pytest.mark.parametrize(
+            'computes_with_hp_mixed',
+            [{'host_count': 2, 'hp_count_2mb': 1024, 'hp_count_1gb': 4}],
+            indirect=['computes_with_hp_mixed'])
+
+    Args:
+        request (obj): py.test SubRequest
+        os_faults_steps (OsFaultsSteps): initialized os-faults steps
+
+    Returns:
+        list: FQDNs of computes with HP 2Mb and 1Gb
+    """
+    min_count = getattr(request, 'param', {'host_count': 1,
+                                           'hp_count_2mb': 1024,
+                                           'hp_count_1gb': 4})
+    fqdns = []
+    for fqdn, hp_data in os_faults_steps.get_hugepages_data(
+            sizes=[config.page_2mb, config.page_1gb]):
+        if ((hp_data[config.page_2mb]['nr'] >= min_count['hp_count_2mb']) and
+                (hp_data[config.page_1gb]['nr'] >= min_count['hp_count_1gb'])):
+            fqdns.append(fqdn)
+    if len(fqdns) < min_count['host_count']:
+        pytest.skip("Insufficient count of computes with 2Mb/1Gb huge pages")
+    return fqdns
+
+
+@pytest.fixture
+def create_servers_to_allocate_hp(cirros_image,
+                                  security_group,
+                                  net_subnet_router,
+                                  flavor_steps,
+                                  create_flavor,
+                                  server_steps,
+                                  host_steps,
+                                  os_faults_steps):
+    """Callable function fixture to allocate hugepages on compute.
+
+    This fixture creates servers with specific flavors to allocate 2Mb or 1Gb
+    hugepages on all numa nodes of one compute. After that, free memory can be
+    empty or not (set as parameter).
+
+    Args:
+        cirros_image (object): cirros image
+        security_group (obj): nova security group
+        net_subnet_router (tuple): neutron network, subnet, router
+        flavor_steps (FlavorSteps): instantiated flavor steps
+        create_flavor (function): function to create flavor
+        server_steps (ServerSteps): instantiated server steps
+        host_steps (HostSteps): instantiated host steps
+        os_faults_steps (OsFaultsSteps): initialized os-faults steps
+
+    Returns:
+        function: function to create servers
+    """
+    def _create_servers_to_allocate_hp(fqdn, size, ram_left_free=0):
+        node = os_faults_steps.get_nodes(fqdns=[fqdn])
+        host_cpus = os_faults_steps.get_cpu_distribition_per_numa_node(node)
+        hp_data = os_faults_steps.get_hugepage_distribition_per_numa_node(
+            node, numa_count=len(host_cpus), sizes=[size])
+
+        flv_sizes = [hp_data[numa][size]['free'] * size / 1024
+                     for numa, hp in hp_data.items() if hp[size]['free'] != 0]
+        flv_sizes.sort(reverse=True)
+
+        host_name = host_steps.get_host(fqdn=fqdn).host_name
+
+        for flv_size in flv_sizes:
+            if flv_size <= ram_left_free:
+                continue
+            flavor_name = next(utils.generate_ids('flavor'))
+            flavor = create_flavor(flavor_name, ram=flv_size - ram_left_free,
+                                   vcpus=1, disk=1)
+            metadata = {'hw:mem_page_size': str(size)}
+            flavor_steps.set_metadata(flavor, metadata)
+
+            server_steps.create_servers(
+                image=cirros_image,
+                flavor=flavor,
+                networks=[net_subnet_router[0]],
+                security_groups=[security_group],
+                username=config.CIRROS_USERNAME,
+                password=config.CIRROS_PASSWORD,
+                availability_zone='nova:{}'.format(host_name))
+
+    return _create_servers_to_allocate_hp

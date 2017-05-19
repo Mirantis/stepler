@@ -711,6 +711,8 @@ CANNOT_FIT_NUMA_TOPOLOGY = ('Requested instance NUMA topology cannot fit '
 
 page_1gb = 1048576
 page_2mb = 2048
-HP_GET_CONFIG_CMD = ("cat /sys/kernel/mm/hugepages/hugepages-{size}kB/"
+HP_GET_DATA_CMD_1 = ("cat /sys/kernel/mm/hugepages/hugepages-{size}kB/"
                      "{type}_hugepages || echo 0")
+HP_GET_DATA_CMD_2 = ("cat /sys/devices/system/node/node{numa_id}/hugepages/"
+                     "hugepages-{size}kB/{type}_hugepages || echo 0")
 TIME_AFTER_NOVA_COMPUTE_UP = 10
