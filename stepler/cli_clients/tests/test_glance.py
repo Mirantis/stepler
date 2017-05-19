@@ -139,7 +139,7 @@ def test_download_zero_size_image(glance_steps,
 @pytest.mark.idempotent_id('30537390-e1ba-47bc-aca0-db94a740f728',
                            api_version=2)
 @pytest.mark.parametrize('api_version', [1, 2])
-def test_project_in_image_member_list(cirros_image,
+def test_project_in_image_member_list(cirros_image_shared,
                                       project,
                                       cli_glance_steps,
                                       glance_steps,
@@ -164,9 +164,9 @@ def test_project_in_image_member_list(cirros_image,
     #. Delete project
     #. Delete cirros image
     """
-    glance_steps.bind_project(cirros_image, project, check=False)
+    glance_steps.bind_project(cirros_image_shared, project, check=False)
     cli_glance_steps.check_project_in_image_member_list(
-        cirros_image, project, api_version=api_version)
+        cirros_image_shared, project, api_version=api_version)
 
 
 @pytest.mark.idempotent_id('885ce1ec-ad7d-4401-b67d-14b5f2451674',
@@ -174,7 +174,7 @@ def test_project_in_image_member_list(cirros_image,
 @pytest.mark.idempotent_id('3adc71e3-2362-4a95-aac6-93a14da65487',
                            api_version=2)
 @pytest.mark.parametrize('api_version', [1, 2])
-def test_create_image_member(cirros_image,
+def test_create_image_member(cirros_image_shared,
                              project,
                              cli_glance_steps,
                              glance_steps,
@@ -196,9 +196,9 @@ def test_create_image_member(cirros_image,
     #. Delete project
     #. Delete cirros image
     """
-    cli_glance_steps.create_image_member(cirros_image, project,
+    cli_glance_steps.create_image_member(cirros_image_shared, project,
                                          api_version=api_version)
-    glance_steps.check_image_bind_status(cirros_image, project)
+    glance_steps.check_image_bind_status(cirros_image_shared, project)
 
 
 @pytest.mark.idempotent_id('41594846-bf76-4132-9d80-3cb679b12516',
@@ -206,7 +206,7 @@ def test_create_image_member(cirros_image,
 @pytest.mark.idempotent_id('e2393652-ae09-42ae-87fd-7b16adeaa6f7',
                            api_version=2)
 @pytest.mark.parametrize('api_version', [1, 2])
-def test_delete_image_member(cirros_image,
+def test_delete_image_member(cirros_image_shared,
                              project,
                              cli_glance_steps,
                              glance_steps,
@@ -229,10 +229,10 @@ def test_delete_image_member(cirros_image,
     #. Delete project
     #. Delete cirros image
     """
-    glance_steps.bind_project(cirros_image, project)
-    cli_glance_steps.delete_image_member(cirros_image, project,
+    glance_steps.bind_project(cirros_image_shared, project)
+    cli_glance_steps.delete_image_member(cirros_image_shared, project,
                                          api_version=api_version)
-    glance_steps.check_image_bind_status(cirros_image, project,
+    glance_steps.check_image_bind_status(cirros_image_shared, project,
                                          must_bound=False)
 
 

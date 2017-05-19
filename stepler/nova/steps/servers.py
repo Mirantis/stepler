@@ -284,7 +284,7 @@ class ServerSteps(base.BaseSteps):
                                    timeout=ssh_timeout,
                                    proxy_cmd=proxy_cmd)
         if check:
-            self.check_ssh_connection_establishment(
+            utils.check_ssh_connection_establishment(
                 server_ssh, timeout=config.SSH_CONNECT_TIMEOUT)
 
         return server_ssh

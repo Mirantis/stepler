@@ -54,6 +54,7 @@ OS_FAULTS_DICT_CONFIG = {
 if OS_FAULTS_DICT_CONFIG['cloud_management']['driver'] == 'tcpcloud':
     OS_FAULTS_DICT_CONFIG['cloud_management']['args'].update({
         'master_sudo': get_bool(getenv('CLOUD_DRIVER_MASTER_SUDO', 'True')),
+        'slave_sudo': get_bool(getenv('CLOUD_DRIVER_SLAVE_SUDO', 'True')),
         'slave_username': getenv('CLOUD_DRIVER_SLAVE_USERNAME', 'root'),
     })
 

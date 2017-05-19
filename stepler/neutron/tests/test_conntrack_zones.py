@@ -228,6 +228,8 @@ def test_ping_unavailable_after_deleting_icmp_rule(
 
 
 @pytest.mark.idempotent_id('bf8d9694-4fbb-416f-b5b8-a073c3739b15')
+@pytest.mark.parametrize('neutron_2_nets_diff_projects', [{'same_cidr': True}],
+                         indirect=True)
 def test_connectivity_with_different_projects(
         neutron_conntrack_2_projects_resources,
         os_faults_steps):
@@ -274,8 +276,9 @@ def test_connectivity_with_different_projects(
         project_1_resources.servers[1])
     proj_2_server_2_ip = proj_2_server_steps.get_fixed_ip(
         project_2_resources.servers[1])
-    compute = os_faults_steps.get_nodes(
-        fqdns=[neutron_conntrack_2_projects_resources.hostname])
+    compute_fqdn = os_faults_steps.get_fqdn_by_host_name(
+        neutron_conntrack_2_projects_resources.hostname)
+    compute = os_faults_steps.get_nodes(fqdns=[compute_fqdn])
     with proj_1_server_steps.check_fixed_id_ping_loss_context(
             proj_1_server_2_ip,
             icmp_id=icmp_id,

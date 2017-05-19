@@ -271,9 +271,7 @@ def ubuntu_server(ubuntu_image,
 
 
 @pytest.fixture
-def get_ssh_proxy_cmd(network_steps,
-                      agent_steps,
-                      os_faults_steps,
+def get_ssh_proxy_cmd(network_steps, agent_steps, os_faults_steps,
                       server_steps):
     """Callable function fixture to get ssh proxy data of server.
 
@@ -288,9 +286,15 @@ def get_ssh_proxy_cmd(network_steps,
     """
     ssh_opts = ('-o UserKnownHostsFile=/dev/null '
                 '-o StrictHostKeyChecking=no')
+    username = 'root'
+    sudo = ''
     if os_faults_steps.get_cloud_param_value('driver') == config.TCP_CLOUD:
         ssh_opts += ' -i {}'.format(
             os_faults_steps.get_cloud_param_value('private_key_file'))
+        username = os_faults_steps.get_cloud_param_value('slave_username')
+        options = os_faults_steps.get_cloud_param_value(
+            'cloud_executor').options
+        sudo = 'sudo' if options.become else ''
 
     def _get_dhcp_host(net_id):
         agents = agent_steps.get_dhcp_agents_for_net({'id': net_id})
@@ -311,15 +315,19 @@ def get_ssh_proxy_cmd(network_steps,
             timeout_seconds=config.NEUTRON_AGENT_ALIVE_TIMEOUT)
         dhcp_fqdn = os_faults_steps.get_fqdn_by_host_name(dhcp_host)
         dhcp_server_ip = [
-            node.ip for node in os_faults_steps.get_node(fqdns=[dhcp_fqdn])][0]
+            node.ip for node in os_faults_steps.get_node(fqdns=[dhcp_fqdn])
+        ][0]
         private_key_path = os_faults_steps.get_nodes_private_key_path()
-        proxy_cmd = ('ssh {ssh_opts} -i {pkey} root@{dhcp_server_ip} ip netns '
-                     'exec {dhcp_netns} netcat {server_ip} 22').format(
-            ssh_opts=ssh_opts,
-            pkey=private_key_path,
-            dhcp_server_ip=dhcp_server_ip,
-            dhcp_netns=dhcp_netns,
-            server_ip=server_ip)
+        proxy_cmd = (
+            'ssh {ssh_opts} -i {pkey} {user}@{dhcp_server_ip} '
+            '{sudo} ip netns exec {dhcp_netns} netcat {server_ip} 22').format(
+                ssh_opts=ssh_opts,
+                pkey=private_key_path,
+                dhcp_server_ip=dhcp_server_ip,
+                dhcp_netns=dhcp_netns,
+                server_ip=server_ip,
+                user=username,
+                sudo=sudo)
 
         return proxy_cmd
 

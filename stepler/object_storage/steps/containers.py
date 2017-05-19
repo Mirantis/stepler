@@ -17,11 +17,12 @@ Object Storage container steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import tempfile
+
 import six
 
 from hamcrest import (assert_that, empty, is_in, is_not, has_items,
                       has_entries, equal_to)  # noqa H301
-import tempfile
 
 from stepler import base
 from stepler.third_party import steps_checker
@@ -198,11 +199,11 @@ class ContainerCephSteps(base.BaseSteps):
     """Ceph container steps."""
 
     @steps_checker.step
-    def create(self, bucket_name=None, check=True):
+    def create(self, name=None, check=True):
         """Step to create bucket.
 
         Args:
-            bucket_name (str|None): bucket name
+            name (str|None): bucket name
             check (bool, optional): flag whether to check this step or not
 
         Returns:
@@ -211,10 +212,10 @@ class ContainerCephSteps(base.BaseSteps):
         Raises:
             AssertionError: if check failed
         """
-        bucket_name = bucket_name or next(utils.generate_ids())
-        bucket = self._client.create_bucket(Bucket=bucket_name)
+        name = name or next(utils.generate_ids())
+        bucket = self._client.create_bucket(Bucket=name)
         if check:
-            self.check_presence(bucket_name)
+            self.check_presence(name)
         return bucket
 
     @steps_checker.step
@@ -236,26 +237,26 @@ class ContainerCephSteps(base.BaseSteps):
         return buckets_name_list
 
     @steps_checker.step
-    def delete(self, bucket_name, check=True):
+    def delete(self, name, check=True):
         """Step to delete bucket.
 
         Args:
-            bucket_name (str): name of bucket to delete
+            name (str): name of bucket to delete
             check (bool, optional): flag whether to check this step or not
 
         Raises:
             AssertionError: if check failed
         """
-        self._client.delete_bucket(Bucket=bucket_name)
+        self._client.delete_bucket(Bucket=name)
         if check:
-            self.check_presence(bucket_name, must_present=False)
+            self.check_presence(name, must_present=False)
 
     @steps_checker.step
-    def check_presence(self, bucket_name, must_present=True):
+    def check_presence(self, name, must_present=True):
         """Step to check container presents in containers list.
 
         Args:
-            bucket_name (str): bucket name
+            name (str): bucket name
             must_present (bool, optional): flag whether container should exist
                 or not
 
@@ -265,16 +266,16 @@ class ContainerCephSteps(base.BaseSteps):
         buckets_name_list = self.list()
         for bucket in buckets_name_list['Buckets']:
             if must_present:
-                assert_that(bucket_name, is_in(bucket['Name']))
+                assert_that(name, is_in(bucket['Name']))
             else:
-                assert_that(bucket_name, is_not(is_in(bucket['Name'])))
+                assert_that(name, is_not(is_in(bucket['Name'])))
 
     @steps_checker.step
-    def put_object(self, bucket_name, key, check=True, chunksize=None):
+    def put_object(self, name, key, check=True, chunksize=None):
         """Step to put object to bucket.
 
          Args:
-            bucket_name (str): bucket name
+            name (str): bucket name
             key(str): key of object
             chunksize(int): chunksize of object
             check (bool, optional): flag whether to check this step or not
@@ -285,19 +286,19 @@ class ContainerCephSteps(base.BaseSteps):
         if chunksize:
             fileobj = six.BytesIO(b'0' * (chunksize))
             self._client.upload_object(
-                Fileobj=fileobj, Bucket=bucket_name, Key=key)
+                Fileobj=fileobj, Bucket=name, Key=key)
         else:
-            self._client.put_object(Bucket=bucket_name, Key=key)
+            self._client.put_object(Bucket=name, Key=key)
         if check:
             self.check_object_presence(
-                bucket_name=bucket_name, key=key, chunksize=chunksize)
+                bucket_name=name, key=key, chunksize=chunksize)
 
     @steps_checker.step
-    def get_object(self, bucket_name, key, check=True):
+    def get_object(self, name, key, check=True):
         """Step to download object from bucket.
 
         Args:
-            bucket_name (str): bucket name
+            name (str): bucket name
             key (str): key of object
             check (bool, optional): flag whether to check this step or not
 
@@ -309,35 +310,35 @@ class ContainerCephSteps(base.BaseSteps):
         """
         downloaded_key = tempfile.mktemp()
         with open(downloaded_key, 'wb') as key_data:
-            self._client.download_fileobj(bucket_name, key, key_data)
+            self._client.download_fileobj(name, key, key_data)
         if check:
             self.check_object_hash(key, downloaded_key)
         return downloaded_key
 
     @steps_checker.step
-    def delete_object(self, bucket_name, key, check=True):
+    def delete_object(self, name, key, check=True):
         """Step to delete object from bucket.
 
          Args:
-            bucket_name (str): bucket name
+            name (str): bucket name
             key(str): key of object
             check (bool, optional): flag whether to check this step or not
 
          Raises:
             AssertionError: if check failed
         """
-        self._client.delete_object(Bucket=bucket_name, Key=key)
+        self._client.delete_object(Bucket=name, Key=key)
         if check:
-            self.check_object_presence(bucket_name=bucket_name, key=key,
+            self.check_object_presence(bucket_name=name, key=key,
                                        must_present=False)
 
     @steps_checker.step
-    def check_object_presence(self, bucket_name, key, chunksize=None,
+    def check_object_presence(self, name, key, chunksize=None,
                               must_present=True):
         """Step to check object presence.
 
          Args:
-             bucket_name (str): bucket name
+             name (str): bucket name
              key(str): key of object
              chunksize(int): chunksize of object
              must_present (bool, optional): flag whether object should exist
@@ -346,7 +347,7 @@ class ContainerCephSteps(base.BaseSteps):
          Raises:
             AssertionError: if check failed
         """
-        objects = self._client.list_objects(Bucket=bucket_name)['Contents']
+        objects = self._client.list_objects(Bucket=name)['Contents']
         objects_dict = {obj['Key']: obj for obj in objects}
         if must_present:
             assert_that(key, is_in(objects_dict.keys()))

@@ -63,7 +63,7 @@ def skip_test(request, predicates):
     if not marker:
         return
 
-    for requires in marker.args:
+    for requires in reversed(marker.args):
 
         tree = ast.parse(requires, mode='eval')
 
@@ -141,7 +141,8 @@ class Predicates(object):
     def controllers_count(self):
         """Returns controllers count."""
         os_faults_steps = self._get_fixture('os_faults_steps')
-        return len(os_faults_steps.get_nodes(service_names=[config.NOVA_API]))
+        return len(os_faults_steps.get_nodes(service_names=[config.NOVA_API],
+                                             check=False))
 
     @property
     @_store_call
@@ -245,7 +246,8 @@ class Predicates(object):
         """Get count of cinder nodes."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return len(os_faults_steps.get_nodes(
-                   service_names=[config.CINDER_VOLUME]))
+                   service_names=[config.CINDER_VOLUME],
+                   check=False))
 
     @property
     @_store_call
@@ -253,6 +255,13 @@ class Predicates(object):
         """Define whether neutron configures with debug mode."""
         os_faults_steps = self._get_fixture('os_faults_steps')
         return os_faults_steps.get_neutron_debug()
+
+    @property
+    @_store_call
+    def cinder_backup(self):
+        """Define whether cinder backup enabled."""
+        os_faults_steps = self._get_fixture('os_faults_steps')
+        return os_faults_steps.get_cinder_backups()
 
     @property
     @_store_call

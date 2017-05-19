@@ -169,24 +169,29 @@ class VolumeSteps(base.BaseSteps):
         return volumes
 
     @steps_checker.step
-    def delete_volumes(self, volumes, cascade=False, check=True):
+    def delete_volumes(self, volumes, cascade=False, force=False, check=True):
         """Step to delete volumes.
 
         Args:
             volumes (list): cinder volumes
             cascade (bool): flag whether to delete dependent snapshot or not
+            force (bool, optional): attempt forced removal of volume(s),
+                regardless of state
             check (bool): flag whether to check step or not
         """
         for volume in volumes:
-            self.check_volume_status(
-                volume,
-                statuses=[config.STATUS_AVAILABLE, config.STATUS_ERROR],
-                transit_statuses=[
-                    config.STATUS_CREATING, config.STATUS_DELETING,
-                    config.STATUS_UPDATING
-                ],
-                timeout=config.VOLUME_IN_USE_TIMEOUT)
-            self._client.delete(volume.id, cascade=cascade)
+            if force:
+                self._client.force_delete(volume.id)
+            else:
+                self.check_volume_status(
+                    volume,
+                    statuses=[config.STATUS_AVAILABLE, config.STATUS_ERROR],
+                    transit_statuses=[
+                        config.STATUS_CREATING, config.STATUS_DELETING,
+                        config.STATUS_UPDATING
+                    ],
+                    timeout=config.VOLUME_IN_USE_TIMEOUT)
+                self._client.delete(volume.id, cascade=cascade)
 
         if check:
             for volume in volumes:
@@ -453,7 +458,7 @@ class VolumeSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         error_message = (
-            "VolumeSizeExceedsLimit: Requested volume size {} is larger "
+            "VolumeSizeExceedsLimit: Requested volume size {}G is larger "
             "than maximum allowed limit").format(size)
         assert_that(
             calling(self.create_volumes).with_args(
@@ -472,7 +477,7 @@ class VolumeSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         error_message = (
-            "VolumeSizeExceedsLimit: Requested volume size {} is larger "
+            "VolumeSizeExceedsLimit: Requested volume size {}G is larger "
             "than maximum allowed limit").format(size)
         assert_that(
             calling(self.volume_extend).with_args(volume, size, check=False),

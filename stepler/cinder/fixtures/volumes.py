@@ -144,7 +144,8 @@ def cleanup_volumes(uncleanable):
                 deleting_volumes.append(volume)
 
         if len(deleting_volumes) > limit:
-            _volume_steps.delete_volumes(deleting_volumes, cascade=True)
+            _volume_steps.delete_volumes(deleting_volumes, cascade=True,
+                                         force=True)
 
     return _cleanup_volumes
 

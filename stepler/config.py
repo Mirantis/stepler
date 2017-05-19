@@ -106,6 +106,7 @@ CURRENT_IRONIC_MICRO_VERSION = '1.9'
 # SERVICES
 CINDER = 'cinder'
 CINDERV2 = 'cinderv2'
+CINDER_BACKUP = 'cinder-backup'
 CINDER_API = 'cinder-api'
 CINDER_SCHEDULER = 'cinder-scheduler'
 CINDER_VOLUME = 'cinder-volume'
@@ -221,6 +222,7 @@ BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
                                              "size": 8000}]}]
 
 IMAGE_VISIBILITY_PUBLIC = 'public'
+IMAGE_VISIBILITY_SHARED = 'shared'
 GLANCE_API_CONFIG_PATH = os.environ.get('GLANCE_API_CONFIG_PATH',
                                         '/etc/glance/glance-api.conf')
 GLANCE_SWIFT_CONFIG_PATH = os.environ.get('GLANCE_SWIFT_CONFIG_PATH',

@@ -56,7 +56,7 @@ def get_nova_client(get_session):
             version=config.CURRENT_NOVA_VERSION,
             session=get_session(**credentials))
 
-        current_microversion = client.versions.get_current().version
+        current_microversion = client.versions.find(status='CURRENT').version
         client.api_version = APIVersion(current_microversion)
 
         return client

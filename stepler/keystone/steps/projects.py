@@ -146,4 +146,4 @@ class ProjectSteps(BaseSteps):
         """
         exception_message = "The request you have made requires authentication"
         assert_that(calling(self.get_projects),
-                    raises(exceptions.Unauthorized), exception_message)
+                    raises(exceptions.Unauthorized, exception_message))
