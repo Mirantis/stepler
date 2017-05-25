@@ -1,0 +1,33 @@
+# Glance CLI
+85461edd-7c82-4c27-ad19-d3af178818fe:
+  reason: Glance API v1 is disabled
+6931aa9c-10df-4c5f-8837-a3090b6e1d57:
+  reason: Glance API v1 is disabled
+b5948a9d-a0a2-40ca-9638-554020dcde80:
+  reason: Glance API v1 is disabled
+7d0916e7-9bc8-449c-a307-f29eedf6dba8:
+  reason: Glance API v1 is disabled
+2aa49178-d626-466f-a074-0f6aadc86739:
+  reason: Glance API v1 is disabled
+54bdc370-45f6-4085-977c-07996fb81943:
+  reason: Glance API v1 is disabled
+885ce1ec-ad7d-4401-b67d-14b5f2451674:
+  reason: Glance API v1 is disabled
+41594846-bf76-4132-9d80-3cb679b12516:
+  reason: Glance API v1 is disabled
+f0a11f9e-b54e-11e6-a750-67737169ac5d:
+  reason: Glance API v1 is disabled
+e790bb42-b631-11e6-a72f-db6c1f65dd0f:
+  reason: Glance API v1 is disabled
+886d07c2-3766-455a-a9ed-c07747a4992e:
+  reason: Glance API v1 is disabled
+
+# Nova CLI
+0c696d77-7c81-4c70-9589-651a11ea61b9:
+  reason: Nova server doesn't support 2.1 microversion
+ba603c26-4f0c-4838-b5d8-110249e43484:
+  reason: Nova server doesn't support 2.25 microversion
+
+# Glance API
+c30299b4-4f60-4078-962e-5a29c35084ec:
+  reason: Glance API v1 is disabled

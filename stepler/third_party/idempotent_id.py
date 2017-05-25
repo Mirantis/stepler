@@ -30,6 +30,26 @@ def pytest_addoption(parser):
                      help="Check that all tests has uniq idempotent_id marker")
 
 
+def get_item_id(item):
+    """Return item (test) idempotent id."""
+    test_id = None
+    markers = item.get_marker('idempotent_id') or []
+    for marker in markers:
+        test_id = marker.args[0]
+        params = marker.kwargs.get('params', marker.kwargs)
+        if len(params) > 0:
+            if not hasattr(item, 'callspec'):
+                raise Exception("idempotent_id decorator with filter "
+                                "parameters requires parametrizing "
+                                "of test method")
+            params_in_callspec = all(param in item.callspec.params.items()
+                                     for param in params.items())
+            if not params_in_callspec:
+                continue
+        break
+    return test_id
+
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(session, items):
     """Add marker to test name, if test marked with `idempotent_id` marker.
@@ -40,26 +60,10 @@ def pytest_collection_modifyitems(session, items):
     """
     ids = defaultdict(list)
     for item in items:
-        markers = item.get_marker('idempotent_id') or []
-        suffix_string = ''
-        for marker in markers:
-            test_id = marker.args[0]
-            params = marker.kwargs.get('params', marker.kwargs)
-            if len(params) > 0:
-                if not hasattr(item, 'callspec'):
-                    raise Exception("idempotent_id decorator with filter "
-                                    "parameters requires parametrizing "
-                                    "of test method")
-                params_in_callspec = all(param in item.callspec.params.items()
-                                         for param in params.items())
-                if not params_in_callspec:
-                    continue
-            suffix_string = '[id-{}]'.format(test_id)
-            ids[test_id].append(item)
-            break
-        else:
-            ids[None].append(item)
-        item.name += suffix_string
+        test_id = get_item_id(item)
+        ids[test_id].append(item)
+        if test_id is not None:
+            item.name += '[id-{}]'.format(test_id)
 
     if session.config.option.check_idempotent_id:
         errors = []

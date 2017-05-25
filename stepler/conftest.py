@@ -258,12 +258,12 @@ __all__ = sorted([  # sort for documentation
 ])
 
 _plugins = [
-    'bugs_file',
     'default_project',
     'destructive_dispatcher',
     'idempotent_id',
     'no_tests_found',
     'reports_cleaner',
+    'skip_list',
     'steps_checker',
     'supported_platforms',
 ]
