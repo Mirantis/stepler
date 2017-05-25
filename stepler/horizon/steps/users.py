@@ -34,8 +34,7 @@ class UsersSteps(base.BaseSteps):
         return self._open(self.app.page_users)
 
     @steps_checker.step
-    def create_user(self, username, password, new_project_name=None,
-                    project=None, role=None,
+    def create_user(self, username, password, project=None, role=None,
                     check=True):
         """Step to create user."""
         page_users = self._page_users()
@@ -49,13 +48,6 @@ class UsersSteps(base.BaseSteps):
 
             if project:
                 form.combobox_project.value = project
-
-            if new_project_name:
-                form.button_add_project.click()
-                project = self.app.page_projects
-                with project.form_create_project as project_form:
-                    project_form.field_name.value = new_project_name
-                    project_form.submit(modal_absent=None)
 
             if role:
                 form.combobox_role.value = role
