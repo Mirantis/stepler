@@ -191,6 +191,20 @@ class TestAdminOnly(object):
         new_username = user.name + '(updated)'
         users_steps_ui.update_user(user.name, new_username)
 
+    @pytest.mark.idempotent_id('9e0863ef-33d3-459b-aa22-c219ac44ce52')
+    def test_create_new_project_with_user(self, users_steps_ui):
+        """**Scenario:** Create new project while creating new user.
+
+        **Steps:**
+
+        #. Create new user and new project for it
+        """
+        user_name = next(utils.generate_ids('user'))
+        password = next(utils.generate_ids('password'))
+        project_name = next(utils.generate_ids('project'))
+        users_steps_ui.create_user(user_name, password,
+                                   new_project_name=project_name)
+
 
 @pytest.mark.usefixtures('user_only')
 class TestUserOnly(object):
