@@ -222,3 +222,21 @@ class UsersSteps(base.BaseSteps):
         assert_that(
             page_users.navigate_menu.has_item(page_users.navigate_items),
             equal_to(False))
+
+    @steps_checker.step
+    def check_user_cant_disable_itself(self):
+        """Step to try to disable current user."""
+        page_users = self._page_users()
+
+        with page_users.table_users.row(
+                name=self._username).dropdown_menu as menu:
+            menu.button_toggle.click()
+            assert_that(not menu.item_toggle_user.is_enabled,
+                        'user can be disabled by itself')
+
+        assert_that(page_users.table_users.row(
+            name=self._username).is_enabled, equal_to(True))
+
+    @property
+    def _username(self):
+        return self.app.current_username
