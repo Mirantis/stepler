@@ -205,8 +205,8 @@ def test_rados_bucket_does_not_present_in_list(container_steps):
     #. Check bucket doesn't exist in buckets list
     """
     bucket_name = next(utils.generate_ids())
-    container_steps.create(bucket_name=bucket_name)
-    container_steps.delete(bucket_name=bucket_name)
+    container_steps.create(name=bucket_name)
+    container_steps.delete(name=bucket_name)
 
 
 @pytest.mark.idempotent_id('e2199c81-4e6e-42b2-9424-6097edebc0f6')
@@ -227,10 +227,10 @@ def test_rados_delete_object_from_bucket(container_steps):
     #. Delete object
     """
     bucket_name, key = utils.generate_ids(count=2)
-    container_steps.create(bucket_name=bucket_name)
-    container_steps.put_object(bucket_name=bucket_name, key=key)
-    container_steps.delete_object(bucket_name=bucket_name, key=key)
-    container_steps.delete(bucket_name=bucket_name)
+    container_steps.create(name=bucket_name)
+    container_steps.put_object(name=bucket_name, key=key)
+    container_steps.delete_object(name=bucket_name, key=key)
+    container_steps.delete(name=bucket_name)
 
 
 @pytest.mark.idempotent_id('0a02302d-2089-42cc-abaa-f2d63fd6bee3')
@@ -252,11 +252,11 @@ def test_rados_download_object_from_bucket(container_steps):
     #. Delete bucket
     """
     bucket_name, object_name = utils.generate_ids(count=2)
-    container_steps.create(bucket_name=bucket_name)
-    container_steps.put_object(bucket_name=bucket_name, key=object_name)
-    container_steps.get_object(bucket_name=bucket_name, key=object_name)
-    container_steps.delete_object(bucket_name=bucket_name, key=object_name)
-    container_steps.delete(bucket_name=bucket_name)
+    container_steps.create(name=bucket_name)
+    container_steps.put_object(name=bucket_name, key=object_name)
+    container_steps.get_object(name=bucket_name, key=object_name)
+    container_steps.delete_object(name=bucket_name, key=object_name)
+    container_steps.delete(name=bucket_name)
 
 
 @pytest.mark.idempotent_id('03ed9be4-d134-4463-8e4c-c069688209eb')
@@ -303,11 +303,11 @@ def test_rados_upload_big_object(container_steps):
     #. Delete bucket
     """
     bucket_name, key = utils.generate_ids(count=2)
-    container_steps.create(bucket_name=bucket_name)
-    container_steps.put_object(bucket_name=bucket_name, key=key,
+    container_steps.create(name=bucket_name)
+    container_steps.put_object(name=bucket_name, key=key,
                                chunksize=10**10)
-    container_steps.delete_object(bucket_name=bucket_name, key=key)
-    container_steps.delete(bucket_name=bucket_name)
+    container_steps.delete_object(name=bucket_name, key=key)
+    container_steps.delete(name=bucket_name)
 
 
 @pytest.mark.idempotent_id('7b992ce6-12ce-458c-b45f-5a93ea908486')
@@ -329,9 +329,9 @@ def test_rados_download_big_object_from_bucket(container_steps):
     #. Delete bucket
     """
     bucket_name, object_name = utils.generate_ids(count=2)
-    container_steps.create(bucket_name=bucket_name)
-    container_steps.put_object(bucket_name=bucket_name, key=object_name,
+    container_steps.create(name=bucket_name)
+    container_steps.put_object(name=bucket_name, key=object_name,
                                chunksize=10**10)
-    container_steps.get_object(bucket_name=bucket_name, key=object_name)
+    container_steps.get_object(name=bucket_name, key=object_name)
     container_steps.delete_object(bucket_name, key=object_name)
-    container_steps.delete(bucket_name=bucket_name)
+    container_steps.delete(name=bucket_name)

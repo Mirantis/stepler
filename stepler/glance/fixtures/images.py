@@ -34,6 +34,7 @@ __all__ = [
     'api_glance_steps_v1',
     'api_glance_steps_v2',
     'cirros_image',
+    'cirros_image_shared',
     'create_images_context',
     'get_glance_steps',
     'glance_steps',
@@ -266,9 +267,9 @@ def create_images_context(get_glance_steps, uncleanable, credentials,
         uncleanable.image_ids.remove(image.id)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def ubuntu_image(get_glance_steps, uncleanable, credentials):
-    """Session fixture to create ubuntu image.
+    """Module fixture to create ubuntu image.
     Creates image from config.UBUNTU_QCOW2_URL with default options.
 
     Args:
@@ -289,9 +290,9 @@ def ubuntu_image(get_glance_steps, uncleanable, credentials):
         yield images[0]
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def ubuntu_xenial_image(get_glance_steps, uncleanable, credentials):
-    """Session fixture to create ubuntu xenial image.
+    """Module fixture to create ubuntu xenial image.
     Creates image from config.UBUNTU_XENIAL_QCOW2_URL with default options.
 
     Args:
@@ -312,9 +313,9 @@ def ubuntu_xenial_image(get_glance_steps, uncleanable, credentials):
         yield images[0]
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def cirros_image(get_glance_steps, uncleanable, credentials):
-    """Session fixture to create cirros image with default options.
+    """Module fixture to create cirros image with default options.
 
     Args:
         get_glance_steps (function): function to get glance steps
@@ -332,6 +333,24 @@ def cirros_image(get_glance_steps, uncleanable, credentials):
             config.CIRROS_QCOW2_URL,
             visibility=config.IMAGE_VISIBILITY_PUBLIC) as images:
         yield images[0]
+
+
+@pytest.fixture(scope='module')
+def cirros_image_shared(get_glance_steps, cirros_image):
+    """Module fixture to create shared cirros image with default options.
+
+    Args:
+        get_glance_steps (function): function to get glance steps
+        cirros_image (object): cirros glance image
+
+    Returns:
+        object: shared cirros glance image
+    """
+    glance_steps = get_glance_steps(
+        version=config.CURRENT_GLANCE_VERSION, is_api=False)
+    glance_steps.update_images(
+        [cirros_image], visibility=config.IMAGE_VISIBILITY_SHARED)
+    return cirros_image
 
 
 @pytest.fixture
@@ -356,9 +375,9 @@ def conntrack_cirros_image(get_glance_steps, uncleanable, credentials):
         yield images[0]
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def baremetal_ubuntu_image(get_glance_steps, uncleanable, credentials):
-    """Session fixture to create baremetal ubuntu image with default options.
+    """Module fixture to create baremetal ubuntu image with default options.
 
     Args:
         get_glance_steps (function): function to get glance steps

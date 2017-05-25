@@ -20,6 +20,7 @@ Subnets fixtures
 from neutronclient.common import exceptions
 import pytest
 
+from stepler import config
 from stepler.neutron import steps
 from stepler.third_party.utils import generate_ids
 
@@ -105,4 +106,4 @@ def subnet(create_subnet, network):
         dict: subnet
     """
     subnet_name = next(generate_ids('subnet'))
-    return create_subnet(subnet_name, network, cidr='10.0.1.0/24')
+    return create_subnet(subnet_name, network, cidr=config.LOCAL_CIDR)

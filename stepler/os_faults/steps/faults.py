@@ -569,8 +569,9 @@ class OsFaultsSteps(base.BaseSteps):
         Raises:
             AssertionError: if compute contains server's artifacts
         """
-        compute = self.get_nodes(
-            fqdns=[getattr(server, 'OS-EXT-SRV-ATTR:hypervisor_hostname')])
+        hostname = getattr(server, 'OS-EXT-SRV-ATTR:hypervisor_hostname')
+        fqdn = self.get_fqdn_by_host_name(hostname)
+        compute = self.get_nodes(fqdns=[fqdn])
         cmd = "ls {} | grep {}".format(config.NOVA_INSTANCES_PATH, server.id)
         result = self.execute_cmd(compute, cmd, check=False)
         assert_that(
@@ -974,6 +975,17 @@ class OsFaultsSteps(base.BaseSteps):
         result = self.execute_cmd(nodes, cmd, check=False)
         return all(node_result.status == config.STATUS_OK
                    for node_result in result)
+
+    @steps_checker.step
+    def get_cinder_backups(self):
+        """Step to retrieve cinder backup enabled or not.
+
+        Returns:
+            bool: is cinder backup enabled
+        """
+        nodes = self.get_nodes(service_names=[config.CINDER_BACKUP],
+                               check=False)
+        return bool(len(nodes))
 
     @steps_checker.step
     def get_horizon_cinder_backups(self):

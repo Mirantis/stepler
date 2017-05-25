@@ -349,18 +349,26 @@ class StackSteps(base.BaseSteps):
         return output_show
 
     @steps_checker.step
-    def check_output_show(self, output_show, expected_attr_values=None):
+    def check_output_show(self, stack, output_key, expected_attr_values=None,
+                          timeout=0):
         """Step to check stack attributes.
 
         Args:
-            output_show (dict): stack output
-            expected_attr_values (dict|None): expected attribute values.
-                If None, only check that elements of output_show are not empty.
+            stack (obj): stack object
+            output_key (str): the name of a stack output
+            expected_attr_values (dict|None): expected attribute values
+                If None, only check that elements of output_show are not empty
+            timeout (int): seconds to wait a result of check
 
         Raises:
-            AssertionError: if check failed
+            TimeoutExpired: if check failed after timeout
         """
-        if expected_attr_values:
-            assert_that(output_show['output'], equal_to(expected_attr_values))
-        else:
-            assert_that(output_show['output'], only_contains(is_not(empty())))
+        def _check_output_show():
+            output_show = self.get_stack_output_show(stack, output_key)
+            if expected_attr_values:
+                matcher = equal_to(expected_attr_values)
+            else:
+                matcher = only_contains(is_not(empty()))
+            return waiter.expect_that(output_show['output'], matcher)
+
+        waiter.wait(_check_output_show, timeout_seconds=timeout)

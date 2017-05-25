@@ -21,6 +21,9 @@ import pytest
 from stepler.third_party import utils
 
 
+pytestmark = pytest.mark.requires('cinder_backup')
+
+
 @pytest.mark.idempotent_id('03e63f1b-38e4-48df-a30b-19f796f6ded0')
 def test_create_volume_snapshot_backup(volume, volume_snapshot, create_backup):
     """**Scenario:** Verify ability to create backup from snapshot of volume.

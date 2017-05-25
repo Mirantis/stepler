@@ -67,10 +67,14 @@ def container_steps(swift_client, os_faults_steps, s3_client):
     Returns:
         object: instantiated swift or rbd container steps
     """
-    if os_faults_steps.get_default_glance_backend() == "swift":
+    backend = os_faults_steps.get_default_glance_backend()
+    if backend == "swift":
         return object_storage_steps.ContainerSwiftSteps(swift_client)
-    else:
+    elif backend == "rbd":
         return object_storage_steps.ContainerCephSteps(s3_client)
+    else:
+        pytest.skip('Test requires Swift or Ceph storage backend, got {}'.
+                    format(backend))
 
 
 @pytest.fixture

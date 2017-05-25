@@ -24,9 +24,6 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('71b0b170-10c4-4877-bab8-93d8284c3c01')
-# TODO(agromov): remove destructive marker when
-# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
-@pytest.mark.destructive
 def test_create_volume_with_unicode_name(cli_cinder_steps, volume_steps):
     """**Scenario:** Create volume with unicode symbols name.
 
@@ -51,9 +48,6 @@ def test_create_volume_with_unicode_name(cli_cinder_steps, volume_steps):
 
 
 @pytest.mark.idempotent_id('54b0e3f6-1284-4ea8-a991-c8a6cd772f0e')
-# TODO(agromov): remove destructive marker when
-# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
-@pytest.mark.destructive
 def test_create_volume_with_unicode_description(cli_cinder_steps,
                                                 volume_steps):
     """**Scenario:** Create volume with unicode symbols description.
@@ -80,9 +74,6 @@ def test_create_volume_with_unicode_description(cli_cinder_steps,
 
 
 @pytest.mark.idempotent_id('453c8024-f801-4a2e-8d33-7ffe2d637fd3')
-# TODO(agromov): remove destructive marker when
-# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
-@pytest.mark.destructive
 def test_show_volume_with_unicode_name(volume_steps, cli_cinder_steps):
     """**Scenario:** Show volume with unicode name.
 
@@ -101,9 +92,6 @@ def test_show_volume_with_unicode_name(volume_steps, cli_cinder_steps):
 
 
 @pytest.mark.idempotent_id('c080b991-9704-455a-8085-0d4f368acc25')
-# TODO(agromov): remove destructive marker when
-# https://bugs.launchpad.net/mos/+bug/1604255 bug will be fixes
-@pytest.mark.destructive
 def test_show_volume_with_unicode_description(volume_steps, cli_cinder_steps):
     """**Scenario:** Show volume with unicode description.
 
@@ -170,6 +158,7 @@ def test_change_volume_description_with_unicode(volume,
                                          description=volume_description)
 
 
+@pytest.mark.requires('cinder_backup')
 @pytest.mark.idempotent_id('225d218b-6562-431d-bdf9-0ec0221c0f86')
 def test_create_backup_with_unicode_name(volume, cli_cinder_steps,
                                          backup_steps):
@@ -197,6 +186,7 @@ def test_create_backup_with_unicode_name(volume, cli_cinder_steps,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
 
 
+@pytest.mark.requires('cinder_backup')
 @pytest.mark.idempotent_id('c64aa74b-990b-43df-8030-4657556e72ee')
 def test_show_backup_with_unicode_name(volume, create_backup,
                                        cli_cinder_steps):
@@ -221,6 +211,7 @@ def test_show_backup_with_unicode_name(volume, create_backup,
     cli_cinder_steps.show_volume_backup(backup)
 
 
+@pytest.mark.requires('cinder_backup')
 @pytest.mark.idempotent_id('3b6eea01-cd4e-4a6c-bb68-a260650c6dae')
 def test_show_backup_with_unicode_description(volume,
                                               create_backup,
@@ -246,6 +237,7 @@ def test_show_backup_with_unicode_description(volume,
     cli_cinder_steps.show_volume_backup(backup)
 
 
+@pytest.mark.requires('cinder_backup')
 @pytest.mark.idempotent_id('07eb81c1-ca1f-4c65-93c4-f3378e62adfd')
 def test_create_backup_with_unicode_description(volume, cli_cinder_steps,
                                                 backup_steps):
@@ -380,6 +372,7 @@ def test_show_snapshot_with_unicode_description(volume, snapshot_steps,
     cli_cinder_steps.show_volume_snapshot(snapshot)
 
 
+@pytest.mark.requires('cinder_backup')
 @pytest.mark.requires('cinder_storage_protocol != "ceph"')
 @pytest.mark.idempotent_id('955c4976-ddc7-4d8d-b5c6-1c2bc991af39')
 def test_create_backup_with_unicode_container(volume, cli_cinder_steps,
@@ -408,6 +401,7 @@ def test_create_backup_with_unicode_container(volume, cli_cinder_steps,
                                      timeout=config.BACKUP_AVAILABLE_TIMEOUT)
 
 
+@pytest.mark.requires('cinder_backup')
 @pytest.mark.requires('cinder_storage_protocol != "ceph"')
 @pytest.mark.idempotent_id('815f7bf8-05e7-4556-ac46-8df267c91c75')
 def test_show_backup_with_unicode_container_name(volume,

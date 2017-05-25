@@ -41,8 +41,7 @@ def test_stack_output_show(create_stack,
     """
     template = read_heat_template('random_str')
     stack = create_stack(next(utils.generate_ids()), template)
-    output_show = stack_steps.get_stack_output_show(stack, 'random_str1')
-    stack_steps.check_output_show(output_show)
+    stack_steps.check_output_show(stack, 'random_str1')
 
 
 @pytest.mark.idempotent_id('675eab7b-cad1-4557-9706-7c8338208322')
@@ -71,9 +70,9 @@ def test_check_output_show_during_stack_creation(create_stack,
                          parameters={'wait_secs': 15},
                          check=False)
     stack_steps.check_status(stack, config.HEAT_IN_PROGRESS_STATUS)
-    output_show = stack_steps.get_stack_output_show(stack,
-                                                    attr_values['output_key'])
-    stack_steps.check_output_show(output_show, attr_values)
+    stack_steps.check_output_show(stack, attr_values['output_key'],
+                                  attr_values,
+                                  timeout=config.STACK_CHECK_TIMEOUT)
 
 
 @pytest.mark.idempotent_id('2c0122e4-c39f-4384-a144-56f656b9792c')
