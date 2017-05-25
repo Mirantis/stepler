@@ -150,7 +150,8 @@ class FormLaunchInstance(_ui.Form):
     item_lock=ui.UI(By.CSS_SELECTOR, '*[id*="action_lock"]'),
     item_unlock=ui.UI(By.CSS_SELECTOR, '*[id*="action_unlock"]'),
     item_associate=ui.UI(By.CSS_SELECTOR, '*[id*="action_associate"]'),
-    item_disassociate=ui.UI(By.CSS_SELECTOR, '*[id*="action_disassociate"]'))
+    item_disassociate=ui.UI(By.CSS_SELECTOR, '*[id*="action_disassociate"]'),
+    item_resize=ui.UI(By.CSS_SELECTOR, '*[id*="action_resize"]'))
 class DropdownMenu(_ui.DropdownMenu):
     """Dropdown menu for instance row."""
 
@@ -162,13 +163,17 @@ class DropdownMenu(_ui.DropdownMenu):
 class RowInstance(_ui.Row):
     """Row with instance."""
 
-    transit_statuses = ('Build',)
+    transit_statuses = ('Build', 'Resize/Migrate')
 
 
 class TableInstances(_ui.Table):
     """Instances table."""
 
-    columns = {'name': 2, 'status': 7}
+    columns = {
+        'name': 2,
+        'ips': 4,
+        'size': 5,
+        'status': 7}
     row_cls = RowInstance
 
 
@@ -185,6 +190,12 @@ class FormCreateInstanceSnapshot(_ui.Form):
 
 
 @ui.register_ui(
+    item_flavor=ui.ComboBox(By.NAME, 'flavor'))
+class FormResizeInstance(_ui.Form):
+    """Form to resize of instance."""
+
+
+@ui.register_ui(
     button_delete_instances=ui.Button(By.ID, 'instances__action_delete'),
     button_filter_instances=ui.Button(By.ID, 'instances__action_filter'),
     button_launch_instance=ui.Button(By.ID, "instances__action_launch-ng"),
@@ -197,7 +208,9 @@ class FormCreateInstanceSnapshot(_ui.Form):
         By.CSS_SELECTOR, '[action*="floating_ips/associate"]'),
     form_create_instance_snapshot=FormCreateInstanceSnapshot(
         By.CSS_SELECTOR,
-        'form[action*="/create"]'))
+        'form[action*="/create"]'),
+    form_resize_instance=FormResizeInstance(
+        By.CSS_SELECTOR, '[action*="resize"]'))
 class PageInstances(PageBase):
     """Instances page."""
 
