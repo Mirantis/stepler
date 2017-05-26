@@ -95,6 +95,35 @@ class ProjectsSteps(base.BaseSteps):
                         sleep_seconds=0.1)
 
     @steps_checker.step
+    def toggle_project(self, project, enable, check=True):
+        """Step to disable/enable project."""
+        page_projects = self._page_projects()
+        project_name = project.name
+
+        if enable:
+            curr_status = 'No'
+            need_status = 'Yes'
+        else:
+            curr_status = 'Yes'
+            need_status = 'No'
+
+        with self._page_projects().table_projects.row(
+                name=project_name) as row:
+            assert_that(row.cell('enabled').value, equal_to(curr_status))
+
+            with row.dropdown_menu as menu:
+                menu.button_toggle.click()
+                menu.item_edit.click()
+
+            with page_projects.form_edit_project as form:
+                form.checkbox_enable.click()
+                form.submit()
+
+            if check:
+                self.close_notification('success')
+                assert_that(row.cell('enabled').value, equal_to(need_status))
+
+    @steps_checker.step
     def check_project_cant_disable_itself(self):
         """Step for trying to disable current project."""
         page_projects = self._page_projects()
@@ -113,9 +142,10 @@ class ProjectsSteps(base.BaseSteps):
             name=project_name).is_enabled, equal_to(True))
 
     @steps_checker.step
-    def manage_project_members(self, project_name, check=True):
+    def manage_project_members(self, project, check=True):
         """Step to manage project members."""
         page_projects = self._page_projects()
+        project_name = project.name
 
         with page_projects.table_projects.row(
                 name=project_name).dropdown_menu as menu:
