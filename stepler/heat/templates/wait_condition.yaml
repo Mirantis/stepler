@@ -42,7 +42,7 @@ resources:
       user_data:
         str_replace:
           template: |
-            #!/bin/sh
+            #!/bin/sh -v
             # Below are some examples of the various ways signals
             # can be sent to the Handle resource
             # Simple success signal
