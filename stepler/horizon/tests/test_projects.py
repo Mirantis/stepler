@@ -35,3 +35,13 @@ class TestAdminOnly(object):
         """
         project_name = projects_steps_ui.create_project()
         projects_steps_ui.delete_project(project_name)
+
+    @pytest.mark.idempotent_id('fada00f4-4a73-41ba-af56-6fd915414da9')
+    def test_try_to_disable_current_project(self, projects_steps_ui):
+        """**Scenario:** Verify that project can't disable itself.
+
+        **Steps:**
+
+        #. Try to disable current project
+        """
+        projects_steps_ui.check_project_cant_disable_itself()

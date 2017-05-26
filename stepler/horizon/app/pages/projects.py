@@ -26,8 +26,15 @@ from .base import PageBase
 
 
 @ui.register_ui(
+    item_edit=ui.UI(By.CSS_SELECTOR, '[id$="action_update"]'),
+    item_delete=ui.UI(By.CSS_SELECTOR, '[id$="action_delete"]'))
+class DropdownMenu(_ui.DropdownMenu):
+    """Dropdown menu for user row."""
+
+
+@ui.register_ui(
     checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[type="checkbox"]'),
-    dropdown_menu=_ui.DropdownMenu(),
+    dropdown_menu=DropdownMenu(),
     link_project=ui.UI(By.CSS_SELECTOR, 'td[data-cell-name="name"] a'))
 class RowProject(_ui.Row):
     """Project row of projects table."""
@@ -48,12 +55,23 @@ class FormCreateProject(_ui.Form):
 
 
 @ui.register_ui(
+    field_name=ui.TextField(By.NAME, 'name'),
+    checkbox_enable=_ui.CheckBox(By.NAME, 'enabled'))
+class FormEditProject(_ui.Form):
+    """Form to edit project."""
+
+    submit_locator = By.CSS_SELECTOR, 'input.btn.btn-primary'
+
+
+@ui.register_ui(
     button_create_project=ui.Button(By.ID, 'tenants__action_create'),
     button_filter_projects=ui.Button(By.CLASS_NAME, 'fa-search'),
     field_filter_projects=ui.TextField(By.NAME, 'tenants__filter__q'),
     form_create_project=FormCreateProject(By.CSS_SELECTOR,
                                           'form[action*="identity/create"]'),
     form_delete_project_confirm=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
+    form_edit_project=FormEditProject(By.CLASS_NAME,
+                                      'modal-content'),
     table_projects=TableProjects(By.ID, 'tenants'))
 class PageProjects(PageBase):
     """Projects page."""

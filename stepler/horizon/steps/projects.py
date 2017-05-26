@@ -19,7 +19,7 @@ Projects steps
 
 import time
 
-from hamcrest import equal_to
+from hamcrest import assert_that, equal_to  # noqa H301
 
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
@@ -93,3 +93,21 @@ class ProjectsSteps(base.BaseSteps):
             waiter.wait(check_rows,
                         timeout_seconds=10,
                         sleep_seconds=0.1)
+
+    @steps_checker.step
+    def check_project_cant_disable_itself(self):
+        """Step for trying to disable current project."""
+        page_projects = self._page_projects()
+        project_name = self.app.current_project
+
+        with page_projects.table_projects.row(
+                name=project_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_edit.click()
+
+        with page_projects.form_edit_project as form:
+            form.checkbox_enable.click()
+            form.submit()
+
+        assert_that(page_projects.table_projects.row(
+            name=project_name).is_enabled, equal_to(True))
