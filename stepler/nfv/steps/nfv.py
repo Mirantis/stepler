@@ -21,7 +21,7 @@ import math
 import xml.etree.ElementTree as ElementTree
 
 from hamcrest import (assert_that, equal_to, is_not, greater_than,
-                      has_length, has_key)  # noqa
+                      has_length, has_key, is_in)  # noqa
 
 from stepler.third_party import steps_checker
 
@@ -154,18 +154,19 @@ class NfvSteps(object):
                     "Unexpected memory allocation")
 
     @steps_checker.step
-    def check_server_page_size(self, server_dump, exp_size):
+    def check_server_page_size(self, server_dump, exp_sizes=None):
         """Step to check server page size.
 
         Args:
             server_dump (str): server dump (result of 'virsh dumpxml')
-            exp_size (int): expected page size on server
+            exp_sizes (list, optional): list of expected page sizes on server
+                Value 'None' means missing of HP data in dump.
 
         Raises:
             AssertionError: if unexpected page size in server dump
         """
         root = ElementTree.fromstring(server_dump)
-        if exp_size is None:
+        if exp_sizes is None:
             assert_that(root.find('memoryBacking'), equal_to(None),
                         "Unexpected element 'memoryBacking' in server dump")
         else:
@@ -173,7 +174,7 @@ class NfvSteps(object):
                         "Element 'memoryBacking' is not found in server dump")
             page_size = int(root.find('memoryBacking').find('hugepages').find(
                 'page').get('size'))
-            assert_that(page_size, equal_to(exp_size),
+            assert_that(page_size, is_in(exp_sizes),
                         "Unexpected page size")
 
     @steps_checker.step
