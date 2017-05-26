@@ -44,7 +44,7 @@ Install pre-conditions (Ubuntu 16.04)::
 
 Make following commands in terminal::
 
-   git clone https://github.com/Mirantis/stepler.git
+   git clone https://review.gerrithub.io/Mirantis/stepler
    cd stepler
    virtualenv .venv
    . .venv/bin/activate
