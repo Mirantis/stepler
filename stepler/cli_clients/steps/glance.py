@@ -451,9 +451,7 @@ class CliGlanceSteps(base.BaseCliSteps):
             AssertionError: if last image location was removed
                 with exit code=0 and stderr not correct
         """
-        error_message = (
-            "403 Forbidden: Access was denied to this resource.: "
-            "Cannot remove last location in the image. (HTTP 403)")
+        error_message = "Cannot remove last location in the image"
 
         urls = [loc['url'] for loc in image.locations]
 
@@ -465,4 +463,4 @@ class CliGlanceSteps(base.BaseCliSteps):
             image, urls[-1],
             check=False)
         assert_that(exit_code, is_not(0))
-        assert_that(stderr, is_(error_message))
+        assert_that(stderr, contains_string(error_message))

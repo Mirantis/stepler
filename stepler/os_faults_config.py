@@ -57,6 +57,36 @@ if OS_FAULTS_DICT_CONFIG['cloud_management']['driver'] == 'tcpcloud':
         'slave_sudo': get_bool(getenv('CLOUD_DRIVER_SLAVE_SUDO', 'True')),
         'slave_username': getenv('CLOUD_DRIVER_SLAVE_USERNAME', 'root'),
     })
+    OS_FAULTS_DICT_CONFIG['services'] = {
+        'keystone': {
+            'driver': 'linux_service',
+            'args': {
+                'grep': 'wsgi:keystone',
+                'linux_service': 'apache2'
+            }
+        },
+        'cinder-api': {
+            'driver': 'linux_service',
+            'args': {
+                'grep': 'wsgi:cinder-api',
+                'linux_service': 'apache2'
+            }
+        },
+        'ironic-api': {
+            'driver': 'salt_service',
+            'args': {
+                'grep': 'ironic-api',
+                'salt_service': 'ironic-api',
+            }
+        },
+        'glance-glare': {
+            'driver': 'salt_service',
+            'args': {
+                'grep': 'glance-glare',
+                'salt_service': 'glance-glare',
+            }
+        },
+    }
 
 # devstack-specific
 if OS_FAULTS_DICT_CONFIG['cloud_management']['driver'] == 'devstack':
