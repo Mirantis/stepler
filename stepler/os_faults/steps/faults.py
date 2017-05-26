@@ -2411,6 +2411,9 @@ class OsFaultsSteps(base.BaseSteps):
 
         Args:
             node (NodeCollection): compute node
+            numa_count (int): numa count
+            sizes (list, optional): list of page sizes, ex: [2048]. If not set,
+                data are got for all pages (2Mb, 1Gb)
 
         Returns:
             dict: "numa<i>" -> dict like {2048: {'nr': 1024, 'free': 512},

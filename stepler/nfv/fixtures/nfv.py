@@ -78,7 +78,7 @@ def computes_with_hp_2mb(request, os_faults_steps):
         list: FQDNs of computes with HP 2Mb
     """
     min_count = getattr(request, 'param', {'host_count': 1,
-                                           'hp_count_per_host': 1024})
+                                           'hp_count_per_host': 512})
     fqdns = []
     for fqdn, hp_data in os_faults_steps.get_hugepages_data(
             sizes=[config.page_2mb]):
@@ -137,7 +137,7 @@ def computes_with_hp_mixed(request, os_faults_steps):
         list: FQDNs of computes with HP 2Mb and 1Gb
     """
     min_count = getattr(request, 'param', {'host_count': 1,
-                                           'hp_count_2mb': 1024,
+                                           'hp_count_2mb': 512,
                                            'hp_count_1gb': 4})
     fqdns = []
     for fqdn, hp_data in os_faults_steps.get_hugepages_data(

@@ -241,6 +241,220 @@ def test_allocation_huge_pages_2mb_1gb(computes_with_hp_mixed,
 
 
 @pytest.mark.requires("vlan")
+@pytest.mark.idempotent_id('d574772f-ba43-4eb1-8061-3773b7f8b54c')
+def test_allocation_huge_pages_2mb_nohp(computes_with_hp_2mb,
+                                        computes_without_hp,
+                                        cirros_image,
+                                        keypair,
+                                        create_flavor,
+                                        flavor_steps,
+                                        security_group,
+                                        neutron_2_networks,
+                                        create_floating_ip,
+                                        server_steps,
+                                        host_steps,
+                                        nfv_steps,
+                                        os_faults_steps):
+    """**Scenario:** Check allocation of 2Mb HugePages and no HP for servers
+
+    **Setup:**
+
+    #. Find one compute with HP 2Mb and one compute without HP
+    #. Create cirros image
+    #. Create keypair
+    #. Create security group
+    #. Create two networks, subnets and one router
+
+    **Steps:**
+
+    #. Get current HP total and free values on computes
+    #. Create flavor1 with mem_page_size=2048
+    #. Create flavor2 without mem_page_size
+    #. Create server1 with flavor1 on host1, network1
+    #. Create server2 with flavor2 on host2, network2
+    #. Create server3 with flavor2 on host1, network2
+    #. Create and attach floating IPs to servers
+    #. Check HP sizes of all servers using dumps
+    #. Check current HP total and free values on computes
+    #. Check connectivity between servers
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete floating IPs
+    #. Delete networks, subnets, router
+    #. Delete security group
+    #. Delete flavors
+    #. Delete keypair
+    #. Delete cirros image
+    """
+    fqdn_2mb = computes_with_hp_2mb[0]
+    host_name_2mb = host_steps.get_host(fqdn=fqdn_2mb).host_name
+    fqdn_without_hp = computes_without_hp[0]
+    host_name_without_hp = host_steps.get_host(fqdn=fqdn_without_hp).host_name
+
+    computes_hp_data = os_faults_steps.get_hugepages_data()
+
+    flavor_name = next(utils.generate_ids('flavor'))
+    flavor_2mb = create_flavor(flavor_name, ram=512, vcpus=1, disk=1)
+    metadata = {'hw:mem_page_size': str(config.page_2mb)}
+    flavor_steps.set_metadata(flavor_2mb, metadata)
+
+    flavor_name = next(utils.generate_ids('flavor'))
+    flavor_without_hp = create_flavor(flavor_name, ram=512, vcpus=1, disk=1)
+
+    flavors = [flavor_2mb, flavor_without_hp, flavor_without_hp]
+    exp_sizes = [[config.page_2mb], None, None]
+
+    networks = [neutron_2_networks.networks[0],
+                neutron_2_networks.networks[1],
+                neutron_2_networks.networks[1]]
+
+    host_names = [host_name_2mb, host_name_without_hp, host_name_2mb]
+
+    servers = []
+    for i in range(3):
+        server = server_steps.create_servers(
+            image=cirros_image,
+            flavor=flavors[i],
+            networks=[networks[i]],
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME,
+            password=config.CIRROS_PASSWORD,
+            keypair=keypair,
+            availability_zone='nova:{}'.format(host_names[i]))[0]
+        floating_ip = create_floating_ip()
+        server_steps.attach_floating_ip(server, floating_ip)
+        servers.append(server)
+
+    for i in range(3):
+        server_dump = os_faults_steps.get_server_dump(servers[i])
+        nfv_steps.check_server_page_size(server_dump, exp_sizes[i])
+
+    computes_hp_data_new = os_faults_steps.get_hugepages_data()
+
+    count_to_allocate_2mb = flavor_2mb.ram * 1024 / config.page_2mb
+    diff_hps = {fqdn_2mb: {config.page_2mb: 1 * count_to_allocate_2mb}}
+    nfv_steps.check_hugepage_diff(computes_hp_data,
+                                  computes_hp_data_new,
+                                  diff_hps)
+
+    server_steps.check_ping_between_servers_via_floating(
+        servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.requires("vlan")
+@pytest.mark.parametrize('computes_with_hp_mixed',
+                         [{'host_count': 2, 'hp_count_2mb': 512,
+                           'hp_count_1gb': 4}],
+                         indirect=['computes_with_hp_mixed'])
+@pytest.mark.idempotent_id('07e271ac-ab84-4327-8208-769947ea6316')
+def test_resize_huge_pages(computes_with_hp_mixed,
+                           cirros_image,
+                           keypair,
+                           create_flavor,
+                           flavor_steps,
+                           security_group,
+                           neutron_2_networks,
+                           create_floating_ip,
+                           server_steps,
+                           host_steps,
+                           nfv_steps,
+                           os_faults_steps):
+    """**Scenario:** Check resize of servers with different HP flavors
+
+    **Setup:**
+
+    #. Find two computes with HP 2Mb and 1Gb
+    #. Create cirros image
+    #. Create keypair
+    #. Create security group
+    #. Create two networks, subnets and one router
+
+    **Steps:**
+
+    #. Create flavor1 with mem_page_size=2048
+    #. Create flavor2 with mem_page_size=1048576
+    #. Create flavor3 without mem_page_size
+    #. Create server1 with flavor1 on host1, network1
+    #. Create server2 with flavor3 on host2, network2
+    #. Create and attach floating IPs to servers
+    #. Check HP sizes of all servers using dumps
+    #. Check connectivity between servers
+    #. Resize server1 to flavor2
+    #. Check HP size of server1 using dumps
+    #. Check connectivity between servers
+    #. Repeat 3 last steps for flavor2 -> flavor3 -> flavor2 -> flavor1
+
+    **Teardown:**
+
+    #. Delete servers
+    #. Delete floating IPs
+    #. Delete networks, subnets, router
+    #. Delete security group
+    #. Delete flavors
+    #. Delete keypair
+    #. Delete cirros image
+    """
+    fqdns_mixed = computes_with_hp_mixed
+    host_names_mixed = [host_steps.get_host(fqdn=fqdn).host_name
+                        for fqdn in fqdns_mixed]
+
+    flavor_name = next(utils.generate_ids('flavor'))
+    flavor_2mb = create_flavor(flavor_name, ram=512, vcpus=1, disk=20)
+    metadata = {'hw:mem_page_size': str(config.page_2mb)}
+    flavor_steps.set_metadata(flavor_2mb, metadata)
+
+    flavor_name = next(utils.generate_ids('flavor'))
+    flavor_1gb = create_flavor(flavor_name, ram=2048, vcpus=2, disk=20)
+    metadata = {'hw:mem_page_size': str(config.page_1gb)}
+    flavor_steps.set_metadata(flavor_1gb, metadata)
+
+    flavor_name = next(utils.generate_ids('flavor'))
+    flavor_without_hp = create_flavor(flavor_name, ram=2048, vcpus=2, disk=20)
+
+    flavors = [flavor_2mb, flavor_without_hp]
+    exp_sizes = [[config.page_2mb], None]
+
+    servers = []
+    for i in range(2):
+        server = server_steps.create_servers(
+            image=cirros_image,
+            flavor=flavors[i],
+            networks=[neutron_2_networks.networks[i]],
+            security_groups=[security_group],
+            username=config.CIRROS_USERNAME,
+            password=config.CIRROS_PASSWORD,
+            keypair=keypair,
+            availability_zone='nova:{}'.format(host_names_mixed[i]))[0]
+        floating_ip = create_floating_ip()
+        server_steps.attach_floating_ip(server, floating_ip)
+        servers.append(server)
+
+    for i in range(2):
+        server_dump = os_faults_steps.get_server_dump(servers[i])
+        nfv_steps.check_server_page_size(server_dump, exp_sizes[i])
+
+    server_steps.check_ping_between_servers_via_floating(
+        servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+    params = [(flavor_1gb, [config.page_1gb]),
+              (flavor_without_hp, None),
+              (flavor_1gb, [config.page_1gb]),
+              (flavor_2mb, [config.page_2mb])]
+
+    for (flavor, exp_size) in params:
+        server_steps.resize(servers[0], flavor)
+        server_steps.confirm_resize_servers([servers[0]])
+
+        server_dump = os_faults_steps.get_server_dump(servers[0])
+        nfv_steps.check_server_page_size(server_dump, exp_size)
+
+        server_steps.check_ping_between_servers_via_floating(
+            servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
+
+
+@pytest.mark.requires("vlan")
 @pytest.mark.requires("computes_count >= 3")
 @pytest.mark.parametrize('computes_with_hp_2mb',
                          [{'host_count': 2, 'hp_count_per_host': 512}],
