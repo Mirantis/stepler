@@ -67,7 +67,8 @@ def test_restart_keystone_service(cirros_image,
                                   create_user,
                                   user_steps,
                                   os_faults_steps,
-                                  server_steps):
+                                  server_steps,
+                                  get_session):
     """**Scenario:** Check that keystone works after restarting services.
 
     **Setup:**
@@ -108,6 +109,9 @@ def test_restart_keystone_service(cirros_image,
             config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
     os_faults_steps.restart_services([config.KEYSTONE])
+
+    # Wait until keystone wake up
+    get_session()
     time.sleep(config.TIME_AFTER_KEYSTONE_RESTART)
 
     user_steps.check_user_presence(user)
