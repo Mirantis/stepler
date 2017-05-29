@@ -171,6 +171,12 @@ class TableInstances(_ui.Table):
 
 
 @ui.register_ui(
+    item_snapshot_name=ui.TextField(By.NAME, 'name'))
+class FormCreateInstanceSnapshot(_ui.Form):
+    """Form to create snapshot of instance."""
+
+
+@ui.register_ui(
     button_delete_instances=ui.Button(By.ID, 'instances__action_delete'),
     button_filter_instances=ui.Button(By.ID, 'instances__action_filter'),
     button_launch_instance=ui.Button(By.ID, "instances__action_launch-ng"),
@@ -178,7 +184,10 @@ class TableInstances(_ui.Table):
     form_launch_instance=FormLaunchInstance(
         By.CSS_SELECTOR,
         'wizard[ng-controller="LaunchInstanceWizardController"]'),
-    table_instances=TableInstances(By.ID, 'instances'))
+    table_instances=TableInstances(By.ID, 'instances'),
+    form_create_instance_snapshot=FormCreateInstanceSnapshot(
+        By.CSS_SELECTOR,
+        'form[action*="/create"]'))
 class PageInstances(PageBase):
     """Instances page."""
 

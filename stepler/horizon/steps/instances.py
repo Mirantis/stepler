@@ -272,3 +272,21 @@ class InstancesSteps(base.BaseSteps):
             name=ordered_names[0]).wait_for_presence(30)
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_absence()
+
+    @steps_checker.step
+    def create_instance_snapshot(self, instance_name,
+                                 snapshot_name=None,
+                                 check=True):
+        """Step to create instance snapshot."""
+        snapshot_name = snapshot_name or next(
+            utils.generate_ids('snapshot'))
+        self._page_instances().table_instances.row(
+            name=instance_name).dropdown_menu.click()
+
+        with self._page_instances().form_create_instance_snapshot as form:
+            form.item_snapshot_name.value = snapshot_name
+            form.submit()
+
+        if check:
+            self.close_notification('success')
+        return snapshot_name

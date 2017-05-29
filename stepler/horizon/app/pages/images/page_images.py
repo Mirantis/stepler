@@ -30,7 +30,7 @@ from ..instances.page_instances import FormLaunchInstance
     item_create_volume=ui.UI(By.XPATH, './/a[contains(., "Create Volume")]'),
     item_update_metadata=ui.UI(By.XPATH,
                                './/a[contains(., "Update Metadata")]'),
-    item_delete=ui.UI(By.XPATH, './/a[contains(., "Delete Image")]'),
+    item_delete=ui.UI(By.CSS_SELECTOR, '*[id*="action_delete"]'),
     item_edit=ui.UI(By.XPATH, './/a[contains(., "Edit Image")]'), )
 class DropdownMenu(_ui.DropdownMenu):
     """Dropdown menu for image row."""
@@ -49,6 +49,7 @@ class RowImage(_ui.Row):
 class TableImages(_ui.Table):
     """Images table."""
 
+    columns = {'name': 2}
     row_cls = RowImage
 
 
@@ -134,7 +135,7 @@ class FormCreateVolume(_ui.Form):
     form_update_image=FormUpdateImage(By.XPATH, './/*[@ng-form="wizardForm"]'),
     form_update_metadata=FormUpdateMetadata(By.CSS_SELECTOR,
                                             'div.modal-content'),
-    table_images=TableImages(By.CSS_SELECTOR, 'table.table-detail'),
+    table_images=TableImages(By.ID, 'images'),
     search_bar=_ui.SearchBar(By.CSS_SELECTOR, '.magic-search-bar'))
 class PageImages(PageBase):
     """Images Page."""

@@ -162,3 +162,31 @@ class TestAnyOne(object):
         """
         instances_steps_ui.filter_instances(query=horizon_servers[0].name)
         instances_steps_ui.reset_instances_filter()
+
+    @pytest.mark.idempotent_id('886b9820-3ef4-11e7-b7fb-938b7d064835',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('89e672f6-3ef4-11e7-95a1-b7df5a42063f',
+                               any_one='user')
+    def test_create_instance_snapshot(self, horizon_server,
+                                      instances_steps_ui,
+                                      images_steps_ui):
+        """**Scenario:** Verify that user can create instance snapshot.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Create snapshot
+        #. Check that snapshot created
+        #. Delete snapshot
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        snapshot_name = instances_steps_ui.create_instance_snapshot(
+            horizon_server.name)
+        images_steps_ui.check_image_present(snapshot_name)
+        images_steps_ui.delete_image(snapshot_name)
