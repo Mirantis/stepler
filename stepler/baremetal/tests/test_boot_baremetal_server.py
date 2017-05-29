@@ -21,6 +21,41 @@ import pytest
 from stepler import config
 
 
+@pytest.mark.requires("ironic_nodes_count >= 1")
+@pytest.mark.idempotent_id('aa2752af-7265-4d9f-a86c-4f32a595d0f2')
+def test_boot_server_simple(keypair,
+                            baremetal_flavor,
+                            baremetal_ubuntu_image,
+                            baremetal_network,
+                            server_steps):
+    """***Scenario:** Boot one baremetal server.
+
+    **Setup:**
+
+    #. Create keypair
+    #. Create baremetal flavor
+    #. Upload baremetal ubuntu image
+
+    **Steps:**
+
+    #. Create and boot server, check that server status is active
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete image
+    #. Delete flavor
+    #. Delete keypair
+    """
+    server_steps.create_servers(
+        image=baremetal_ubuntu_image,
+        flavor=baremetal_flavor,
+        count=1,
+        networks=[baremetal_network],
+        keypair=keypair,
+        username=config.UBUNTU_USERNAME)
+
+
 @pytest.mark.requires("ironic_nodes_count >= 2")
 @pytest.mark.idempotent_id('0a9792ce-9933-479d-8ed2-b1adfafcae62')
 def test_boot_servers_concurrently_on_ironic_node(keypair,
