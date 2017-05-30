@@ -29,7 +29,7 @@ class TestAnyOne(object):
     @pytest.mark.idempotent_id('3b793f66-6e89-4ac7-b359-ad8c9787593f',
                                any_one='user')
     def test_download_rc_v2(self, api_access_steps_ui):
-        """**Scenario:** Verify that one can download RCv2.
+        """**Scenario:** Verify that user can download RCv2.
 
         **Steps:**
 
@@ -42,7 +42,7 @@ class TestAnyOne(object):
     @pytest.mark.idempotent_id('8bd7424a-db01-4978-b933-380afa68f78d',
                                any_one='user')
     def test_download_rc_v3(self, api_access_steps_ui):
-        """**Scenario:** Verify that one can download RCv3.
+        """**Scenario:** Verify that user can download RCv3.
 
         **Steps:**
 
@@ -50,12 +50,25 @@ class TestAnyOne(object):
         """
         api_access_steps_ui.download_rc_v3()
 
+    @pytest.mark.idempotent_id('a6ed9d2a-ae40-45ca-92c9-0034cbb425b1',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('596710b9-1f77-4db9-9a77-f5733a5708ff',
+                               any_one='user')
+    def test_download_ec2(self, api_access_steps_ui):
+        """**Scenario:** Verify that user can download EC2 credentials.
+
+        **Steps:**
+
+        #. Download ec2 file using UI
+        """
+        api_access_steps_ui.download_ec2()
+
     @pytest.mark.idempotent_id('c414f5b0-c098-48ea-b99b-6e37597bcd7a',
                                any_one='admin')
     @pytest.mark.idempotent_id('5bf8ab88-2839-42af-afa0-c2cc5211f774',
                                any_one='user')
     def test_view_credentials(self, api_access_steps_ui):
-        """**Scenario:** Verify that one can view credentials.
+        """**Scenario:** Verify that user can view credentials.
 
         **Steps:**
 
