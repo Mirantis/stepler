@@ -191,6 +191,16 @@ class TestAdminOnly(object):
         new_username = user.name + '(updated)'
         users_steps_ui.update_user(user.name, new_username)
 
+    @pytest.mark.idempotent_id('17263c39-9c63-47eb-80e2-c7bc79c27d57')
+    def test_try_to_disable_current_user(self, users_steps_ui):
+        """**Scenario:** Verify that user can't disable himself.
+
+        **Steps:**
+
+        #. Try to disable current user
+        """
+        users_steps_ui.check_user_cant_disable_itself()
+
 
 @pytest.mark.usefixtures('user_only')
 class TestUserOnly(object):
