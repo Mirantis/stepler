@@ -464,3 +464,23 @@ class InstancesSteps(base.BaseSteps):
         if check:
             assert_that(page_instances.field_filter_instances.value,
                         equal_to(''))
+
+    @steps_checker.step
+    def add_security_group(self,
+                           instance_name,
+                           security_group_name,
+                           check=True):
+        """Step to add security group."""
+        page_instances = self._page_instances()
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_edit_instance.click()
+
+        with page_instances.form_edit_instance as form:
+            form.item_security_groups.click()
+            form.item_security_group(security_group_name).click()
+            form.submit()
+
+        if check:
+            self.close_notification('success')

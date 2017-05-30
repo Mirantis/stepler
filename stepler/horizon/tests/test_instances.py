@@ -268,6 +268,31 @@ class TestAnyOne(object):
         """
         instances_steps_ui.rename_instance(horizon_server.name)
 
+    @pytest.mark.idempotent_id('c5ecd044-450f-11e7-b588-23782e95bb3c',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('c684af86-450f-11e7-8637-4b94848b5a9f',
+                               any_one='user')
+    def test_edit_instance_security_group(self, horizon_security_group,
+                                          horizon_server,
+                                          instances_steps_ui):
+        """**Scenario:** Verify that user can edit instance security group.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Add security group to instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.add_security_group(
+            horizon_server.name,
+            horizon_security_group['name'])
+
 
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):

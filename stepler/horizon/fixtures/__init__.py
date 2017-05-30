@@ -42,6 +42,8 @@ from .volumes import *  # noqa
 
 __all__ = sorted([  # sort for documentation
     'access_steps_ui',
+    'horizon_create_security_group',
+    'horizon_security_group',
 
     'api_access_steps_ui',
 

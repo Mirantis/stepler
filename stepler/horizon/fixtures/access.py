@@ -20,9 +20,12 @@ Fixtures to manipulate with access
 import pytest
 
 from stepler.horizon import steps
+from stepler.third_party import utils
 
 __all__ = [
     'access_steps_ui',
+    'horizon_create_security_group',
+    'horizon_security_group'
 ]
 
 
@@ -35,3 +38,44 @@ def access_steps_ui(login, horizon):
         horizon (Horizon): instantiated horizon web application
     """
     return steps.AccessSteps(horizon)
+
+
+@pytest.fixture
+def horizon_create_security_group(neutron_security_group_steps):
+    """Callable function fixture to create security group with options.
+
+    Args:
+        neutron_security_group_steps (object): instantiated security groups
+            steps
+
+    Returns:
+        function: function to create security group
+    """
+    security_groups = []
+
+    def _create_security_group(group_name, **kwargs):
+        security_group = neutron_security_group_steps.create(group_name,
+                                                             **kwargs)
+        security_groups.append(security_group)
+        return security_group
+
+    yield _create_security_group
+
+    for security_group in security_groups:
+        neutron_security_group_steps.delete(security_group)
+
+
+@pytest.fixture
+def horizon_security_group(horizon_create_security_group):
+    """Function fixture to create security group before test.
+
+    Args:
+    horizon_create_security_group (function): function to create security
+        group with options.
+
+    Returns:
+        dict: security group
+    """
+    group_name = next(utils.generate_ids('security-group'))
+    group = horizon_create_security_group(group_name)
+    return group

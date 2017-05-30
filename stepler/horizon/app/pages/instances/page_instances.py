@@ -185,11 +185,25 @@ class FormAssociateFloatingIP(_ui.Form):
 
 
 @ui.register_ui(
-    item_instance_name=ui.TextField(By.NAME, 'name'))
+    item_instance_name=ui.TextField(By.NAME, 'name'),
+    item_security_groups=ui.UI(By.XPATH,
+                               './/a[contains(., "Security Groups")]'))
 class FormEditInstance(_ui.Form):
     """Form to edit instance."""
 
     submit_locator = By.CSS_SELECTOR, '.modal-footer .btn.btn-primary'
+
+    def item_security_group(self, name):
+        """Item add security group."""
+        element_locator = By.XPATH, ("//ul[contains(@class,"
+                                     " 'available_update_security_groups')]"
+                                     "[./ul[contains(., '{}')]]".format(name))
+        item = self.find_element(element_locator)
+        item = item.find_element(
+            By.XPATH, "./ul[contains(., '{}')]".format(name))
+        item = item.find_element(By.TAG_NAME, 'a')
+
+        return item
 
 
 @ui.register_ui(
