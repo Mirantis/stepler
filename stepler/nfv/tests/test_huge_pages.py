@@ -26,7 +26,7 @@ from stepler.third_party import utils
 
 @pytest.mark.requires("vlan")
 @pytest.mark.parametrize('computes_with_hp_2mb',
-                         [{'host_count': 2, 'hp_count_per_host': 1024}],
+                         [{'host_count': 2, 'hp_count_per_host': 512}],
                          indirect=['computes_with_hp_2mb'])
 @pytest.mark.idempotent_id('df9c0279-92cd-44ed-8f80-791121b57f7f')
 def test_allocation_huge_pages_2mb(computes_with_hp_2mb,
@@ -81,7 +81,7 @@ def test_allocation_huge_pages_2mb(computes_with_hp_2mb,
         sizes=[config.page_2mb])
 
     flavor_name = next(utils.generate_ids('flavor'))
-    flavor = create_flavor(flavor_name, ram=512, vcpus=1, disk=1)
+    flavor = create_flavor(flavor_name, ram=256, vcpus=1, disk=1)
     metadata = {'hw:mem_page_size': str(config.page_2mb)}
     flavor_steps.set_metadata(flavor, metadata)
 
@@ -648,7 +648,7 @@ def test_migration_huge_pages_1gb(computes_with_hp_1gb,
         sizes=[config.page_1gb])
 
     flavor_name = next(utils.generate_ids('flavor'))
-    flavor = create_flavor(flavor_name, ram=2048, vcpus=2, disk=20)
+    flavor = create_flavor(flavor_name, ram=1024, vcpus=2, disk=20)
     metadata = {'hw:mem_page_size': str(config.page_1gb)}
     flavor_steps.set_metadata(flavor, metadata)
 
@@ -721,7 +721,7 @@ def test_migration_huge_pages_1gb(computes_with_hp_1gb,
 @pytest.mark.requires("vlan")
 @pytest.mark.requires("computes_count >= 2")
 @pytest.mark.parametrize('computes_with_hp_2mb',
-                         [{'host_count': 2, 'hp_count_per_host': 1024}],
+                         [{'host_count': 2, 'hp_count_per_host': 512}],
                          indirect=['computes_with_hp_2mb'])
 @pytest.mark.idempotent_id('6ea65424-4ad2-48c6-9dda-0e0da396c97e')
 def test_evacuation_huge_pages_2mb(computes_with_hp_2mb,

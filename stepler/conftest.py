@@ -173,6 +173,7 @@ __all__ = sorted([  # sort for documentation
     'computes_with_hp_2mb',
     'computes_with_hp_1gb',
     'computes_with_hp_mixed',
+    'computes_with_cpu_pinning_and_hp',
     'create_servers_to_allocate_hp',
 
     'aggregate_steps',

@@ -29,6 +29,7 @@ __all__ = [
     'computes_with_hp_2mb',
     'computes_with_hp_1gb',
     'computes_with_hp_mixed',
+    'computes_with_cpu_pinning_and_hp',
     'create_servers_to_allocate_hp',
 ]
 
@@ -57,6 +58,8 @@ def computes_without_hp(os_faults_steps):
     for fqdn, hp_data in os_faults_steps.get_hugepages_data():
         if sum(hp_data) == 0:
             fqdns.append(fqdn)
+    if not fqdns:
+        pytest.skip("No computes without HP found")
     return fqdns
 
 
@@ -147,6 +150,44 @@ def computes_with_hp_mixed(request, os_faults_steps):
             fqdns.append(fqdn)
     if len(fqdns) < min_count['host_count']:
         pytest.skip("Insufficient count of computes with 2Mb/1Gb huge pages")
+    return fqdns
+
+
+@pytest.fixture
+def computes_with_cpu_pinning_and_hp(request, os_faults_steps):
+    """Function fixture to get computes with CPU pinning and hugepages 2Mb/1Gb.
+
+    Can be parametrized with 'host_count', 'hp_count_2mb' and 'hp_count_1gb'.
+    Example:
+        @pytest.mark.parametrize(
+            'computes_with_cpu_pinning_and_hp',
+            [{'host_count': 2, 'hp_count_2mb': 1024, 'hp_count_1gb': 4}],
+            indirect=['computes_with_cpu_pinning_and_hp'])
+
+    Args:
+        request (obj): py.test SubRequest
+        os_faults_steps (OsFaultsSteps): initialized os-faults steps
+
+    Returns:
+        list: FQDNs of computes with CPU pinning and HP 2Mb/1Gb
+    """
+    min_count = getattr(request, 'param', {'host_count': 1,
+                                           'hp_count_2mb': 512,
+                                           'hp_count_1gb': 4})
+
+    nodes = os_faults_steps.get_cpu_pinning_computes()
+    fqdns_pinned = [node.fqdn for node in nodes]
+    if len(fqdns_pinned) < min_count['host_count']:
+        pytest.skip("Insufficient count of computes with CPU pinning")
+
+    fqdns = []
+    for fqdn, hp_data in os_faults_steps.get_hugepages_data(
+            fqdns=fqdns_pinned):
+        if ((hp_data[config.page_2mb]['nr'] >= min_count['hp_count_2mb']) and
+                (hp_data[config.page_1gb]['nr'] >= min_count['hp_count_1gb'])):
+            fqdns.append(fqdn)
+    if len(fqdns) < min_count['host_count']:
+        pytest.skip("Insufficient count of computes with CPU pinning and HP")
     return fqdns
 
 
