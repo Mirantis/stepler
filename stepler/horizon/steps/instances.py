@@ -31,8 +31,22 @@ class InstancesSteps(base.BaseSteps):
     """Instances steps."""
 
     def _page_instances(self):
-        """Open instances page if it isn't opened."""
+        """Open instances page if it was not opened."""
         return self._open(self.app.page_instances)
+
+    def _page_admin_instances(self):
+        """Open admin instances page if it was not opened."""
+        return self._open(self.app.page_admin_instances)
+
+    def _get_current_instance_name(self, instance_names):
+        """Getting current instance name."""
+        rows = self._page_instances().table_instances.rows
+        assert_that(rows, has_length(1))
+
+        instance_name = rows[0].cell('name').value
+        assert_that(instance_name, is_in(instance_names))
+
+        return instance_name
 
     @steps_checker.step
     def create_instance(self, instance_name=None,
@@ -214,9 +228,14 @@ class InstancesSteps(base.BaseSteps):
             name=instance_name).wait_for_status('Active')
 
     @steps_checker.step
+    def check_instances_sum(self, instance_names, min_instances_sum=2):
+        """Step to check quantity of instances."""
+        assert_that(instance_names,
+                    has_length(greater_than(min_instances_sum)))
+
+    @steps_checker.step
     def check_instances_pagination(self, instance_names):
         """Step to check instances pagination."""
-        assert_that(instance_names, has_length(greater_than(2)))
 
         ordered_names = []
         count = len(instance_names)
@@ -224,33 +243,75 @@ class InstancesSteps(base.BaseSteps):
 
         # instances can be unordered so we should try to retrieve
         # any instance from instances list
-        def _get_current_instance_name():
-            rows = page_instances.table_instances.rows
-            assert_that(rows, has_length(1))
 
-            instance_name = rows[0].cell('name').value
-            assert_that(instance_name, is_in(instance_names))
-
-            return instance_name
-
-        instance_name = _get_current_instance_name()
+        instance_name = self._get_current_instance_name(instance_names)
         ordered_names.append(instance_name)
-
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_absence()
 
-        # check all elements except for the first and the last
+        # check all elements except the first one and the last one
         for _ in range(1, count - 1):
             page_instances.table_instances.link_next.click()
 
-            instance_name = _get_current_instance_name()
+            instance_name = self._get_current_instance_name(instance_names)
             ordered_names.append(instance_name)
             page_instances.table_instances.link_next.wait_for_presence()
             page_instances.table_instances.link_prev.wait_for_presence()
 
         page_instances.table_instances.link_next.click()
 
-        instance_name = _get_current_instance_name()
+        instance_name = self._get_current_instance_name(instance_names)
+        ordered_names.append(instance_name)
+        page_instances.table_instances.link_next.wait_for_absence()
+        page_instances.table_instances.link_prev.wait_for_presence()
+
+        # check that all created instance names have been checked
+        assert_that(ordered_names, contains_inanyorder(*instance_names))
+
+        for i in range(count - 2, 0, -1):
+            page_instances.table_instances.link_prev.click()
+
+            page_instances.table_instances.row(
+                name=ordered_names[i]).wait_for_presence(30)
+            page_instances.table_instances.link_next.wait_for_presence()
+            page_instances.table_instances.link_prev.wait_for_presence()
+
+        page_instances.table_instances.link_prev.click()
+
+        page_instances.table_instances.row(
+            name=ordered_names[0]).wait_for_presence(30)
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_absence()
+
+    @steps_checker.step
+    def check_admin_instances_pagination(self, instance_names):
+        """Step to check instances pagination as admin."""
+
+        ordered_names = []
+        count = len(instance_names)
+        page_instances = self._page_admin_instances()
+
+        # instances can be unordered so we should try to retrieve
+        # any instance from instances list
+
+        instance_name = self._get_current_instance_name(instance_names)
+        ordered_names.append(instance_name)
+
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_absence()
+
+        # check all elements except the first one and the last one
+        for _ in range(1, count - 1):
+            page_instances.table_instances.link_next.click()
+
+            instance_name = self._get_current_instance_name(instance_names)
+            ordered_names.append(instance_name)
+            page_instances.table_instances.link_next.wait_for_presence()
+            page_instances.table_instances.link_prev.wait_for_presence()
+
+        page_instances.table_instances.link_next.click()
+
+        instance_name = self._get_current_instance_name(instance_names)
         ordered_names.append(instance_name)
         page_instances.table_instances.link_next.wait_for_absence()
         page_instances.table_instances.link_prev.wait_for_presence()
@@ -368,3 +429,38 @@ class InstancesSteps(base.BaseSteps):
             page_instances.table_instances.row(
                 name=new_instance_name).wait_for_presence()
         return new_instance_name
+
+    @steps_checker.step
+    def admin_filter_instances(self, query, check=True):
+        """Step to filter instances as admin."""
+        page_instances = self._page_admin_instances()
+
+        page_instances.combobox_filter_target.value = 'Name'
+        page_instances.field_filter_instances.value = query
+        page_instances.button_filter_instances.click()
+
+        if check:
+            def check_rows():
+                for row in page_instances.table_instances.rows:
+                    if not (row.is_present and
+                            query in row.link_instance.value):
+                        is_present = False
+                        break
+                    is_present = True
+
+                return waiter.expect_that(is_present, equal_to(True))
+
+            waiter.wait(check_rows,
+                        timeout_seconds=config.UI_TIMEOUT,
+                        sleep_seconds=0.1)
+
+    @steps_checker.step
+    def admin_reset_instances_filter(self, check=True):
+        """Step to reset instances filter as admin."""
+        page_instances = self._page_admin_instances()
+        page_instances.field_filter_instances.value = ''
+        page_instances.button_filter_instances.click()
+
+        if check:
+            assert_that(page_instances.field_filter_instances.value,
+                        equal_to(''))

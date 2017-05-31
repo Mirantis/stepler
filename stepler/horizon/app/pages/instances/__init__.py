@@ -17,5 +17,6 @@ Instance pages
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .page_admin_instances import PageAdminInstances  # noqa
 from .page_instance import PageInstance  # noqa
 from .page_instances import PageInstances  # noqa
