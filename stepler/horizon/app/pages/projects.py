@@ -29,7 +29,7 @@ from .base import PageBase
     item_edit=ui.UI(By.CSS_SELECTOR, '[id$="action_update"]'),
     item_delete=ui.UI(By.CSS_SELECTOR, '[id$="action_delete"]'))
 class DropdownMenu(_ui.DropdownMenu):
-    """Dropdown menu for user row."""
+    """Dropdown menu for projects row."""
 
 
 @ui.register_ui(
@@ -64,6 +64,14 @@ class FormEditProject(_ui.Form):
 
 
 @ui.register_ui(
+    button_add_user=ui.UI(By.CSS_SELECTOR, '.btn.btn-primary'))
+class FormAvailableMembers(_ui.Form):
+    """Project members form."""
+
+    submit_locator = By.CSS_SELECTOR, '.modal-footer .btn.btn-primary'
+
+
+@ui.register_ui(
     button_create_project=ui.Button(By.ID, 'tenants__action_create'),
     button_filter_projects=ui.Button(By.CLASS_NAME, 'fa-search'),
     field_filter_projects=ui.TextField(By.NAME, 'tenants__filter__q'),
@@ -72,7 +80,9 @@ class FormEditProject(_ui.Form):
     form_delete_project_confirm=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
     form_edit_project=FormEditProject(By.CLASS_NAME,
                                       'modal-content'),
-    table_projects=TableProjects(By.ID, 'tenants'))
+    table_projects=TableProjects(By.ID, 'tenants'),
+    form_available_members=FormAvailableMembers(By.CSS_SELECTOR,
+                                                'div.modal-content'))
 class PageProjects(PageBase):
     """Projects page."""
 
