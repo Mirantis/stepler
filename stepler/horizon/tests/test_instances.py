@@ -221,3 +221,25 @@ class TestAnyOne(object):
             horizon_server.name)
         images_steps_ui.check_image_present(snapshot_name)
         images_steps_ui.delete_image(snapshot_name)
+
+    @pytest.mark.idempotent_id('8523aad8-4082-11e7-aed3-1bd4f24c633d',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('85d5d17c-4082-11e7-9efb-17e239f72067',
+                               any_one='user')
+    def test_resize_instance(self, horizon_server,
+                             instances_steps_ui):
+        """**Scenario:** Verify that user can resize instance.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Resize instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.resize_instance(horizon_server.name)

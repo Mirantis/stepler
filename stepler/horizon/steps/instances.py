@@ -17,8 +17,8 @@ Instances steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, contains_inanyorder, equal_to, greater_than,
-                      has_length, is_in, is_not)  # noqa
+from hamcrest import (assert_that, contains_string, contains_inanyorder,
+                      equal_to, greater_than, has_length, is_in, is_not)  # noqa
 
 from stepler import config
 from stepler.horizon.steps import base
@@ -320,3 +320,30 @@ class InstancesSteps(base.BaseSteps):
         if check:
             self.close_notification('success')
         return snapshot_name
+
+    @steps_checker.step
+    def resize_instance(self, instance_name,
+                        flavor=None, check=True):
+        """Step to resize instance."""
+        page_instances = self._page_instances()
+        flavor = flavor or config.FLAVOR_TINY
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_resize.click()
+        with page_instances.form_resize_instance as form:
+            form.item_flavor.value = flavor
+            form.submit()
+
+        with page_instances.table_instances.row(name=instance_name) as row:
+            row.wait_for_status(
+                'Confirm or Revert Resize/Migrate',
+                timeout=config.VERIFY_RESIZE_TIMEOUT)
+        page_instances.table_instances.row(
+            name=instance_name).dropdown_menu.item_default.click()
+
+        if check:
+            row = page_instances.table_instances.row(
+                name=instance_name)
+            assert_that(row.cell('size').value,
+                        contains_string(flavor))
