@@ -1855,8 +1855,9 @@ class OsFaultsSteps(base.BaseSteps):
                 waiter.expect_that(result.status, equal_to(config.STATUS_OK))
                 for result in results)
 
-        waiter.wait(_wait_successful_command_response,
-                    timeout_seconds=config.GALERA_CLUSTER_UP_TIMEOUT)
+        waiter.wait(
+            _wait_successful_command_response,
+            timeout_seconds=config.GALERA_CLUSTER_UP_TIMEOUT)
 
         results = self.execute_cmd(nodes_to_check, cmd)
         for result in results:
@@ -1865,18 +1866,20 @@ class OsFaultsSteps(base.BaseSteps):
                 parameter_name, value = parameter.split('\t')
                 cluster_params[result.host].update({parameter_name: value})
 
-        expected_incoming_addr = [
-            '{}:{}'.format(ip, config.MYSQL_PORT)
-            for ip in self.get_nodes_ip_for_interface(member_nodes, 'eth1')]
+        expected_incoming_addr = set()
+        for ips in self.get_nodes_ips(member_nodes).values():
+            expected_incoming_addr.update(
+                ['{}:{}'.format(ip, config.MYSQL_PORT) for ip in ips])
 
         for host, param in cluster_params.items():
-            actual_incoming_addr = sorted(
+            actual_incoming_addr = set(
                 param[config.GALERA_CLUSTER_MEMBERS_PARAM].split(','))
-            assert_that(
-                param, has_entries(config.GALERA_CLUSTER_STATUS_PARAMS))
-            assert_that(param[config.GALERA_CLUSTER_SIZE_PARAM],
-                        equal_to(str(len(member_nodes))))
-            assert_that(actual_incoming_addr, equal_to(expected_incoming_addr))
+            assert_that(param,
+                        has_entries(config.GALERA_CLUSTER_SIZE_PARAM,
+                                    str(len(member_nodes)),
+                                    **config.GALERA_CLUSTER_STATUS_PARAMS))
+            assert_that(actual_incoming_addr - expected_incoming_addr,
+                        has_length(0))
 
     @steps_checker.step
     def check_galera_data_replication(self, nodes):
@@ -1908,33 +1911,6 @@ class OsFaultsSteps(base.BaseSteps):
             # Delete database
             self.execute_cmd(main_node,
                              cmd.format(config.MYSQL_DELETE_DATABASE_CMD))
-
-    @steps_checker.step
-    def get_nodes_ip_for_interface(self, nodes, interface, check=True):
-        """Step to get specific interface ips of nodes.
-
-        Args:
-            nodes (NodeCollection): nodes to get ips
-            interface (str): interface name
-            check (bool, optional): flag whether to check step or not
-
-        Raises:
-            AnsibleExecutionException: if command execution
-                failed in case of check=True
-
-        Returns:
-            list: sorted ips
-        """
-        ips = []
-        results = self.execute_cmd(
-            nodes, "ifconfig {} | grep addr".format(interface), check=check)
-        for result in results:
-            ip = re.findall(r'inet addr:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})',
-                            result.payload['stdout'])[0]
-            ips.append(ip)
-        if check:
-            assert_that(ips, is_not(empty()))
-        return sorted(ips)
 
     @steps_checker.step
     def get_rabbitmq_cluster_config_data(self, check=True):
