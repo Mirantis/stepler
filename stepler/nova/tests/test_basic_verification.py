@@ -22,6 +22,47 @@ from stepler import config
 from stepler.third_party import utils
 
 
+@pytest.mark.idempotent_id('69686373-8858-4c0e-add9-7b19236ad194')
+def test_server_basic(flavor,
+                      security_group,
+                      keypair,
+                      cirros_image,
+                      net_subnet_router,
+                      server_steps):
+    """**Scenario:** Basic test to boot Nova instance.
+
+    **Setup:**
+
+    #. Create flavor
+    #. Create security_group
+    #. Create keypair
+    #. Upload cirros image
+    #. Create network with subnet and router
+
+    **Steps:**
+
+    #. Boot one server from cirros image
+
+    **Teardown:**
+
+    #. Delete server
+    #. Delete flavor
+    #. Delete security_group
+    #. Delete keypair
+    #. Delete cirros image
+    #. Delete network, subnet, router
+    """
+    network, _, _ = net_subnet_router
+    server_steps.create_servers(
+        count=1,
+        image=cirros_image,
+        flavor=flavor,
+        networks=[network],
+        keypair=keypair,
+        security_groups=[security_group],
+        username=config.CIRROS_USERNAME)
+
+
 @pytest.mark.idempotent_id('101ccfbf-5693-4d29-8878-296fea791a81')
 def test_boot_instance_from_volume_bigger_than_flavor(
         flavor,
