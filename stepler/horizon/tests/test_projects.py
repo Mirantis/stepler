@@ -47,7 +47,7 @@ class TestAdminOnly(object):
         projects_steps_ui.check_project_cant_disable_itself()
 
     @pytest.mark.idempotent_id('b3c20e6e-b2f1-4c74-89e6-e72eaad1dfb8')
-    def test_manage_project_members(self, projects_steps_ui, project):
+    def test_manage_project_members(self, project, projects_steps_ui):
         """**Scenario:** Check we can manage project members.
 
         **Setup:**
@@ -62,4 +62,24 @@ class TestAdminOnly(object):
 
         #. Delete project with UI
         """
-        projects_steps_ui.manage_project_members(project.name)
+        projects_steps_ui.manage_project_members(project)
+
+    @pytest.mark.idempotent_id('83f706c1-6c1c-4a65-95e1-b045cd723fa1')
+    def test_disable_enable_project(self, project, projects_steps_ui):
+        """**Scenario:** Disable and enable created project.
+
+        **Setup:**
+
+        #. Create project with API
+
+        **Steps:**
+
+        #. Disable created project with UI
+        #. Enable it using UI
+
+        **Teardown:**
+
+        #. Delete project via API
+        """
+        projects_steps_ui.toggle_project(project, enable=False)
+        projects_steps_ui.toggle_project(project, enable=True)
