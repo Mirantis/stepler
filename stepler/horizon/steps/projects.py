@@ -142,8 +142,7 @@ class ProjectsSteps(base.BaseSteps):
             name=project_name).is_enabled, equal_to(True))
 
     @steps_checker.step
-    def manage_project_members(self, project_name,
-                               admin_project_resources,
+    def manage_project_members(self, project_name, admin_project_resources,
                                check=True):
         """Step to manage project members."""
         page_projects = self._page_projects()
@@ -153,8 +152,7 @@ class ProjectsSteps(base.BaseSteps):
             menu.item_default.click()
 
         with page_projects.form_available_members as form:
-            form.item_members_group(
-                admin_project_resources["user"].name).click()
+            form.item_members(admin_project_resources["user"].name).click()
             form.submit()
 
         if check:

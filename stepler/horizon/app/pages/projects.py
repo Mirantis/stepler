@@ -73,8 +73,8 @@ class FormAvailableMembers(_ui.Form):
 
     submit_locator = By.CSS_SELECTOR, '.modal-footer .btn.btn-primary'
 
-    def item_members_group(self, name):
-        """Item add members group."""
+    def item_members(self, name):
+        """Item add members."""
         element_locator = By.XPATH, ("//ul[contains(@class,"
                                      " 'available_update_members')]"
                                      "/ul[contains(., '{}')]//a".format(name))

@@ -32,6 +32,7 @@ from .instances import InstancesSteps  # noqa
 from .keypairs import KeypairsSteps  # noqa
 from .metadata_definitions import NamespacesSteps  # noqa
 from .networks import NetworksSteps  # noqa
+from .overview import OverviewSteps
 from .projects import ProjectsSteps  # noqa
 from .routers import RoutersSteps  # noqa
 from .settings import SettingsSteps  # noqa
@@ -53,6 +54,7 @@ __all__ = [
     'KeypairsSteps',
     'NamespacesSteps',
     'NetworksSteps',
+    'OverviewSteps',
     'ProjectsSteps',
     'RoutersSteps',
     'SettingsSteps',

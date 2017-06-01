@@ -720,3 +720,6 @@ HP_GET_DATA_CMD_1 = ("cat /sys/kernel/mm/hugepages/hugepages-{size}kB/"
 HP_GET_DATA_CMD_2 = ("cat /sys/devices/system/node/node{numa_id}/hugepages/"
                      "hugepages-{size}kB/{type}_hugepages || echo 0")
 TIME_AFTER_NOVA_COMPUTE_UP = 10
+
+# Names resources in "Overview"
+RESOURCE_NAME_SECURITY = 'Security Groups'

@@ -42,6 +42,7 @@ from .volumes import (PageAdminVolumes,
                       PageVolume,
                       PageVolumes,
                       PageVolumeTransfer)  # noqa
+from .overview import PageOverview  # noqa
 
 pages = [
     PageAccess,
@@ -70,5 +71,6 @@ pages = [
     PageUsers,
     PageVolume,
     PageVolumes,
-    PageVolumeTransfer
+    PageVolumeTransfer,
+    PageOverview
 ]

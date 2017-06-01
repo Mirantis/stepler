@@ -32,6 +32,7 @@ from .instances import *  # noqa
 from .keypairs import *  # noqa
 from .metadata_definitions import *  # noqa
 from .networks import *  # noqa
+from .overview import *  # noqa
 from .projects import *  # noqa
 from .routers import *  # noqa
 from .settings import *  # noqa
@@ -89,6 +90,8 @@ __all__ = sorted([  # sort for documentation
     'namespaces_steps_ui',
 
     'networks_steps_ui',
+
+    'overview_steps_ui',
 
     'projects_steps_ui',
     'project_name_non_ascii',
