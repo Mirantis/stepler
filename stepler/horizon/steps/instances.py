@@ -168,7 +168,7 @@ class InstancesSteps(base.BaseSteps):
                             query in row.link_instance.value):
                         is_present = False
                         break
-                is_present = True
+                    is_present = True
 
                 return waiter.expect_that(is_present, equal_to(True))
 
