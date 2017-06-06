@@ -347,3 +347,24 @@ class InstancesSteps(base.BaseSteps):
                 name=instance_name)
             assert_that(row.cell('size').value,
                         contains_string(flavor))
+
+    @steps_checker.step
+    def rename_instance(self,
+                        instance_name,
+                        new_instance_name=None, check=True):
+        """Step to rename instance."""
+        new_instance_name = new_instance_name or next(utils.generate_ids(
+            'instance'))
+        page_instances = self._page_instances()
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_edit_instance.click()
+        with page_instances.form_edit_instance as form:
+            form.item_instance_name.value = new_instance_name
+            form.submit()
+
+        if check:
+            page_instances.table_instances.row(
+                name=new_instance_name).wait_for_presence()
+        return new_instance_name

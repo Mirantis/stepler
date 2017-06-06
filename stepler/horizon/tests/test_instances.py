@@ -243,3 +243,25 @@ class TestAnyOne(object):
         #. Delete server using API
         """
         instances_steps_ui.resize_instance(horizon_server.name)
+
+    @pytest.mark.idempotent_id('3387fea8-412d-11e7-bdbd-af7548dce310',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('343d7576-412d-11e7-bd85-4fc37a08201a',
+                               any_one='user')
+    def test_edit_instance_name(self, horizon_server,
+                                instances_steps_ui):
+        """**Scenario:** Verify that user can edit instance name.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Rename instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.rename_instance(horizon_server.name)

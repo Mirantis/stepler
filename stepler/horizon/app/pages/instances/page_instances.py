@@ -151,7 +151,8 @@ class FormLaunchInstance(_ui.Form):
     item_unlock=ui.UI(By.CSS_SELECTOR, '*[id*="action_unlock"]'),
     item_associate=ui.UI(By.CSS_SELECTOR, '*[id*="action_associate"]'),
     item_disassociate=ui.UI(By.CSS_SELECTOR, '*[id*="action_disassociate"]'),
-    item_resize=ui.UI(By.CSS_SELECTOR, '*[id*="action_resize"]'))
+    item_resize=ui.UI(By.CSS_SELECTOR, '*[id*="action_resize"]'),
+    item_edit_instance=ui.UI(By.CSS_SELECTOR, '*[id*="action_edit"]'))
 class DropdownMenu(_ui.DropdownMenu):
     """Dropdown menu for instance row."""
 
@@ -184,6 +185,14 @@ class FormAssociateFloatingIP(_ui.Form):
 
 
 @ui.register_ui(
+    item_instance_name=ui.TextField(By.NAME, 'name'))
+class FormEditInstance(_ui.Form):
+    """Form to edit instance."""
+
+    submit_locator = By.CSS_SELECTOR, '.modal-footer .btn.btn-primary'
+
+
+@ui.register_ui(
     item_snapshot_name=ui.TextField(By.NAME, 'name'))
 class FormCreateInstanceSnapshot(_ui.Form):
     """Form to create snapshot of instance."""
@@ -210,7 +219,9 @@ class FormResizeInstance(_ui.Form):
         By.CSS_SELECTOR,
         'form[action*="/create"]'),
     form_resize_instance=FormResizeInstance(
-        By.CSS_SELECTOR, '[action*="resize"]'))
+        By.CSS_SELECTOR, '[action*="resize"]'),
+    form_edit_instance=FormEditInstance(By.CSS_SELECTOR,
+                                        '[action*="update"]'))
 class PageInstances(PageBase):
     """Instances page."""
 
