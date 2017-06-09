@@ -406,3 +406,34 @@ class TestAdminOnly(object):
         update_settings(items_per_page=1)
         instances_steps_ui.check_admin_instances_pagination_filter(
             instance_names)
+
+    @pytest.mark.idempotent_id('da7150fc-4ce5-11e7-bf78-c712da53935b')
+    def test_admin_delete_instance(self, horizon_server,
+                                   instances_steps_ui):
+        """**Scenario:** Verify that user can delete instance as admin.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Delete server using UI as admin
+        """
+        instances_steps_ui.admin_delete_instance(horizon_server.name)
+
+    @pytest.mark.idempotent_id('20d68874-4ce5-11e7-8c5a-c3a2b1dcfe6f')
+    @pytest.mark.parametrize('horizon_servers', [3], indirect=True)
+    def test_admin_delete_instances(self, horizon_servers, instances_steps_ui):
+        """**Scenario:** Verify that user can delete instances as bunch as admin.
+
+        **Setup:**
+
+        #. Create 3 servers using API
+
+        **Steps:**
+
+        #. Delete servers as bunch using UI as admin
+        """
+        server_names = [server.name for server in horizon_servers]
+        instances_steps_ui.admin_delete_instances(server_names)

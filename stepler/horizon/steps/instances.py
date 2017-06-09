@@ -547,3 +547,38 @@ class InstancesSteps(base.BaseSteps):
         waiter.wait(check_rows,
                     timeout_seconds=config.UI_TIMEOUT,
                     sleep_seconds=0.1)
+
+    @steps_checker.step
+    def admin_delete_instance(self, instance_name, check=True):
+        """Step to delete instance as admin."""
+        page_instances = self._page_admin_instances()
+
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_delete.click()
+
+        page_instances.form_confirm.submit()
+
+        if check:
+            self.close_notification('success')
+            page_instances.table_instances.row(
+                name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
+
+    @steps_checker.step
+    def admin_delete_instances(self, instance_names, check=True):
+        """Step to delete instances as admin."""
+        page_instances = self._page_admin_instances()
+
+        for instance_name in instance_names:
+            page_instances.table_instances.row(
+                name=instance_name).checkbox.select()
+
+        page_instances.button_delete_instances.click()
+        page_instances.form_confirm.submit()
+
+        if check:
+            self.close_notification('success')
+            for instance_name in instance_names:
+                page_instances.table_instances.row(
+                    name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)

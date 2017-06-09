@@ -26,7 +26,14 @@ from ..base import PageBase
 
 
 @ui.register_ui(
+    item_delete=ui.UI(By.CSS_SELECTOR, '*[id*="action_delete"]'))
+class DropdownMenu(_ui.DropdownMenu):
+    """Dropdown menu for instance row."""
+
+
+@ui.register_ui(
     checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[type="checkbox"]'),
+    dropdown_menu=DropdownMenu(),
     link_instance=ui.Link(By.CSS_SELECTOR, 'td > a'))
 class RowInstance(_ui.Row):
     """Row with instance."""
