@@ -484,3 +484,66 @@ class InstancesSteps(base.BaseSteps):
 
         if check:
             self.close_notification('success')
+
+    @steps_checker.step
+    def check_instances_pagination_filter(self, instance_names):
+        """Step to check instances pagination with filtering."""
+
+        page_instances = self._page_instances()
+        instance_name = self._get_current_instance_name(instance_names)
+
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_absence()
+
+        page_instances.table_instances.link_next.click()
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_presence()
+
+        page_instances.field_filter_instances.value = instance_name
+        page_instances.button_filter_instances.click()
+
+        def check_rows():
+            for row in page_instances.table_instances.rows:
+                if not (row.is_present and
+                        instance_name in row.link_instance.value):
+                    is_present = False
+                    break
+                is_present = True
+
+            return waiter.expect_that(is_present, equal_to(True))
+
+        waiter.wait(check_rows,
+                    timeout_seconds=config.UI_TIMEOUT,
+                    sleep_seconds=0.1)
+
+    @steps_checker.step
+    def check_admin_instances_pagination_filter(self, instance_names):
+        """Step to check instances pagination with filtering as admin."""
+
+        instance_name = self._get_current_instance_name(instance_names)
+        page_instances = self._page_admin_instances()
+
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_absence()
+
+        page_instances.table_instances.link_next.click()
+        page_instances.table_instances.link_next.wait_for_presence()
+        page_instances.table_instances.link_prev.wait_for_presence()
+
+        page_instances.combobox_filter_target.value = 'Name'
+        page_instances.field_filter_instances.value = instance_name
+        page_instances.button_filter_instances.click()
+
+        def check_rows():
+            for row in page_instances.table_instances.rows:
+                if not (row.is_present and
+                        instance_name in row.link_instance.value):
+                    is_present = False
+                    break
+                is_present = True
+
+            return waiter.expect_that(is_present, equal_to(True))
+
+        waiter.wait(check_rows,
+                    timeout_seconds=config.UI_TIMEOUT,
+                    sleep_seconds=0.1)
