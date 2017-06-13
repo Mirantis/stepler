@@ -29,6 +29,7 @@ from .login import PageLogin
 from .metadata_definitions import PageMetadataDefinitions
 from .networks import (PageAdminNetworks,
                        PageNetwork,
+                       PageNetworkTopology,
                        PageNetworks)  # noqa
 from .projects import PageProjects
 from .routers import PageRouters
@@ -55,6 +56,7 @@ pages = [
     PageLogin,
     PageMetadataDefinitions,
     PageNetwork,
+    PageNetworkTopology,
     PageNetworks,
     PagePassword,
     PageProjects,

@@ -19,7 +19,7 @@ Networks steps
 
 import time
 
-from hamcrest import assert_that, equal_to  # noqa
+from hamcrest import assert_that, empty, equal_to, is_not  # noqa
 
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
@@ -37,6 +37,10 @@ class NetworksSteps(base.BaseSteps):
     def _page_admin_networks(self):
         """Open admin networks page if it isn't opened."""
         return self._open(self.app.page_admin_networks)
+
+    def _page_network_topology(self):
+        """Open network topology page if it isn't opened."""
+        return self._open(self.app.page_network_topology)
 
     @steps_checker.step
     def create_network(self,
@@ -224,3 +228,12 @@ class NetworksSteps(base.BaseSteps):
         with self._page_networks().table_networks.row(
                 name=network_name).cell('shared') as cell:
             assert_that(cell.value, equal_to(share_status))
+
+    @steps_checker.step
+    def network_topology_page_availability(self, check=True):
+        """Step to go to network topology page."""
+        page_network_topology = self._page_network_topology()
+
+        if check:
+            page_network_topology.button_toggle_labels.click()
+            page_network_topology.button_toggle_networks.click()
