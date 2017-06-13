@@ -62,7 +62,7 @@ __all__ = sorted([  # sort for documentation
     'neutron_2_servers_iperf_different_networks',
     'neutron_conntrack_2_projects_resources',
     'neutron_2_servers_2_nets_diff_projects',
-    'neutron_2_nets_diff_projects',
+    'neutron_nets_for_projects',
     'neutron_2_servers_2_projects_with_shared_net',
     'create_max_networks_with_instances',
     'get_agent_steps',

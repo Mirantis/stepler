@@ -23,11 +23,11 @@ pytestmark = pytest.mark.requires("ironic_nodes_count >= 1")
 
 
 @pytest.mark.idempotent_id('caec6869-91c6-41ca-8386-ef84711a885f',
-                           neutron_2_nets_diff_projects={'same_cidr': False})
+                           neutron_nets_for_projects={'same_cidr': False})
 @pytest.mark.idempotent_id('3a0bcbb9-2a53-405e-a80f-d087d8b30b5f',
-                           neutron_2_nets_diff_projects={'same_cidr': True})
+                           neutron_nets_for_projects={'same_cidr': True})
 @pytest.mark.parametrize(
-    'neutron_2_nets_diff_projects', [{
+    'neutron_nets_for_projects', [{
         'same_cidr': False
     }, {
         'same_cidr': True
