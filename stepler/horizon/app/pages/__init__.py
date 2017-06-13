@@ -17,7 +17,8 @@ Horizon pages
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .access import PageAccess
+from .access import (PageAccess,
+                     PageManageRules)  # noqa
 from .base import PageBase
 from .containers import PageContainers
 from .defaults import PageDefaults
@@ -53,6 +54,7 @@ pages = [
     PageInstance,
     PageInstances,
     PageLogin,
+    PageManageRules,
     PageMetadataDefinitions,
     PageNetwork,
     PageNetworks,

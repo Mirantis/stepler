@@ -38,3 +38,26 @@ class TestAnyOne(object):
         """
         group_name = access_steps_ui.create_security_group()
         access_steps_ui.delete_security_group(group_name)
+
+    @pytest.mark.idempotent_id('e0a53c7a-bb3f-485c-b51e-153cf0b0033f',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('108ae5e7-a61a-4fd7-a6fb-2109102fe899',
+                               any_one='user')
+    def test_add_delete_rule(self, access_steps_ui, security_group):
+        """**Scenario:** Verify that user can manage rules for security group.
+
+        **Setup:**
+
+        #. Create security group using API
+
+        **Steps:**
+
+        #. Add rule using UI
+        #. Delete rule using UI
+
+        **Teardown:**
+
+        #. Remove security group using API
+        """
+        port_number = access_steps_ui.add_group_rule(security_group.name)
+        access_steps_ui.delete_group_rule(port_number)

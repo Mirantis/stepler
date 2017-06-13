@@ -49,3 +49,4 @@ class TableSecurityGroups(_ui.Table):
     table_security_groups=TableSecurityGroups(By.ID, 'security_groups'))
 class TabSecurityGroups(_ui.Tab):
     """Security groups tab."""
+    url = "/project/access_and_security/security_groups"
