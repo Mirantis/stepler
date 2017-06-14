@@ -123,19 +123,21 @@ class TestAnyOne(object):
 
         **Setup:**
 
-        #. Create servers using API
+        #. Create 3 servers using API
 
         **Steps:**
 
+        #. Check sum of instances
         #. Update ``items_per_page`` parameter to 1 using UI
         #. Check instances pagination using UI
 
         **Teardown:**
 
-        #. Delete servers using API
+        #. Delete 3 servers using API
         """
         instance_names = [instance.name
                           for instance in server_steps.get_servers()]
+        instances_steps_ui.check_instances_sum(instance_names)
         update_settings(items_per_page=1)
         instances_steps_ui.check_instances_pagination(instance_names)
 
@@ -265,3 +267,59 @@ class TestAnyOne(object):
         #. Delete server using API
         """
         instances_steps_ui.rename_instance(horizon_server.name)
+
+
+@pytest.mark.usefixtures('admin_only')
+class TestAdminOnly(object):
+    """Tests for admin only."""
+
+    @pytest.mark.idempotent_id('7140e6f0-45de-11e7-b72d-f3dd1dc0afb3')
+    @pytest.mark.parametrize('horizon_servers', [3], ids=[''], indirect=True)
+    def test_admin_instances_pagination(self,
+                                        server_steps,
+                                        horizon_servers,
+                                        update_settings,
+                                        instances_steps_ui):
+        """**Scenario:** Verify that instances pagination work for admin.
+
+        **Setup:**
+
+        #. Create 3 servers using API
+
+        **Steps:**
+
+        #. Check sum of instances
+        #. Update ``items_per_page`` parameter to 1 using UI as admin
+        #. Check instances pagination using UI as admin
+
+        **Teardown:**
+
+        #. Delete 3 servers using API
+        """
+        instance_names = [instance.name
+                          for instance in server_steps.get_servers()]
+        instances_steps_ui.check_instances_sum(instance_names)
+        update_settings(items_per_page=1)
+        instances_steps_ui.check_admin_instances_pagination(instance_names)
+
+    @pytest.mark.idempotent_id('55360490-4cc3-11e7-8097-2f3481188dc2')
+    @pytest.mark.parametrize('horizon_servers', [2], ids=[''], indirect=True)
+    def test_admin_filter_instances(self, horizon_servers, instances_steps_ui):
+        """**Scenario:** Verify that user can filter instances as admin.
+
+        **Setup:**
+
+        #. Create two servers using API
+
+        **Steps:**
+
+        #. Filter servers using UI as admin
+        #. Reset filter using UI as admin
+
+        **Teardown:**
+
+        #. Delete two servers using API
+        """
+        instances_steps_ui.admin_filter_instances(
+            query=horizon_servers[0].name)
+        instances_steps_ui.admin_reset_instances_filter()

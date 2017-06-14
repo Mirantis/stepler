@@ -25,7 +25,9 @@ from .defaults import PageDefaults
 from .flavors import PageFlavors
 from .host_aggregates import PageHostAggregates
 from .images import PageImage, PageImages  # noqa
-from .instances import PageInstance, PageInstances  # noqa
+from .instances import (PageInstance,
+                        PageInstances,
+                        PageAdminInstances)  # noqa
 from .login import PageLogin
 from .metadata_definitions import PageMetadataDefinitions
 from .networks import (PageAdminNetworks,
@@ -43,6 +45,7 @@ from .volumes import (PageAdminVolumes,
 
 pages = [
     PageAccess,
+    PageAdminInstances,
     PageAdminNetworks,
     PageAdminVolumes,
     PageBase,
