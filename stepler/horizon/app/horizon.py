@@ -40,6 +40,10 @@ class Profile(FirefoxProfile):
         """Constructor."""
         super(Profile, self).__init__(*args, **kwgs)
         self.download_dir = mkdtemp()
+
+        self.accept_untrusted_certs = True
+        self.assume_untrusted_cert_issuer = False
+
         self.set_preference("browser.download.folderList", 2)
         self.set_preference("browser.download.manager.showWhenStarting",
                             False)
