@@ -46,6 +46,19 @@ class TestAnyOne(object):
         """
         networks_steps_ui.add_subnet(network['name'])
 
+    @pytest.mark.idempotent_id('1461428b-fa96-49b4-b8b2-71e504739821',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('cd40f3b7-81d2-47e1-9737-925ce0d9bf6d',
+                               any_one='user')
+    def test_network_topology_page_exists(self, networks_steps_ui):
+        """**Scenario:** Verify that page Network Topology exists.
+
+        **Steps:**
+
+        #. Open Network Topology page
+        """
+        networks_steps_ui.network_topology_page_availability()
+
 
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):

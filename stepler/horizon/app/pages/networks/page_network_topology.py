@@ -1,7 +1,7 @@
 """
--------------
-Network pages
--------------
+---------------------
+Network Topology page
+---------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,17 @@ Network pages
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .page_admin_networks import PageAdminNetworks  # noqa
-from .page_network import PageNetwork  # noqa
-from .page_network_topology import PageNetworkTopology  # noqa
-from .page_networks import PageNetworks  # noqa
+from pom import ui
+from selenium.webdriver.common.by import By
+
+from ..base import PageBase
+
+
+@ui.register_ui(
+    button_toggle_labels=ui.Button(By.ID, 'toggle_labels'),
+    button_toggle_networks=ui.Button(By.ID, 'toggle_networks'))
+class PageNetworkTopology(PageBase):
+    """Network Topology page."""
+
+    url = "/project/network_topology/"
+    navigate_items = "Project", "Network", "Network Topology"
