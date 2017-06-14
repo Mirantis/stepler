@@ -228,7 +228,7 @@ def test_ping_unavailable_after_deleting_icmp_rule(
 
 
 @pytest.mark.idempotent_id('bf8d9694-4fbb-416f-b5b8-a073c3739b15')
-@pytest.mark.parametrize('neutron_2_nets_diff_projects', [{'same_cidr': True}],
+@pytest.mark.parametrize('neutron_nets_for_projects', [{'same_cidr': True}],
                          indirect=True)
 def test_connectivity_with_different_projects(
         neutron_conntrack_2_projects_resources,

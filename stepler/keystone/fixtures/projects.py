@@ -31,7 +31,7 @@ __all__ = [
     'get_current_project',
     'project',
     'current_project',
-    'two_projects',
+    'projects',
 ]
 
 
@@ -123,8 +123,11 @@ def current_project(get_current_project):
 
 
 @pytest.fixture
-def two_projects(role_steps, create_project, create_user):
+def projects(request, role_steps, create_project, create_user):
     """Function fixture to create different projects.
+
+    By default count of projects equal to 2 , but if you want another count
+    please add this quantity before your function.
 
     All created resources are to be deleted after test.
 
@@ -136,11 +139,11 @@ def two_projects(role_steps, create_project, create_user):
     Returns:
         attrdict.AttrDict: created resources
     """
+    count = int(getattr(request, 'param', 2))
     base_name, = utils.generate_ids()
     resources = []
     admin_role = role_steps.get_role(name=config.ROLE_ADMIN)
-
-    for i in range(2):
+    for i in range(count):
         project_resources = attrdict.AttrDict()
         name = "{}_{}".format(base_name, i)
         # Create project

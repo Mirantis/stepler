@@ -33,7 +33,7 @@ __all__ = [
 
 @pytest.fixture
 def multitenancy_networks(request, network_steps,
-                          neutron_2_nets_diff_projects):
+                          neutron_nets_for_projects):
     """Function fixture to prepare multitenancy networks.
 
     Can be parametrized with dict {'shared_network': True}.
@@ -43,7 +43,7 @@ def multitenancy_networks(request, network_steps,
     Args:
         request (obj): py.test SubRequest
         network_steps (obj): instantiated network steps
-        neutron_2_nets_diff_projects (obj): 2 networks for different projects
+        neutron_nets_for_projects (obj): networks for different projects
             fixture
 
     Returns:
@@ -53,7 +53,7 @@ def multitenancy_networks(request, network_steps,
     params.update(getattr(request, 'param', {}))
 
     if not params['shared_network']:
-        return neutron_2_nets_diff_projects
+        return neutron_nets_for_projects
     else:
         net, subnet, router = request.getfixturevalue('net_subnet_router')
         network_steps.update(net, shared=True)
@@ -65,7 +65,7 @@ def multitenancy_networks(request, network_steps,
 
 
 @pytest.fixture
-def multitenancy_resources(request, two_projects, multitenancy_networks,
+def multitenancy_resources(request, projects, multitenancy_networks,
                            get_neutron_security_group_steps,
                            get_neutron_security_group_rule_steps,
                            get_server_steps, get_keypair_steps, glance_steps,
@@ -74,7 +74,7 @@ def multitenancy_resources(request, two_projects, multitenancy_networks,
     """Function fixture to prepare environment for ironic multitenancy tests.
 
     This fixture:
-            * creates 2 projects;
+            * creates projects;
             * creates net, subnet, router in each project;
             * creates security groups in each project;
             * add ping + ssh rules for 1'st project's security group;
@@ -88,7 +88,7 @@ def multitenancy_resources(request, two_projects, multitenancy_networks,
 
     Args:
         request (obj): py.test SubRequest
-        two_projects (obj): 2 projects fixture
+        projects (obj): projects fixture
         multitenancy_networks (obj): multitenancy tests networks fixture
         get_neutron_security_group_steps (function): function to get neutron
             security group steps
@@ -114,7 +114,7 @@ def multitenancy_resources(request, two_projects, multitenancy_networks,
     glance_steps.update_images(
         [baremetal_ubuntu_image], visibility=config.IMAGE_VISIBILITY_PUBLIC)
 
-    for i, project_resources in enumerate(two_projects.resources):
+    for i, project_resources in enumerate(projects.resources):
         name = "{}_{}".format(base_name, i)
         servers = []
         credentials = project_resources.credentials

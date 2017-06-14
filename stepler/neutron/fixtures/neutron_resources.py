@@ -36,7 +36,7 @@ __all__ = [
     'neutron_2_servers_iperf_different_networks',
     'neutron_conntrack_2_projects_resources',
     'neutron_2_servers_2_nets_diff_projects',
-    'neutron_2_nets_diff_projects',
+    'neutron_nets_for_projects',
     'neutron_2_servers_2_projects_with_shared_net',
     'create_max_networks_with_instances',
 ]
@@ -370,7 +370,7 @@ def neutron_2_servers_iperf_different_networks(
 @pytest.fixture
 def neutron_conntrack_2_projects_resources(
         request,
-        neutron_2_nets_diff_projects,
+        neutron_nets_for_projects,
         conntrack_cirros_image,
         public_flavor,
         sorted_hypervisors,
@@ -398,7 +398,7 @@ def neutron_conntrack_2_projects_resources(
 
     Args:
         request (obj): py.test SubRequest
-        neutron_2_nets_diff_projects (AttrDict): neutron networks, subnets,
+        neutron_nets_for_projects (AttrDict): neutron networks, subnets,
             router(s) resources AttrDict instance
         conntrack_cirros_image (obj): glance image for conntrack tests
         public_flavor (obj): nova flavor with is_public=True attribute
@@ -433,9 +433,9 @@ def neutron_conntrack_2_projects_resources(
         project_resources = attrdict.AttrDict()
         name = "{}_{}".format(base_name, i)
         servers = []
-        credentials = neutron_2_nets_diff_projects.resources[i].credentials
-        network, router = neutron_2_nets_diff_projects.resources[i].net_router
-        project_id = neutron_2_nets_diff_projects.resources[i].project_id
+        credentials = neutron_nets_for_projects.resources[i].credentials
+        network, router = neutron_nets_for_projects.resources[i].net_router
+        project_id = neutron_nets_for_projects.resources[i].project_id
 
         security_group_steps = get_neutron_security_group_steps(**credentials)
         security_group_rule_steps = get_neutron_security_group_rule_steps(
@@ -578,7 +578,7 @@ def create_max_networks_with_instances(cirros_image,
 @pytest.fixture
 def neutron_2_servers_2_nets_diff_projects(
         request,
-        neutron_2_nets_diff_projects,
+        neutron_nets_for_projects,
         sorted_hypervisors,
         cirros_image,
         public_flavor,
@@ -603,7 +603,7 @@ def neutron_2_servers_2_nets_diff_projects(
 
     Args:
         request (obj): py.test SubRequest
-        neutron_2_nets_diff_projects (AttrDict): neutron networks, subnets,
+        neutron_nets_for_projects (AttrDict): neutron networks, subnets,
             router(s) resources AttrDict instance
         sorted_hypervisors (list): sorted hypervisors
         cirros_image (obj): glance image
@@ -626,8 +626,8 @@ def neutron_2_servers_2_nets_diff_projects(
 
     for i in range(2):
         project_resources = attrdict.AttrDict()
-        credentials = neutron_2_nets_diff_projects.resources[i].credentials
-        network, router = neutron_2_nets_diff_projects.resources[i].net_router
+        credentials = neutron_nets_for_projects.resources[i].credentials
+        network, router = neutron_nets_for_projects.resources[i].net_router
 
         # Create security group with ssh and ping rules
         security_group_steps = get_neutron_security_group_steps(**credentials)
@@ -669,18 +669,19 @@ def neutron_2_servers_2_nets_diff_projects(
 
 
 @pytest.fixture
-def neutron_2_nets_diff_projects(request, two_projects, create_network,
-                                 create_subnet, create_router, router_steps,
-                                 public_network):
+def neutron_nets_for_projects(request, projects, create_network,
+                              create_subnet, create_router, router_steps,
+                              public_network):
     """Function fixture to prepare environment for different projects tests.
 
     This fixture:
         * creates net, subnet, router in each project;
+        * count of resources equal to count of projects;
 
     All created resources are to be deleted after test.
 
     Args:
-        two_projects (obj): keystone 2 projects with 2 users fixture
+        projects (obj): fixture of keystone projects
         create_network (function): function to create network
         create_subnet (function): function to create subnet
         create_router (function): function to create router
@@ -701,7 +702,7 @@ def neutron_2_nets_diff_projects(request, two_projects, create_network,
         cidrs = [str(network) for network in net.supernet().subnets()]
     resources = []
 
-    for project_resources, cidr in zip(two_projects.resources, cidrs):
+    for project_resources, cidr in zip(projects, cidrs):
         # Create network with subnet and router
         network = create_network(
             project_resources.name, project_id=project_resources.project_id)
