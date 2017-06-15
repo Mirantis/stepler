@@ -19,7 +19,10 @@ Instances page
 
 from pom import ui
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
+from stepler import config
 from stepler.horizon.app import ui as _ui
 
 from ..base import PageBase
@@ -197,13 +200,9 @@ class FormEditInstance(_ui.Form):
         """Item add security group."""
         element_locator = By.XPATH, ("//ul[contains(@class,"
                                      " 'available_update_security_groups')]"
-                                     "[./ul[contains(., '{}')]]".format(name))
-        item = self.find_element(element_locator)
-        item = item.find_element(
-            By.XPATH, "./ul[contains(., '{}')]".format(name))
-        item = item.find_element(By.TAG_NAME, 'a')
-
-        return item
+                                     "/ul[contains(., '{}')]//a".format(name))
+        return WebDriverWait(self.webelement, config.UI_TIMEOUT).until(
+            ec.presence_of_element_located(element_locator))
 
 
 @ui.register_ui(
