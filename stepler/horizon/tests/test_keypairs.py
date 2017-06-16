@@ -65,3 +65,31 @@ class TestAnyOne(object):
         """
         keypair_name = next(utils.generate_ids('keypair'))
         keypairs_steps_ui.import_keypair(keypair_name, PUBLIC_KEY)
+
+
+@pytest.mark.usefixtures('admin_only')
+class TestAdminOnly(object):
+    """Tests for admin only."""
+
+    @pytest.mark.idempotent_id('bbf4f0d8-527c-11e7-a611-a756d7b535ce')
+    def test_import_key_pair_quota_exceeded(self,
+                                            keypair,
+                                            update_defaults,
+                                            keypairs_steps_ui):
+        """**Scenario:** Verify button `import Key Pair` is disabled if quota exceeded.
+
+        **Setup:**
+
+        #. Create key pair using API
+
+        **Steps:**
+
+        #. Set key pairs quota to 1
+        #. Check that button `import Key Pair` is disabled
+
+        **Teardown:**
+
+        #. Delete key pair using API
+        """
+        update_defaults({'key_pairs': 1})
+        keypairs_steps_ui.check_button_import_key_pair_disabled()
