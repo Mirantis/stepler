@@ -437,7 +437,8 @@ HEAT_SIMPLE_TEMPLATE_URL = 'https://raw.githubusercontent.com/openstack/heat-tem
 
 # Ironic
 BAREMETAL_NETWORK = 'baremetal'
-BAREMETAL_NETWORK_DEVSTACK = 'ironic-provision'
+BAREMETAL_NETWORK_DEVSTACK = 'private'
+IRONIC_MULTITENANT_NETWORK = 'ironic-provision'
 BAREMETAL_NODE = bool(os.environ.get('BAREMETAL_NODE', False))
 
 # Ceilometer
