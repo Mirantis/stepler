@@ -220,14 +220,14 @@ BAREMETAL_DISK_INFO = [{"name": "sda",
                                      "size": 10000}]}]
 BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
                                 "extra": [],
-                                "free_space": 9000,
+                                "free_space": 10000,
                                 "type": "disk",
                                 "id": "vda",
-                                "size": 9000,
+                                "size": 10000,
                                 "volumes": [{"mount": "/",
                                              "type": "partition",
                                              "file_system": "ext4",
-                                             "size": 8000}]}]
+                                             "size": 7000}]}]
 
 IMAGE_VISIBILITY_PUBLIC = 'public'
 IMAGE_VISIBILITY_SHARED = 'shared'
@@ -256,7 +256,7 @@ BAREMETAL_RAM = 8192
 BAREMETAL_VCPUS = 4
 BAREMETAL_DISK = 150
 
-BAREMETAL_VIRTUAL_RAM = 1024
+BAREMETAL_VIRTUAL_RAM = 2048
 BAREMETAL_VIRTUAL_VCPUS = 1
 BAREMETAL_VIRTUAL_DISK = 10
 
