@@ -128,13 +128,13 @@ def test_boot_servers_consequently_on_ironic_node(keypair,
                                            flavor=baremetal_flavor,
                                            networks=[baremetal_network],
                                            keypair=keypair,
-                                           username=config.UBUNTU_USERNAME)[0]
+                                           username=config.UBUNTU_USERNAME)
 
     server_2 = server_steps.create_servers(image=baremetal_ubuntu_image,
                                            flavor=baremetal_flavor,
                                            networks=[baremetal_network],
                                            keypair=keypair,
-                                           username=config.UBUNTU_USERNAME)[0]
+                                           username=config.UBUNTU_USERNAME)
 
     ironic_node_1 = ironic_node_steps.get_ironic_node(
         instance_uuid=server_1.id)
@@ -191,7 +191,7 @@ def test_hard_reboot_server_on_ironic_node(keypair,
                                          flavor=baremetal_flavor,
                                          networks=[baremetal_network],
                                          keypair=keypair,
-                                         username=config.UBUNTU_USERNAME)[0]
+                                         username=config.UBUNTU_USERNAME)
     server_steps.attach_floating_ip(server, floating_ip)
     server_steps.get_server_ssh(server)
     server_steps.reboot_server(server, reboot_type=config.REBOOT_HARD)
@@ -239,7 +239,7 @@ def test_stop_start_server_on_baremetal_node(keypair,
                                          flavor=baremetal_flavor,
                                          networks=[baremetal_network],
                                          keypair=keypair,
-                                         username=config.UBUNTU_USERNAME)[0]
+                                         username=config.UBUNTU_USERNAME)
     server_steps.attach_floating_ip(server, floating_ip)
     server_steps.get_server_ssh(server)
     server_steps.stop_server(server)
@@ -283,7 +283,7 @@ def test_create_server_on_baremetal_node(keypair,
                                          flavor=baremetal_flavor,
                                          networks=[baremetal_network],
                                          keypair=keypair,
-                                         username=config.UBUNTU_USERNAME)[0]
+                                         username=config.UBUNTU_USERNAME)
     server_steps.attach_floating_ip(server, floating_ip)
     server_steps.get_server_ssh(server)
 
@@ -323,7 +323,7 @@ def test_create_server_on_baremetal_node_in_maintenance_state(
                                          networks=[baremetal_network],
                                          flavor=baremetal_flavor,
                                          username=config.UBUNTU_USERNAME,
-                                         check=False)[0]
+                                         check=False)
     server_steps.check_server_status(server=server,
                                      expected_statuses=[config.STATUS_ERROR])
     ironic_node_steps.check_ironic_nodes_attribute_value(
