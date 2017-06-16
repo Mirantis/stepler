@@ -26,8 +26,8 @@ from .form import Form
 
 
 @ui.register_ui(
-    item_exit=ui.UI(By.CSS_SELECTOR, 'a[href*="/auth/logout/"]'),
-    item_help=ui.Link(By.CSS_SELECTOR, 'a[target="_blank"]'))
+    item_exit=ui.UI(By.XPATH, "//a[@href='/auth/logout/']"),
+    item_help=ui.Link(By.XPATH, "//a[@href='http://docs.openstack.org']"))
 class DropdownMenuAccount(ui.Block):
     """Dropdown menu for account settings."""
 
@@ -41,7 +41,6 @@ class DropdownMenuProject(ui.Block):
         selector = (
             './/ul[contains(@class, "dropdown-menu")]/li//span[contains('
             '@class, "dropdown-title") and contains(., "{}")]'.format(name))
-
         item = ui.UI(By.XPATH, selector)
         item.container = self
         return item
@@ -61,11 +60,11 @@ class Modal(ui.Block):
 
 @ui.register_ui(
     dropdown_menu_account=DropdownMenuAccount(
-        By.CSS_SELECTOR, 'ul.navbar-nav.navbar-right > li.dropdown'),
+        By.XPATH, '//li[@class="dropdown user-menu"]/a'),
     dropdown_menu_project=DropdownMenuProject(
-        By.CSS_SELECTOR, 'ul.navbar-nav > li.dropdown'),
+        By.XPATH, '//li[@class="dropdown"]/a'),
     form_confirm=Form(By.CSS_SELECTOR, 'div.modal-content > div.modal-footer'),
-    modal=Modal(By.CLASS_NAME, 'modal-backdrop'),
+    modal=Modal(By.CLASS_NAME, 'modal_backdrop'),
     spinner=Spinner(By.CLASS_NAME, 'spinner'))
 class InitiatedUI(ui.Container):
     """Predefined UI components for page or tab."""
