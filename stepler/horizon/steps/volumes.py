@@ -871,3 +871,24 @@ class VolumesSteps(base.BaseSteps):
             snapshot_name = form.field_name.value
             form.cancel()
         assert_that(snapshot_name, has_length(expected_length))
+
+    @steps_checker.step
+    def check_default_migration_policy(self, volume_name):
+        """Step to check default migration policy.
+
+        Args:
+            volume_name (str): name of volume to open snapshot create form on
+                it
+
+        Raises:
+            AssertionError: if default migration policy not equal `On Demand`
+        """
+        tab_volumes = self._tab_volumes()
+        with tab_volumes.table_volumes.row(
+                name=volume_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_change_volume_type.click()
+
+        with tab_volumes.form_change_volume_type as form:
+            assert_that(form.combobox_migration_policy.value,
+                        equal_to("On Demand"))

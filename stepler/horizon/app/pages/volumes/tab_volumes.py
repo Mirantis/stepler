@@ -86,7 +86,9 @@ class TableVolume(_ui.Table):
     row_cls = RowVolume
 
 
-@ui.register_ui(combobox_volume_type=_ui.combobox_by_label("Type"))
+@ui.register_ui(
+    combobox_volume_type=ui.ComboBox(By.NAME, "volume_type"),
+    combobox_migration_policy=ui.ComboBox(By.NAME, "migration_policy"))
 class FormChangeVolumeType(_ui.Form):
     """Form to change volume type."""
 

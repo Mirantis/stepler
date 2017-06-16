@@ -266,6 +266,29 @@ class TestAnyOne(object):
                                        source_name=volume.name,
                                        volume_size=volume.size + 1)
 
+    @pytest.mark.idempotent_id('c610a22c-526a-11e7-9fdb-538e13598424',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('c6b3f850-526a-11e7-9d93-2f5597efa1db',
+                               any_one='user')
+    def test_default_migration_policy(self, volume,
+                                      volumes_steps_ui):
+        """Verify that Migration Policy is `On Demand` by default.
+
+        **Setup:**
+
+        #. Create volume using API
+
+        **Steps:**
+
+        #. Check that Migration policy is `On Demand` by default
+           when user changes volume type
+
+        **Teardown:**
+
+        #. Delete volume using API
+        """
+        volumes_steps_ui.check_default_migration_policy(volume.name)
+
 
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):
