@@ -28,3 +28,9 @@ Ironic chassis tests
 .. automodule:: stepler.baremetal.tests.test_baremetal_chassis
    :members:
 
+-------------------------
+Ironic multitenancy tests
+-------------------------
+
+.. automodule:: stepler.baremetal.tests.test_multitenancy
+   :members:
