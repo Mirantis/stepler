@@ -130,10 +130,10 @@ Plugins
 -------
 
 If you want to have own tests repository but use stepler fixtures and steps,
-you may orginize own repository as stepler plugin, using stepler as required
+you may organize own repository as stepler plugin, using stepler as required
 library. In order to use stepler follow next steps:
 
-* Inside ``requirements.txt`` file add ``git+git://github.com/Mirantis/stepler.git``.
+* Inside ``requirements.txt`` file add ``git+https://review.gerrithub.io/Mirantis/stepler``.
 * In root directory of project put ``conftest.py`` file and add next code:
 
 .. code:: python
