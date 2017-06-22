@@ -27,7 +27,8 @@ from .base import PageBase
 
 @ui.register_ui(
     field_volumes=ui.IntegerField(By.NAME, 'volumes'),
-    field_key_pairs=ui.IntegerField(By.NAME, 'key_pairs'))
+    field_key_pairs=ui.IntegerField(By.NAME, 'key_pairs'),
+    field_instances=ui.IntegerField(By.NAME, 'instances'))
 class FormUpdateDefaults(_ui.Form):
     """Form to update defaults."""
 
@@ -36,10 +37,11 @@ class FormUpdateDefaults(_ui.Form):
     button_update_defaults=ui.Button(By.ID, 'quotas__action_update_defaults'),
     form_update_defaults=FormUpdateDefaults(
         By.CSS_SELECTOR, '[action*="update_defaults"]'),
-    label_volumes=ui.UI(
-        By.XPATH, '//tr[@data-display="volumes"]/td[2]'),
     label_key_pairs=ui.UI(
-        By.XPATH, '//tr[@id="quotas__row__key_pairs"]/td[2]'))
+        By.XPATH, '//tr[@id="quotas__row__key_pairs"]/td[2]'),
+    label_volumes=ui.UI(By.XPATH, '//tr[@id="quotas__row__volumes"]/td[2]'),
+    label_instances=ui.UI(By.XPATH,
+                          '//tr[@id="quotas__row__instances"]/td[2]'))
 class PageDefaults(PageBase):
     """Defaults page."""
 

@@ -437,3 +437,23 @@ class TestAdminOnly(object):
         """
         server_names = [server.name for server in horizon_servers]
         instances_steps_ui.admin_delete_instances(server_names)
+
+    @pytest.mark.idempotent_id('bdaebd08-e7e5-46c1-ae59-7b42df05146a')
+    def test_launch_instances_together(self, instances_steps_ui,
+                                       update_defaults):
+        """**Scenario:** Verify that user can create 20 instances together.
+
+        **Steps:**
+
+        #. Set quotas to be able to run 50 servers
+        #. Launch 20 servers at the same time
+        #. Delete 20 servers as bunch
+
+        **Teardown:**
+
+        #. Restore original value for instances parameter
+        """
+        update_defaults({'instances': 50})
+        instance_names = instances_steps_ui.create_instance(
+            network_name=config.INTERNAL_NETWORK_NAME, count=20)
+        instances_steps_ui.delete_instances(instance_names)
