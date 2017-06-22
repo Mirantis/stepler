@@ -17,6 +17,8 @@ Keypairs steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import (assert_that, equal_to)  # noqa
+
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
@@ -96,3 +98,10 @@ class KeypairsSteps(base.BaseSteps):
             for keypair_name in keypair_names:
                 tab_keypairs.table_keypairs.row(
                     name=keypair_name).wait_for_absence()
+
+    @steps_checker.step
+    def check_button_import_key_pair_disabled(self):
+        """Step to check `import Key Pair` disabled if quota exceeded."""
+        tab_keypairs = self._tab_keypairs()
+        assert_that(
+            tab_keypairs.button_import_keypair.is_enabled, equal_to(False))
