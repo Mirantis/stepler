@@ -91,6 +91,7 @@ __all__ = sorted([  # sort for documentation
     'networks_steps_ui',
 
     'projects_steps_ui',
+    'project_name_non_ascii',
 
     'routers_steps_ui',
 

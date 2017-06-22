@@ -19,7 +19,10 @@ Projects page
 
 from pom import ui
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
+from stepler import config
 from stepler.horizon.app import ui as _ui
 
 from .base import PageBase
@@ -69,6 +72,14 @@ class FormAvailableMembers(_ui.Form):
     """Project members form."""
 
     submit_locator = By.CSS_SELECTOR, '.modal-footer .btn.btn-primary'
+
+    def item_members_group(self, name):
+        """Item add members group."""
+        element_locator = By.XPATH, ("//ul[contains(@class,"
+                                     " 'available_update_members')]"
+                                     "/ul[contains(., '{}')]//a".format(name))
+        return WebDriverWait(self.webelement, config.UI_TIMEOUT).until(
+            ec.presence_of_element_located(element_locator))
 
 
 @ui.register_ui(

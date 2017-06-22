@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 ------------------------------------
 Fixtures to manipulate with projects
@@ -20,9 +22,11 @@ Fixtures to manipulate with projects
 import pytest
 
 from stepler.horizon import steps
+from stepler.third_party import utils
 
 __all__ = [
-    'projects_steps_ui'
+    'projects_steps_ui',
+    'project_name_non_ascii'
 ]
 
 
@@ -38,3 +42,21 @@ def projects_steps_ui(login, horizon):
         stepler.horizon.steps.ProjectsSteps: instantiated UI projects steps
     """
     return steps.ProjectsSteps(horizon)
+
+
+@pytest.fixture
+def project_name_non_ascii(projects_steps_ui,
+                           admin_project_resources):
+    """Fixture to create project with non ascii name and switch to it."""
+    project_name = projects_steps_ui.create_project(
+        next(utils.generate_ids(use_unicode=True)),
+        check=False).encode('utf-8')
+    projects_steps_ui.manage_project_members(
+        project_name,
+        admin_project_resources)
+    projects_steps_ui.switch_project(project_name, check=False)
+
+    yield project_name
+
+    projects_steps_ui.switch_project(admin_project_resources["project"].name)
+    projects_steps_ui.delete_project(project_name)

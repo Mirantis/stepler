@@ -75,3 +75,30 @@ class TestAnyOne(object):
         #. View credentials using UI
         """
         api_access_steps_ui.view_credentials()
+
+
+@pytest.mark.usefixtures('admin_only')
+class TestAdminOnly(object):
+    """Tests for admin only."""
+
+    @pytest.mark.idempotent_id('5d3a55ec-5100-11e7-83e0-b33e26fe0aed')
+    def test_download_rc_v2_non_ascii_project_name(self,
+                                                   project_name_non_ascii,
+                                                   api_access_steps_ui):
+        """**Scenario:** Verify that RCv2 is correct with non-ASCII project name.
+
+        **Setup:**
+
+        #. Create project with non-ASCII name
+        #. Switch to project with non-ASCII name
+
+        **Steps:**
+
+        #. Download RCv2 file using UI
+
+        **Teardown:**
+
+        #. Delete project with non-ASCII name
+        """
+
+        api_access_steps_ui.download_rc_v2()
