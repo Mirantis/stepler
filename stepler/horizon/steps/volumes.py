@@ -892,3 +892,17 @@ class VolumesSteps(base.BaseSteps):
         with tab_volumes.form_change_volume_type as form:
             assert_that(form.combobox_migration_policy.value,
                         equal_to("On Demand"))
+
+    @steps_checker.step
+    def check_volume_present_in_admin_volume(self, volume_name):
+        """Step to check that volume present in table admin volumes.""
+        Args:
+            volume_name (str): name of expected volume
+
+        Raise:
+            AssertionError: volume_name is not present in list of names
+        """
+        tab_volumes = self._tab_admin_volumes()
+        list_names_volumes = [element.text for element in
+                              tab_volumes.table_volumes.values()]
+        assert_that(volume_name, is_in(list_names_volumes))

@@ -384,3 +384,21 @@ class TestAdminOnly(object):
         """
         old_host, _ = volumes_steps_ui.migrate_volume(volume.name)
         volumes_steps_ui.migrate_volume(volume.name, old_host)
+
+    @pytest.mark.idempotent_id('f9632117-d130-4171-8b61-2ada6c9e2f55')
+    def test_volume_present_in_admin_volumes(self, volumes_steps_ui, volume):
+        """**Scenario:** Verify that volume present in admin volumes.
+
+         **Setup:**
+
+        #. Create volume using API
+
+        **Steps:**
+
+        #. Check that volume present in admin volumes
+
+        **Teardown:**
+
+        #. Delete volume using API
+        """
+        volumes_steps_ui.check_volume_present_in_admin_volume(volume.name)

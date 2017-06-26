@@ -49,6 +49,10 @@ class TableVolumes(_ui.Table):
                'type': 7}
     row_cls = RowVolume
 
+    def values(self):
+        """List contains names of volumes in admin volumes table."""
+        return self.webelement.find_elements(By.TAG_NAME, 'a')
+
 
 @ui.register_ui(combobox_status=_ui.combobox_by_label("Status"))
 class FormUpdateVolumeStatus(_ui.Form):
