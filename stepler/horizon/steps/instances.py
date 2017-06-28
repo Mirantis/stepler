@@ -17,6 +17,8 @@ Instances steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
 from hamcrest import (assert_that, contains_string, contains_inanyorder,
                       equal_to, greater_than, has_length, is_in, is_not)  # noqa
 
@@ -582,3 +584,29 @@ class InstancesSteps(base.BaseSteps):
             for instance_name in instance_names:
                 page_instances.table_instances.row(
                     name=instance_name).wait_for_absence(config.EVENT_TIMEOUT)
+
+    @steps_checker.step
+    def check_instance_suspend(self, instance_name):
+        """Step to check that instance was suspended."""
+        page_instances = self._page_instances()
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+                menu.button_toggle.click()
+                menu.item_suspend.click()
+                time.sleep(5)
+        status = [element.text for element in
+                  page_instances.table_instances.value()]
+        assert_that('Suspended', equal_to(status[1]))
+
+    @steps_checker.step
+    def check_instance_pause(self, instance_name):
+        """Step to check that instance was paused."""
+        page_instances = self._page_instances()
+        with page_instances.table_instances.row(
+                name=instance_name).dropdown_menu as menu:
+                menu.button_toggle.click()
+                menu.item_pause.click()
+                time.sleep(5)
+        status = [element.text for element in
+                  page_instances.table_instances.value()]
+        assert_that('Paused', equal_to(status[1]))

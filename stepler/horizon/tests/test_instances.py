@@ -457,3 +457,31 @@ class TestAdminOnly(object):
         instance_names = instances_steps_ui.create_instance(
             network_name=config.INTERNAL_NETWORK_NAME, count=20)
         instances_steps_ui.delete_instances(instance_names)
+
+    @pytest.mark.idempotent_id('cb6d2044-5b37-11e7-bfb3-5404a69126b9')
+    def test_suspend_instance(self, instances_steps_ui, server):
+        """**Scenario:** Verify that instance was suspended.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Check instance suspend
+        """
+        instances_steps_ui.check_instance_suspend(instance_name=server.name)
+
+    @pytest.mark.idempotent_id('ddab389e-5bf6-11e7-bfb3-5404a69126b9')
+    def test_pause_instance(self, instances_steps_ui, server):
+        """**Scenario:** Verify that instance was paused.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Check instance pause
+        """
+        instances_steps_ui.check_instance_pause(instance_name=server.name)

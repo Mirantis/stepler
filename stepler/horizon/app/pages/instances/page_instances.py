@@ -155,7 +155,9 @@ class FormLaunchInstance(_ui.Form):
     item_associate=ui.UI(By.CSS_SELECTOR, '*[id*="action_associate"]'),
     item_disassociate=ui.UI(By.CSS_SELECTOR, '*[id*="action_disassociate"]'),
     item_resize=ui.UI(By.CSS_SELECTOR, '*[id*="action_resize"]'),
-    item_edit_instance=ui.UI(By.CSS_SELECTOR, '*[id*="action_edit"]'))
+    item_edit_instance=ui.UI(By.CSS_SELECTOR, '*[id*="action_edit"]'),
+    item_suspend=ui.UI(By.CSS_SELECTOR, '*[id*="action_suspend"]'),
+    item_pause=ui.UI(By.CSS_SELECTOR, '*[id*="action_pause"]'))
 class DropdownMenu(_ui.DropdownMenu):
     """Dropdown menu for instance row."""
 
@@ -179,6 +181,10 @@ class TableInstances(_ui.Table):
         'size': 5,
         'status': 7}
     row_cls = RowInstance
+
+    def value(self):
+        """List parameters of instance."""
+        return self.webelement.find_elements(By.CLASS_NAME, 'status_up')
 
 
 @ui.register_ui(combobox_port=ui.ComboBox(By.NAME, "instance_id"),
