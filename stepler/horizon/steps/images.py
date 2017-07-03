@@ -18,7 +18,9 @@ Images steps
 # limitations under the License.
 
 from hamcrest import (assert_that, contains_inanyorder, equal_to, greater_than,
-                      has_entries, has_length, is_in)  # noqa
+                      has_entries, has_length, is_in, is_not)  # noqa
+from selenium.webdriver.common.keys import Keys
+from time import sleep
 
 from stepler import config
 from stepler.horizon.steps import base
@@ -531,3 +533,28 @@ class ImagesSteps(base.BaseSteps):
 
         assert_that(description, equal_to(expected_description))
         assert_that(properties, has_entries(**(expected_metadata or {})))
+
+    @steps_checker.step
+    def open_image_info_in_new_tab(self, image_name, check=True):
+        """Step to open image info in new tab.
+
+        Args:
+            image_name (str): image name
+        """
+        main_page = self._page_images()
+        # open the link in the new tab
+        link_to_click = main_page.table_images.row(name=image_name).webdriver
+        sleep(10)
+        link_to_click.find_element_by_partial_link_text(image_name).send_keys(
+            Keys.CONTROL + Keys.RETURN)
+        # switch to the new tab and put the focus on it
+        main_page.webdriver.find_element_by_tag_name('body').send_keys(
+            Keys.CONTROL + Keys.TAB)
+        page = main_page.webdriver.current_window_handle
+        main_page.webdriver.switch_to_window(page)
+        # check this page is available
+        new_tab = main_page.webdriver.switch_to_window(page)
+        assert_that(new_tab, is_not(None))
+        # close current page
+        main_page.webdriver.find_element_by_tag_name('body').send_keys(
+            Keys.CONTROL + 'w')
