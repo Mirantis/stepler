@@ -109,3 +109,7 @@ class PageContainers(PageBase):
 
     url = "/project/containers/"
     navigate_items = 'Project', 'Object Store', 'Containers'
+
+    def item_container_name(self):
+        """Item container name."""
+        return self.webelement.find_element(By.CLASS_NAME, 'panel-group').text

@@ -402,3 +402,24 @@ class TestAdminOnly(object):
         #. Delete volume using API
         """
         volumes_steps_ui.check_volume_present_in_admin_volume(volume.name)
+
+    @pytest.mark.idempotent_id('d923893c-5fe0-11e7-bfb3-5404a69126b9')
+    def test_container_name_volume_backup(self, volume, containers_steps_ui,
+                                          volumes_steps_ui):
+        """**Scenario:** Verify that container has name 'volumebackups'.
+
+        **Setup:**
+
+        #. Create volume using API
+
+        **Steps:**
+
+        #. Create volume backup without container name
+        #. Check that container has name 'volumebackups'
+
+        **Teardown:**
+
+        #. Delete volume using API
+        """
+        volumes_steps_ui.create_backup(volume.name)
+        containers_steps_ui.check_container_name_volume_backups()

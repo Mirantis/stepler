@@ -574,9 +574,11 @@ class VolumesSteps(base.BaseSteps):
             form.submit()
 
         if check:
-            self.close_notification('info')
+            self.close_notification('success')
+            self._tab_backups().table_backups.row(
+                name=backup_name, status='Available').wait_for_presence(
+                config.UI_LONG_TIMEOUT)
             row = self._tab_backups().table_backups.row(name=backup_name)
-            row.wait_for_status(status='Available')
             if description is not None:
                 assert_that(row.cell('description').value,
                             starts_with(description[:30]))
