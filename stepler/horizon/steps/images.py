@@ -520,8 +520,8 @@ class ImagesSteps(base.BaseSteps):
         Raises:
             AssertionError: if real and expected data are different
         """
-        self._page_images().table_images.row(
-            name=image_name).link_image.click()
+        table = self._page_images().table_images.row(name=image_name)
+        table.link_image.click()
 
         properties = self.app.page_image.image_info_custom.properties
 

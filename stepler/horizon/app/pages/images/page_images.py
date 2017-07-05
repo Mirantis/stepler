@@ -39,7 +39,7 @@ class DropdownMenu(_ui.DropdownMenu):
 @ui.register_ui(
     checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[type="checkbox"]'),
     dropdown_menu=DropdownMenu(),
-    link_image=ui.Link(By.CSS_SELECTOR, 'td a'))
+    link_image=ui.Link(By.CSS_SELECTOR, 'td > hz-cell > hz-field > a'))
 class RowImage(_ui.Row):
     """Row with image in images table."""
 
@@ -49,7 +49,7 @@ class RowImage(_ui.Row):
 class TableImages(_ui.Table):
     """Images table."""
 
-    columns = {'name': 2}
+    columns = {'name': 4}
     row_cls = RowImage
 
 
@@ -135,7 +135,7 @@ class FormCreateVolume(_ui.Form):
     form_update_image=FormUpdateImage(By.XPATH, './/*[@ng-form="wizardForm"]'),
     form_update_metadata=FormUpdateMetadata(By.CSS_SELECTOR,
                                             'div.modal-content'),
-    table_images=TableImages(By.ID, 'images'),
+    table_images=TableImages(By.CLASS_NAME, 'table-striped'),
     search_bar=_ui.SearchBar(By.CSS_SELECTOR, '.magic-search-bar'))
 class PageImages(PageBase):
     """Images Page."""
