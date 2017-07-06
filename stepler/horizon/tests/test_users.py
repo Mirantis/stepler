@@ -38,7 +38,10 @@ class TestAdminOnly(object):
         """
         user_name = next(utils.generate_ids('user'))
         password = next(utils.generate_ids('password'))
-        users_steps_ui.create_user(user_name, password)
+        users_steps_ui.create_user(user_name,
+                                   password,
+                                   project='admin',
+                                   role='Member')
         users_steps_ui.delete_user(user_name)
 
     @pytest.mark.idempotent_id('1fc6f276-5d0b-46ca-906c-08c8e8f2752f',
