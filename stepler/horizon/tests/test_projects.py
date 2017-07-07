@@ -19,6 +19,7 @@ Project tests
 
 import pytest
 from stepler import config
+from stepler.third_party import utils
 
 
 @pytest.mark.usefixtures('admin_only')
@@ -127,3 +128,22 @@ class TestAdminOnly(object):
         overview_steps_ui.check_resource_item_changed(
             resource_name=config.RESOURCE_NAME_SECURITY,
             resource_before_creating=quantity_resource)
+
+    @pytest.mark.idempotent_id('f2d50cf8-62f5-11e7-a478-5404a69126b9')
+    def test_update_project_name(self, project, projects_steps_ui):
+        """**Scenario:** Check that project can be deleted after update name.
+
+        **Setup:**
+
+        #. Create project with API
+
+        **Steps:**
+
+        #. Update project name
+
+        **Teardown:**
+
+        #. Delete project via API
+        """
+        new_project_name = next(utils.generate_ids())
+        projects_steps_ui.update_project_name(project.name, new_project_name)
