@@ -289,6 +289,28 @@ class TestAnyOne(object):
         """
         volumes_steps_ui.check_default_migration_policy(volume.name)
 
+    @pytest.mark.idempotent_id('8be65f7b-2d6e-4bb7-84e8-9e04c2199257',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('4573a93c-31ef-490d-ab1e-2e148c89bda4',
+                               any_one='user')
+    def test_create_volume_with_escaped_symbols(self, volumes_steps_ui):
+        """**Scenario:** Create volume and snapshot with escaped symbols.
+
+        **Steps:**
+
+        #. Create volume with specific name using UI
+        #. Create volume snapshot with the same name as volume
+
+        **Teardown:**
+
+        #. Delete snapshot using API
+        #. Delete volume using API
+        """
+
+        name = """'"""
+        volumes_steps_ui.create_volume(volume_name=name)
+        volumes_steps_ui.create_snapshot(volume_name=name, snapshot_name=name)
+
 
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):
