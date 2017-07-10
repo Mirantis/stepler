@@ -157,3 +157,22 @@ class ProjectsSteps(base.BaseSteps):
 
         if check:
             self.close_notification('success')
+
+    @steps_checker.step
+    def update_project_name(self, project_name, new_project_name, check=True):
+        """Step to update project name."""
+        page_projects = self._page_projects()
+
+        with page_projects.table_projects.row(
+                name=project_name).dropdown_menu as menu:
+            menu.button_toggle.click()
+            menu.item_edit.click()
+
+        with page_projects.form_edit_project as form:
+            form.field_name.value = new_project_name
+            form.submit()
+
+        if check:
+            self.close_notification('success')
+            page_projects.table_projects.row(
+                name=new_project_name).wait_for_presence()
