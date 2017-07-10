@@ -189,7 +189,8 @@ class ImagesSteps(base.BaseSteps):
             page_images.table_images.row(
                 name=image_name).wait_for_status(config.STATUS_ACTIVE)
             image_metadata = self.get_metadata(image_name)
-            assert_that(image_metadata, equal_to(metadata))
+            image_metadata.pop('direct_url', None)
+            assert_that(metadata, equal_to(image_metadata))
 
     @steps_checker.step
     def delete_metadata(self, image_name, metadata, check=True):
@@ -233,8 +234,8 @@ class ImagesSteps(base.BaseSteps):
             menu.item_update_metadata.click()
 
         for row in page_images.form_update_metadata.list_metadata.rows:
-            metadata[row.field_metadata_name.value] = \
-                row.field_metadata_value.value
+            metadata[row.field_metadata_name.value] = (
+                row.field_metadata_value.value)
 
         page_images.form_update_metadata.cancel()
 
@@ -328,9 +329,10 @@ class ImagesSteps(base.BaseSteps):
 
     @steps_checker.step
     def launch_instance(self, image_name, instance_name, network_name,
-                        check=True):
+                        flavor, check=True):
         """Step to launch instance from image."""
         page_images = self._page_images()
+        flavor_name = flavor or config.HORIZON_TEST_FLAVOR
 
         with page_images.table_images.row(
                 name=image_name).dropdown_menu as menu:
@@ -344,7 +346,7 @@ class ImagesSteps(base.BaseSteps):
             form.item_flavor.click()
             with form.tab_flavor as tab:
                 tab.table_available_flavors.row(
-                    name=config.HORIZON_TEST_FLAVOR).button_add.click()
+                    name=flavor_name).button_add.click()
 
             form.item_network.click()
             with form.tab_network as tab:

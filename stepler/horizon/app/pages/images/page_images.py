@@ -49,7 +49,7 @@ class RowImage(_ui.Row):
 class TableImages(_ui.Table):
     """Images table."""
 
-    columns = {'name': 4}
+    columns = {'name': 4, 'status': 6}
     row_cls = RowImage
 
 

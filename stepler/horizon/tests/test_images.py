@@ -250,7 +250,8 @@ class TestAnyOne(object):
 
         #. Check that public image is visible for different users using UI
         """
-        images_steps_ui.check_public_image_visible(config.HORIZON_TEST_IMAGE)
+        images_steps_ui.check_public_image_visible(
+            config.HORIZON_TEST_IMAGE_CIRROS)
 
     @pytest.mark.idempotent_id('3c98d922-df89-4701-a4b1-c5258fda5d7b',
                                any_one='admin')
@@ -278,7 +279,8 @@ class TestAnyOne(object):
         images_steps_ui.launch_instance(
             horizon_image.name,
             instance_name,
-            network_name=config.INTERNAL_NETWORK_NAME)
+            network_name=config.INTERNAL_NETWORK_NAME,
+            flavor=config.HORIZON_TEST_FLAVOR_TINY)
         instances_steps_ui.check_instance_active(instance_name)
         instances_steps_ui.delete_instance(instance_name)
 
