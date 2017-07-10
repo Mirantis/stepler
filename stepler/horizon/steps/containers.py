@@ -17,7 +17,7 @@ Containers steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import assert_that, contains_string  # noqa
+from hamcrest import assert_that, contains_string, equal_to  # noqa
 import requests
 
 from stepler.horizon.steps import base
@@ -185,3 +185,11 @@ class ContainersSteps(base.BaseSteps):
         """Step to check that folder is available by public URL."""
         assert_that(requests.get(public_url).text,
                     contains_string(folder_name))
+
+    @steps_checker.step
+    def check_container_name_volume_backups(self):
+        """Step to check that container has name 'volumebackups'."""
+        page_containers = self._page_containers()
+        page_containers.list_containers.wait_for_presence()
+        container_name = page_containers.item_container_name()
+        assert_that('volumebackups', equal_to(container_name))
