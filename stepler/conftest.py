@@ -135,7 +135,6 @@ __all__ = sorted([  # sort for documentation
     'users',
     'current_user',
     'new_user_with_project',
-    'two_projects',
 
     'token_steps',
     'get_service_steps',
