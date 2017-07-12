@@ -48,11 +48,11 @@ class TableUsers(_ui.Table):
 
 
 @ui.register_ui(
-    combobox_project=_ui.combobox_by_label("Primary Project"),
-    combobox_role=ui.ComboBox(By.NAME, 'role_id'),
-    field_confirm_password=ui.TextField(By.NAME, 'confirm_password'),
     field_name=ui.TextField(By.NAME, 'name'),
-    field_password=ui.TextField(By.NAME, 'password'))
+    field_password=ui.TextField(By.NAME, 'password'),
+    field_confirm_password=ui.TextField(By.NAME, 'confirm_password'),
+    combobox_project=_ui.combobox_by_label("Primary Project"),
+    combobox_role=_ui.combobox_by_label('Role'))
 class FormCreateUser(_ui.Form):
     """Form to create new user."""
 
