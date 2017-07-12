@@ -53,7 +53,7 @@ def get_ironic_node_steps(get_ironic_client):
 def unexpected_node_cleanup(primary_nodes,
                             get_ironic_node_steps,
                             cleanup_nodes):
-    """Function fixture to clear unexpected volumes.
+    """Function fixture to clear unexpected nodes.
 
     It provides cleanup before and after test.
     """
@@ -128,7 +128,7 @@ def primary_nodes(get_ironic_node_steps,
 
     Args:
         get_ironic_node_steps (function): Function to get ironic steps.
-        cleanup_nodes (function): Function to cleanup volumes.
+        cleanup_nodes (function): Function to cleanup nodes.
         uncleanable (AttrDict): Data structure with skipped resources.
     """
     nodes_before = set()
