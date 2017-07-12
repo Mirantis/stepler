@@ -25,6 +25,7 @@ import multiprocessing as mp
 import os
 import random
 import tempfile
+import time
 import uuid
 
 import attrdict
@@ -445,3 +446,16 @@ def check_ssh_connection_establishment(server_ssh, must_work=True,
 
     waiter.wait(_check_ssh_connection_establishment,
                 timeout_seconds=timeout)
+
+
+class Timer(object):
+
+    """Get time of execution function"""
+
+    def __enter__(self):
+        self.start = time.clock()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.clock()
+        self.interval = self.end - self.start
