@@ -19,11 +19,13 @@ Networks steps
 
 import time
 
-from hamcrest import assert_that, empty, equal_to, is_not  # noqa
+from hamcrest import assert_that, equal_to, less_than  # noqa
 
+from stepler import config
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
+from stepler.third_party.utils import Timer
 from stepler.third_party import waiter
 
 
@@ -237,3 +239,10 @@ class NetworksSteps(base.BaseSteps):
         if check:
             page_network_topology.button_toggle_labels.click()
             page_network_topology.button_toggle_networks.click()
+
+    @steps_checker.step
+    def check_networks_time(self):
+        """Step to check time opening Networks tab."""
+        with Timer() as timer:
+            self._page_networks()
+        assert_that(timer.interval, less_than(config.UI_TIMEOUT_OPENING_PAGE))

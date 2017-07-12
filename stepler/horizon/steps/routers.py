@@ -17,9 +17,13 @@ Routers steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, less_than  # noqa
+
+from stepler import config
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 from stepler.third_party import utils
+from stepler.third_party.utils import Timer
 
 
 class RoutersSteps(base.BaseSteps):
@@ -72,3 +76,10 @@ class RoutersSteps(base.BaseSteps):
             self.close_notification('success')
             page_routers.table_routers.row(
                 name=router_name).wait_for_absence()
+
+    @steps_checker.step
+    def check_routers_time(self):
+        """Step to check time opening Routers tab."""
+        with Timer() as timer:
+            self._page_routers()
+        assert_that(timer.interval, less_than(config.UI_TIMEOUT_OPENING_PAGE))

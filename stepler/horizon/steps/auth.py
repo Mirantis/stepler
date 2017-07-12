@@ -17,8 +17,12 @@ Horizon steps for authentication
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hamcrest import assert_that, less_than  # noqa
+
+from stepler import config
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
+from stepler.third_party.utils import Timer
 
 
 class AuthSteps(base.BaseSteps):
@@ -61,3 +65,10 @@ class AuthSteps(base.BaseSteps):
     def check_alert_present(self):
         """Step to check alert message is present."""
         self._page_login().label_alert_message.wait_for_presence()
+
+    @steps_checker.step
+    def check_login_time(self):
+        """Step to check time authorizing into Horizon."""
+        with Timer() as timer:
+            self._page_login()
+        assert_that(timer.interval, less_than(config.UI_TIMEOUT_OPENING_PAGE))
