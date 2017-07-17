@@ -65,7 +65,8 @@ class FormChangePassword(_ui.Form):
 
 
 @ui.register_ui(
-    field_name=ui.TextField(By.NAME, 'name'))
+    field_name=ui.TextField(By.NAME, 'name'),
+    combox_project=_ui.combobox_by_label("Primary Project"))
 class FormUpdateUser(_ui.Form):
     """Form to update user."""
 
@@ -73,7 +74,7 @@ class FormUpdateUser(_ui.Form):
 @ui.register_ui(
     button_create_user=ui.Button(By.ID, 'users__action_create'),
     button_delete_users=ui.Button(By.ID, 'users__action_delete'),
-    button_filter_users=ui.Button(By.XPATH, './/button[.="Filter"]'),
+    button_filter_users=ui.Button(By.CSS_SELECTOR, '.form-control'),
     field_filter_users=ui.TextField(By.NAME, 'users__filter__q'),
     form_change_password=FormChangePassword(By.ID,
                                             'change_user_password_form'),

@@ -182,6 +182,7 @@ class UsersSteps(base.BaseSteps):
 
         with page_users.form_update_user as form:
             form.field_name.value = new_username
+            form.combox_project.value = self._project_name
             form.submit()
 
         if check:
@@ -226,8 +227,7 @@ class UsersSteps(base.BaseSteps):
         with page_users.table_users.row(
                 name=self._username).dropdown_menu as menu:
             menu.button_toggle.click()
-            assert_that(not menu.item_toggle_user.is_enabled,
-                        'user can be disabled by itself')
+            assert_that(menu.item_toggle_user.is_present, equal_to(False))
 
         assert_that(page_users.table_users.row(
             name=self._username).is_enabled, equal_to(True))
@@ -235,3 +235,7 @@ class UsersSteps(base.BaseSteps):
     @property
     def _username(self):
         return self.app.current_username
+
+    @property
+    def _project_name(self):
+        return self.app.current_project
