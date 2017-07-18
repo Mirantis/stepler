@@ -26,20 +26,18 @@ from stepler.third_party import steps_checker
 class FloatingIPsSteps(base.BaseSteps):
     """Floating IPs steps."""
 
-    def _tab_floating_ips(self):
-        """Open floating IPs tab."""
-        page_access = self._open(self.app.page_access)
-        page_access.label_floating_ips.click()
-        return page_access.tab_floating_ips
+    def _page_floating_ips(self):
+        """Open floating IPs page."""
+        return self._open(self.app.page_floating_i_ps)
 
     @steps_checker.step
     def allocate_floating_ip(self, check=True):
         """Step to allocate floating IP."""
-        tab_floating_ips = self._tab_floating_ips()
+        page_floating_ips = self._page_floating_ips()
         old_ips = self._current_floating_ips
-        tab_floating_ips.button_allocate_ip.click()
+        page_floating_ips.button_allocate_ip.click()
 
-        with tab_floating_ips.form_allocate_ip as form:
+        with page_floating_ips.form_allocate_ip as form:
             form.submit()
 
         if check:
@@ -55,41 +53,42 @@ class FloatingIPsSteps(base.BaseSteps):
     @steps_checker.step
     def release_floating_ip(self, ip, check=True):
         """Step to release floating IP."""
-        tab_floating_ips = self._tab_floating_ips()
+        page_floating_ips = self._page_floating_ips()
 
-        with tab_floating_ips.table_floating_ips.row(
+        with page_floating_ips.table_floating_ips.row(
                 ip_address=ip).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_release.click()
 
-        tab_floating_ips.form_confirm.submit()
+        page_floating_ips.form_confirm.submit()
 
         if check:
             self.close_notification('success')
-            tab_floating_ips.table_floating_ips.row(
+            page_floating_ips.table_floating_ips.row(
                 ip_address=ip).wait_for_absence()
 
     @steps_checker.step
     def associate_floating_ip(self, ip, instance_name, check=True):
         """Step to associate floating IP."""
-        tab_floating_ips = self._tab_floating_ips()
-        tab_floating_ips.table_floating_ips.row(
+        page_floating_ips = self._page_floating_ips()
+        page_floating_ips.table_floating_ips.row(
             ip_address=ip).dropdown_menu.item_default.click()
 
-        with tab_floating_ips.form_associate as form:
+        with page_floating_ips.form_associate as form:
             form.combobox_port.value = instance_name
             form.submit()
 
         if check:
             self.close_notification('success')
-            tab_floating_ips.table_floating_ips.row(
+            page_floating_ips.table_floating_ips.row(
                 ip_address=ip,
                 mapped_fixed_ip_address=instance_name).wait_for_presence()
 
     @property
     def _current_floating_ips(self):
         ips = set()
-        rows = self.app.page_access.tab_floating_ips.table_floating_ips.rows
+        page_floating_ips = self.app.page_floating_i_ps
+        rows = page_floating_ips.table_floating_ips.rows
         for row in rows:
             ip = row.cell('ip_address').value
             ips.add(ip)

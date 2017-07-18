@@ -69,7 +69,7 @@ def horizon_servers(request,
     """
     count = int(getattr(request, 'param', 3))
     network, _, _ = net_subnet_router
-    flavor = flavor_steps.get_flavor(name=config.HORIZON_TEST_FLAVOR)
+    flavor = flavor_steps.get_flavor(name=config.HORIZON_TEST_FLAVOR_TINY)
     return server_steps.create_servers(image=cirros_image,
                                        flavor=flavor,
                                        count=count,

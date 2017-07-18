@@ -17,7 +17,6 @@ Horizon fixtures
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .access import *  # noqa
 from .api_access import *  # noqa
 from .app import *  # noqa
 from .auto_use import *  # noqa
@@ -35,6 +34,7 @@ from .networks import *  # noqa
 from .overview import *  # noqa
 from .projects import *  # noqa
 from .routers import *  # noqa
+from .security_groups import *  # noqa
 from .settings import *  # noqa
 from .users import *  # noqa
 from .volume_types import *  # noqa
@@ -42,7 +42,7 @@ from .volumes import *  # noqa
 
 
 __all__ = sorted([  # sort for documentation
-    'access_steps_ui',
+    'security_groups_steps_ui',
     'horizon_create_security_group',
     'horizon_security_group',
 

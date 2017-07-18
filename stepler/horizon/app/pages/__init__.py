@@ -17,8 +17,7 @@ Horizon pages
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .access import (PageAccess,
-                     PageManageRules)  # noqa
+from .api_access import PageApiAccess  # noqa
 from .base import PageBase
 from .containers import PageContainers
 from .defaults import PageDefaults
@@ -28,12 +27,16 @@ from .images import PageImage, PageImages  # noqa
 from .instances import (PageInstance,
                         PageInstances,
                         PageAdminInstances)  # noqa
+from .keypairs import PageKeypairs
 from .login import PageLogin
 from .metadata_definitions import PageMetadataDefinitions
 from .networks import (PageAdminNetworks,
+                       PageFloatingIPs,
+                       PageManageRules,
                        PageNetwork,
                        PageNetworkTopology,
-                       PageNetworks)  # noqa
+                       PageNetworks,
+                       PageSecurityGroups)  # noqa
 from .projects import PageProjects
 from .routers import PageRouters
 from .settings import PagePassword, PageSettings  # noqa
@@ -45,19 +48,21 @@ from .volumes import (PageAdminVolumes,
 from .overview import PageOverview  # noqa
 
 pages = [
-    PageAccess,
     PageAdminInstances,
     PageAdminNetworks,
     PageAdminVolumes,
+    PageApiAccess,
     PageBase,
     PageContainers,
     PageDefaults,
     PageFlavors,
+    PageFloatingIPs,
     PageHostAggregates,
     PageImage,
     PageImages,
     PageInstance,
     PageInstances,
+    PageKeypairs,
     PageLogin,
     PageManageRules,
     PageMetadataDefinitions,
@@ -67,6 +72,7 @@ pages = [
     PagePassword,
     PageProjects,
     PageRouters,
+    PageSecurityGroups,
     PageSettings,
     PageUsers,
     PageVolume,

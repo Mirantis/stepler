@@ -1,7 +1,7 @@
 """
-------------
-Keypairs tab
-------------
+-------------
+Keypairs page
+-------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,8 @@ from pom import ui
 from selenium.webdriver.common.by import By
 
 from stepler.horizon.app import ui as _ui
+
+from .base import PageBase
 
 
 @ui.register_ui(field_name=ui.TextField(By.NAME, 'name'))
@@ -56,5 +58,7 @@ class FormImportKeypair(_ui.Form):
     form_create_keypair=FormCreateKeypair(By.ID, 'create_keypair_form'),
     form_import_keypair=FormImportKeypair(By.ID, 'import_keypair_form'),
     table_keypairs=TableKeypairs(By.ID, 'keypairs'))
-class TabKeypairs(_ui.Tab):
-    """Keypairs tab."""
+class PageKeypairs(PageBase):
+    """Keypairs page."""
+    url = "project/key_pairs/"
+    navigate_items = "Project", "Compute", "Key Pairs"

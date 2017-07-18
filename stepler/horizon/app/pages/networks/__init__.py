@@ -18,6 +18,9 @@ Network pages
 # limitations under the License.
 
 from .page_admin_networks import PageAdminNetworks  # noqa
+from .page_floating_ips import PageFloatingIPs  # noqa
+from .page_manage_rules import PageManageRules  # noqa
 from .page_network import PageNetwork  # noqa
 from .page_network_topology import PageNetworkTopology  # noqa
 from .page_networks import PageNetworks  # noqa
+from .page_security_groups import PageSecurityGroups  # noqa

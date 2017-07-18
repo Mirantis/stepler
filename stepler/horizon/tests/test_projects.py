@@ -91,7 +91,7 @@ class TestAdminOnly(object):
     @pytest.mark.idempotent_id('9acd7607-d72f-4e8c-9b13-1a0728d56975')
     def test_switch_projects(self, admin_project_resources, project,
                              projects_steps_ui, overview_steps_ui,
-                             access_steps_ui):
+                             security_groups_steps_ui):
         """**Scenario:** Check resources in different projects.
 
         **Setup:**
@@ -115,7 +115,7 @@ class TestAdminOnly(object):
         """
         quantity_resource_base = overview_steps_ui.get_used_resource_overview(
             resource_name=config.RESOURCE_NAME_SECURITY)
-        access_steps_ui.create_security_group()
+        security_groups_steps_ui.create_security_group()
         overview_steps_ui.check_resource_item_changed(
             resource_name=config.RESOURCE_NAME_SECURITY,
             resource_before_creating=quantity_resource_base)
@@ -124,7 +124,7 @@ class TestAdminOnly(object):
         projects_steps_ui.switch_project(project.name)
         quantity_resource = overview_steps_ui.get_used_resource_overview(
             resource_name=config.RESOURCE_NAME_SECURITY)
-        access_steps_ui.create_security_group()
+        security_groups_steps_ui.create_security_group()
         overview_steps_ui.check_resource_item_changed(
             resource_name=config.RESOURCE_NAME_SECURITY,
             resource_before_creating=quantity_resource)

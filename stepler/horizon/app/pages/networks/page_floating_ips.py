@@ -1,7 +1,7 @@
 """
-----------------
-Floating IPs tab
-----------------
+-----------------
+Floating IPs page
+-----------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@ Floating IPs tab
 from pom import ui
 from selenium.webdriver.common.by import By
 
+from ..base import PageBase
 from stepler.horizon.app import ui as _ui
 
 
@@ -58,5 +59,6 @@ class FormAssociate(_ui.Form):
     form_associate=FormAssociate(
         By.CSS_SELECTOR, '[action*="floating_ips/associate"]'),
     table_floating_ips=TableFloatingIPs(By.ID, 'floating_ips'))
-class TabFloatingIPs(_ui.Tab):
-    """Floating IPs tab."""
+class PageFloatingIPs(PageBase):
+    """Floating IPs page."""
+    url = "/project/floating_ips/"

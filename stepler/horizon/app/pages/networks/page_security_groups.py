@@ -1,7 +1,7 @@
 """
--------------------
-Security groups tab
--------------------
+--------------------
+Security groups page
+--------------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@ Security groups tab
 from pom import ui
 from selenium.webdriver.common.by import By
 
+from ..base import PageBase
 from stepler.horizon.app import ui as _ui
 
 
@@ -47,6 +48,6 @@ class TableSecurityGroups(_ui.Table):
     form_create_security_group=FormCreateSecurityGroup(
         By.ID, 'create_security_group_form'),
     table_security_groups=TableSecurityGroups(By.ID, 'security_groups'))
-class TabSecurityGroups(_ui.Tab):
-    """Security groups tab."""
-    url = "/project/access_and_security/security_groups"
+class PageSecurityGroups(PageBase):
+    """Security groups page."""
+    url = "/project/security_groups"

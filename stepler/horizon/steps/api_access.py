@@ -30,19 +30,17 @@ from stepler.third_party import waiter
 class ApiAccessSteps(base.BaseSteps):
     """Api access steps."""
 
-    def _tab_api_access(self):
+    def _page_api_access(self):
         """Open api access page if it isn't opened."""
-        access_page = self._open(self.app.page_access)
-        access_page.label_api_access.click()
-        return access_page.tab_api_access
+        return self._open(self.app.page_api_access)
 
     @steps_checker.step
     def download_rc_v2(self, check=True):
         """Step to download v2 file."""
         self._remove_rc_file()
 
-        tab_api_access = self._tab_api_access()
-        tab_api_access.button_download_v2_file.click()
+        page_api_access = self._page_api_access()
+        page_api_access.button_download_v2_file.click()
 
         if check:
             self._wait_rc_file_downloaded()
@@ -67,8 +65,8 @@ class ApiAccessSteps(base.BaseSteps):
         """Step to download v3 file."""
         self._remove_rc_file()
 
-        tab_api_access = self._tab_api_access()
-        tab_api_access.button_download_v3_file.click()
+        page_api_access = self._page_api_access()
+        page_api_access.button_download_v3_file.click()
 
         if check:
             self._wait_rc_file_downloaded()
@@ -91,8 +89,8 @@ class ApiAccessSteps(base.BaseSteps):
     @steps_checker.step
     def download_ec2(self, check=True):
         """Step to download ec2 file."""
-        tab_api_access = self._tab_api_access()
-        tab_api_access.button_download_ec2.click()
+        page_api_access = self._page_api_access()
+        page_api_access.button_download_ec2.click()
 
         if check:
             self._wait_ec2_file_downloaded()
@@ -100,11 +98,11 @@ class ApiAccessSteps(base.BaseSteps):
     @steps_checker.step
     def view_credentials(self, check=True):
         """Step to view credentials."""
-        tab_api_access = self._tab_api_access()
-        tab_api_access.button_view_credentials.click()
+        page_api_access = self._page_api_access()
+        page_api_access.button_view_credentials.click()
 
         if check:
-            with tab_api_access.form_user_credentials as form:
+            with page_api_access.form_user_credentials as form:
                 assert_that(form.field_username.value,
                             equal_to(self._username))
                 assert_that(form.field_project_name.value,
@@ -144,12 +142,12 @@ class ApiAccessSteps(base.BaseSteps):
 
     @property
     def _project_id(self):
-        return (self.app.page_access.tab_api_access.
+        return (self.app.page_api_access.
                 label_volume.value.split('/')[-1])
 
     @property
     def _auth_url(self):
-        return self.app.page_access.tab_api_access.label_identity.value
+        return self.app.page_api_access.label_identity.value
 
     def _wait_rc_file_downloaded(self):
 

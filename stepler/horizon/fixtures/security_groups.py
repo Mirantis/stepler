@@ -23,21 +23,21 @@ from stepler.horizon import steps
 from stepler.third_party import utils
 
 __all__ = [
-    'access_steps_ui',
+    'security_groups_steps_ui',
     'horizon_create_security_group',
     'horizon_security_group'
 ]
 
 
 @pytest.fixture
-def access_steps_ui(login, horizon):
-    """Fixture to get access steps.
+def security_groups_steps_ui(login, horizon):
+    """Fixture to get security groups steps.
 
     Args:
         login (None): should log in horizon before steps using
         horizon (Horizon): instantiated horizon web application
     """
-    return steps.AccessSteps(horizon)
+    return steps.SecurityGroupsSteps(horizon)
 
 
 @pytest.fixture

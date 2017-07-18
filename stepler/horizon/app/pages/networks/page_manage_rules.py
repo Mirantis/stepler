@@ -53,4 +53,4 @@ class FormAddRules(_ui.Form):
 class PageManageRules(PageBase):
     """Manage rules page."""
 
-    url = "/project/access_and_security/security_groups/{id}/"
+    url = "/project/security_groups/{id}/"

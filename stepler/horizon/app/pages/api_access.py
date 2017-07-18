@@ -1,7 +1,7 @@
 """
-------------
-Keypairs tab
-------------
+---------------
+API Access page
+---------------
 """
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,8 @@ from pom import ui
 from selenium.webdriver.common.by import By
 
 from stepler.horizon.app import ui as _ui
+
+from .base import PageBase
 
 
 @ui.register_ui(
@@ -51,5 +53,7 @@ class FormUserCredentials(_ui.Form):
         By.CSS_SELECTOR, 'tr[data-display="keystone"] > td:nth-of-type(2)'),
     label_volume=ui.UI(
         By.CSS_SELECTOR, 'tr[data-display="cinder"] > td:nth-of-type(2)'))
-class TabApiAccess(_ui.Tab):
-    """Api Access tab."""
+class PageApiAccess(PageBase):
+    """API Access page."""
+    url = "/project/api_access/"
+    navigate_items = "Project", "Compute", "API Access"

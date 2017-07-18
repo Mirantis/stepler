@@ -19,7 +19,6 @@ Contains steps specific for horizon (UI testing).
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .access import AccessSteps  # noqa
 from .api_access import ApiAccessSteps  # noqa
 from .auth import AuthSteps  # noqa
 from .containers import ContainersSteps  # noqa
@@ -35,13 +34,13 @@ from .networks import NetworksSteps  # noqa
 from .overview import OverviewSteps
 from .projects import ProjectsSteps  # noqa
 from .routers import RoutersSteps  # noqa
+from .security_groups import SecurityGroupsSteps  # noqa
 from .settings import SettingsSteps  # noqa
 from .users import UsersSteps  # noqa
 from .volume_types import VolumeTypesSteps  # noqa
 from .volumes import VolumesSteps  # noqa
 
 __all__ = [
-    'AccessSteps',
     'ApiAccessSteps',
     'AuthSteps',
     'ContainersSteps',
@@ -57,6 +56,7 @@ __all__ = [
     'OverviewSteps',
     'ProjectsSteps',
     'RoutersSteps',
+    'SecurityGroupsSteps',
     'SettingsSteps',
     'UsersSteps',
     'VolumeTypesSteps',

@@ -43,20 +43,20 @@ def test_login(credentials, auth_steps):
 class TestAdminOnly(object):
 
     @pytest.mark.idempotent_id('d86ee186-66d8-11e7-8094-5404a69126b9')
-    def test_check_time_opening_pages(self, access_steps_ui, networks_steps_ui,
-                                      routers_steps_ui, auth_steps):
+    def test_check_time_opening_pages(self, networks_steps_ui, auth_steps,
+                                      keypairs_steps_ui, routers_steps_ui):
         """**Scenario:** Verify that time opening pages less 1 sec.
 
-        # Test for covering bug https://bugs.launchpad.net/mos/+bug/1593456 .
+        # Test for covering bug https://bugs.launchpad.net/mos/+bug/1593456
 
         **Steps:**
 
         #. Check time authorization into Horizon
-        #. Check time opening of Access/Security tab
+        #. Check time opening of Keypairs tab
         #. Check time opening of Networks tab
         #. Check time opening of Routers tab
         """
         auth_steps.check_login_time()
-        access_steps_ui.check_access_time()
+        keypairs_steps_ui.check_keypairs_time()
         networks_steps_ui.check_networks_time()
         routers_steps_ui.check_routers_time()
