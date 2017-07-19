@@ -383,6 +383,27 @@ class TestAnyOne(object):
         images_steps_ui.check_image_info(horizon_image.name,
                                          expected_metadata=None)
 
+    @pytest.mark.idempotent_id('4262e99a-10c5-4ce5-b48a-160568611bb0',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('dc5e9a46-cd20-47f7-bd84-739563864af2',
+                               any_one='user')
+    def test_open_image_info_in_new_tab(self, horizon_image, images_steps_ui):
+        """**Scenario:** Check opening image info in new tab works.
+
+        **Setup:**
+
+        #. Create image using API
+
+        **Steps:**
+
+        #. Open image info in new tab
+
+        **Teardown:**
+
+        #. Delete image using API
+        """
+        images_steps_ui.open_image_info_in_new_tab(horizon_image.name)
+
 
 @pytest.mark.usefixtures('user_only')
 class TestUserOnly(object):
