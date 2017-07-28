@@ -65,12 +65,15 @@ class NamespacesSteps(base.BaseSteps):
 
         with page_metadata_definitions.form_import_namespace as form:
             form.combobox_namespace_source.value = namespace_source
-            form.field_namespace_json.value = \
-                NAMESPACE_TEMPLATE % {'name': namespace_name}
+            form.field_namespace_json.value = (
+                NAMESPACE_TEMPLATE % {'name': namespace_name})
             form.submit()
 
         if check:
             self.close_notification('success')
+            page_metadata_definitions.field_filter_namespaces.value = (
+                namespace_name)
+            page_metadata_definitions.button_filter_namespaces.click()
             page_metadata_definitions.table_namespaces.row(
                 name=namespace_name).wait_for_presence()
 
@@ -90,5 +93,8 @@ class NamespacesSteps(base.BaseSteps):
 
         if check:
             self.close_notification('success')
+            page_metadata_definitions.field_filter_namespaces.value = (
+                namespace_name)
+            page_metadata_definitions.button_filter_namespaces.click()
             page_metadata_definitions.table_namespaces.row(
                 name=namespace_name).wait_for_absence()

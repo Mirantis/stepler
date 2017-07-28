@@ -49,6 +49,8 @@ class FormImportNamespace(_ui.Form):
 
 @ui.register_ui(
     button_import_namespace=ui.Button(By.ID, 'namespaces__action_import'),
+    button_filter_namespaces=ui.Button(By.ID, 'namespaces__action_filter'),
+    field_filter_namespaces=ui.TextField(By.NAME, 'namespaces__filter__q'),
     form_import_namespace=FormImportNamespace(By.ID, 'create_metadata_form'),
     table_namespaces=TableNamespaces(By.ID, 'namespaces'))
 class PageMetadataDefinitions(PageBase):
