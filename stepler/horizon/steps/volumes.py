@@ -95,15 +95,15 @@ class VolumesSteps(base.BaseSteps):
 
                 form.combobox_volume_source.value = volume_source
 
-            if volume_type is not None:
+            if volume_type:
                 if not volume_type:
                     volume_type = form.combobox_volume_type.values[-1]
                 form.combobox_volume_type.value = volume_type
 
-            if volume_size is not None:
+            if volume_size:
                 form.field_size.value = volume_size
 
-            if description is not None:
+            if description:
                 form.field_description.value = description
 
             form.submit()
@@ -139,7 +139,6 @@ class VolumesSteps(base.BaseSteps):
     def edit_volume(self, volume_name, new_volume_name, check=True):
         """Step to edit volume."""
         tab_volumes = self._tab_volumes()
-
         tab_volumes.table_volumes.row(
             name=volume_name).dropdown_menu.item_default.click()
 
@@ -289,7 +288,7 @@ class VolumesSteps(base.BaseSteps):
             form.item_flavor.click()
             with form.tab_flavor as tab:
                 tab.table_available_flavors.row(
-                    name=config.HORIZON_TEST_FLAVOR).button_add.click()
+                    name=config.HORIZON_TEST_FLAVOR_TINY).button_add.click()
 
             form.item_network.click()
             with form.tab_network as tab:

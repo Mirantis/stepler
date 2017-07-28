@@ -29,8 +29,8 @@ from ..instances.page_instances import FormLaunchInstance
     field_name=ui.TextField(By.NAME, 'name'),
     field_description=ui.TextField(By.NAME, 'description'),
     field_size=ui.TextField(By.NAME, 'size'),
-    combobox_source_type=ui.ComboBox(By.ID, "id_volume_source_type"),
-    combobox_image_source=ui.ComboBox(By.CLASS_NAME, "image-selector"),
+    combobox_source_type=_ui.combobox_by_label("Volume Source"),
+    combobox_image_source=_ui.combobox_by_label("Use image as a source"),
     combobox_volume_source=_ui.combobox_by_label("Use a volume as source"),
     combobox_volume_type=_ui.combobox_by_label("Type"))
 class FormCreateVolume(_ui.Form):
@@ -87,8 +87,8 @@ class TableVolume(_ui.Table):
 
 
 @ui.register_ui(
-    combobox_volume_type=ui.ComboBox(By.NAME, "volume_type"),
-    combobox_migration_policy=ui.ComboBox(By.NAME, "migration_policy"))
+    combobox_volume_type=_ui.combobox_by_label("Type"),
+    combobox_migration_policy=_ui.combobox_by_label("Migration Policy"))
 class FormChangeVolumeType(_ui.Form):
     """Form to change volume type."""
 
