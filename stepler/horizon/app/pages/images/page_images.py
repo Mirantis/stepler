@@ -30,7 +30,7 @@ from ..instances.page_instances import FormLaunchInstance
     item_create_volume=ui.UI(By.XPATH, './/a[contains(., "Create Volume")]'),
     item_update_metadata=ui.UI(By.XPATH,
                                './/a[contains(., "Update Metadata")]'),
-    item_delete=ui.UI(By.CSS_SELECTOR, '*[id*="action_delete"]'),
+    item_delete=ui.UI(By.XPATH, './/a[contains(., "Delete Image")]'),
     item_edit=ui.UI(By.XPATH, './/a[contains(., "Edit Image")]'), )
 class DropdownMenu(_ui.DropdownMenu):
     """Dropdown menu for image row."""
