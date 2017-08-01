@@ -72,12 +72,12 @@ class InstancesSteps(base.BaseSteps):
                 tab.combobox_boot_source.value = 'Image'
                 tab.radio_volume_create.value = 'No'
                 tab.table_available_sources.row(
-                    name=config.HORIZON_TEST_IMAGE).button_add.click()
+                    name=config.HORIZON_TEST_IMAGE_CIRROS).button_add.click()
 
             form.item_flavor.click()
             with form.tab_flavor as tab:
                 tab.table_available_flavors.row(
-                    name=config.HORIZON_TEST_FLAVOR).button_add.click()
+                    name=config.HORIZON_TEST_FLAVOR_TINY).button_add.click()
 
             form.item_network.click()
             with form.tab_network as tab:
