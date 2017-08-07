@@ -87,6 +87,33 @@ class ApiAccessSteps(base.BaseSteps):
                 contains_string('OS_PROJECT_ID={}'.format(self._project_id)))
 
     @steps_checker.step
+    def download_rc_v3_via_menu(self, check=True):
+        """Step to download v3 file via menu."""
+        self._remove_rc_file()
+
+        with self.app.page_base.dropdown_menu_account as menu:
+            menu.click()
+            menu.item_download_rcv3.click()
+
+        if check:
+            self._wait_rc_file_downloaded()
+            content = open(self._rc_path).read()
+            self._page_api_access()
+            _v3_url = self._auth_url.split('/v')[0] + '/v3'
+            assert_that(
+                content, contains_string('OS_AUTH_URL={}'.format(_v3_url)))
+            assert_that(
+                content,
+                contains_string('OS_USERNAME="{}"'.format(self._username)))
+            assert_that(
+                content,
+                contains_string(
+                    'OS_PROJECT_NAME="{}"'.format(self._project_name)))
+            assert_that(
+                content,
+                contains_string('OS_PROJECT_ID={}'.format(self._project_id)))
+
+    @steps_checker.step
     def download_ec2(self, check=True):
         """Step to download ec2 file."""
         page_api_access = self._page_api_access()

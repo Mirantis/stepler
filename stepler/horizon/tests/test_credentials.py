@@ -50,6 +50,19 @@ class TestAnyOne(object):
         """
         api_access_steps_ui.download_rc_v3()
 
+    @pytest.mark.idempotent_id('a38d81c2-7b67-11e7-838c-1b220e28c682',
+                               any_one='admin')
+    @pytest.mark.idempotent_id('a4909b40-7b67-11e7-804d-abae3a40e158',
+                               any_one='user')
+    def test_download_rc_v3_via_menu(self, api_access_steps_ui):
+        """**Scenario:** Verify that user can download RCv3 via menu.
+
+        **Steps:**
+
+        #. Download rc v3 file via menu using UI
+        """
+        api_access_steps_ui.download_rc_v3_via_menu()
+
     @pytest.mark.idempotent_id('a6ed9d2a-ae40-45ca-92c9-0034cbb425b1',
                                any_one='admin')
     @pytest.mark.idempotent_id('596710b9-1f77-4db9-9a77-f5733a5708ff',
