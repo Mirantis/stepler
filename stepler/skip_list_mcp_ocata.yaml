@@ -31,3 +31,31 @@ ba603c26-4f0c-4838-b5d8-110249e43484:
 # Glance API
 c30299b4-4f60-4078-962e-5a29c35084ec:
   reason: Glance API v1 is disabled
+
+# Volume backups
+7f43197f-ba2c-4962-a07a-43cbf77a779b:
+  reason: Volume backups are not implemented
+f49eef31-b26a-496c-8f0f-2465a97d04cf:
+  reason: Volume backups are not implemented
+dd3abd5c-0900-40a0-be3d-b284eeb6b5da:
+  reason: Volume backups are not implemented
+9cc2b22d-6234-4fb3-aad8-abe7d39cc870:
+  reason: Volume backups are not implemented
+95a60e66-8e12-48ea-a7b2-c9b49ca35e45:
+  reason: Volume backups are not implemented
+7ab4eb5a-e00a-427e-9128-fff277a38e85:
+  reason: Volume backups are not implemented
+acf12ae6-7b00-4bad-aef4-25ca3e3c3dc0:
+  reason: Volume backups are not implemented
+bcdb65f1-49a5-4623-9bca-dd08d31a30bb:
+  reason: Volume backups are not implemented
+42020f62-06d5-49f5-8b78-08d40b518b17:
+  reason: Volume backups are not implemented
+6018b01d-0b3b-41fb-a7ca-46b78c2cc7a3:
+  reason: Volume backups are not implemented
+36a02ea4-ce4d-4f45-b461-954ded1ea171:
+  reason: Volume backups are not implemented
+abb97b8e-6539-413a-b3b0-7e770eeb83e2:
+  reason: Volume backups are not implemented
+d923893c-5fe0-11e7-bfb3-5404a69126b9:
+  reason: Volume backups are not implemented
