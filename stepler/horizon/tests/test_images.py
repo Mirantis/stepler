@@ -396,13 +396,17 @@ class TestAnyOne(object):
 
         **Steps:**
 
-        #. Open image info in new tab
+        #. Open image info link in new tab
+        #. Switch to the new tab with info
+        #. Check this page exists and is available
 
         **Teardown:**
 
         #. Delete image using API
         """
-        images_steps_ui.open_image_info_in_new_tab(horizon_image.name)
+        images_steps_ui.open_link_in_new_tab(horizon_image.name)
+        images_steps_ui.switch_to_new_tab()
+        images_steps_ui.check_page_is_available(horizon_image.name)
 
 
 @pytest.mark.usefixtures('user_only')
