@@ -729,3 +729,6 @@ TIME_AFTER_NOVA_COMPUTE_UP = 10
 
 # Names resources in "Overview"
 RESOURCE_NAME_SECURITY = 'Security Groups'
+
+# Names parameters for filtering of instances
+INSTANCE_NAME = "name"

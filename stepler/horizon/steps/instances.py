@@ -173,7 +173,8 @@ class InstancesSteps(base.BaseSteps):
     def filter_instances(self, query, check=True):
         """Step to filter instances."""
         page_instances = self._page_instances()
-
+        page_instances.button_instance_filter().click()
+        page_instances.item_instance_parameter(config.INSTANCE_NAME).click()
         page_instances.field_filter_instances.value = query
         page_instances.button_filter_instances.click()
 
