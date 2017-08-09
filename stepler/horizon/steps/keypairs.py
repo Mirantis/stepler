@@ -17,7 +17,7 @@ Keypairs steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hamcrest import (assert_that, equal_to, less_than)  # noqa
+from hamcrest import (assert_that, equal_to, is_in, less_than)  # noqa
 
 from stepler import config
 from stepler.horizon.steps import base
@@ -46,7 +46,8 @@ class KeypairsSteps(base.BaseSteps):
             form.submit()
 
         if check:
-            page_keypairs.table_keypairs.rows(
+            self._page_keypairs()
+            page_keypairs.table_keypairs.row(
                 name=keypair_name).wait_for_presence()
 
         return keypair_name
@@ -103,8 +104,8 @@ class KeypairsSteps(base.BaseSteps):
     def check_button_import_key_pair_disabled(self):
         """Step to check `import Key Pair` disabled if quota exceeded."""
         page_keypairs = self._page_keypairs()
-        assert_that(
-            page_keypairs.button_import_keypair.is_enabled, equal_to(False))
+        assert_that('disabled', is_in(
+            page_keypairs.button_import_keypair.get_attribute("class")))
 
     @steps_checker.step
     def check_keypairs_time(self):

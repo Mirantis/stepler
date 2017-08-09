@@ -55,8 +55,10 @@ class FormImportKeypair(_ui.Form):
     button_delete_keypairs=ui.Button(By.ID, 'keypairs__action_delete'),
     button_import_keypair=ui.Button(By.ID, 'keypairs__action_import'),
     form_confirm_delete=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
-    form_create_keypair=FormCreateKeypair(By.ID, 'create_keypair_form'),
-    form_import_keypair=FormImportKeypair(By.ID, 'import_keypair_form'),
+    form_create_keypair=FormCreateKeypair(
+        By.XPATH, '//*[@action="/project/key_pairs/create/"]'),
+    form_import_keypair=FormImportKeypair(
+        By.XPATH, '//*[@action="/project/key_pairs/import/"]'),
     table_keypairs=TableKeypairs(By.ID, 'keypairs'))
 class PageKeypairs(PageBase):
     """Keypairs page."""
