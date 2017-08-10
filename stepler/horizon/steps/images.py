@@ -571,4 +571,3 @@ class ImagesSteps(base.BaseSteps):
         # close current page
         main_page.webdriver.find_element_by_tag_name('body').send_keys(
             Keys.CONTROL + 'w')
-
