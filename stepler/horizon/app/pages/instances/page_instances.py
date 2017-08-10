@@ -188,7 +188,7 @@ class TableInstances(_ui.Table):
 
 
 @ui.register_ui(combobox_port=ui.ComboBox(By.NAME, "instance_id"),
-                combobox_float_ip=ui.ComboBox(By.NAME, "ip_id"))
+                combobox_float_ip=_ui.combobox_by_label("IP Address"))
 class FormAssociateFloatingIP(_ui.Form):
     """Form to associate."""
 
