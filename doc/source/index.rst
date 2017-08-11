@@ -40,7 +40,10 @@ How to install
 
 Install pre-conditions (Ubuntu 16.04)::
 
-   sudo apt-get -y install libssl-dev python-dev
+   sudo apt-get -y install libssl-dev python-dev libvirt-dev python-pip
+   export LC_ALL=C
+   sudo -H pip install --upgrade pip
+   sudo -H pip install virtualenv
 
 Make following commands in terminal::
 
@@ -48,7 +51,6 @@ Make following commands in terminal::
    cd stepler
    virtualenv .venv
    . .venv/bin/activate
-   pip install -U pip
    pip install -e .[libvirt]
 
 ----------------
