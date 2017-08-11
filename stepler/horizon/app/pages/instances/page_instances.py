@@ -244,5 +244,17 @@ class FormResizeInstance(_ui.Form):
 class PageInstances(PageBase):
     """Instances page."""
 
+    def button_instance_filter(self):
+        """Button for selecting parameters of filtering."""
+        return self.webelement.find_elements_by_xpath(
+            './/span[contains(@class, "dropdown-title")]')[3]
+
+    def item_instance_parameter(self, par):
+        """Select parameter for filtering."""
+        return self.webelement.find_elements(
+            By.XPATH,
+            ".//ul[contains(@class, "
+            "'dropdown-menu')]//a[@data-select-value='{}']".format(par))[0]
+
     url = "/project/instances/"
     navigate_items = "Project", "Compute", "Instances"
