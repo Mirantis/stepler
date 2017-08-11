@@ -24,8 +24,12 @@ from ..base import PageBase
 
 
 @ui.register_ui(
-    button_toggle_labels=ui.Button(By.ID, 'toggle_labels'),
-    button_toggle_networks=ui.Button(By.ID, 'toggle_networks'))
+    button_launch_instance=ui.Button(
+        By.XPATH, '//*[@id="instances__action_launch-ng"]'),
+    button_create_network=ui.Button(By.XPATH,
+                                    '//*[@id="networks__action_create"]'),
+    button_create_router=ui.Button(By.XPATH,
+                                   '//*[@id="Routers__action_create"]'))
 class PageNetworkTopology(PageBase):
     """Network Topology page."""
 

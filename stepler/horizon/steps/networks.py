@@ -237,8 +237,15 @@ class NetworksSteps(base.BaseSteps):
         page_network_topology = self._page_network_topology()
 
         if check:
-            page_network_topology.button_toggle_labels.click()
-            page_network_topology.button_toggle_networks.click()
+            assert_that(page_network_topology.webdriver.title,
+                        equal_to("Network Topology - OpenStack Dashboard"))
+            assert_that(
+                page_network_topology.button_launch_instance.is_enabled,
+                equal_to(True))
+            assert_that(page_network_topology.button_create_network.is_enabled,
+                        equal_to(True))
+            assert_that(page_network_topology.button_create_router.is_enabled,
+                        equal_to(True))
 
     @steps_checker.step
     def check_networks_time(self):
@@ -246,3 +253,12 @@ class NetworksSteps(base.BaseSteps):
         with Timer() as timer:
             self._page_networks()
         assert_that(timer.interval, less_than(config.UI_TIMEOUT_OPENING_PAGE))
+
+    @steps_checker.step
+    def user_try_to_create_shared_network(self, check=True):
+        """Step to check user can't create shared network."""
+        page_networks = self._page_networks()
+        page_networks.button_create_network.click()
+        form = page_networks.form_create_network
+        if check:
+            assert_that(form.checkbox_shared.is_present, equal_to(False))
