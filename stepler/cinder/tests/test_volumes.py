@@ -46,14 +46,14 @@ def test_create_volume_from_snapshot(volume_snapshot, volume_steps):
 
 
 @pytest.mark.idempotent_id('965cb50a-2900-4788-974f-9def0648484a')
-@pytest.mark.parametrize('volumes_count', [10])
+@pytest.mark.parametrize('volumes_count', [9])
 def test_create_delete_many_volumes(volume_steps, volumes_count):
-    """**Scenario:** Verify that 10 cinder volumes can be created and deleted.
+    """**Scenario:** Verify that 9 cinder volumes can be created and deleted.
 
     **Steps:**
 
-    #. Create 10 cinder volumes
-    #. Delete 10 cinder volumes
+    #. Create 9 cinder volumes
+    #. Delete 9 cinder volumes
 
     **Teardown:**
 
