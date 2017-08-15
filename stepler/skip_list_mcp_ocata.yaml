@@ -59,3 +59,7 @@ abb97b8e-6539-413a-b3b0-7e770eeb83e2:
   reason: Volume backups are not implemented
 d923893c-5fe0-11e7-bfb3-5404a69126b9:
   reason: Volume backups are not implemented
+
+# Cinder Volumes
+f0c407a3-7aa1-400c-9a9f-6c69870e3fb9:
+  reason: Migration on one node is not possible
