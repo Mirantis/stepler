@@ -59,7 +59,7 @@ class BaseSteps(object):
                 return
 
             menu.click()
-            menu.item_project(project_name).click()
+            menu.item_project().click()
             self.app.current_project = project_name
 
         if check:

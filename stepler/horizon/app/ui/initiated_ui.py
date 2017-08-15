@@ -40,14 +40,10 @@ class DropdownMenuAccount(ui.Block):
 class DropdownMenuProject(ui.Block):
     """Dropdown menu for project switching."""
 
-    def item_project(self, name):
+    def item_project(self):
         """Get project item from from dropdown list."""
-        selector = (
-            './/ul[contains(@class, "dropdown-menu")]/li//span[contains('
-            '@class, "dropdown-title") and contains(., "{}")]'.format(name))
-        item = ui.UI(By.XPATH, selector)
-        item.container = self
-        return item
+        return self.webelement.find_elements_by_xpath(
+            '//ul[@class="dropdown-menu"]//li')[2]
 
 
 class Spinner(ui.UI):
