@@ -36,7 +36,7 @@ class ApiAccessSteps(base.BaseSteps):
 
     @steps_checker.step
     def download_rc_v2(self, check=True):
-        """Step to download v2 file."""
+        """Step to download RCv2 file."""
         self._remove_rc_file()
 
         page_api_access = self._page_api_access()
@@ -44,25 +44,11 @@ class ApiAccessSteps(base.BaseSteps):
 
         if check:
             self._wait_rc_file_downloaded()
-            content = open(self._rc_path).read()
-
-            assert_that(
-                content,
-                contains_string('OS_AUTH_URL={}'.format(self._auth_url)))
-            assert_that(
-                content,
-                contains_string('OS_USERNAME="{}"'.format(self._username)))
-            assert_that(
-                content,
-                contains_string(
-                    'OS_TENANT_NAME="{}"'.format(self._project_name)))
-            assert_that(
-                content,
-                contains_string('OS_TENANT_ID={}'.format(self._project_id)))
+            self._check_rc_file()
 
     @steps_checker.step
     def download_rc_v3(self, check=True):
-        """Step to download v3 file."""
+        """Step to download RCv3 file."""
         self._remove_rc_file()
 
         page_api_access = self._page_api_access()
@@ -70,26 +56,14 @@ class ApiAccessSteps(base.BaseSteps):
 
         if check:
             self._wait_rc_file_downloaded()
-            content = open(self._rc_path).read()
+            self._check_rc_file(version=3)
 
-            _v3_url = self._auth_url.split('/v')[0] + '/v3'  # FIXME(schipiga)
-            assert_that(
-                content, contains_string('OS_AUTH_URL={}'.format(_v3_url)))
-            assert_that(
-                content,
-                contains_string('OS_USERNAME="{}"'.format(self._username)))
-            assert_that(
-                content,
-                contains_string(
-                    'OS_PROJECT_NAME="{}"'.format(self._project_name)))
-            assert_that(
-                content,
-                contains_string('OS_PROJECT_ID={}'.format(self._project_id)))
 
     @steps_checker.step
     def download_rc_v3_via_menu(self, check=True):
-        """Step to download v3 file via menu."""
+        """Step to download RCv3 file via menu."""
         self._remove_rc_file()
+        self._page_api_access()
 
         with self.app.page_base.dropdown_menu_account as menu:
             menu.click()
@@ -97,21 +71,21 @@ class ApiAccessSteps(base.BaseSteps):
 
         if check:
             self._wait_rc_file_downloaded()
-            content = open(self._rc_path).read()
-            self._page_api_access()
-            _v3_url = self._auth_url.split('/v')[0] + '/v3'
-            assert_that(
-                content, contains_string('OS_AUTH_URL={}'.format(_v3_url)))
-            assert_that(
-                content,
-                contains_string('OS_USERNAME="{}"'.format(self._username)))
-            assert_that(
-                content,
-                contains_string(
-                    'OS_PROJECT_NAME="{}"'.format(self._project_name)))
-            assert_that(
-                content,
-                contains_string('OS_PROJECT_ID={}'.format(self._project_id)))
+            self._check_rc_file(version=3)
+
+    @steps_checker.step
+    def download_rc_v2_via_menu(self, check=True):
+        """Step to download RCv2 file via menu."""
+        self._remove_rc_file()
+        self._page_api_access()
+
+        with self.app.page_base.dropdown_menu_account as menu:
+            menu.click()
+            menu.item_download_rcv2.click()
+
+        if check:
+            self._wait_rc_file_downloaded()
+            self._check_rc_file()
 
     @steps_checker.step
     def download_ec2(self, check=True):
@@ -139,6 +113,27 @@ class ApiAccessSteps(base.BaseSteps):
                 assert_that(form.field_auth_url.value,
                             equal_to(self._auth_url))
                 form.cancel()
+
+    def _check_rc_file(self, version=2):
+        content = open(self._rc_path).read()
+        if version == 2:
+            project = "TENANT"
+        else:
+            project = "PROJECT"
+
+        assert_that(
+            content,
+            contains_string('OS_AUTH_URL={}'.format(self._auth_url)))
+        assert_that(
+            content,
+            contains_string('OS_USERNAME="{}"'.format(self._username)))
+        assert_that(
+            content,
+            contains_string(
+                'OS_{}_NAME="{}"'.format(project, self._project_name)))
+        assert_that(
+            content,
+            contains_string('OS_{}_ID={}'.format(project, self._project_id)))
 
     @property
     def _rc_path(self):
@@ -173,8 +168,11 @@ class ApiAccessSteps(base.BaseSteps):
                 label_volume.value.split('/')[-1])
 
     @property
-    def _auth_url(self):
-        return self.app.page_api_access.label_identity.value
+    def _auth_url(self, version=2):
+        auth_url = self.app.page_api_access.label_identity.value
+        if version == 2:
+            return auth_url
+        return auth_url.split('/v')[0] + '/v3'
 
     def _wait_rc_file_downloaded(self):
 

@@ -29,7 +29,9 @@ from .form import Form
     item_exit=ui.UI(By.XPATH, "//a[@href='/auth/logout/']"),
     item_help=ui.Link(By.XPATH, "//a[@href='http://docs.openstack.org']"),
     item_download_rcv3=ui.UI(
-        By.XPATH, "//a[@href='/project/api_access/openrc/']"))
+        By.XPATH, "//a[@href='/project/api_access/openrc/']"),
+    item_download_rcv2=ui.UI(
+        By.XPATH, "//a[@href='/project/api_access/openrcv2/']"))
 class DropdownMenuAccount(ui.Block):
     """Dropdown menu for account settings."""
 
