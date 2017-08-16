@@ -89,17 +89,10 @@ class TestUserOnly(object):
 
     @pytest.mark.idempotent_id('81869139-da99-4595-9bee-55862112ae1b')
     def test_not_create_shared_network(self, networks_steps_ui):
-        """**Scenario:** Verify that demo can not create shared network.
+        """**Scenario:** Verify that user can not create shared network.
 
         **Steps:**
 
-        #. Try to create shared network as user using UI
-        #. Check that network status is not shared
-
-        **Teardown:**
-
-        #. Delete network using API
+        #. Check that user can't make network shared
         """
-        network_name = networks_steps_ui.create_network(shared=True)
-        networks_steps_ui.check_network_share_status(network_name,
-                                                     is_shared=False)
+        networks_steps_ui.user_try_to_create_shared_network()
