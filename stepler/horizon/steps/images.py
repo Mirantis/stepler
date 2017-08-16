@@ -34,7 +34,11 @@ class ImagesSteps(base.BaseSteps):
 
     def _page_images(self):
         """Open images page if it isn't opened."""
-        return self._open(self.app.page_images)
+        menu = self.app.page_base.dropdown_menu_project
+        if 'admin' in menu.label_project.value:
+            return self._open(self.app.page_images)
+        else:
+            return self._open(self.app.page_user_images)
 
     @steps_checker.step
     def create_image(self,

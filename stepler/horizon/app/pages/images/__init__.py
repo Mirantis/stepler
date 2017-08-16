@@ -19,3 +19,4 @@ Image pages
 
 from .page_image import PageImage  # noqa
 from .page_images import PageImages  # noqa
+from .page_user_images import PageUserImages  # noqa

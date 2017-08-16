@@ -23,7 +23,7 @@ from .containers import PageContainers
 from .defaults import PageDefaults
 from .flavors import PageFlavors
 from .host_aggregates import PageHostAggregates
-from .images import PageImage, PageImages  # noqa
+from .images import PageImage, PageImages, PageUserImages  # noqa
 from .instances import (PageInstance,
                         PageInstances,
                         PageAdminInstances)  # noqa
@@ -75,6 +75,7 @@ pages = [
     PageSecurityGroups,
     PageSettings,
     PageUsers,
+    PageUserImages,
     PageVolume,
     PageVolumes,
     PageVolumeTransfer,
