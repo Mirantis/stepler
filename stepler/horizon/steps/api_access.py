@@ -58,7 +58,6 @@ class ApiAccessSteps(base.BaseSteps):
             self._wait_rc_file_downloaded()
             self._check_rc_file(version=3)
 
-
     @steps_checker.step
     def download_rc_v3_via_menu(self, check=True):
         """Step to download RCv3 file via menu."""
