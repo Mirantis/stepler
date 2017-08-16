@@ -506,10 +506,10 @@ class InstancesSteps(base.BaseSteps):
         page_instances.button_filter_instances.click()
 
         def check_rows():
+            is_present = False
             for row in page_instances.table_instances.rows:
                 if not (row.is_present and
                         instance_name in row.link_instance.value):
-                    is_present = False
                     break
                 is_present = True
 
