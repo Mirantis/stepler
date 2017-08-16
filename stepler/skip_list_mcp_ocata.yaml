@@ -63,3 +63,21 @@ d923893c-5fe0-11e7-bfb3-5404a69126b9:
 # Cinder Volumes
 f0c407a3-7aa1-400c-9a9f-6c69870e3fb9:
   reason: Migration on one node is not possible
+
+# Object Storage
+e2804b4e-743e-4632-9c63-34066491a418:
+  reason: Swift Object Storage is not supported
+31502fae-2fbb-4d69-9699-22ddb6983503:
+  reason: Swift Object Storage is not supported
+fde52ec8-1e68-4c9d-86d3-6dbc5d915c85:
+  reason: Swift Object Storage is not supported
+99c09de0-a6c6-4dad-b216-f758841b0598:
+  reason: Swift Object Storage is not supported
+27f9647e-a7be-454b-95c5-fe1aa84d665d:
+  reason: Swift Object Storage is not supported
+8c627f7b-c2c9-4421-91e9-d90bc47346c3:
+  reason: Swift Object Storage is not supported
+762249c5-ae19-4480-9295-b51501c0c817:
+  reason: Swift Object Storage is not supported
+6031f347-8a36-4939-b2b8-f01957511d3c:
+  reason: Swift Object Storage is not supported
