@@ -59,6 +59,12 @@ abb97b8e-6539-413a-b3b0-7e770eeb83e2:
   reason: Volume backups are not implemented
 d923893c-5fe0-11e7-bfb3-5404a69126b9:
   reason: Volume backups are not implemented
+03e63f1b-38e4-48df-a30b-19f796f6ded0:
+  reason: Volume backups are not implemented
+8d7b0a61-5f94-4fb9-8508-5b00680dc292:
+  reason: Volume backups are not implemented
+87dbe58f-2160-4c9e-833d-d5790d7a9206:
+  reason: Volume backups are not implemented
 
 # Cinder Volumes
 f0c407a3-7aa1-400c-9a9f-6c69870e3fb9:
