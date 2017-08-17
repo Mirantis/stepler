@@ -74,7 +74,8 @@ def container(create_container_ui):
     """Fixture to create container with default options before test.
 
     Args:
-        create_container(fucntion): function to create container with options
+        create_container_ui (function): function to create container
+        with options
 
     Returns:
         AttrDict: dict with container name

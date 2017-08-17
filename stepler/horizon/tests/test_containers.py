@@ -73,7 +73,7 @@ class TestAnyOne(object):
             folder_name = next(utils.generate_ids('folder'))
             containers_steps_ui.create_folder(folder_name)
 
-            containers_steps_ui.check_folder_avaiable_by_public_url(
+            containers_steps_ui.check_folder_available_by_public_url(
                 folder_name, container_info['public_url'])
 
             containers_steps_ui.delete_folder(folder_name)

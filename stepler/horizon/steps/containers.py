@@ -181,7 +181,7 @@ class ContainersSteps(base.BaseSteps):
                 name=file_name).wait_for_absence()
 
     @steps_checker.step
-    def check_folder_avaiable_by_public_url(self, folder_name, public_url):
+    def check_folder_available_by_public_url(self, folder_name, public_url):
         """Step to check that folder is available by public URL."""
         assert_that(requests.get(public_url).text,
                     contains_string(folder_name))
