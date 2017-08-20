@@ -169,7 +169,7 @@ class DropdownMenu(_ui.DropdownMenu):
 class RowInstance(_ui.Row):
     """Row with instance."""
 
-    transit_statuses = ('Build', 'Resize/Migrate')
+    transit_statuses = ('Active', 'Build', 'Resize/Migrate')
 
 
 class TableInstances(_ui.Table):
@@ -218,7 +218,7 @@ class FormCreateInstanceSnapshot(_ui.Form):
 
 
 @ui.register_ui(
-    item_flavor=ui.ComboBox(By.NAME, 'flavor'))
+    item_flavor=_ui.combobox_by_label("New Flavor"))
 class FormResizeInstance(_ui.Form):
     """Form to resize of instance."""
 

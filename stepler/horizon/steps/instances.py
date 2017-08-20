@@ -396,6 +396,7 @@ class InstancesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_resize.click()
         with page_instances.form_resize_instance as form:
+            form.wait_for_presence()
             form.item_flavor.value = flavor
             form.submit()
 
