@@ -122,29 +122,6 @@ class TestAnyOne(object):
         """
         volumes_steps_ui.view_volume(volume.name)
 
-    @pytest.mark.idempotent_id('b3db692c-a132-4450-ba3b-6ab6c66c3846',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('5329c92e-fc4b-4765-a608-cc659fabbb29',
-                               any_one='user')
-    def test_change_volume_type(self, volume, volume_type, volumes_steps_ui):
-        """**Scenario:** Verify that user can change volume type.
-
-        **Setup:**
-
-        #. Create volume using API
-        #. Create volume type using API
-
-        **Steps:**
-
-        #. Change volume type using UI
-
-        **Teardown:**
-
-        #. Delete volume using API
-        #. Delete volume type using API
-        """
-        volumes_steps_ui.change_volume_type(volume.name, volume_type.name)
-
     @pytest.mark.idempotent_id('65272c3b-c2ea-42e6-91ac-f1daa43fdbfc',
                                any_one='admin')
     @pytest.mark.idempotent_id('a4ab8682-eed6-4d00-8975-4289e2aac4d3',
@@ -447,3 +424,23 @@ class TestAdminOnly(object):
         """
         volumes_steps_ui.create_backup(volume.name)
         containers_steps_ui.check_container_name_volume_backups()
+
+    @pytest.mark.idempotent_id('b3db692c-a132-4450-ba3b-6ab6c66c3846')
+    def test_change_volume_type(self, volume_type, volume, volumes_steps_ui):
+        """**Scenario:** Verify that user can change volume type.
+
+        **Setup:**
+
+        #. Create volume using API
+        #. Create volume type using API
+
+        **Steps:**
+
+        #. Change volume type using UI
+
+        **Teardown:**
+
+        #. Delete volume using API
+        #. Delete volume type using API
+        """
+        volumes_steps_ui.change_volume_type(volume.name, volume_type.name)
