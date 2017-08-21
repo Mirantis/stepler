@@ -349,6 +349,13 @@ class ImagesSteps(base.BaseSteps):
             with form.tab_details as tab:
                 tab.field_name.value = instance_name
 
+            form.item_source.click()
+            with form.tab_source as tab:
+                tab.combobox_boot_source.value = 'Image'
+                tab.radio_volume_create.value = 'No'
+                tab.table_available_sources.row(
+                    name=config.HORIZON_TEST_IMAGE_CIRROS).button_add.click()
+
             form.item_flavor.click()
             with form.tab_flavor as tab:
                 tab.table_available_flavors.row(
