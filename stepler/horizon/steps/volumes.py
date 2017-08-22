@@ -370,7 +370,7 @@ class VolumesSteps(base.BaseSteps):
                 name=volume_name,
                 status='awaiting-transfer').wait_for_presence()
 
-        return transfer_id, transfer_key
+            return transfer_id, transfer_key
 
     @steps_checker.step
     def accept_transfer(self, transfer_id, transfer_key, volume_name,
