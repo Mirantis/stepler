@@ -446,8 +446,8 @@ class TestAdminOnly(object):
         **Steps:**
 
         #. Set quotas to be able to run 50 servers
-        #. Launch 20 servers at the same time
-        #. Delete 20 servers as bunch
+        #. Launch 5 servers at the same time
+        #. Delete 5 servers as bunch
 
         **Teardown:**
 
@@ -455,7 +455,7 @@ class TestAdminOnly(object):
         """
         update_defaults({'instances': 50})
         instance_names = instances_steps_ui.create_instance(
-            network_name=config.INTERNAL_NETWORK_NAME, count=20)
+            network_name=config.INTERNAL_NETWORK_NAME, count=5)
         instances_steps_ui.delete_instances(instance_names)
 
     @pytest.mark.idempotent_id('cb6d2044-5b37-11e7-bfb3-5404a69126b9')
