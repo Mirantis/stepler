@@ -85,9 +85,6 @@ def test_accept_volume_transfer(volume,
     #. Accept volume transfer from another user/project
     #. Check that volume is available under newly created project
     #. Check that transfer is not available after accept
-
-    **Teardown:**
-
     #. Delete cinder volume
     """
     transfer_name = next(utils.generate_ids('transfer'))
@@ -102,3 +99,4 @@ def test_accept_volume_transfer(volume,
     user_volume_steps.check_volume_presence(
         volume, timeout=config.VOLUME_DELETE_TIMEOUT)
     transfer_steps.check_volume_transfer_presence(transfer, must_present=False)
+    volume_steps.delete_volumes([volume])
