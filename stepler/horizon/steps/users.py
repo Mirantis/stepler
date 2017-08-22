@@ -17,8 +17,6 @@ Users steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-
 from hamcrest import assert_that, equal_to  # noqa H301
 
 from stepler.horizon.steps import base
@@ -110,7 +108,6 @@ class UsersSteps(base.BaseSteps):
 
         page_users.field_filter_users.value = query
         page_users.button_filter_users.click()
-        time.sleep(1)
 
         if check:
 
@@ -134,7 +131,6 @@ class UsersSteps(base.BaseSteps):
             table.header.cell('name').click()
             if reverse:
                 table.header.cell('name').click()
-            time.sleep(1)
 
             if check:
 

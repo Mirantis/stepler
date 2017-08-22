@@ -293,6 +293,7 @@ class ImagesSteps(base.BaseSteps):
                 form.button_group_protected.value = "Yes"
             else:
                 form.button_group_protected.value = "No"
+            sleep(1)
 
             form.submit()
 
@@ -553,8 +554,8 @@ class ImagesSteps(base.BaseSteps):
             image_name (str): image name
         """
         main_page = self._page_images()
+        main_page.table_images.row(name=image_name).wait_for_presence()
         link_to_click = main_page.table_images.row(name=image_name).webdriver
-        sleep(10)
         link_to_click.find_element_by_partial_link_text(image_name).send_keys(
             Keys.CONTROL + Keys.RETURN)
 

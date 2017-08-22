@@ -17,8 +17,6 @@ Projects steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-
 from hamcrest import assert_that, equal_to  # noqa H301
 
 from stepler.horizon.steps import base
@@ -76,7 +74,6 @@ class ProjectsSteps(base.BaseSteps):
 
         page_projects.field_filter_projects.value = query
         page_projects.button_filter_projects.click()
-        time.sleep(1)
 
         if check:
 
@@ -86,7 +83,7 @@ class ProjectsSteps(base.BaseSteps):
                             query in row.link_project.value):
                         is_present = False
                         break
-                is_present = True
+                    is_present = True
 
                 return waiter.expect_that(is_present, equal_to(True))
 

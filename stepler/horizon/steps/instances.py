@@ -17,8 +17,6 @@ Instances steps
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-
 from hamcrest import (assert_that, contains_string, contains_inanyorder,
                       equal_to, greater_than, has_length, is_in, is_not)  # noqa
 
@@ -595,10 +593,11 @@ class InstancesSteps(base.BaseSteps):
                 name=instance_name).dropdown_menu as menu:
                 menu.button_toggle.click()
                 menu.item_suspend.click()
-                time.sleep(5)
-        status = [element.text for element in
-                  page_instances.table_instances.value()]
-        assert_that('Suspended', equal_to(status[1]))
+
+        with page_instances.table_instances.row(
+                name=instance_name) as row:
+                row.transit_statuses += ('Active',)
+                row.wait_for_status('Suspended')
 
     @steps_checker.step
     def check_instance_pause(self, instance_name):
@@ -608,7 +607,8 @@ class InstancesSteps(base.BaseSteps):
                 name=instance_name).dropdown_menu as menu:
                 menu.button_toggle.click()
                 menu.item_pause.click()
-                time.sleep(5)
-        status = [element.text for element in
-                  page_instances.table_instances.value()]
-        assert_that('Paused', equal_to(status[1]))
+
+        with page_instances.table_instances.row(
+                name=instance_name) as row:
+                row.transit_statuses += ('Active',)
+                row.wait_for_status('Paused')
