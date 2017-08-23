@@ -340,7 +340,7 @@ class TestAdminOnly(object):
 
     @pytest.mark.idempotent_id('32b295cd-fbd0-44c1-b7b9-175f5ad7434c')
     def test_transfer_volume(self, volume, auth_steps, volumes_steps_ui):
-        """**Scenario:** Verify that volume can be transfered between users.
+        """**Scenario:** Verify that volume can be transferred between users.
 
         **Setup:**
 

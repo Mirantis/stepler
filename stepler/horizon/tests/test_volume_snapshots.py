@@ -76,7 +76,7 @@ class TestAnyOne(object):
                                any_one='user')
     def test_create_volume_snapshot_with_long_name(self, volume,
                                                    volumes_steps_ui):
-        """**Scenario:** Create volume snapshot with name lenght > 255.
+        """**Scenario:** Create volume snapshot with name length > 255.
 
         **Setup:**
 
@@ -126,7 +126,7 @@ class TestAnyOne(object):
                                any_one='user')
     def test_create_volume_snapshot_with_max_length_description(
             self, volume, volumes_steps_ui):
-        """**Scenario:** Create volume snapshot with description lenght == max.
+        """**Scenario:** Create volume snapshot with description length == max.
 
         **Setup:**
 

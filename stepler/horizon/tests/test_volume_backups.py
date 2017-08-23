@@ -109,7 +109,7 @@ class TestAnyOne(object):
                                any_one='user')
     def test_volume_backup_form_max_name_length(self, volume,
                                                 volumes_steps_ui):
-        """**Scenario:** Create volume backup with name lenght > 255.
+        """**Scenario:** Create volume backup with name length > 255.
 
         **Setup:**
 
@@ -158,7 +158,7 @@ class TestAnyOne(object):
                                any_one='user')
     def test_create_volume_backup_with_max_length_description(
             self, volume, volumes_steps_ui):
-        """**Scenario:** Create volume backup with description lenght == max.
+        """**Scenario:** Create volume backup with description length == max.
 
         **Setup:**
 
