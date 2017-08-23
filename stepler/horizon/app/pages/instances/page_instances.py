@@ -169,7 +169,7 @@ class DropdownMenu(_ui.DropdownMenu):
 class RowInstance(_ui.Row):
     """Row with instance."""
 
-    transit_statuses = ('Active', 'Build', 'Resize/Migrate')
+    transit_statuses = ('Build', 'Resize/Migrate')
 
 
 class TableInstances(_ui.Table):
