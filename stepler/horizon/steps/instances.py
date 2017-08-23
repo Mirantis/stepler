@@ -50,7 +50,7 @@ class InstancesSteps(base.BaseSteps):
 
     @steps_checker.step
     def create_instance(self, instance_name=None,
-                        network_name='admin_internal_net',
+                        network_name='internal_net',
                         count=1,
                         check=True):
         """Step to create instance."""
