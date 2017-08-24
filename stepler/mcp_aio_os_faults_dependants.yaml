@@ -17,3 +17,13 @@ c30299b4-4f60-4078-962e-5a29c35084ec:
   reason: os_faults is required
 85adec8d-bf7c-41a7-ba0f-818d39410cfe:
   reason: os_faults is required
+
+# Keystone
+76f823ac-5c8b-4617-a4cc-9e30257a679f:
+  reason: os_faults is required
+1304cc00-4797-48ee-9b36-fa2997ba96d6:
+  reason: os_faults is required
+993d7997-43c9-4fa0-9bb2-82e138022574:
+  reason: os_faults is required
+2c48707f-863b-4849-8b3f-f39643abf23c:
+  reason: os_faults is required
