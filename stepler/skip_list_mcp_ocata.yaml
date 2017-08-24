@@ -31,6 +31,8 @@ ba603c26-4f0c-4838-b5d8-110249e43484:
 # Glance API
 c30299b4-4f60-4078-962e-5a29c35084ec:
   reason: Glance API v1 is disabled
+1b1a0953-a772-4cfe-a7da-2f6de950eede:
+  reason: Glance API v1 is disabled
 
 # Volume backups
 7f43197f-ba2c-4962-a07a-43cbf77a779b:
