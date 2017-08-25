@@ -113,3 +113,7 @@ d2dde79c-b4fa-40e0-ad6b-8b88f4abb365:
   reason: Object Storage with Ceph and RadosGW is not included into release
 7b992ce6-12ce-458c-b45f-5a93ea908486:
   reason: Object Storage with Ceph and RadosGW is not included into release
+
+# Glance
+46e8a669-1204-4427-a2e3-bbe21a87333d:
+  reason: Swift Object Storage is not supported
