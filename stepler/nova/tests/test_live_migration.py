@@ -84,7 +84,8 @@ def test_network_connectivity_to_vm_after_live_migration(
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_server_migration_with_cpu_workload(live_migration_server,
                                             floating_ip, server_steps,
                                             block_migration):
@@ -141,7 +142,8 @@ def test_server_migration_with_cpu_workload(live_migration_server,
     ],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_server_migration_with_memory_workload(live_migration_server,
                                                floating_ip, server_steps,
                                                block_migration):
@@ -197,7 +199,8 @@ def test_server_migration_with_memory_workload(live_migration_server,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_server_migration_with_disk_workload(live_migration_server,
                                              floating_ip, server_steps,
                                              block_migration):
@@ -253,7 +256,8 @@ def test_server_migration_with_disk_workload(live_migration_server,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_server'])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_server_migration_with_network_workload(
         live_migration_server, security_group, floating_ip,
         neutron_security_group_rule_steps, server_steps, generate_traffic,

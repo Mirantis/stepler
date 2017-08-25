@@ -40,7 +40,8 @@ pytestmark = [
     ],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_servers'])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_migration_with_memory_workload(live_migration_servers,
                                         server_steps,
                                         block_migration):
@@ -93,7 +94,8 @@ def test_migration_with_memory_workload(live_migration_servers,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_servers'])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_migration_with_cpu_workload(live_migration_servers,
                                      server_steps,
                                      block_migration):
@@ -137,7 +139,8 @@ def test_migration_with_cpu_workload(live_migration_servers,
 
 @pytest.mark.idempotent_id('77dcf03f-20d3-4d71-96f5-8fb1343f906a')
 @pytest.mark.parametrize('block_migration', [True])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_migration_with_disk_workload(live_migration_servers,
                                       server_steps,
                                       block_migration):
@@ -190,7 +193,8 @@ def test_migration_with_disk_workload(live_migration_servers,
         ({'boot_from_volume': True}, False)],
     ids=['boot_from_image', 'boot_from_volume'],
     indirect=['live_migration_servers'])
-@pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_migration_with_network_workload(
         live_migration_servers,
         security_group,

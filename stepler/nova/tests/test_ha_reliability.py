@@ -24,8 +24,8 @@ from stepler import config
 from stepler.third_party.supported_platforms import platform
 from stepler.third_party import utils
 
-
-pytestmark = pytest.mark.destructive
+# TODO(akholin): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.destructive
 
 
 @platform.mcp

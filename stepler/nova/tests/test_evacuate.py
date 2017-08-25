@@ -21,8 +21,9 @@ import pytest
 from stepler import config
 
 
-pytestmark = [pytest.mark.requires("computes_count >= 2"),
-              pytest.mark.destructive]
+pytestmark = pytest.mark.requires("computes_count >= 2")
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.destructive
 
 
 @pytest.mark.idempotent_id('7c22590a-bde4-4137-9cc3-47de74d1ac1f',
