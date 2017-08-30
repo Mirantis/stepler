@@ -399,9 +399,13 @@ class InstancesSteps(base.BaseSteps):
             form.submit()
 
         with page_instances.table_instances.row(name=instance_name) as row:
-            row.wait_for_status(
-                'Confirm or Revert Resize/Migrate',
-                timeout=config.VERIFY_RESIZE_TIMEOUT)
+
+            def _poll_instance_status():
+                return row.cell('status').value == config.CONFIM_RESIZE_STATUS
+
+        waiter.wait(lambda: _poll_instance_status(),
+                    timeout_seconds=config.VERIFY_RESIZE_TIMEOUT,
+                    sleep_seconds=config.VERIFY_RESIZE_SLEEP) is True
         page_instances.table_instances.row(
             name=instance_name).dropdown_menu.item_default.click()
 
