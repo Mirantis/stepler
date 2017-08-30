@@ -21,7 +21,8 @@ import pytest
 
 from stepler import config
 
-pytestmark = pytest.mark.destructive
+# TODO(aminasyan): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.destructive
 
 
 @pytest.mark.requires("computes_count >= 2")

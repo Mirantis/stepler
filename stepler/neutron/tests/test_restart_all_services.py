@@ -21,7 +21,8 @@ import pytest
 from stepler import config
 from stepler.third_party import utils
 
-pytestmark = pytest.mark.destructive
+# TODO(aminasyan): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.destructive
 
 
 @pytest.mark.idempotent_id('ef846e7b-b96c-43ae-87f8-73d542821909')

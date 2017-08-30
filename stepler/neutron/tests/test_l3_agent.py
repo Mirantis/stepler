@@ -24,9 +24,10 @@ import pytest
 from stepler import config
 
 
-pytestmark = [pytest.mark.requires("not dvr and not l3_ha",
-                                   "computes_count >= 2"),
-              pytest.mark.destructive]
+pytestmark = pytest.mark.requires("not dvr and not l3_ha",
+                                  "computes_count >= 2")
+# TODO(aminasyan): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.destructive
 
 
 @pytest.mark.requires("l3_agent_nodes_count >= 3")

@@ -23,7 +23,8 @@ import pytest
 from stepler import config
 from stepler.third_party import utils
 
-pytestmark = pytest.mark.requires('dvr')
+# TODO(aminasyan): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.requires('dvr')
 
 
 @pytest.mark.requires("computes_count >= 2")

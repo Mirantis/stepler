@@ -23,10 +23,9 @@ import pytest
 from stepler import config
 from stepler.third_party import utils
 
-pytestmark = [
-    pytest.mark.destructive,
-    pytest.mark.requires("l3_ha", "l3_agent_nodes_count >= 3")
-]
+pytestmark = pytest.mark.requires("l3_ha", "l3_agent_nodes_count >= 3")
+# TODO(aminasyan): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.destructive
 
 
 @pytest.mark.requires("computes_count >= 2")
