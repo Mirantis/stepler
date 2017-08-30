@@ -63,7 +63,7 @@ class Modal(ui.Block):
         By.XPATH, '//span[@class="user-name"]'),
     dropdown_menu_project=DropdownMenuProject(
         By.XPATH, '//li[@class="dropdown"]/a'),
-    form_confirm=Form(By.CSS_SELECTOR, 'div.modal-content > div.modal-footer'),
+    form_confirm=Form(By.XPATH, '//div[@class="modal-footer"]'),
     modal=Modal(By.CLASS_NAME, 'modal_backdrop'),
     spinner=Spinner(By.CLASS_NAME, 'spinner'))
 class InitiatedUI(ui.Container):
