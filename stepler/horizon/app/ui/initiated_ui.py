@@ -60,7 +60,7 @@ class Modal(ui.Block):
 
 @ui.register_ui(
     dropdown_menu_account=DropdownMenuAccount(
-        By.CSS_SELECTOR, 'ul.navbar-nav.navbar-right > li.dropdown.user-menu'),
+        By.XPATH, '//span[@class="user-name"]'),
     dropdown_menu_project=DropdownMenuProject(
         By.XPATH, '//li[@class="dropdown"]/a'),
     form_confirm=Form(By.CSS_SELECTOR, 'div.modal-content > div.modal-footer'),
