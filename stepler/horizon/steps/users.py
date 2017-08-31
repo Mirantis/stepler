@@ -112,12 +112,12 @@ class UsersSteps(base.BaseSteps):
         if check:
 
             def check_rows():
+                is_present = False
                 for row in page_users.table_users.rows:
                     if not (row.is_present and
                             query in row.cell('name').value):
-                        is_present = False
                         break
-                is_present = True
+                    is_present = True
 
                 return waiter.expect_that(is_present, equal_to(True))
 
