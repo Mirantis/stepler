@@ -19,6 +19,7 @@ Users steps
 
 from hamcrest import assert_that, equal_to  # noqa H301
 
+from stepler import config
 from stepler.horizon.steps import base
 from stepler.third_party import steps_checker
 from stepler.third_party import waiter
@@ -121,7 +122,7 @@ class UsersSteps(base.BaseSteps):
 
                 return waiter.expect_that(is_present, equal_to(True))
 
-            waiter.wait(check_rows, timeout_seconds=10, sleep_seconds=0.1)
+            waiter.wait(check_rows, timeout_seconds=config.UI_TIMEOUT)
 
     @steps_checker.step
     def sort_users(self, reverse=False, check=True):
@@ -144,7 +145,7 @@ class UsersSteps(base.BaseSteps):
                     return waiter.expect_that(usernames,
                                               equal_to(expected_usernames))
 
-                waiter.wait(check_sort, timeout_seconds=10, sleep_seconds=0.1)
+                waiter.wait(check_sort, timeout_seconds=config.UI_TIMEOUT)
 
     @steps_checker.step
     def toggle_user(self, username, enable, check=True):
