@@ -25,8 +25,6 @@ import uuid
 
 from six.moves.urllib.parse import urlparse
 
-import stepler.hacking  # noqa F401
-
 from stepler.third_party.utils import generate_ids
 
 BASE_PREFIX = os.environ.get('BASE_PREFIX', 'stepler')
