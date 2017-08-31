@@ -140,7 +140,7 @@ def horizon_autouse(logger,
                     video_capture,
                     admin_project_resources,
                     user_project_resources):
-    """Function fixture to aggreate and execute other fixtures.
+    """Function fixture to aggregate and execute other fixtures.
 
     It is used as one entry point for fixtures, which would like to be
     executed as autouse.

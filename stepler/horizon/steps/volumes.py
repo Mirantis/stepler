@@ -533,7 +533,7 @@ class VolumesSteps(base.BaseSteps):
 
     @steps_checker.step
     def create_volume_from_snapshot(self, snapshot_name, check=True):
-        """Step to create volume from spanshot."""
+        """Step to create volume from snapshot."""
         tab_snapshots = self._tab_snapshots()
 
         with tab_snapshots.table_snapshots.row(
