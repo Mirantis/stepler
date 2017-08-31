@@ -119,3 +119,7 @@ d2dde79c-b4fa-40e0-ad6b-8b88f4abb365:
 # Glance
 46e8a669-1204-4427-a2e3-bbe21a87333d:
   reason: Swift Object Storage is not supported
+
+# Heat
+cff710ec-1df2-4fe3-990f-4c4684b89550:
+  reason: Glance API v1 is disabled
