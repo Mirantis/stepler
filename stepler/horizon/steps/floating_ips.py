@@ -48,7 +48,7 @@ class FloatingIPsSteps(base.BaseSteps):
 
             assert_that(len(allocated_ip), equal_to(1))
 
-        return allocated_ip.pop()
+            return allocated_ip.pop()
 
     @steps_checker.step
     def release_floating_ip(self, ip, check=True):
