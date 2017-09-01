@@ -78,10 +78,10 @@ class ProjectsSteps(base.BaseSteps):
         if check:
 
             def check_rows():
+                is_present = False
                 for row in page_projects.table_projects.rows:
                     if not (row.is_present and
                             query in row.link_project.value):
-                        is_present = False
                         break
                     is_present = True
 
