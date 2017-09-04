@@ -133,3 +133,13 @@ f715705b-bfe6-4ea6-971f-27833168f53e:
 # Heat
 cff710ec-1df2-4fe3-990f-4c4684b89550:
   reason: Glance API v1 is disabled
+
+# Ironic
+4bd3e2ac-be73-423e-8026-39a151592076:
+  reason: Ironic is not supported
+efdc39ca-27c3-49c1-9f76-1196d02bd3fe:
+  reason: Ironic is not supported
+dbec9c3f-fa7d-4823-8b6f-b3f54f1235ad:
+  reason: Ironic is not supported
+2d93c9c6-7f23-485d-a36b-41924ae0e393:
+  reason: Ironic is not supported
