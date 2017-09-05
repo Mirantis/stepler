@@ -71,7 +71,6 @@ class ImagesSteps(base.BaseSteps):
 
         if image_url:
             image_file = utils.get_file_path(image_url)
-            image_url = None
 
         with page_images.form_create_image as form:
             form.field_name.value = image_name
