@@ -244,14 +244,14 @@ def test_north_south_connectivity_after_ban_clear_l3_on_compute(
 
 @pytest.mark.idempotent_id('1c803f4b-a47c-44c2-b321-5d53919390cb4')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_north_south_connectivity_after_primary_controller_reset(
         net_subnet_router,
         server,
         get_ssh_proxy_cmd,
         agent_steps,
         os_faults_steps,
-        router_steps,
         server_steps):
     """**Scenario:** Check North-South after reset primary controller.
 
@@ -389,7 +389,8 @@ def test_reschedule_router_from_snat_controller(
             timeout=config.PING_CALL_TIMEOUT)
 
 
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 @pytest.mark.idempotent_id('4dda8b1f-bbad-46d5-8dfa-2dbdc7a526b3')
 @pytest.mark.requires("l3_agent_nodes_with_snat_count >= 2")
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
@@ -451,7 +452,8 @@ def test_shutdown_controller_with_snat(
             timeout=config.PING_CALL_TIMEOUT)
 
 
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 @pytest.mark.idempotent_id('08192558-e632-410f-bded-9d124dcce52c')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_north_south_connectivity_after_reset_compute(
@@ -568,7 +570,8 @@ def test_east_west_connectivity_after_ban_clear_l3_on_compute(
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 @pytest.mark.requires("computes_count >=2")
 @pytest.mark.idempotent_id('c3c5d5ef-00b9-4054-8ac0-3605abfa7d23')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
@@ -644,7 +647,8 @@ def test_east_west_connectivity_after_reset_computes(
             timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 @pytest.mark.requires("computes_count >=2 and controllers_count >=2")
 @pytest.mark.idempotent_id('99f40662-2f62-4b75-bf82-52f3f0180558')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
@@ -836,7 +840,8 @@ def test_check_router_namespace_on_compute_node(
 
 
 @pytest.mark.requires("l3_agent_nodes_with_snat_count >= 2")
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 @pytest.mark.idempotent_id('0bfc9465-a29b-47b2-9c59-382fae7e086e', ban_count=1)
 @pytest.mark.idempotent_id('48bf701f-7bd9-474c-b19c-1192702be9b0', ban_count=2)
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
@@ -906,7 +911,8 @@ def test_check_ban_l3_agent_on_node_with_snat(
 
 
 @pytest.mark.requires("l3_agent_nodes_with_snat_count >= 2")
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 @pytest.mark.idempotent_id('4750b7b5-a4b9-4a15-9131-6f017315ee24',
                            agent_number=0)
 @pytest.mark.idempotent_id('1555fc92-0f06-4a64-a44f-78c7725c46b1',
@@ -1088,7 +1094,8 @@ def test_update_router_from_centralized_to_distributed(
             timeout=config.PING_CALL_TIMEOUT)
 
 
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 @pytest.mark.idempotent_id('4a9012bd-6fbb-43e2-b38c-c7825d03cd80')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
 def test_connectivity_after_ban_l3_agent_many_times(
@@ -1166,7 +1173,8 @@ def test_connectivity_after_ban_l3_agent_many_times(
 
 @pytest.mark.idempotent_id('802b2be3-70b2-460a-9ef1-1c7a8cb679c8')
 @pytest.mark.parametrize('router', [dict(distributed=True)], indirect=True)
-@pytest.mark.destructive
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# @pytest.mark.destructive
 def test_north_south_floating_ip_shut_down_br_ex_on_controllers(
         server,
         floating_ip,
