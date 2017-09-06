@@ -3,6 +3,44 @@ e3a64b34-fbc3-4b96-a123-78516b7b054c:
   reason: os_faults is required
 5c9b82f6-4a4e-4118-bf67-7a69718c61db:
   reason: os_faults is required
+71b0b170-10c4-4877-bab8-93d8284c3c01:
+  reason: os_faults is required
+54b0e3f6-1284-4ea8-a991-c8a6cd772f0e:
+  reason: os_faults is required
+453c8024-f801-4a2e-8d33-7ffe2d637fd3:
+  reason: os_faults is required
+c080b991-9704-455a-8085-0d4f368acc25:
+  reason: os_faults is required
+79d599b8-4b3c-4fc9-84bd-4b6353816d4d:
+  reason: os_faults is required
+a57d8603-b46a-45df-bd75-ef4b6caa433e:
+  reason: os_faults is required
+225d218b-6562-431d-bdf9-0ec0221c0f86:
+  reason: os_faults is required
+c64aa74b-990b-43df-8030-4657556e72ee:
+  reason: os_faults is required
+3b6eea01-cd4e-4a6c-bb68-a260650c6dae:
+  reason: os_faults is required
+07eb81c1-ca1f-4c65-93c4-f3378e62adfd:
+  reason: os_faults is required
+107affa2-fc40-4c7e-8b11-cc1940bd7259:
+  reason: os_faults is required
+98c66ba5-7932-45eb-86f9-9d76ae72851f:
+  reason: os_faults is required
+1237fdcd-abca-4976-aa44-d31fbb4e54c4:
+  reason: os_faults is required
+d6816d3b-0035-463e-9980-432df0d65cad:
+  reason: os_faults is required
+955c4976-ddc7-4d8d-b5c6-1c2bc991af39:
+  reason: os_faults is required
+815f7bf8-05e7-4556-ac46-8df267c91c75:
+  reason: os_faults is required
+ef21745a-6fdc-456b-8e2c-2533f24b5eae:
+  reason: os_faults is required
+0242150d-d187-46c0-94f8-36259989560d:
+  reason: os_faults is required
+c5ab08cf-6055-4940-9fff-f930bbcb1cbb:
+  reason: os_faults is required
 
 # Horizon
 e585242-9443-4e78-a7fe-3ee6097459bb:
@@ -16,6 +54,89 @@ c30299b4-4f60-4078-962e-5a29c35084ec:
 683bd20b-4adc-4a51-a855-f4950acd782f:
   reason: os_faults is required
 85adec8d-bf7c-41a7-ba0f-818d39410cfe:
+  reason: os_faults is required
+85461edd-7c82-4c27-ad19-d3af178818fe:
+  reason: os_faults is required
+62e9cf8b-ba28-4ac3-9965-abf758919714:
+  reason: os_faults is required
+6931aa9c-10df-4c5f-8837-a3090b6e1d57:
+  reason: os_faults is required
+26046211-6e00-41b0-ad7c-995340637063:
+  reason: os_faults is required
+b5948a9d-a0a2-40ca-9638-554020dcde80:
+  reason: os_faults is required
+928a6294-d172-4c7a-afc1-5e0fa772caf4:
+  reason: os_faults is required
+7d0916e7-9bc8-449c-a307-f29eedf6dba8:
+  reason: os_faults is required
+2aa49178-d626-466f-a074-0f6aadc86739:
+  reason: os_faults is required
+fb88e71a-1595-4b65-914e-eea200998b22:
+  reason: os_faults is required
+c3de7fdc-7453-4700-b692-461da142d4b4:
+  reason: os_faults is required
+54bdc370-45f6-4085-977c-07996fb81943:
+  reason: os_faults is required
+30537390-e1ba-47bc-aca0-db94a740f728:
+  reason: os_faults is required
+885ce1ec-ad7d-4401-b67d-14b5f2451674:
+  reason: os_faults is required
+3adc71e3-2362-4a95-aac6-93a14da65487:
+  reason: os_faults is required
+41594846-bf76-4132-9d80-3cb679b12516:
+  reason: os_faults is required
+e2393652-ae09-42ae-87fd-7b16adeaa6f7:
+  reason: os_faults is required
+9290e363-0607-45be-be0a-1e832da59b94:
+  reason: os_faults is required
+a4172d9b-38a1-4c18-9cc2-e9eddd514c7d:
+  reason: os_faults is required
+f0a11f9e-b54e-11e6-a750-67737169ac5d:
+  reason: os_faults is required
+f46f1db0-b54e-11e6-a5c0-3b21ec537c1f:
+  reason: os_faults is required
+e790bb42-b631-11e6-a72f-db6c1f65dd0f:
+  reason: os_faults is required
+e841a33a-b631-11e6-b970-4769909f93c3:
+  reason: os_faults is required
+886d07c2-3766-455a-a9ed-c07747a4992e:
+  reason: os_faults is required
+b7ab5fd4-925d-4695-b2f5-a39a34e1155e:
+  reason: os_faults is required
+cdac5f90-59f6-4d67-a123-0ad7886b84de:
+  reason: os_faults is required
+183093de-d619-4ad4-83c2-842ba3c69162:
+  reason: os_faults is required
+c2f62f44-bd37-11e6-8b37-77035d8240c7:
+
+# Heat
+61a7b0ac-2c80-44fb-b8dd-4894cd1da692:
+  reason: os_faults is required
+60d6d01b-5e52-42c5-951d-ff487ba14cd4:
+  reason: os_faults is required
+6108fc79-7173-4e4a-a061-97acb8432717:
+  reason: os_faults is required
+bf105cea-1ada-47b5-aae1-7a59cfa4617e:
+  reason: os_faults is required
+f115c4f1-5293-46bc-9b3f-736a2a19d5ab:
+  reason: os_faults is required
+9db8f266-106d-436f-ac8b-05ee58fab674:
+  reason: os_faults is required
+809fdf33-e528-40dd-9042-e619072e1ab4:
+  reason: os_faults is required
+37599b0d-0c2f-483e-98b9-4e6756476c51:
+  reason: os_faults is required
+40c2aa1c-4664-4ae0-88bf-f166a985f2d2:
+  reason: os_faults is required
+050e4422-5aa4-44da-b5f4-b69bde929037:
+  reason: os_faults is required
+8c897eeb-0916-4390-b2f5-a61551c35852:
+  reason: os_faults is required
+d77351ab-50da-4973-84e2-19e9bdc466c7:
+  reason: os_faults is required
+13031bc9-19e5-4ab9-8478-968f8fc925f2:
+  reason: os_faults is required
+78137331-a2c6-4c0d-8079-52840a9db1df:
   reason: os_faults is required
 
 # Keystone
@@ -32,6 +153,22 @@ c30299b4-4f60-4078-962e-5a29c35084ec:
 03c7bd50-0f78-4dd2-888f-a1e647f8c20e:
   reason: os_faults is required
 41815ab6-981b-4910-ae01-c9cab4fd9911:
+  reason: os_faults is required
+c6c11d30-f0b0-4574-b501-e111c3c631f1:
+  reason: os_faults is required
+baaaf7f5-b491-4a48-a287-8a637e112483:
+  reason: os_faults is required
+0c696d77-7c81-4c70-9589-651a11ea61b9:
+  reason: os_faults is required
+ba603c26-4f0c-4838-b5d8-110249e43484:
+  reason: os_faults is required
+b7ca17e5-aff3-4799-9e3f-c4f0595c20b5:
+  reason: os_faults is required
+
+# Openstack
+5109e66d-4e40-42bf-a829-ee3018bae44f:
+  reason: os_faults is required
+07aa946f-46a0-40f3-9cbc-5d11f35e7fc0:
   reason: os_faults is required
 
 # Neutron
@@ -60,6 +197,12 @@ af35d15d-b021-4f88-8055-963051b890e7:
 0ee4924a-e3cb-471f-9cb8-ca16b1ad6e0a:
   reason: os_faults is required
 48bf701f-7bd9-474c-b19c-1192702be9b0:
+  reason: os_faults is required
+3577df9a-5d1b-4cf5-b499-7cc907f2632e:
+  reason: os_faults is required
+d4d9b77e-0083-4032-884e-5fe2b7fd697f:
+  reason: os_faults is required
+da31c8bf-19d2-4283-a976-52c704c8621f:
   reason: os_faults is required
 4750b7b5-a4b9-4a15-9131-6f017315ee24:
   reason: os_faults is required
