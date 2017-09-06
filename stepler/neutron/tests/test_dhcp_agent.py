@@ -24,8 +24,9 @@ import pytest
 from stepler import config
 
 
-pytestmark = [pytest.mark.requires("computes_count >= 2"),
-              pytest.mark.destructive]
+pytestmark = pytest.mark.requires("computes_count >= 2")
+# TODO(akholkin): mark fails before skipping. doing todo not to lose the mark
+# pytestmark = pytest.mark.destructive
 
 
 @pytest.mark.requires("dhcp_agent_nodes_count >= 3")
