@@ -22,8 +22,9 @@ import pytest
 from stepler import config
 from stepler.third_party import utils
 
+pytestmark = pytest.mark.requires("vlan")
 
-@pytest.mark.requires("vlan")
+
 @pytest.mark.requires("cpu_pinning_computes_count >= 3")
 @pytest.mark.idempotent_id('e75b8e86-de24-4aa4-8341-ada01870e3ad')
 def test_cpu_pinning_diff_modes(create_aggregate,
@@ -139,7 +140,6 @@ def test_cpu_pinning_diff_modes(create_aggregate,
         servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.requires("vlan")
 @pytest.mark.requires("cpu_pinning_computes_count >= 2")
 @pytest.mark.idempotent_id('e46620e6-0383-4d40-9d0b-f9085f62621f')
 def test_cpu_pinning_resize(pinned_aggregate,
@@ -244,7 +244,6 @@ def test_cpu_pinning_resize(pinned_aggregate,
             servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.requires("vlan")
 @pytest.mark.requires("cpu_pinning_computes_count >= 2")
 @pytest.mark.idempotent_id('0e0bcfdb-0294-4b71-83ab-6c42b5571ee9')
 def test_cpu_pinning_migrate(pinned_aggregate,
@@ -329,7 +328,6 @@ def test_cpu_pinning_migrate(pinned_aggregate,
         servers, timeout=config.PING_BETWEEN_SERVERS_TIMEOUT)
 
 
-@pytest.mark.requires("vlan")
 @pytest.mark.requires("cpu_pinning_computes_count >= 1")
 @pytest.mark.idempotent_id('bb59d87d-1390-401a-bfc7-6134ff049e19')
 def test_cpu_and_memory_distribution(pinned_aggregate,
@@ -423,7 +421,6 @@ def test_cpu_and_memory_distribution(pinned_aggregate,
             config.GOOGLE_DNS_IP, server_ssh, timeout=config.PING_CALL_TIMEOUT)
 
 
-@pytest.mark.requires("vlan")
 @pytest.mark.requires("cpu_pinning_computes_count >= 1")
 @pytest.mark.idempotent_id('9b57d4c7-1505-41a0-93ed-7dbdeae025da')
 def test_negative_distribution_one_numa(pinned_aggregate,
@@ -501,7 +498,6 @@ def test_negative_distribution_one_numa(pinned_aggregate,
         exp_exception=nova_exceptions.BadRequest)
 
 
-@pytest.mark.requires("vlan")
 @pytest.mark.requires("cpu_pinning_computes_count >= 1")
 @pytest.mark.idempotent_id('6b0a5479-b65b-4518-b452-08d0280a6d51',
                            resource='ram')
