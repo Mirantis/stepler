@@ -48,3 +48,6 @@ oslosphinx==4.7.0
 
 # verification
 tox==2.4.1
+
+# developing
+git-review>=1.25.0

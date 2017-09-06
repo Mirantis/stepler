@@ -41,7 +41,8 @@ How to install
 Install pre-conditions (Ubuntu 16.04)::
 
    sudo apt-get -y install libssl-dev python-dev libvirt-dev python-pip
-   export LC_ALL=C
+   sudo locale-gen "en_US.UTF-8"
+   sudo dpkg-reconfigure locales
    sudo -H pip install --upgrade pip
    sudo -H pip install virtualenv
 
