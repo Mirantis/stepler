@@ -59,7 +59,6 @@ class NetworksSteps(base.BaseSteps):
 
         with page_networks.form_create_network as form:
             form.field_name.value = network_name
-
             if shared:
                 form.checkbox_shared.select()
             else:
@@ -234,8 +233,6 @@ class NetworksSteps(base.BaseSteps):
         page_network_topology = self._page_network_topology()
 
         if check:
-            assert_that(page_network_topology.webdriver.title,
-                        equal_to("Network Topology - OpenStack Dashboard"))
             assert_that(
                 page_network_topology.button_launch_instance.is_enabled,
                 equal_to(True))
@@ -243,6 +240,8 @@ class NetworksSteps(base.BaseSteps):
                         equal_to(True))
             assert_that(page_network_topology.button_create_router.is_enabled,
                         equal_to(True))
+            assert_that(page_network_topology.webdriver.title,
+                        equal_to("Network Topology - OpenStack Dashboard"))
 
     @steps_checker.step
     def check_networks_time(self):
