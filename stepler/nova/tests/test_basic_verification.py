@@ -341,7 +341,7 @@ def test_attach_detach_fixed_ip_to_server(
 
 
 @pytest.mark.idempotent_id('f46d5093-d2d6-4fc3-b9a1-9d9c9a2064db')
-@pytest.mark.parametrize('volumes_count', [10])
+@pytest.mark.parametrize('volumes_count', [5])
 def test_create_many_servers_boot_from_cinder(cirros_image,
                                               flavor,
                                               network,
