@@ -131,7 +131,7 @@ class ImagesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_images.form_confirm.submit()
+        page_images.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
@@ -151,8 +151,8 @@ class ImagesSteps(base.BaseSteps):
 
         # if some of images can't be deleted - modal won't show
         try:
-            page_images.form_confirm.wait_for_presence()
-            page_images.form_confirm.submit()
+            page_images.form_confirm_delete.wait_for_presence()
+            page_images.form_confirm_delete.submit()
         except Exception:
             pass
 
