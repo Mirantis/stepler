@@ -102,23 +102,18 @@ def test_restart_all_glance_services(cirros_image,
                                        timeout=config.PING_CALL_TIMEOUT)
 
 
-@pytest.mark.requires("controllers_count >=2")
 @pytest.mark.idempotent_id("683bd20b-4adc-4a51-a855-f4950acd782f")
-@pytest.mark.parametrize('controller_cmd',
-                         [config.FUEL_PRIMARY_CONTROLLER_CMD],
-                         ids=['primary'])
-def test_kill_glance_on_primary_controller(os_faults_steps,
-                                           glance_steps,
-                                           controller_cmd):
+def test_kill_glance_on_controller(os_faults_steps, glance_steps):
     """**Scenario:** Kill glance services on controller and upload image.
 
     **Steps:**
 
-    #. Kill all glance services on primary controller
+    #. Kill all glance services on controller
     #. Wait glance becomes available
     #. Upload image to glance
     """
-    controller_node = os_faults_steps.get_nodes_by_cmd(controller_cmd)
+    controller_node = os_faults_steps.get_node(service_names=[config.
+                                               GLANCE_API])
 
     for service_name in config.GLANCE_SERVICES:
         pid = os_faults_steps.get_process_pid(controller_node, service_name)
