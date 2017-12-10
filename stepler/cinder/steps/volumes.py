@@ -458,7 +458,7 @@ class VolumeSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         error_message = (
-            "VolumeSizeExceedsLimit: Requested volume size {}G is larger "
+            "VolumeSizeExceedsLimit: Requested volume size [{}]* is larger "
             "than maximum allowed limit").format(size)
         assert_that(
             calling(self.create_volumes).with_args(
@@ -477,7 +477,7 @@ class VolumeSteps(base.BaseSteps):
             AssertionError: if check failed
         """
         error_message = (
-            "VolumeSizeExceedsLimit: Requested volume size {}G is larger "
+            "VolumeSizeExceedsLimit: Requested volume size [{}]* is larger "
             "than maximum allowed limit").format(size)
         assert_that(
             calling(self.volume_extend).with_args(volume, size, check=False),
