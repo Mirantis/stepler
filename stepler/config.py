@@ -229,6 +229,7 @@ BAREMETAL_VIRTUAL_DISK_INFO = [{"name": "vda",
 
 IMAGE_VISIBILITY_PUBLIC = 'public'
 IMAGE_VISIBILITY_SHARED = 'shared'
+IMAGE_VISIBILITY_PRIVATE = 'private'
 GLANCE_API_CONFIG_PATH = os.environ.get('GLANCE_API_CONFIG_PATH',
                                         '/etc/glance/glance-api.conf')
 GLANCE_SWIFT_CONFIG_PATH = os.environ.get('GLANCE_SWIFT_CONFIG_PATH',

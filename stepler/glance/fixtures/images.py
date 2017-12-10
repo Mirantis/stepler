@@ -34,7 +34,7 @@ __all__ = [
     'api_glance_steps_v1',
     'api_glance_steps_v2',
     'cirros_image',
-    'cirros_image_shared',
+    'cirros_image_private',
     'create_images_context',
     'get_glance_steps',
     'glance_steps',
@@ -336,20 +336,20 @@ def cirros_image(get_glance_steps, uncleanable, credentials):
 
 
 @pytest.fixture(scope='module')
-def cirros_image_shared(get_glance_steps, cirros_image):
-    """Module fixture to create shared cirros image with default options.
+def cirros_image_private(get_glance_steps, cirros_image):
+    """Module fixture to create private cirros image with default options.
 
     Args:
         get_glance_steps (function): function to get glance steps
         cirros_image (object): cirros glance image
 
     Returns:
-        object: shared cirros glance image
+        object: private cirros glance image
     """
     glance_steps = get_glance_steps(
         version=config.CURRENT_GLANCE_VERSION, is_api=False)
     glance_steps.update_images(
-        [cirros_image], visibility=config.IMAGE_VISIBILITY_SHARED)
+        [cirros_image], visibility=config.IMAGE_VISIBILITY_PRIVATE)
     return cirros_image
 
 
