@@ -702,7 +702,7 @@ def neutron_nets_for_projects(request, projects, create_network,
         cidrs = [str(network) for network in net.supernet().subnets()]
     resources = []
 
-    for project_resources, cidr in zip(projects, cidrs):
+    for project_resources, cidr in zip(projects.resources, cidrs):
         # Create network with subnet and router
         network = create_network(
             project_resources.name, project_id=project_resources.project_id)
