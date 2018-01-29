@@ -50,6 +50,7 @@ class TestAnyOne(object):
         volumes_steps_ui.edit_volume(volume_name=volume.name,
                                      new_volume_name=new_name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('e4c1eab9-ddf4-4a75-915e-81e3886ac27b',
                                any_one='admin', volumes=1)
     @pytest.mark.idempotent_id('5f7f4fac-a19b-481a-9c61-18c1923cfa7d',
@@ -122,6 +123,7 @@ class TestAnyOne(object):
         """
         volumes_steps_ui.view_volume(volume.name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('65272c3b-c2ea-42e6-91ac-f1daa43fdbfc',
                                any_one='admin')
     @pytest.mark.idempotent_id('a4ab8682-eed6-4d00-8975-4289e2aac4d3',
@@ -170,6 +172,7 @@ class TestAnyOne(object):
         """
         volumes_steps_ui.extend_volume(volume.name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('0374870e-5d84-4574-a114-cf78db640c26',
                                any_one='admin')
     @pytest.mark.idempotent_id('439e8ca5-0d87-49aa-9458-a239fa6ff1e1',
@@ -315,6 +318,7 @@ class TestAdminOnly(object):
         volumes_steps_ui.change_volume_status(volume.name, 'Error')
         volumes_steps_ui.change_volume_status(volume.name, 'Available')
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('371badd3-a2f7-484d-9fdb-9ad06d431623')
     def test_manage_volume_attachments(self, volume, server,
                                        volumes_steps_ui):

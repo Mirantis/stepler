@@ -24,6 +24,7 @@ import pytest
 class TestAnyOne(object):
     """Tests for any user."""
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('6e212b0c-503e-4339-a504-4548344291ee',
                                any_one='admin')
     @pytest.mark.idempotent_id('6467bf60-2ee3-4abd-9f00-7471f7985a32',
@@ -46,6 +47,7 @@ class TestAnyOne(object):
         """
         networks_steps_ui.add_subnet(network['name'])
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('1461428b-fa96-49b4-b8b2-71e504739821',
                                any_one='admin')
     @pytest.mark.idempotent_id('cd40f3b7-81d2-47e1-9737-925ce0d9bf6d',

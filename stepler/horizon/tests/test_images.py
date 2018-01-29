@@ -110,6 +110,7 @@ class TestAnyOne(object):
         update_settings(items_per_page=1)
         images_steps_ui.check_images_pagination(image_names)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('b835ce2b-41b2-4d7a-8b8f-139163234852',
                                any_one='admin')
     @pytest.mark.idempotent_id('1b439ae8-32aa-476d-abf9-3e2ae796de46',
@@ -186,6 +187,7 @@ class TestAnyOne(object):
         new_image_name = horizon_image.name + '(updated)'
         images_steps_ui.update_image(horizon_image.name, new_image_name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('619298ae-f9f5-4afa-a50b-c3f5faa38c81',
                                any_one='admin')
     @pytest.mark.idempotent_id('f2bb54d2-f926-4c7c-85ce-2737e109000d',
@@ -253,6 +255,7 @@ class TestAnyOne(object):
         images_steps_ui.check_public_image_visible(
             config.HORIZON_TEST_IMAGE_CIRROS)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('3c98d922-df89-4701-a4b1-c5258fda5d7b',
                                any_one='admin')
     @pytest.mark.idempotent_id('782940f1-f958-4275-b716-232a56fea743',

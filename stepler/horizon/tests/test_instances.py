@@ -26,6 +26,7 @@ from stepler import config
 class TestAnyOne(object):
     """Tests for anyone."""
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('54a6c9d9-09c8-4f74-a670-b1c0d4bb1d74',
                                any_one='admin')
     @pytest.mark.idempotent_id('a3cd86a4-70c4-4a3e-b9b6-d9774d8aeae3',
@@ -42,6 +43,7 @@ class TestAnyOne(object):
             network_name=config.INTERNAL_NETWORK_NAME)[0]
         instances_steps_ui.delete_instance(instance_name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('53c038f0-b63c-461c-983b-7db82fd0d626',
                                any_one='admin', horizon_servers=2)
     @pytest.mark.idempotent_id('ecb6230a-3062-46af-af06-4f9208ae2961',
@@ -165,6 +167,7 @@ class TestAnyOne(object):
         instances_steps_ui.filter_instances(query=horizon_servers[0].name)
         instances_steps_ui.reset_instances_filter()
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('d6fc41ea-3a05-11e7-a867-ab2bfc1dfe61',
                                any_one='admin')
     @pytest.mark.idempotent_id('df175266-3a05-11e7-9adf-2ba1863bd2b4',
@@ -246,6 +249,7 @@ class TestAnyOne(object):
         """
         instances_steps_ui.resize_instance(horizon_server.name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('3387fea8-412d-11e7-bdbd-af7548dce310',
                                any_one='admin')
     @pytest.mark.idempotent_id('343d7576-412d-11e7-bd85-4fc37a08201a',
@@ -268,6 +272,7 @@ class TestAnyOne(object):
         """
         instances_steps_ui.rename_instance(horizon_server.name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('c5ecd044-450f-11e7-b588-23782e95bb3c',
                                any_one='admin')
     @pytest.mark.idempotent_id('c684af86-450f-11e7-8637-4b94848b5a9f',

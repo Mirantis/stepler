@@ -27,6 +27,7 @@ from stepler.third_party import utils
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('b4249e0f-95eb-41cd-8d35-fccc21fdcbd1')
     def test_create_user(self, users_steps_ui):
         """**Scenario:** Verify that admin can create and delete user.
@@ -44,6 +45,7 @@ class TestAdminOnly(object):
                                    role='Member')
         users_steps_ui.delete_user(user_name)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('1fc6f276-5d0b-46ca-906c-08c8e8f2752f',
                                users=1)
     @pytest.mark.idempotent_id('7aa66c15-1d7f-4d6a-96b6-740465971488',
@@ -63,6 +65,7 @@ class TestAdminOnly(object):
         user_names = [user.name for user in users]
         users_steps_ui.delete_users(user_names)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('b5116a31-404d-4391-b1d6-e35670dbadb3')
     def test_change_user_password(self, new_user_with_project, users_steps_ui,
                                   auth_steps):
