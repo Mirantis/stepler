@@ -23,12 +23,12 @@ from stepler.third_party import utils
 
 
 @pytest.mark.idempotent_id('95c581e9-6b5f-4547-993e-ef1ab19cc29f')
-def test_share_glance_image(cirros_image_shared, project, glance_steps):
+def test_share_glance_image(cirros_image_private, project, glance_steps):
     """**Scenario:** Check sharing glance image to another project.
 
     **Setup:**
 
-    #. Create shared image
+    #. Create private image
     #. Create project
 
     **Steps:**
@@ -41,8 +41,8 @@ def test_share_glance_image(cirros_image_shared, project, glance_steps):
     #. Delete project
     #. Delete image
     """
-    glance_steps.bind_project(cirros_image_shared, project)
-    glance_steps.unbind_project(cirros_image_shared, project)
+    glance_steps.bind_project(cirros_image_private, project)
+    glance_steps.unbind_project(cirros_image_private, project)
 
 
 @pytest.mark.idempotent_id('1b1a0953-a772-4cfe-a7da-2f6de950eede')
