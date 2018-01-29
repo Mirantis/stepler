@@ -135,6 +135,7 @@ class FormCreateVolume(_ui.Form):
     form_update_image=FormUpdateImage(By.XPATH, './/*[@ng-form="wizardForm"]'),
     form_update_metadata=FormUpdateMetadata(By.CSS_SELECTOR,
                                             'div.modal-content'),
+    form_confirm_delete=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
     table_images=TableImages(By.CLASS_NAME, 'table-striped'),
     search_bar=_ui.SearchBar(By.CSS_SELECTOR, '.magic-search-bar'))
 class PageImages(PageBase):
