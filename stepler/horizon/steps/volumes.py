@@ -35,12 +35,6 @@ class VolumesSteps(base.BaseSteps):
         """Open volumes page if it isn't opened."""
         return self._open(self.app.page_volumes)
 
-    def _tab_volumes(self):
-        """Open volumes tab."""
-        with self._page_volumes() as page:
-            page.label_volumes.click()
-            return page.tab_volumes
-
     @steps_checker.step
     def create_volume(self, volume_name=None,
                       source_type=config.IMAGE_SOURCE,
@@ -75,10 +69,10 @@ class VolumesSteps(base.BaseSteps):
 
         volume_name = volume_name or next(utils.generate_ids('volume'))
 
-        tab_volumes = self._tab_volumes()
-        tab_volumes.button_create_volume.click()
+        page_volumes = self._page_volumes()
+        page_volumes.button_create_volume.click()
 
-        with tab_volumes.form_create_volume as form:
+        with page_volumes.form_create_volume as form:
             form.field_name.value = volume_name
             form.combobox_source_type.value = source_type
 
@@ -110,7 +104,7 @@ class VolumesSteps(base.BaseSteps):
 
         if check:
             self.close_notification('info')
-            row = tab_volumes.table_volumes.row(name=volume_name)
+            row = page_volumes.table_volumes.row(name=volume_name)
             row.wait_for_status('Available')
             if description is not None:
                 assert_that(row.cell('description').value,
@@ -121,57 +115,57 @@ class VolumesSteps(base.BaseSteps):
     @steps_checker.step
     def delete_volume(self, volume_name, check=True):
         """Step to delete volume."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        tab_volumes.form_confirm.submit()
+        page_volumes.form_confirm.submit()
 
         if check:
             self.close_notification('success')
-            tab_volumes.table_volumes.row(
-                name=volume_name).wait_for_absence(config.EVENT_TIMEOUT)
+            page_volumes.table_volumes.row(
+                 name=volume_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def edit_volume(self, volume_name, new_volume_name, check=True):
         """Step to edit volume."""
-        tab_volumes = self._tab_volumes()
-        tab_volumes.table_volumes.row(
+        page_volumes = self._page_volumes()
+        page_volumes.table_volumes.row(
             name=volume_name).dropdown_menu.item_default.click()
 
-        tab_volumes.form_edit_volume.field_name.value = new_volume_name
-        tab_volumes.form_edit_volume.submit()
+        page_volumes.form_edit_volume.field_name.value = new_volume_name
+        page_volumes.form_edit_volume.submit()
 
         if check:
             self.close_notification('info')
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.row(
                 name=new_volume_name).wait_for_presence()
 
     @steps_checker.step
     def delete_volumes(self, volume_names, check=True):
         """Step to delete volumes."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
         for volume_name in volume_names:
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.row(
                 name=volume_name).checkbox.select()
 
-        tab_volumes.button_delete_volumes.click()
-        tab_volumes.form_confirm.submit()
+        page_volumes.button_delete_volumes.click()
+        page_volumes.form_confirm.submit()
 
         if check:
             self.close_notification('success')
             for volume_name in volume_names:
-                tab_volumes.table_volumes.row(
+                page_volumes.table_volumes.row(
                     name=volume_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def view_volume(self, volume_name, check=True):
         """Step to view volume."""
-        self._tab_volumes().table_volumes.row(
+        self._page_volumes().table_volumes.row(
             name=volume_name).link_volume.click()
 
         if check:
@@ -181,14 +175,14 @@ class VolumesSteps(base.BaseSteps):
     @steps_checker.step
     def change_volume_type(self, volume_name, volume_type=None, check=True):
         """Step to change volume type."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_change_volume_type.click()
 
-        with tab_volumes.form_change_volume_type as form:
+        with page_volumes.form_change_volume_type as form:
             if not volume_type:
                 volume_type = form.combobox_volume_type.values[-1]
             form.combobox_volume_type.value = volume_type
@@ -196,45 +190,45 @@ class VolumesSteps(base.BaseSteps):
 
         if check:
             self.close_notification('info')
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.row(
                 name=volume_name, type=volume_type).wait_for_presence()
 
     @steps_checker.step
     def upload_volume_to_image(self, volume_name, image_name, check=True):
         """Step to upload volume to image."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_upload_to_image.click()
 
-        with tab_volumes.form_upload_to_image as form:
+        with page_volumes.form_upload_to_image as form:
             form.field_image_name.value = image_name
             form.submit()
 
         if check:
             self.close_notification('info')
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.row(
                 name=volume_name).wait_for_status('Available')
 
     @steps_checker.step
     def extend_volume(self, volume_name, new_size=2, check=True):
         """Step to extend volume size."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_extend_volume.click()
 
-        with tab_volumes.form_extend_volume as form:
+        with page_volumes.form_extend_volume as form:
             form.field_new_size.value = new_size
             form.submit()
 
         if check:
             self.close_notification('info')
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.row(
                 name=volume_name, size=new_size).wait_for_presence()
 
     def _page_admin_volumes(self):
@@ -272,14 +266,14 @@ class VolumesSteps(base.BaseSteps):
     def launch_volume_as_instance(self, volume_name, instance_name,
                                   network_name, count=1, check=True):
         """Step to launch volume as instance."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_launch_volume_as_instance.click()
 
-        with tab_volumes.form_launch_instance as form:
+        with page_volumes.form_launch_instance as form:
 
             with form.tab_details as tab:
                 tab.field_name.value = instance_name
@@ -305,14 +299,14 @@ class VolumesSteps(base.BaseSteps):
     @steps_checker.step
     def attach_instance(self, volume_name, instance_name, check=True):
         """Step to attach instance."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_manage_attachments.click()
 
-        with tab_volumes.form_manage_attachments as form:
+        with page_volumes.form_manage_attachments as form:
             instance_value = next(val for val in form.combobox_instance.values
                                   if instance_name in val)
             form.combobox_instance.value = instance_value
@@ -321,41 +315,41 @@ class VolumesSteps(base.BaseSteps):
         if check:
             self.close_notification('info')
 
-            with tab_volumes.table_volumes.row(name=volume_name) as row:
+            with page_volumes.table_volumes.row(name=volume_name) as row:
                 row.wait_for_status('In-use')
                 assert instance_name in row.cell('attached_to').value
 
     @steps_checker.step
     def detach_instance(self, volume_name, instance_name, check=True):
         """Step to detach instance."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_manage_attachments.click()
 
-        tab_volumes.form_manage_attachments.table_instances.row(
+        page_volumes.form_manage_attachments.table_instances.row(
             name=instance_name).detach_volume_button.click()
 
-        tab_volumes.form_confirm.submit()
+        page_volumes.form_confirm.submit()
 
         if check:
             self.close_notification('success')
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.row(
                 name=volume_name).wait_for_status('Available')
 
     @steps_checker.step
     def create_transfer(self, volume_name, transfer_name, check=True):
         """Step to create transfer."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_create_transfer.click()
 
-        with tab_volumes.form_create_transfer as form:
+        with page_volumes.form_create_transfer as form:
             form.field_name.value = transfer_name
             form.submit()
 
@@ -376,18 +370,18 @@ class VolumesSteps(base.BaseSteps):
     def accept_transfer(self, transfer_id, transfer_key, volume_name,
                         check=True):
         """Step to accept transfer."""
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        tab_volumes.button_accept_transfer.click()
+        page_volumes.button_accept_transfer.click()
 
-        with tab_volumes.form_accept_transfer as form:
+        with page_volumes.form_accept_transfer as form:
             form.field_transfer_id.value = transfer_id
             form.field_transfer_key.value = transfer_key
             form.submit()
 
         if check:
             self.close_notification('success')
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.row(
                 name=volume_name, status='Available').wait_for_presence()
 
     @steps_checker.step
@@ -449,14 +443,14 @@ class VolumesSteps(base.BaseSteps):
         """Step to create volume snapshot."""
         snapshot_name = snapshot_name or next(utils.generate_ids('snapshot'))
 
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_create_snapshot.click()
 
-        with tab_volumes.form_create_snapshot as form:
+        with page_volumes.form_create_snapshot as form:
             form.field_name.value = snapshot_name
             if description is not None:
                 form.field_description.value = description
@@ -545,7 +539,7 @@ class VolumesSteps(base.BaseSteps):
 
         if check:
             self.close_notification('info')
-            self._tab_volumes().table_volumes.row(
+            self._page_volumes().table_volumes.row(
                 name=snapshot_name).wait_for_status('Available')
 
     @steps_checker.step
@@ -554,14 +548,14 @@ class VolumesSteps(base.BaseSteps):
         """Step to create volume backup."""
         backup_name = backup_name or next(utils.generate_ids('backup'))
 
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_create_backup.click()
 
-        with tab_volumes.form_create_backup as form:
+        with page_volumes.form_create_backup as form:
             form.field_name.value = backup_name
 
             if description is not None:
@@ -605,7 +599,8 @@ class VolumesSteps(base.BaseSteps):
     @steps_checker.step
     def check_volume_present(self, volume_name, timeout=None):
         """Check volume is present."""
-        self._tab_volumes().table_volumes.row(
+        page_volumes = self._page_volumes()
+        page_volumes.table_volumes.row(
             name=volume_name, status='Available').wait_for_presence(timeout)
 
     @steps_checker.step
@@ -615,12 +610,12 @@ class VolumesSteps(base.BaseSteps):
 
         ordered_names = []
         count = len(volume_names)
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
         # volume names can be unordered so we should try to retrieve
         # any volume from volume_names list
         def _get_current_volume_name():
-            rows = tab_volumes.table_volumes.rows
+            rows = page_volumes.table_volumes.rows
             assert_that(rows, has_length(1))
 
             volume_name = rows[0].cell('name').value
@@ -631,29 +626,29 @@ class VolumesSteps(base.BaseSteps):
         volume_name = _get_current_volume_name()
         ordered_names.append(volume_name)
 
-        assert_that(tab_volumes.table_volumes.link_next.is_present,
+        assert_that(page_volumes.table_volumes.link_next.is_present,
                     equal_to(True))
-        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+        assert_that(page_volumes.table_volumes.link_prev.is_present,
                     equal_to(False))
 
         # check all elements except for the first and the last
         for _ in range(1, count - 1):
-            tab_volumes.table_volumes.link_next.click()
+            page_volumes.table_volumes.link_next.click()
             volume_name = _get_current_volume_name()
             ordered_names.append(volume_name)
 
-            assert_that(tab_volumes.table_volumes.link_next.is_present,
+            assert_that(page_volumes.table_volumes.link_next.is_present,
                         equal_to(True))
-            assert_that(tab_volumes.table_volumes.link_prev.is_present,
+            assert_that(page_volumes.table_volumes.link_prev.is_present,
                         equal_to(True))
 
-        tab_volumes.table_volumes.link_next.click()
+        page_volumes.table_volumes.link_next.click()
         volume_name = _get_current_volume_name()
         ordered_names.append(volume_name)
 
-        assert_that(tab_volumes.table_volumes.link_next.is_present,
+        assert_that(page_volumes.table_volumes.link_next.is_present,
                     equal_to(False))
-        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+        assert_that(page_volumes.table_volumes.link_prev.is_present,
                     equal_to(True))
 
         # check that all created volume names have been checked
@@ -661,22 +656,22 @@ class VolumesSteps(base.BaseSteps):
 
         # check all elements except for the first and the last
         for i in range(count - 2, 0, -1):
-            tab_volumes.table_volumes.link_prev.click()
-            tab_volumes.table_volumes.row(
+            page_volumes.table_volumes.link_prev.click()
+            page_volumes.table_volumes.row(
                 name=ordered_names[i]).wait_for_presence(30)
 
-            assert_that(tab_volumes.table_volumes.link_next.is_present,
+            assert_that(page_volumes.table_volumes.link_next.is_present,
                         equal_to(True))
-            assert_that(tab_volumes.table_volumes.link_prev.is_present,
+            assert_that(page_volumes.table_volumes.link_prev.is_present,
                         equal_to(True))
 
-        tab_volumes.table_volumes.link_prev.click()
-        tab_volumes.table_volumes.row(
+        page_volumes.table_volumes.link_prev.click()
+        page_volumes.table_volumes.row(
             name=ordered_names[0]).wait_for_presence(30)
 
-        assert_that(tab_volumes.table_volumes.link_next.is_present,
+        assert_that(page_volumes.table_volumes.link_next.is_present,
                     equal_to(True))
-        assert_that(tab_volumes.table_volumes.link_prev.is_present,
+        assert_that(page_volumes.table_volumes.link_prev.is_present,
                     equal_to(False))
 
     @steps_checker.step
@@ -833,14 +828,14 @@ class VolumesSteps(base.BaseSteps):
             AssertionError: if actual max length is not equal to
                 `expected_length`
         """
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_create_backup.click()
 
-        with tab_volumes.form_create_backup as form:
+        with page_volumes.form_create_backup as form:
             form.field_name.value = 'a' * (expected_length + 1)
             backup_name = form.field_name.value
             form.cancel()
@@ -860,14 +855,14 @@ class VolumesSteps(base.BaseSteps):
             AssertionError: if actual max length is not equal to
                 `expected_length`
         """
-        tab_volumes = self._tab_volumes()
+        page_volumes = self._page_volumes()
 
-        with tab_volumes.table_volumes.row(
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_create_snapshot.click()
 
-        with tab_volumes.form_create_snapshot as form:
+        with page_volumes.form_create_snapshot as form:
             form.field_name.value = 'a' * (expected_length + 1)
             snapshot_name = form.field_name.value
             form.cancel()
@@ -884,13 +879,13 @@ class VolumesSteps(base.BaseSteps):
         Raises:
             AssertionError: if default migration policy not equal `On Demand`
         """
-        tab_volumes = self._tab_volumes()
-        with tab_volumes.table_volumes.row(
+        page_volumes = self._page_volumes()
+        with page_volumes.table_volumes.row(
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_change_volume_type.click()
 
-        with tab_volumes.form_change_volume_type as form:
+        with page_volumes.form_change_volume_type as form:
             assert_that(form.combobox_migration_policy.value,
                         equal_to("On Demand"))
 
