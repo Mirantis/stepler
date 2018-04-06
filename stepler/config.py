@@ -249,8 +249,8 @@ EPHEMERAL_ROOT_FS_PATH = '/'
 DEFAULT_QCOW_IMAGE_SIZE = '20G'
 
 FLAVOR_MICRO = 'm1.micro'
-FLAVOR_EXTRA_TINY = 'm1.heat_micro'
-FLAVOR_TINY = 'm1.heat_int'
+FLAVOR_EXTRA_TINY = 'm1.extra_tiny_test'
+FLAVOR_TINY = 'm1.tiny_test'
 FLAVOR_SMALL = 'm1.small'
 BAREMETAL_RAM = 8192
 BAREMETAL_VCPUS = 4
