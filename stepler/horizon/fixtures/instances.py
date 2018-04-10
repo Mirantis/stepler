@@ -25,7 +25,9 @@ from stepler.horizon import steps
 __all__ = [
     'instances_steps_ui',
     'horizon_servers',
+    'horizon_servers_with_private_image',
     'horizon_server',
+    'horizon_server_with_private_image'
 ]
 
 
@@ -80,6 +82,35 @@ def horizon_servers(request,
 
 
 @pytest.fixture
+def horizon_servers_with_private_image(request, cirros_image_private,
+                                       security_group, net_subnet_router,
+                                       flavor_steps, server_steps):
+    """Function fixture to create servers with default options before test.
+
+    Args:
+        request (object): py.test's SubRequest instance
+        cirros_image (object): cirros image from glance
+        security_group (object): nova security group
+        net_subnet_router (tuple): neutron network, subnet, router
+        flavor_steps (FlavorSteps): instantiated flavor steps
+        server_steps (ServerSteps): instantiated server steps
+
+    Returns:
+        list: nova servers
+    """
+    count = int(getattr(request, 'param', 3))
+    network, _, _ = net_subnet_router
+    flavor = flavor_steps.get_flavor(name=config.HORIZON_TEST_FLAVOR_TINY)
+    return server_steps.create_servers(image=cirros_image_private,
+                                       flavor=flavor,
+                                       count=count,
+                                       networks=[network],
+                                       security_groups=[security_group],
+                                       username=config.CIRROS_USERNAME,
+                                       password=config.CIRROS_PASSWORD)
+
+
+@pytest.fixture
 @pytest.mark.parametrize('horizon_servers', [1])
 def horizon_server(horizon_servers):
     """Function fixture to create server with default options before test.
@@ -91,3 +122,17 @@ def horizon_server(horizon_servers):
         object: nova server
     """
     return horizon_servers[0]
+
+
+@pytest.fixture
+@pytest.mark.parametrize('horizon_servers', [1])
+def horizon_server_with_private_image(horizon_servers_with_private_image):
+    """Function fixture to create server with default options before test.
+
+    Args:
+        horizon_servers (list): list with one nova server
+
+    Returns:
+        object: nova server
+    """
+    return horizon_servers_with_private_image[0]

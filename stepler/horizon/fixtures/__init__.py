@@ -84,7 +84,9 @@ __all__ = sorted([  # sort for documentation
 
     'instances_steps_ui',
     'horizon_servers',
+    'horizon_servers_with_private_image',
     'horizon_server',
+    'horizon_server_with_private_image',
 
     'keypairs_steps_ui',
     'namespaces_steps_ui',

@@ -62,6 +62,7 @@ __all__ = sorted([  # sort for documentation
     'upload_volume_to_image',
     'volume',
     'bootable_volume',
+    'bootable_volume_with_private_image',
     'volumes',
     'volume_steps',
 ])

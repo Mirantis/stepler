@@ -43,30 +43,6 @@ class TestAnyOne(object):
             network_name=config.INTERNAL_NETWORK_NAME)[0]
         instances_steps_ui.delete_instance(instance_name)
 
-    @pytest.mark.smoke
-    @pytest.mark.idempotent_id('53c038f0-b63c-461c-983b-7db82fd0d626',
-                               any_one='admin', horizon_servers=2)
-    @pytest.mark.idempotent_id('ecb6230a-3062-46af-af06-4f9208ae2961',
-                               any_one='admin', horizon_servers=1)
-    @pytest.mark.idempotent_id('acf99c3a-c22c-4e33-a58e-58a49d94877f',
-                               any_one='user', horizon_servers=2)
-    @pytest.mark.idempotent_id('bf0ea67b-fe0a-4be3-bc83-e9ca8ba0b3e2',
-                               any_one='user', horizon_servers=1)
-    @pytest.mark.parametrize('horizon_servers', [2, 1], indirect=True)
-    def test_delete_instances(self, horizon_servers, instances_steps_ui):
-        """**Scenario:** Verify that user can delete instances as bunch.
-
-        **Setup:**
-
-        #. Create servers using API
-
-        **Steps:**
-
-        #. Delete servers as bunch using UI
-        """
-        server_names = [server.name for server in horizon_servers]
-        instances_steps_ui.delete_instances(server_names)
-
     @pytest.mark.idempotent_id('005870b0-73fd-4c56-a6ec-8c4bad46f058',
                                any_one='admin')
     @pytest.mark.idempotent_id('e534aeb2-b0d4-407c-9f89-64a5c0739513',
@@ -167,38 +143,6 @@ class TestAnyOne(object):
         instances_steps_ui.filter_instances(query=horizon_servers[0].name)
         instances_steps_ui.reset_instances_filter()
 
-    @pytest.mark.smoke
-    @pytest.mark.idempotent_id('d6fc41ea-3a05-11e7-a867-ab2bfc1dfe61',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('df175266-3a05-11e7-9adf-2ba1863bd2b4',
-                               any_one='user')
-    def test_nova_associate_ip(self,
-                               horizon_server,
-                               floating_ip,
-                               instances_steps_ui):
-        """**Scenario:** Verify associate/disassociate ip to instance.
-
-        **Setup:**
-
-        #. Create server using API
-        #. Create floating IP using API
-
-        **Steps:**
-
-        #. Associate floating ip to instance
-        #. Disassociate floating ip from instance
-
-        **Teardown:**
-
-        #. Delete server using API
-        #. Delete floating IP using API
-        """
-        instances_steps_ui.nova_associate_floating_ip(
-            horizon_server.name,
-            floating_ip.ip)
-        instances_steps_ui.nova_disassociate_floating_ip(
-            horizon_server.name)
-
     @pytest.mark.idempotent_id('886b9820-3ef4-11e7-b7fb-938b7d064835',
                                any_one='admin')
     @pytest.mark.idempotent_id('89e672f6-3ef4-11e7-95a1-b7df5a42063f',
@@ -249,55 +193,6 @@ class TestAnyOne(object):
         """
         instances_steps_ui.resize_instance(horizon_server.name)
 
-    @pytest.mark.smoke
-    @pytest.mark.idempotent_id('3387fea8-412d-11e7-bdbd-af7548dce310',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('343d7576-412d-11e7-bd85-4fc37a08201a',
-                               any_one='user')
-    def test_edit_instance_name(self, horizon_server,
-                                instances_steps_ui):
-        """**Scenario:** Verify that user can edit instance name.
-
-        **Setup:**
-
-        #. Create server using API
-
-        **Steps:**
-
-        #. Rename instance
-
-        **Teardown:**
-
-        #. Delete server using API
-        """
-        instances_steps_ui.rename_instance(horizon_server.name)
-
-    @pytest.mark.smoke
-    @pytest.mark.idempotent_id('c5ecd044-450f-11e7-b588-23782e95bb3c',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('c684af86-450f-11e7-8637-4b94848b5a9f',
-                               any_one='user')
-    def test_edit_instance_security_group(self, horizon_security_group,
-                                          horizon_server,
-                                          instances_steps_ui):
-        """**Scenario:** Verify that user can edit instance security group.
-
-        **Setup:**
-
-        #. Create server using API
-
-        **Steps:**
-
-        #. Add security group to instance
-
-        **Teardown:**
-
-        #. Delete server using API
-        """
-        instances_steps_ui.add_security_group(
-            horizon_server.name,
-            horizon_security_group['name'])
-
     @pytest.mark.idempotent_id('68f1fbae-4cf2-11e7-b7fc-57cd3087863f',
                                any_one='admin')
     @pytest.mark.idempotent_id('74a1d870-4cf2-11e7-9757-57cda13b370c',
@@ -332,6 +227,96 @@ class TestAnyOne(object):
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):
     """Tests for admin only."""
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('53c038f0-b63c-461c-983b-7db82fd0d626',
+                               horizon_servers=2)
+    @pytest.mark.idempotent_id('ecb6230a-3062-46af-af06-4f9208ae2961',
+                               horizon_servers=1)
+    @pytest.mark.parametrize('horizon_servers', [2, 1], indirect=True)
+    def test_delete_instances(self, horizon_servers, instances_steps_ui):
+        """**Scenario:** Verify that user can delete instances as bunch.
+
+        **Setup:**
+
+        #. Create servers using API
+
+        **Steps:**
+
+        #. Delete servers as bunch using UI
+        """
+        server_names = [server.name for server in horizon_servers]
+        instances_steps_ui.delete_instances(server_names)
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('d6fc41ea-3a05-11e7-a867-ab2bfc1dfe61')
+    def test_nova_associate_ip(self, horizon_server,
+                               floating_ip, instances_steps_ui):
+        """**Scenario:** Verify associate/disassociate ip to instance.
+
+        **Setup:**
+
+        #. Create server using API
+        #. Create floating IP using API
+
+        **Steps:**
+
+        #. Associate floating ip to instance
+        #. Disassociate floating ip from instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        #. Delete floating IP using API
+        """
+        instances_steps_ui.nova_associate_floating_ip(
+            horizon_server.name,
+            floating_ip.ip)
+        instances_steps_ui.nova_disassociate_floating_ip(
+            horizon_server.name)
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('3387fea8-412d-11e7-bdbd-af7548dce310')
+    def test_edit_instance_name(self, horizon_server,
+                                instances_steps_ui):
+        """**Scenario:** Verify that user can edit instance name.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Rename instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.rename_instance(horizon_server.name)
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('c5ecd044-450f-11e7-b588-23782e95bb3c')
+    def test_edit_instance_security_group(self, horizon_security_group,
+                                          horizon_server,
+                                          instances_steps_ui):
+        """**Scenario:** Verify that user can edit instance security group.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Add security group to instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.add_security_group(
+            horizon_server.name,
+            horizon_security_group['name'])
 
     @pytest.mark.idempotent_id('7140e6f0-45de-11e7-b72d-f3dd1dc0afb3')
     @pytest.mark.parametrize('horizon_servers', [3], ids=[''], indirect=True)
@@ -490,3 +475,103 @@ class TestAdminOnly(object):
         #. Check instance pause
         """
         instances_steps_ui.check_instance_pause(instance_name=server.name)
+
+
+@pytest.mark.usefixtures('user_only')
+class TestUserOnly(object):
+    """Tests for user only."""
+
+    @pytest.mark.idempotent_id('acf99c3a-c22c-4e33-a58e-58a49d94877f',
+                               horizon_servers_with_private_image=2)
+    @pytest.mark.idempotent_id('bf0ea67b-fe0a-4be3-bc83-e9ca8ba0b3e2',
+                               horizon_servers_with_private_image=1)
+    @pytest.mark.parametrize('horizon_servers_with_private_image',
+                             [2, 1], indirect=True)
+    def test_delete_instances(self, horizon_servers_with_private_image,
+                              instances_steps_ui):
+        """**Scenario:** Verify that user can delete instances as bunch.
+
+        **Setup:**
+
+        #. Create servers using API
+
+        **Steps:**
+
+        #. Delete servers as bunch using UI
+        """
+        server_names = [
+            server.name for server in horizon_servers_with_private_image]
+        instances_steps_ui.delete_instances(server_names)
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('df175266-3a05-11e7-9adf-2ba1863bd2b4')
+    def test_nova_associate_ip(self,
+                               horizon_server_with_private_image,
+                               floating_ip,
+                               instances_steps_ui):
+        """**Scenario:** Verify associate/disassociate ip to instance.
+
+        **Setup:**
+
+        #. Create server using API
+        #. Create floating IP using API
+
+        **Steps:**
+
+        #. Associate floating ip to instance
+        #. Disassociate floating ip from instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        #. Delete floating IP using API
+        """
+        instances_steps_ui.nova_associate_floating_ip(
+            horizon_server_with_private_image.name,
+            floating_ip.ip)
+        instances_steps_ui.nova_disassociate_floating_ip(
+            horizon_server_with_private_image.name)
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('343d7576-412d-11e7-bd85-4fc37a08201a')
+    def test_edit_instance_name(self, horizon_server_with_private_image,
+                                instances_steps_ui):
+        """**Scenario:** Verify that user can edit instance name.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Rename instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.rename_instance(
+            horizon_server_with_private_image.name)
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('c684af86-450f-11e7-8637-4b94848b5a9f')
+    def test_edit_instance_security_group(self, horizon_security_group,
+                                          horizon_server_with_private_image,
+                                          instances_steps_ui):
+        """**Scenario:** Verify that user can edit instance security group.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Add security group to instance
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.add_security_group(
+            horizon_server_with_private_image.name,
+            horizon_security_group['name'])

@@ -127,7 +127,7 @@ class VolumesSteps(base.BaseSteps):
         if check:
             self.close_notification('success')
             page_volumes.table_volumes.row(
-                 name=volume_name).wait_for_absence(config.EVENT_TIMEOUT)
+                name=volume_name).wait_for_absence(config.EVENT_TIMEOUT)
 
     @steps_checker.step
     def edit_volume(self, volume_name, new_volume_name, check=True):

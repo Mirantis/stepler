@@ -23,7 +23,6 @@ from selenium.webdriver.common.by import By
 from stepler.horizon.app import ui as _ui
 
 from ..base import PageBase
-from ...ui.form import Form
 from ..instances.page_instances import FormLaunchInstance
 
 

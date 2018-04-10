@@ -172,38 +172,6 @@ class TestAnyOne(object):
         """
         volumes_steps_ui.extend_volume(volume.name)
 
-    @pytest.mark.smoke
-    @pytest.mark.idempotent_id('0374870e-5d84-4574-a114-cf78db640c26',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('439e8ca5-0d87-49aa-9458-a239fa6ff1e1',
-                               any_one='user')
-    def test_launch_volume_as_instance(self, bootable_volume,
-                                       instances_steps_ui,
-                                       volumes_steps_ui):
-        """**Scenario:** Verify that admin can launch volume as instance.
-
-        **Setup:**
-
-        #. Create bootable volume using API
-
-        **Steps:**
-
-        #. Launch volume as instance using UI
-        #. Change that instance status is ``Active`` using UI
-        #. Delete instance using UI
-
-        **Teardown:**
-
-        #. Delete volume using API
-        """
-        instance_name = next(utils.generate_ids('instance'))
-        volumes_steps_ui.launch_volume_as_instance(
-            bootable_volume.name,
-            instance_name,
-            network_name=config.INTERNAL_NETWORK_NAME)
-        instances_steps_ui.check_instance_active(instance_name)
-        instances_steps_ui.delete_instance(instance_name)
-
     @pytest.mark.idempotent_id('cdb362e0-4447-4f89-9af2-5e6f0e80e859',
                                any_one='admin')
     @pytest.mark.idempotent_id('fb043d55-47e5-48fb-8ae0-c4bc860742a8',
@@ -297,6 +265,36 @@ class TestAnyOne(object):
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):
     """Tests for admin only."""
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('0374870e-5d84-4574-a114-cf78db640c26')
+    def test_launch_volume_as_instance(self,
+                                       bootable_volume,
+                                       instances_steps_ui,
+                                       volumes_steps_ui):
+        """**Scenario:** Verify that admin can launch volume as instance.
+
+        **Setup:**
+
+        #. Create bootable volume using API
+
+        **Steps:**
+
+        #. Launch volume as instance using UI
+        #. Change that instance status is ``Active`` using UI
+        #. Delete instance using UI
+
+        **Teardown:**
+
+        #. Delete volume using API
+        """
+        instance_name = next(utils.generate_ids('instance'))
+        volumes_steps_ui.launch_volume_as_instance(
+            bootable_volume.name,
+            instance_name,
+            network_name=config.INTERNAL_NETWORK_NAME)
+        instances_steps_ui.check_instance_active(instance_name)
+        instances_steps_ui.delete_instance(instance_name)
 
     @pytest.mark.idempotent_id('1a8ee83f-e741-462c-af4f-e15b233daca4')
     def test_change_volume_status(self, volume, volumes_steps_ui):
@@ -448,3 +446,37 @@ class TestAdminOnly(object):
         #. Delete volume type using API
         """
         volumes_steps_ui.change_volume_type(volume.name, volume_type.name)
+
+
+@pytest.mark.usefixtures('user_only')
+class TestUserOnly(object):
+    """Tests for user only."""
+
+    @pytest.mark.smoke
+    @pytest.mark.idempotent_id('439e8ca5-0d87-49aa-9458-a239fa6ff1e1')
+    def test_launch_volume_as_instance(self, instances_steps_ui,
+                                       bootable_volume_with_private_image,
+                                       volumes_steps_ui):
+        """**Scenario:** Verify that admin can launch volume as instance.
+
+        **Setup:**
+
+        #. Create bootable volume using API
+
+        **Steps:**
+
+        #. Launch volume as instance using UI
+        #. Change that instance status is ``Active`` using UI
+        #. Delete instance using UI
+
+        **Teardown:**
+
+        #. Delete volume using API
+        """
+        instance_name = next(utils.generate_ids('instance'))
+        volumes_steps_ui.launch_volume_as_instance(
+            bootable_volume_with_private_image.name,
+            instance_name,
+            network_name=config.INTERNAL_NETWORK_NAME)
+        instances_steps_ui.check_instance_active(instance_name)
+        instances_steps_ui.delete_instance(instance_name)

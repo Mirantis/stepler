@@ -336,7 +336,7 @@ def cirros_image(get_glance_steps, uncleanable, credentials):
 
 
 @pytest.fixture(scope='module')
-def cirros_image_private(get_glance_steps, cirros_image):
+def cirros_image_private(get_glance_steps, uncleanable, credentials):
     """Module fixture to create private cirros image with default options.
 
     Args:
@@ -346,11 +346,14 @@ def cirros_image_private(get_glance_steps, cirros_image):
     Returns:
         object: private cirros glance image
     """
-    glance_steps = get_glance_steps(
-        version=config.CURRENT_GLANCE_VERSION, is_api=False)
-    glance_steps.update_images(
-        [cirros_image], visibility=config.IMAGE_VISIBILITY_PRIVATE)
-    return cirros_image
+    with create_images_context(
+            get_glance_steps,
+            uncleanable,
+            credentials,
+            utils.generate_ids('cirros'),
+            config.CIRROS_QCOW2_URL,
+            visibility=config.IMAGE_VISIBILITY_PRIVATE) as images:
+        yield images[0]
 
 
 @pytest.fixture

@@ -183,4 +183,3 @@ class PageVolumes(PageBase):
     """Volumes page."""
 
     url = "/project/volumes/"
-    #navigate_items = "Project", "Volumes", "Volumes"

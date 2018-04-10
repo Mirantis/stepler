@@ -31,6 +31,7 @@ __all__ = [
     'upload_volume_to_image',
     'volume',
     'bootable_volume',
+    'bootable_volume_with_private_image',
     'volumes',
     'volume_steps',
 ]
@@ -203,6 +204,20 @@ def bootable_volume(cirros_image, volume_steps):
         object: bootable cinder volume
     """
     return volume_steps.create_volumes(image=cirros_image)[0]
+
+
+@pytest.fixture
+def bootable_volume_with_private_image(cirros_image_private, volume_steps):
+    """Function fixture to create bootable volume with default options.
+
+    Args:
+        cirros_image (obj): glance image to create volume from
+        volume_steps (VolumeSteps): instantiated volume steps
+
+    Returns:
+        object: bootable cinder volume
+    """
+    return volume_steps.create_volumes(image=cirros_image_private)[0]
 
 
 @pytest.fixture
