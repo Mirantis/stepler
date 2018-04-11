@@ -155,6 +155,7 @@ class FormCreateBackup(_ui.Form):
     button_accept_transfer=ui.Button(By.ID, 'volumes__action_accept_transfer'),
     button_create_volume=ui.Button(By.ID, 'volumes__action_create'),
     button_delete_volumes=ui.Button(By.ID, 'volumes__action_delete'),
+    button_confirm_delete=ui.Button(By.CSS_SELECTOR, '.btn.btn-primary'),
     form_accept_transfer=FormAcceptTransfer(
         By.CSS_SELECTOR, 'form[action*="/accept_transfer"]'),
     form_change_volume_type=FormChangeVolumeType(By.CSS_SELECTOR,

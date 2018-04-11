@@ -332,7 +332,7 @@ class VolumesSteps(base.BaseSteps):
         page_volumes.form_manage_attachments.table_instances.row(
             name=instance_name).detach_volume_button.click()
 
-        page_volumes.form_confirm.submit()
+        page_volumes.button_confirm_delete.click()
 
         if check:
             self.close_notification('success')
