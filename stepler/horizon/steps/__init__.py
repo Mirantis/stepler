@@ -36,6 +36,7 @@ from .projects import ProjectsSteps  # noqa
 from .routers import RoutersSteps  # noqa
 from .security_groups import SecurityGroupsSteps  # noqa
 from .settings import SettingsSteps  # noqa
+from .stacks import StacksSteps  # noqa
 from .users import UsersSteps  # noqa
 from .volume_types import VolumeTypesSteps  # noqa
 from .volumes import VolumesSteps  # noqa
@@ -58,6 +59,7 @@ __all__ = [
     'RoutersSteps',
     'SecurityGroupsSteps',
     'SettingsSteps',
+    'StacksSteps',
     'UsersSteps',
     'VolumeTypesSteps',
     'VolumesSteps'

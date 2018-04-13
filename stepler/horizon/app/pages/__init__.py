@@ -40,6 +40,7 @@ from .networks import (PageAdminNetworks,
 from .projects import PageProjects
 from .routers import PageRouters
 from .settings import PagePassword, PageSettings  # noqa
+from .stacks import PageStack, PageStacks  # noqa
 from .users import PageUsers
 from .volumes import (PageAdminVolumes,
                       PageVolume,
@@ -74,6 +75,8 @@ pages = [
     PageRouters,
     PageSecurityGroups,
     PageSettings,
+    PageStack,
+    PageStacks,
     PageUsers,
     PageUserImages,
     PageVolume,

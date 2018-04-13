@@ -36,6 +36,7 @@ from .projects import *  # noqa
 from .routers import *  # noqa
 from .security_groups import *  # noqa
 from .settings import *  # noqa
+from .stacks import *  # noqa
 from .users import *  # noqa
 from .volume_types import *  # noqa
 from .volumes import *  # noqa
@@ -102,6 +103,8 @@ __all__ = sorted([  # sort for documentation
 
     'settings_steps_ui',
     'update_settings',
+
+    'stacks_steps_ui',
 
     'users_steps_ui',
     'new_user_login',
