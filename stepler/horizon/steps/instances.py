@@ -441,7 +441,7 @@ class InstancesSteps(base.BaseSteps):
         """Step to filter instances as admin."""
         page_instances = self._page_admin_instances()
 
-        page_instances.combobox_filter_target.value = 'Name'
+        page_instances.item_instance_parameter(config.INSTANCE_NAME).click()
         page_instances.field_filter_instances.value = query
         page_instances.button_filter_instances.click()
 
@@ -536,7 +536,7 @@ class InstancesSteps(base.BaseSteps):
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_presence()
 
-        page_instances.combobox_filter_target.value = 'Name'
+        page_instances.item_instance_parameter(config.INSTANCE_NAME).click()
         page_instances.field_filter_instances.value = instance_name
         page_instances.button_filter_instances.click()
 

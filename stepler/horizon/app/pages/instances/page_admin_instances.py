@@ -61,4 +61,12 @@ class PageAdminInstances(PageBase):
     """Admin instances page."""
 
     url = "/admin/instances/"
-    navigate_items = 'Admin', 'System', "Instances"
+    navigate_items = 'Admin', 'Compute', "Instances"
+
+    def item_instance_parameter(self, par):
+        """Select parameter for filtering."""
+        self.webelement.find_elements_by_xpath(
+            "//*[contains(@class, 'themable-select')]")[0].click()
+        return self.webelement.find_elements_by_xpath(
+            "//*[contains(@class, "
+            "'themable-select')]//a[@data-select-value='{}']".format(par))[0]
