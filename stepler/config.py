@@ -558,7 +558,7 @@ UI_TIMEOUT_OPENING_PAGE = 1
 UI_LONG_TIMEOUT = 40
 UI_TIMEOUT = 30
 ACTION_TIMEOUT = 60
-EVENT_TIMEOUT = 180
+EVENT_TIMEOUT = 360
 
 BIG_FILE_SIZE = 1024 * 1024 * 1024 * 100  # 100 Gb
 LONG_ACTION_TIMEOUT = 60 * 60  # 1 hour (timeout for 'Working')
@@ -597,6 +597,39 @@ TCPDUMP_LATENCY = 2
 # Horizon
 HORIZON_CONFIG_PATH = os.environ.get(
     'HORIZON_CONFIG_PATH', '/etc/openstack-dashboard/local_settings.py')
+HORIZON_STACK_SOURCE = """
+heat_template_version: 2013-05-23
+
+description: Just an example
+
+parameters:
+  key_name:
+    type: string
+    default: test
+    description: Name of an existing key pair to use for the instance
+  flavor:
+    type: string
+    description: Instance type for the instance to be created
+    default: m1.tiny_test
+  image:
+    type: string
+    default: TestCirros-0.3.5
+    description: ID or name of the image to use for the instance
+
+resources:
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      name: My Cirros Instance
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }"""
+HORIZON_STACK_ENV_SOURCE = """
+resource_registry:
+  OS::Nova::Server::MyServer: myserver.yaml
+
+parameter_defaults:
+  NetworkName: my_network"""
 
 # Openstack workload
 OS_LOAD_SCRIPTS_DIR = os.path.join(os.path.dirname(__file__),

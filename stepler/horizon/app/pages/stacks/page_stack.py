@@ -44,7 +44,8 @@ class Info(ui.Block):
 
 
 @ui.register_ui(
-    table_resource_topology=ui.Table(By.CSS_SELECTOR, '#heat_resource_topology'),
+    table_resource_topology=ui.Table(By.CSS_SELECTOR,
+                                     '#heat_resource_topology'),
     stack_info_main=Info(By.XPATH, '//*[@id="stack_details"]'))
 class PageStack(PageBase):
     """Stack page."""
