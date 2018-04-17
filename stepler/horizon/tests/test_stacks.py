@@ -26,6 +26,7 @@ from stepler.third_party import utils
 class TestAnyOne(object):
     """Tests for any one."""
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('f624afef-8cdd-4aea-bdc3-066234212f00',
                                any_one='admin')
     @pytest.mark.idempotent_id('9f0a660e-2ed7-4b4b-8f72-7ea7733c22c5',
@@ -84,6 +85,7 @@ class TestAnyOne(object):
         """
         stacks_steps_ui.view_stack(empty_stack)
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('ae5854be-2d88-4130-98d3-55004a4703ef',
                                any_one='admin')
     @pytest.mark.idempotent_id('e11972fe-00be-4d3d-b987-f92504073a5c',
@@ -147,6 +149,7 @@ class TestAnyOne(object):
 class TestAdminOnly(object):
     """Tests for admin only."""
 
+    @pytest.mark.smoke
     @pytest.mark.idempotent_id('8381d3ff-9f94-465f-a127-c84d328e14a4')
     def test_create_stack(self, credentials, keypair, stacks_cleanup,
                           stacks_steps_ui):
