@@ -73,16 +73,10 @@ class TestAdminOnly(object):
         **Steps:**
 
         #. Create shared network using UI
-        #. Try to delete network from network tab using UI
-        #. Close error notification
-        #. Check that network is still present
-        #. Delete network from admin network tab using UI
+        #. Delete network using UI
         """
         network_name = networks_steps_ui.create_network(shared=True)
-        networks_steps_ui.delete_networks([network_name], check=False)
-        networks_steps_ui.close_notification('error')
-        networks_steps_ui.check_network_present(network_name)
-        networks_steps_ui.admin_delete_network(network_name)
+        networks_steps_ui.delete_networks([network_name], check=True)
 
 
 @pytest.mark.usefixtures('user_only')
