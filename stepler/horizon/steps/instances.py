@@ -110,7 +110,7 @@ class InstancesSteps(base.BaseSteps):
                 name=instance_name).checkbox.select()
 
         page_instances.button_delete_instances.click()
-        page_instances.form_confirm.submit()
+        page_instances.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')
@@ -128,7 +128,7 @@ class InstancesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_instances.form_confirm.submit()
+        page_instances.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')
@@ -360,7 +360,7 @@ class InstancesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_disassociate.click()
 
-        page_instances.form_confirm.submit()
+        page_instances.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')

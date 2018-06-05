@@ -24,8 +24,10 @@ from selenium.webdriver.common.by import By
 from stepler.horizon.app import ui as _ui
 
 
-@ui.register_ui(field_username=ui.TextField(By.NAME, 'username'),
-                field_password=ui.TextField(By.NAME, 'password'))
+@ui.register_ui(
+    field_username=ui.TextField(By.NAME, 'username'),
+    field_password=ui.TextField(By.NAME, 'password'),
+    button_submit=ui.Button(By.CSS_SELECTOR, '#loginBtn'))
 class FormLogin(_ui.Form):
     """Form to login user."""
 

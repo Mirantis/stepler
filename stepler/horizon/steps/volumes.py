@@ -122,7 +122,7 @@ class VolumesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_volumes.form_confirm.submit()
+        page_volumes.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')
@@ -154,7 +154,7 @@ class VolumesSteps(base.BaseSteps):
                 name=volume_name).checkbox.select()
 
         page_volumes.button_delete_volumes.click()
-        page_volumes.form_confirm.submit()
+        page_volumes.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')

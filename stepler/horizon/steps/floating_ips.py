@@ -60,7 +60,7 @@ class FloatingIPsSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_release.click()
 
-        page_floating_ips.form_confirm.submit()
+        page_floating_ips.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')

@@ -152,6 +152,12 @@ class FormCreateBackup(_ui.Form):
 
 
 @ui.register_ui(
+    button_submit=ui.Button(By.CSS_SELECTOR, '.btn.btn-danger'))
+class FormSubmit(_ui.Form):
+    """Form to submit."""
+
+
+@ui.register_ui(
     button_accept_transfer=ui.Button(By.ID, 'volumes__action_accept_transfer'),
     button_create_volume=ui.Button(By.ID, 'volumes__action_create'),
     button_delete_volumes=ui.Button(By.ID, 'volumes__action_delete'),
@@ -179,6 +185,7 @@ class FormCreateBackup(_ui.Form):
                                                   'div.modal-content'),
     form_upload_to_image=FormUploadToImage(By.CSS_SELECTOR,
                                            'form[action*="/upload_to_image"]'),
+    form_submit=FormSubmit(By.CSS_SELECTOR, 'div.modal-content'),
     table_volumes=TableVolume(By.ID, 'volumes'))
 class PageVolumes(PageBase):
     """Volumes page."""

@@ -43,7 +43,7 @@ class AuthSteps(base.BaseSteps):
         with self._page_login().form_login as form:
             form.field_username.value = username
             form.field_password.value = password
-            form.submit()
+            form.button_submit.click()
             self.app.current_username = username
 
         if check:
