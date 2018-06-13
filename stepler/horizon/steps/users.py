@@ -45,7 +45,6 @@ class UsersSteps(base.BaseSteps):
             form.field_confirm_password.value = password
             form.combobox_project.value = project
             form.combobox_role.value = role
-
             form.submit()
 
         if check:
@@ -61,7 +60,7 @@ class UsersSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_users.form_confirm.submit()
+        page_users.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')
@@ -76,7 +75,7 @@ class UsersSteps(base.BaseSteps):
             page_users.table_users.row(name=username).checkbox.select()
 
         page_users.button_delete_users.click()
-        page_users.form_confirm.submit()
+        page_users.form_submit.button_submit.click()
 
         if check:
             self.close_notification('success')

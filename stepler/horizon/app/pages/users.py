@@ -34,7 +34,7 @@ class DropdownMenu(_ui.DropdownMenu):
 
 
 @ui.register_ui(
-    checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[type="checkbox"]'),
+    checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[name="object_ids"]'),
     dropdown_menu=DropdownMenu())
 class RowUser(_ui.Row):
     """User row of users table."""
@@ -72,6 +72,12 @@ class FormUpdateUser(_ui.Form):
 
 
 @ui.register_ui(
+    button_submit=ui.Button(By.CSS_SELECTOR, '.btn.btn-danger'))
+class FormSubmit(_ui.Form):
+    """Form to submit."""
+
+
+@ui.register_ui(
     button_create_user=ui.Button(By.ID, 'users__action_create'),
     button_delete_users=ui.Button(By.ID, 'users__action_delete'),
     button_filter_users=ui.Button(By.CSS_SELECTOR, '.form-control'),
@@ -80,6 +86,7 @@ class FormUpdateUser(_ui.Form):
                                             'change_user_password_form'),
     form_create_user=FormCreateUser(By.ID, 'create_user_form'),
     form_update_user=FormUpdateUser(By.ID, 'update_user_form'),
+    form_submit=FormSubmit(By.CSS_SELECTOR, 'div.modal-content'),
     table_users=TableUsers(By.ID, 'users'))
 class PageUsers(PageBase):
     """Users page."""

@@ -224,6 +224,12 @@ class FormResizeInstance(_ui.Form):
 
 
 @ui.register_ui(
+    button_submit=ui.Button(By.CSS_SELECTOR, '.btn.btn-danger'))
+class FormSubmit(_ui.Form):
+    """Form to submit."""
+
+
+@ui.register_ui(
     button_delete_instances=ui.Button(By.ID, 'instances__action_delete'),
     button_filter_instances=ui.Button(By.ID, 'instances__action_filter'),
     button_launch_instance=ui.Button(By.ID, "instances__action_launch-ng"),
@@ -240,7 +246,8 @@ class FormResizeInstance(_ui.Form):
     form_resize_instance=FormResizeInstance(
         By.CSS_SELECTOR, '[action*="resize"]'),
     form_edit_instance=FormEditInstance(By.CSS_SELECTOR,
-                                        '[action*="update"]'))
+                                        '[action*="update"]'),
+    form_submit=FormSubmit(By.CSS_SELECTOR, 'div.modal-content'))
 class PageInstances(PageBase):
     """Instances page."""
 

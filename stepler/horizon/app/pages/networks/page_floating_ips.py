@@ -54,10 +54,17 @@ class FormAssociate(_ui.Form):
 
 
 @ui.register_ui(
+    button_submit=ui.Button(By.CSS_SELECTOR, '.btn.btn-danger'))
+class FormSubmit(_ui.Form):
+    """Form to submit."""
+
+
+@ui.register_ui(
     button_allocate_ip=ui.Button(By.ID, 'floating_ips__action_allocate'),
     form_allocate_ip=FormAllocateIP(By.ID, 'associate_floating_ip_form'),
     form_associate=FormAssociate(
         By.CSS_SELECTOR, '[action*="floating_ips/associate"]'),
+    form_submit=FormSubmit(By.CSS_SELECTOR, 'div.modal-content'),
     table_floating_ips=TableFloatingIPs(By.ID, 'floating_ips'))
 class PageFloatingIPs(PageBase):
     """Floating IPs page."""
