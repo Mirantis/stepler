@@ -180,7 +180,7 @@ class FormSubmit(_ui.Form):
                                         'form[action*="/extend"]'),
     form_launch_instance=FormLaunchInstance(
         By.CSS_SELECTOR,
-        'wizard[ng-controller="LaunchInstanceWizardController"]'),
+        'div.modal-content'),
     form_manage_attachments=FormManageAttachments(By.CSS_SELECTOR,
                                                   'div.modal-content'),
     form_upload_to_image=FormUploadToImage(By.CSS_SELECTOR,
