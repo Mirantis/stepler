@@ -46,7 +46,7 @@ class RowProject(_ui.Row):
 class TableProjects(_ui.Table):
     """Projects table."""
 
-    columns = {'name': 2, 'enabled': 5}
+    columns = {'name': 2, 'enabled': 6}
     row_cls = RowProject
 
 
@@ -82,13 +82,20 @@ class FormAvailableMembers(_ui.Form):
             ec.presence_of_element_located(element_locator))
 
 
+class FormDeleteProjectConfirm(_ui.Form):
+    """Form for delete project confirm."""
+
+    submit_locator = By.CSS_SELECTOR, '.btn.btn-danger'
+
+
 @ui.register_ui(
     button_create_project=ui.Button(By.ID, 'tenants__action_create'),
     button_filter_projects=ui.Button(By.CLASS_NAME, 'fa-search'),
     field_filter_projects=ui.TextField(By.NAME, 'tenants__filter__q'),
     form_create_project=FormCreateProject(By.CSS_SELECTOR,
                                           'form[action*="identity/create"]'),
-    form_delete_project_confirm=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
+    form_delete_project_confirm=FormDeleteProjectConfirm(By.CSS_SELECTOR,
+                                                         'div.modal-content'),
     form_edit_project=FormEditProject(By.CLASS_NAME, 'modal-content'),
     table_projects=TableProjects(By.ID, 'tenants'),
     form_available_members=FormAvailableMembers(By.CSS_SELECTOR,
