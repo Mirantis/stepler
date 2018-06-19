@@ -60,7 +60,7 @@ class ProjectsSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_projects.form_confirm.submit()
+        page_projects.form_delete_project_confirm.submit()
 
         if check:
             self.close_notification('success')
