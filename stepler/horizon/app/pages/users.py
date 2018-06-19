@@ -80,7 +80,7 @@ class FormSubmit(_ui.Form):
 @ui.register_ui(
     button_create_user=ui.Button(By.ID, 'users__action_create'),
     button_delete_users=ui.Button(By.ID, 'users__action_delete'),
-    button_filter_users=ui.Button(By.CSS_SELECTOR, '.form-control'),
+    button_filter_users=ui.Button(By.ID, 'users__action_filter'),
     field_filter_users=ui.TextField(By.NAME, 'users__filter__q'),
     form_change_password=FormChangePassword(By.ID,
                                             'change_user_password_form'),
