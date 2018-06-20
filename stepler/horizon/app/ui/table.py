@@ -64,8 +64,8 @@ class Row(ui.Row):
 
 
 @ui.register_ui(
-    link_next=ui.UI(By.CSS_SELECTOR, 'a[href^="?marker="]'),
-    link_prev=ui.UI(By.CSS_SELECTOR, 'a[href^="?prev_marker="]'),
+    link_next=ui.UI(By.XPATH, "//span[contains(text(),'Next')]"),
+    link_prev=ui.UI(By.XPATH, "//span[contains(text(),'Prev')]"),
     row_empty=ui.UI(By.CSS_SELECTOR, 'tr.empty'))
 class Table(ui.Table):
     """Custom table."""

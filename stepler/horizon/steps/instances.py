@@ -128,7 +128,7 @@ class InstancesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_instances.form_confirm.submit()
+        page_instances.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')

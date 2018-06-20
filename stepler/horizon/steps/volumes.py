@@ -122,7 +122,7 @@ class VolumesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_volumes.form_confirm.submit()
+        page_volumes.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')

@@ -239,6 +239,7 @@ class FormResizeInstance(_ui.Form):
         'form[action*="/create"]'),
     form_resize_instance=FormResizeInstance(
         By.CSS_SELECTOR, '[action*="resize"]'),
+    form_confirm_delete=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
     form_edit_instance=FormEditInstance(By.CSS_SELECTOR,
                                         '[action*="update"]'))
 class PageInstances(PageBase):

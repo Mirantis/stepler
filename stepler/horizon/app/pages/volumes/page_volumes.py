@@ -179,6 +179,7 @@ class FormCreateBackup(_ui.Form):
                                                   'div.modal-content'),
     form_upload_to_image=FormUploadToImage(By.CSS_SELECTOR,
                                            'form[action*="/upload_to_image"]'),
+    form_confirm_delete=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
     table_volumes=TableVolume(By.ID, 'volumes'))
 class PageVolumes(PageBase):
     """Volumes page."""
