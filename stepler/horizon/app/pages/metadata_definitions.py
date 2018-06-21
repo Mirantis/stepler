@@ -47,11 +47,19 @@ class FormImportNamespace(_ui.Form):
     """Form to create namespace."""
 
 
+class FormConfirmDeleteNamespace(_ui.Form):
+    """Form delete metadata confirmation."""
+
+    submit_locator = By.CSS_SELECTOR, '.btn.btn-danger'
+
 @ui.register_ui(
     button_import_namespace=ui.Button(By.ID, 'namespaces__action_import'),
     button_filter_namespaces=ui.Button(By.ID, 'namespaces__action_filter'),
     field_filter_namespaces=ui.TextField(By.NAME, 'namespaces__filter__q'),
     form_import_namespace=FormImportNamespace(By.ID, 'create_metadata_form'),
+    form_confirm_delete_namespace=FormConfirmDeleteNamespace(
+        By.CSS_SELECTOR,
+        'div.modal-content'),
     table_namespaces=TableNamespaces(By.ID, 'namespaces'))
 class PageMetadataDefinitions(PageBase):
     """Metadata definitions page."""

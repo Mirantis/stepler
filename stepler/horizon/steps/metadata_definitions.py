@@ -89,7 +89,7 @@ class NamespacesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_metadata_definitions.form_confirm.submit()
+        page_metadata_definitions.form_confirm_delete_namespace.submit()
 
         if check:
             self.close_notification('success')
