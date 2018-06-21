@@ -884,7 +884,8 @@ class VolumesSteps(base.BaseSteps):
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_change_volume_type.click()
-
+        page_volumes.item_policy.click()
+        page_volumes.item_demand.click()
         with page_volumes.form_change_volume_type as form:
             assert_that(form.combobox_migration_policy.value,
                         equal_to("On Demand"))

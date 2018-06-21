@@ -180,6 +180,9 @@ class FormCreateBackup(_ui.Form):
     form_upload_to_image=FormUploadToImage(By.CSS_SELECTOR,
                                            'form[action*="/upload_to_image"]'),
     form_confirm_delete=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
+    item_policy=ui.UI(By.XPATH, "//span[contains(text(),'Never')] "),
+    item_demand=ui.UI(By.XPATH,"//a[contains(text(),'On Demand')] "),
+    label_snapshots=ui.UI(By.XPATH, "//a[contains(text(), 'Snapshots')]"),
     table_volumes=TableVolume(By.ID, 'volumes'))
 class PageVolumes(PageBase):
     """Volumes page."""
