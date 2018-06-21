@@ -95,7 +95,7 @@ class NetworksSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_networks.form_confirm.submit()
+        page_networks.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
@@ -112,7 +112,7 @@ class NetworksSteps(base.BaseSteps):
                 name=network_name).checkbox.select()
 
         page_networks.button_delete_networks.click()
-        page_networks.form_confirm.submit()
+        page_networks.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')

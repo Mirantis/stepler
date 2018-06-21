@@ -69,7 +69,7 @@ class RoutersSteps(base.BaseSteps):
                 name=router_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_delete.click()
-        page_routers.form_confirm.click()
+        page_routers.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')

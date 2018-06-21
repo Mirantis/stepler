@@ -33,7 +33,16 @@ class Notification(ui.Block):
               'success': 'alert-success'}
 
 
-@ui.register_ui(navigate_menu=_ui.NavigateMenu(By.ID, 'sidebar-accordion'))
+class FormConfirmDelete(_ui.Form):
+    """Form to confirm deletions."""
+
+    submit_locator = By.CSS_SELECTOR, '.btn.btn-danger'
+
+
+@ui.register_ui(
+    form_confirm_delete=FormConfirmDelete(
+        By.CSS_SELECTOR, 'div.modal-content'),
+    navigate_menu=_ui.NavigateMenu(By.ID, 'sidebar-accordion'))
 class PageBase(pom.Page, _ui.InitiatedUI):
     """Base page of user account."""
 

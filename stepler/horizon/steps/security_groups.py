@@ -69,7 +69,7 @@ class SecurityGroupsSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_security_groups.form_confirm.submit()
+        page_security_groups.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
@@ -107,7 +107,7 @@ class SecurityGroupsSteps(base.BaseSteps):
             page.checkbox.click()
             page_rules.button_delete_rules.click()
 
-        page_rules.form_confirm.submit()
+        page_rules.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
