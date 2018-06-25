@@ -64,7 +64,7 @@ class FlavorsSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_flavors.form_confirm.submit()
+        page_flavors.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
@@ -81,7 +81,7 @@ class FlavorsSteps(base.BaseSteps):
                 name=flavor_name).checkbox.select()
 
         page_flavors.button_delete_flavors.click()
-        page_flavors.form_confirm.submit()
+        page_flavors.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')

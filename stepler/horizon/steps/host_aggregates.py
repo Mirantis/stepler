@@ -26,7 +26,7 @@ class HostAggregatesSteps(base.BaseSteps):
     """Host aggregates steps."""
 
     def _page_host_aggregates(self):
-        """Open images page if it isn't opened."""
+        """Open host aggregated page if it isn't opened."""
         return self._open(self.app.page_host_aggregates)
 
     @steps_checker.step
@@ -59,7 +59,7 @@ class HostAggregatesSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_host_aggregates.form_confirm.submit()
+        page_host_aggregates.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
