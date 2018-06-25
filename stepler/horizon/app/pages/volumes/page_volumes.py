@@ -105,13 +105,6 @@ class FormExtendVolume(_ui.Form):
 
 
 @ui.register_ui(
-    field_description=ui.TextField(By.NAME, 'description'),
-    field_name=ui.TextField(By.NAME, 'name'))
-class FormCreateSnapshot(_ui.Form):
-    """Form create volume snapshot."""
-
-
-@ui.register_ui(
     detach_volume_button=ui.Button(By.CSS_SELECTOR, '[id$="action_detach"]'))
 class RowAttachedInstance(_ui.Row):
     """Row with attached instance to volume."""

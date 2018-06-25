@@ -22,8 +22,6 @@ from selenium.webdriver.common.by import By
 
 from stepler.horizon.app import ui as _ui
 
-from .tab_volumes import FormCreateSnapshot
-
 
 @ui.register_ui(
     checkbox=_ui.CheckBox(By.CSS_SELECTOR, 'input[type="checkbox"]'),
@@ -31,6 +29,13 @@ from .tab_volumes import FormCreateSnapshot
 class RowSnapshot(_ui.Row):
     """Volume snapshot row of volume snapshots table."""
     transit_statuses = ('Creating',)
+
+
+@ui.register_ui(
+    field_description=ui.TextField(By.NAME, 'description'),
+    field_name=ui.TextField(By.NAME, 'name'))
+class FormCreateSnapshot(_ui.Form):
+    """Form create volume snapshot."""
 
 
 @ui.register_ui(
