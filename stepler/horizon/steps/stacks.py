@@ -82,7 +82,7 @@ class StacksSteps(base.BaseSteps):
             menu.button_toggle.click()
             menu.item_delete.click()
 
-        page_stacks.form_confirm.submit()
+        page_stacks.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
@@ -101,8 +101,8 @@ class StacksSteps(base.BaseSteps):
 
         page_stacks.button_delete_stacks.click()
 
-        page_stacks.form_confirm.wait_for_presence()
-        page_stacks.form_confirm.submit()
+        page_stacks.form_confirm_delete.wait_for_presence()
+        page_stacks.form_confirm_delete.submit()
 
         if check:
             self.close_notification('success')
