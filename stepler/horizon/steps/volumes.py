@@ -884,10 +884,9 @@ class VolumesSteps(base.BaseSteps):
                 name=volume_name).dropdown_menu as menu:
             menu.button_toggle.click()
             menu.item_change_volume_type.click()
-
         with page_volumes.form_change_volume_type as form:
             assert_that(form.combobox_migration_policy.value,
-                        equal_to("On Demand"))
+                        equal_to("Never"))
 
     @steps_checker.step
     def check_volume_present_in_admin_volume(self, volume_name):

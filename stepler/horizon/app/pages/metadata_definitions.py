@@ -52,6 +52,7 @@ class FormConfirmDeleteNamespace(_ui.Form):
 
     submit_locator = By.CSS_SELECTOR, '.btn.btn-danger'
 
+
 @ui.register_ui(
     button_import_namespace=ui.Button(By.ID, 'namespaces__action_import'),
     button_filter_namespaces=ui.Button(By.ID, 'namespaces__action_filter'),

@@ -24,6 +24,8 @@ from ..base import PageBase
 from stepler.horizon.app import ui as _ui
 
 from ..instances.page_instances import FormLaunchInstance
+from .tab_snapshots import FormCreateSnapshot
+from .tab_snapshots import TabSnapshots
 
 
 @ui.register_ui(
@@ -105,13 +107,6 @@ class FormExtendVolume(_ui.Form):
 
 
 @ui.register_ui(
-    field_description=ui.TextField(By.NAME, 'description'),
-    field_name=ui.TextField(By.NAME, 'name'))
-class FormCreateSnapshot(_ui.Form):
-    """Form create volume snapshot."""
-
-
-@ui.register_ui(
     detach_volume_button=ui.Button(By.CSS_SELECTOR, '[id$="action_detach"]'))
 class RowAttachedInstance(_ui.Row):
     """Row with attached instance to volume."""
@@ -186,6 +181,8 @@ class FormSubmit(_ui.Form):
     form_upload_to_image=FormUploadToImage(By.CSS_SELECTOR,
                                            'form[action*="/upload_to_image"]'),
     form_submit=FormSubmit(By.CSS_SELECTOR, 'div.modal-content'),
+    label_snapshots=ui.UI(By.XPATH, "//a[contains(text(), 'Snapshots')]"),
+    tab_snapshots=TabSnapshots(),
     table_volumes=TableVolume(By.ID, 'volumes'))
 class PageVolumes(PageBase):
     """Volumes page."""
