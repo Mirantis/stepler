@@ -24,6 +24,7 @@ from ..base import PageBase
 from stepler.horizon.app import ui as _ui
 
 from ..instances.page_instances import FormLaunchInstance
+from .tab_snapshots import FormCreateSnapshot
 
 
 @ui.register_ui(
