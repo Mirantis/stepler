@@ -1,4 +1,5 @@
 [gerrit]
-host=review.gerrithub.io
+host=gerrit.mcp.mirantis.com
 port=29418
-project=Mirantis/stepler.git
+project=mcp/stepler
+defaultbranch=pike
