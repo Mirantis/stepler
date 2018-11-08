@@ -505,6 +505,7 @@ class ImagesSteps(base.BaseSteps):
         """
         with self._page_images() as page:
             page.search_bar.apply('Visibility', 'Public')
+            page.table_images.row(name=image_name).wait_for_absence(5)
             assert_that(page.table_images.row(name=image_name).is_present,
                         equal_to(False))
             page.search_bar.clear('Visibility')
