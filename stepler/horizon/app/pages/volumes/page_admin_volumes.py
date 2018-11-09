@@ -27,12 +27,12 @@ from .tab_volume_types import TabVolumeTypes
 
 @ui.register_ui(
     label_volumes=ui.UI(By.CSS_SELECTOR, '[data-target$="volumes_tab"]'),
-    label_volume_types=ui.UI(By.CSS_SELECTOR,
-                             '[data-target$="volume_types_tab"]'),
+    label_volume_types=ui.UI(By.XPATH,
+                             '//a[contains(text(),"Volume Types")]'),
     tab_volumes=TabAdminVolumes(),
     tab_volume_types=TabVolumeTypes())
 class PageAdminVolumes(PageBase):
     """Admin volumes page."""
 
     url = "/admin/volumes/"
-    navigate_items = "Admin", "System", "Volumes"
+    navigate_items = "Admin", "Volume", "Volumes"
