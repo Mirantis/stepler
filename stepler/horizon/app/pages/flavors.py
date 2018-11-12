@@ -119,6 +119,7 @@ class FormUpdateMetadata(_ui.Form):
                                         '[action*="update"]'),
     form_update_metadata=FormUpdateMetadata(By.CSS_SELECTOR,
                                             'div.modal-content'),
+    form_confirm_delete=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
     table_flavors=TableFlavors(By.ID, 'flavors'))
 class PageFlavors(PageBase):
     """Flavors page."""
