@@ -25,6 +25,7 @@ from stepler.horizon.app import ui as _ui
 
 from ..instances.page_instances import FormLaunchInstance
 from .tab_snapshots import FormCreateSnapshot
+from .tab_snapshots import TabSnapshots
 
 
 @ui.register_ui(
@@ -177,6 +178,7 @@ class FormCreateBackup(_ui.Form):
     item_policy=ui.UI(By.XPATH, "//span[contains(text(),'Never')] "),
     item_demand=ui.UI(By.XPATH,"//a[contains(text(),'On Demand')] "),
     label_snapshots=ui.UI(By.XPATH, "//a[contains(text(), 'Snapshots')]"),
+    tab_snapshots=TabSnapshots(),
     table_volumes=TableVolume(By.ID, 'volumes'))
 class PageVolumes(PageBase):
     """Volumes page."""
