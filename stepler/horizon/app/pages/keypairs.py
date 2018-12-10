@@ -25,9 +25,14 @@ from stepler.horizon.app import ui as _ui
 from .base import PageBase
 
 
-@ui.register_ui(field_name=ui.TextField(By.NAME, 'name'))
+@ui.register_ui(field_name=ui.TextField(By.NAME, 'name'),
+                button_create_keypair=ui.Button(
+                    By.CSS_SELECTOR, '[ng-click*="ctrl.generate()"]'),
+                button_copy_keypair=ui.Button(
+                    By.CSS_SELECTOR, '[ng-click*="ctrl.copyPrivateKey()"]'))
 class FormCreateKeypair(_ui.Form):
     """Form to create keypair."""
+    submit_locator = By.CSS_SELECTOR, '[ng-click*="ctrl.submit()"]'
 
 
 @ui.register_ui(
@@ -51,12 +56,13 @@ class FormImportKeypair(_ui.Form):
 
 
 @ui.register_ui(
-    button_create_keypair=ui.Button(By.ID, 'keypairs__action_create'),
+    button_create_keypair=ui.Button(
+        By.ID, 'keypairs__action_create-keypair-ng'),
     button_delete_keypairs=ui.Button(By.ID, 'keypairs__action_delete'),
     button_import_keypair=ui.Button(By.ID, 'keypairs__action_import'),
     form_confirm_delete=_ui.Form(By.CSS_SELECTOR, 'div.modal-content'),
     form_create_keypair=FormCreateKeypair(
-        By.XPATH, '//*[@action="/project/key_pairs/create/"]'),
+        By.CSS_SELECTOR, 'div.modal-content'),
     form_import_keypair=FormImportKeypair(
         By.XPATH, '//*[@action="/project/key_pairs/import/"]'),
     table_keypairs=TableKeypairs(By.ID, 'keypairs'))
