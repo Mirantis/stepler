@@ -52,6 +52,7 @@ class ApiAccessSteps(base.BaseSteps):
         self._remove_rc_file()
 
         page_api_access = self._page_api_access()
+        page_api_access.button_download_rc_files.click()
         page_api_access.button_download_v3_file.click()
 
         if check:
