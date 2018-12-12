@@ -125,4 +125,4 @@ class PageFlavors(PageBase):
     """Flavors page."""
 
     url = "/admin/flavors/"
-    navigate_items = 'Admin', 'System', 'Flavors'
+    navigate_items = 'Admin', 'Compute', 'Flavors'
