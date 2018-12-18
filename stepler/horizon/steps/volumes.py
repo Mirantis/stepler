@@ -238,7 +238,6 @@ class VolumesSteps(base.BaseSteps):
     def _tab_admin_volumes(self):
         """Open admin volumes tab."""
         with self._page_admin_volumes() as page:
-            page.label_volumes.click()
             return page.tab_volumes
 
     @steps_checker.step
