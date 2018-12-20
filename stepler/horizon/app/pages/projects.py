@@ -46,7 +46,7 @@ class RowProject(_ui.Row):
 class TableProjects(_ui.Table):
     """Projects table."""
 
-    columns = {'name': 2, 'enabled': 5}
+    columns = {'name': 2, 'enabled': 6}
     row_cls = RowProject
 
 
