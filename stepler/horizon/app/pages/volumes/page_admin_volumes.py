@@ -26,7 +26,6 @@ from .tab_volume_types import TabVolumeTypes
 
 
 @ui.register_ui(
-    label_volumes=ui.UI(By.CSS_SELECTOR, '[data-target$="volumes_tab"]'),
     label_volume_types=ui.UI(By.XPATH,
                              '//a[contains(text(),"Volume Types")]'),
     tab_volumes=TabAdminVolumes(),
