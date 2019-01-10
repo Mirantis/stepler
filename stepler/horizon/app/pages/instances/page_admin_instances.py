@@ -46,6 +46,7 @@ class TableInstances(_ui.Table):
 
     columns = {'name': 4, 'status': 8}
     row_cls = RowInstance
+    row_xpath = '//tr[contains(@id, "instances__row")]'
 
 
 @ui.register_ui(

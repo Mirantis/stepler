@@ -87,6 +87,7 @@ class TableVolume(_ui.Table):
                'type': 6,
                'attached_to': 7}
     row_cls = RowVolume
+    row_xpath = '//tr[contains(@id, "volumes__row")]'
 
 
 @ui.register_ui(

@@ -181,6 +181,7 @@ class TableInstances(_ui.Table):
         'size': 5,
         'status': 7}
     row_cls = RowInstance
+    row_xpath = '//tr[contains(@id, "instances__row")]'
 
     def value(self):
         """List parameters of instance."""

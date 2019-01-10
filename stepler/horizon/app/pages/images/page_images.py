@@ -51,6 +51,7 @@ class TableImages(_ui.Table):
 
     columns = {'name': 4, 'status': 6}
     row_cls = RowImage
+    row_xpath = '//tr[@ng-repeat-start]'
 
 
 @ui.register_ui(
