@@ -71,6 +71,8 @@ d923893c-5fe0-11e7-bfb3-5404a69126b9:
 # Cinder Volumes
 f0c407a3-7aa1-400c-9a9f-6c69870e3fb9:
   reason: Migration on one node is not possible
+e585242-9443-4e78-a7fe-3ee6097459bb:
+  reason: Migration on one node is not possible
 
 # Object Storage
 e2804b4e-743e-4632-9c63-34066491a418:
