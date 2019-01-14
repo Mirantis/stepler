@@ -19,7 +19,10 @@ Keypairs page
 
 from pom import ui
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
+from stepler import config
 from stepler.horizon.app import ui as _ui
 
 from .base import PageBase
@@ -32,8 +35,10 @@ from .base import PageBase
                     By.CSS_SELECTOR, '[ng-click*="ctrl.copyPrivateKey()"]'))
 class FormCreateKeypair(_ui.Form):
     """Form to create keypair."""
-    submit_locator = By.CSS_SELECTOR, '[ng-click*="ctrl.submit()"]'
-
+    def button_submit(self):
+        element_locator = By.CSS_SELECTOR, '[ng-click*="ctrl.submit()"]'
+        return WebDriverWait(self.webelement, config.UI_TIMEOUT).until(
+            ec.element_to_be_clickable(element_locator))
 
 @ui.register_ui(
     button_delete_keypair=ui.Button(By.CSS_SELECTOR, '[id*="action_delete"]'),

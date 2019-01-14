@@ -44,7 +44,7 @@ class KeypairsSteps(base.BaseSteps):
         with page_keypairs.form_create_keypair as form:
             form.field_name.value = keypair_name
             form.button_create_keypair.click()
-            form.submit()
+            form.button_submit().click()
 
         if check:
             self._page_keypairs()
