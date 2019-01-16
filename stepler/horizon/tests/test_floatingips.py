@@ -20,17 +20,14 @@ Floating IP tests
 import pytest
 
 
-@pytest.mark.usefixtures('any_one')
-class TestAnyOne(object):
-    """Tests for anyone."""
+@pytest.mark.usefixtures('admin_only')
+class TestAdminOnly(object):
+    """Tests for admin only."""
 
-    @pytest.mark.idempotent_id('95546c8c-775a-4527-b92b-83cf56db999d',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('57d7c23a-463e-49b7-843f-09ded9686fb9',
-                               any_one='user')
+    @pytest.mark.idempotent_id('95546c8c-775a-4527-b92b-83cf56db999d')
     def test_floating_ip_associate(self, horizon_server, floating_ip,
                                    floating_ips_steps_ui):
-        """**Scenario:** Verify that user can associate floating IP.
+        """**Scenario:** Verify that admin can associate floating IP.
 
         **Setup:**
 
@@ -48,3 +45,32 @@ class TestAnyOne(object):
         """
         floating_ips_steps_ui.associate_floating_ip(floating_ip.ip,
                                                     horizon_server.name)
+
+
+@pytest.mark.usefixtures('user_only')
+class TestUserOnly(object):
+    """Tests for user only."""
+
+    @pytest.mark.idempotent_id('57d7c23a-463e-49b7-843f-09ded9686fb9')
+    def test_floating_ip_associate(self, horizon_server_with_private_image,
+                                   floating_ip,floating_ips_steps_ui):
+
+        """**Scenario:** Verify that user can associate floating IP.
+
+        **Setup:**
+
+        #. Create floating IP using API
+        #. Create server using API
+
+        **Steps:**
+
+        #. Associate floating IP to server using UI
+
+        **Teardown:**
+
+        #. Delete floating IP using API
+        #. Delete server using API
+        """
+        floating_ips_steps_ui.associate_floating_ip(floating_ip.ip,
+                                                    horizon_server_with_private_image.name)
+

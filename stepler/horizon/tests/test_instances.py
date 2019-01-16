@@ -43,50 +43,6 @@ class TestAnyOne(object):
             network_name=config.INTERNAL_NETWORK_NAME)[0]
         instances_steps_ui.delete_instance(instance_name)
 
-    @pytest.mark.idempotent_id('005870b0-73fd-4c56-a6ec-8c4bad46f058',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('e534aeb2-b0d4-407c-9f89-64a5c0739513',
-                               any_one='user')
-    def test_lock_instance(self, horizon_server, instances_steps_ui):
-        """**Scenario:** Verify that user can lock instance.
-
-        **Setup:**
-
-        #. Create server using API
-
-        **Steps:**
-
-        #. Lock server using UI
-        #. Unlock server using UI
-
-        **Teardown:**
-
-        #. Delete server using API
-        """
-        instances_steps_ui.lock_instance(horizon_server.name)
-        instances_steps_ui.unlock_instance(horizon_server.name)
-
-    @pytest.mark.idempotent_id('6a01661b-c7af-47ad-9aaa-8b185dda8d3c',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('48649a7b-6496-4ff9-9041-dcb52f1324f3',
-                               any_one='user')
-    def test_view_instance(self, horizon_server, instances_steps_ui):
-        """**Scenario:** Verify that user can view instance details.
-
-        **Setup:**
-
-        #. Create server using API
-
-        **Steps:**
-
-        #. View server using UI
-
-        **Teardown:**
-
-        #. Delete server using API
-        """
-        instances_steps_ui.view_instance(horizon_server.name)
-
     @pytest.mark.idempotent_id('8867776e-ff19-49a7-8d10-ea78cc02cfc6',
                                any_one='admin')
     @pytest.mark.idempotent_id('de45feb0-85bb-4b54-b8dc-0ead39620bfa',
@@ -118,58 +74,6 @@ class TestAnyOne(object):
         instances_steps_ui.check_instances_sum(instance_names)
         update_settings(items_per_page=1)
         instances_steps_ui.check_instances_pagination(instance_names)
-
-    @pytest.mark.idempotent_id('060136f-d477-4177-a387-8e8d01ec4ecd',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('edc5f03d-ea66-4dae-8322-7cd679c2d829',
-                               any_one='user')
-    @pytest.mark.parametrize('horizon_servers', [2], ids=[''], indirect=True)
-    def test_filter_instances(self, horizon_servers, instances_steps_ui):
-        """**Scenario:** Verify that user can filter instances.
-
-        **Setup:**
-
-        #. Create servers using API
-
-        **Steps:**
-
-        #. Filter servers using UI
-        #. Reset filter using UI
-
-        **Teardown:**
-
-        #. Delete servers using API
-        """
-        instances_steps_ui.filter_instances(query=horizon_servers[0].name)
-        instances_steps_ui.reset_instances_filter()
-
-    @pytest.mark.idempotent_id('886b9820-3ef4-11e7-b7fb-938b7d064835',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('89e672f6-3ef4-11e7-95a1-b7df5a42063f',
-                               any_one='user')
-    def test_create_instance_snapshot(self, horizon_server,
-                                      instances_steps_ui,
-                                      images_steps_ui):
-        """**Scenario:** Verify that user can create instance snapshot.
-
-        **Setup:**
-
-        #. Create server using API
-
-        **Steps:**
-
-        #. Create snapshot
-        #. Check that snapshot created
-        #. Delete snapshot
-
-        **Teardown:**
-
-        #. Delete server using API
-        """
-        snapshot_name = instances_steps_ui.create_instance_snapshot(
-            horizon_server.name)
-        images_steps_ui.check_image_present(snapshot_name)
-        images_steps_ui.delete_image(snapshot_name)
 
     @pytest.mark.idempotent_id('8523aad8-4082-11e7-aed3-1bd4f24c633d',
                                any_one='admin')
@@ -476,6 +380,91 @@ class TestAdminOnly(object):
         """
         instances_steps_ui.check_instance_pause(instance_name=server.name)
 
+    @pytest.mark.idempotent_id('005870b0-73fd-4c56-a6ec-8c4bad46f058')
+    def test_lock_instance(self, horizon_server, instances_steps_ui):
+
+        """**Scenario:** Verify that user can lock instance.
+
+         **Setup:**
+
+         #. Create server using API
+
+         **Steps:**
+
+         #. Lock server using UI
+         #. Unlock server using UI
+
+         **Teardown:**
+
+         #. Delete server using API
+         """
+        instances_steps_ui.lock_instance(horizon_server.name)
+        instances_steps_ui.unlock_instance(horizon_server.name)
+
+    @pytest.mark.idempotent_id('6a01661b-c7af-47ad-9aaa-8b185dda8d3c')
+    def test_view_instance(self, horizon_server, instances_steps_ui):
+        """**Scenario:** Verify that user can view instance details.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. View server using UI
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.view_instance(horizon_server.name)
+
+    @pytest.mark.idempotent_id('886b9820-3ef4-11e7-b7fb-938b7d064835')
+    def test_create_instance_snapshot(self, horizon_server,
+                                      instances_steps_ui,
+                                      images_steps_ui):
+        """**Scenario:** Verify that user can create instance snapshot.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Create snapshot
+        #. Check that snapshot created
+        #. Delete snapshot
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        snapshot_name = instances_steps_ui.create_instance_snapshot(
+            horizon_server.name)
+        images_steps_ui.check_image_present(snapshot_name)
+        images_steps_ui.delete_image(snapshot_name)
+
+    @pytest.mark.idempotent_id('060136f-d477-4177-a387-8e8d01ec4ecd')
+    @pytest.mark.parametrize('horizon_servers', [2], ids=[''], indirect=True)
+    def test_filter_instances(self, horizon_servers, instances_steps_ui):
+        """**Scenario:** Verify that admin can filter instances.
+
+        **Setup:**
+
+        #. Create servers using API
+
+        **Steps:**
+
+        #. Filter servers using UI
+        #. Reset filter using UI
+
+        **Teardown:**
+
+        #. Delete servers using API
+        """
+        instances_steps_ui.filter_instances(query=horizon_servers[0].name)
+        instances_steps_ui.reset_instances_filter()
+
 
 @pytest.mark.usefixtures('user_only')
 class TestUserOnly(object):
@@ -575,3 +564,87 @@ class TestUserOnly(object):
         instances_steps_ui.add_security_group(
             horizon_server_with_private_image.name,
             horizon_security_group['name'])
+
+    @pytest.mark.idempotent_id('e534aeb2-b0d4-407c-9f89-64a5c0739513')
+    def test_lock_instance(self, horizon_server_with_private_image, instances_steps_ui):
+
+        """**Scenario:** Verify that user can lock instance.
+
+         **Setup:**
+
+         #. Create server using API
+
+         **Steps:**
+
+         #. Lock server using UI
+         #. Unlock server using UI
+
+         **Teardown:**
+
+         #. Delete server using API
+         """
+        instances_steps_ui.lock_instance(horizon_server_with_private_image.name)
+        instances_steps_ui.unlock_instance(horizon_server_with_private_image.name)
+
+    @pytest.mark.idempotent_id('48649a7b-6496-4ff9-9041-dcb52f1324f3')
+    def test_view_instance(self, horizon_server_with_private_image, instances_steps_ui):
+        """**Scenario:** Verify that user can view instance details.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. View server using UI
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        instances_steps_ui.view_instance(horizon_server_with_private_image.name)
+
+    @pytest.mark.idempotent_id('89e672f6-3ef4-11e7-95a1-b7df5a42063f')
+    def test_create_instance_snapshot(self, horizon_server_with_private_image,
+                                      instances_steps_ui,
+                                      images_steps_ui):
+        """**Scenario:** Verify that user can create instance snapshot.
+
+        **Setup:**
+
+        #. Create server using API
+
+        **Steps:**
+
+        #. Create snapshot
+        #. Check that snapshot created
+        #. Delete snapshot
+
+        **Teardown:**
+
+        #. Delete server using API
+        """
+        snapshot_name = instances_steps_ui.create_instance_snapshot(
+            horizon_server_with_private_image.name)
+        images_steps_ui.check_image_present(snapshot_name)
+        images_steps_ui.delete_image(snapshot_name)
+
+    @pytest.mark.idempotent_id('edc5f03d-ea66-4dae-8322-7cd679c2d829')
+    @pytest.mark.parametrize('horizon_servers_with_private_image', [2], ids=[''], indirect=True)
+    def test_filter_instances(self, horizon_servers_with_private_image, instances_steps_ui):
+        """**Scenario:** Verify that user can filter instances.
+
+        **Setup:**
+
+        #. Create servers using API
+        **Steps:**
+
+        #. Filter servers using UI
+        #. Reset filter using UI
+
+        **Teardown:**
+
+        #. Delete servers using API
+        """
+        instances_steps_ui.filter_instances(query=horizon_servers_with_private_image[0].name)
+        instances_steps_ui.reset_instances_filter()
