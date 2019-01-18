@@ -65,37 +65,6 @@ class TestAnyOne(object):
         """
         instances_steps_ui.resize_instance(horizon_server.name)
 
-    @pytest.mark.idempotent_id('68f1fbae-4cf2-11e7-b7fc-57cd3087863f',
-                               any_one='admin')
-    @pytest.mark.idempotent_id('74a1d870-4cf2-11e7-9757-57cda13b370c',
-                               any_one='user')
-    @pytest.mark.parametrize('horizon_servers', [3], ids=[''], indirect=True)
-    def test_instances_pagination_filter(self,
-                                         server_steps,
-                                         horizon_servers,
-                                         update_settings,
-                                         instances_steps_ui):
-        """**Scenario:** Verify that instances pagination work with filter.
-
-        **Setup:**
-
-        #. Create 3 servers using API
-
-        **Steps:**
-
-        #. Update ``items_per_page`` parameter to 1 using UI
-        #. Check instances pagination with filtering using UI
-
-        **Teardown:**
-
-        #. Delete 3 servers using API
-        """
-        instance_names = [instance.name
-                          for instance in server_steps.get_servers()]
-        update_settings(items_per_page=1)
-        instances_steps_ui.check_instances_pagination_filter(instance_names)
-
-
 @pytest.mark.usefixtures('admin_only')
 class TestAdminOnly(object):
     """Tests for admin only."""
@@ -433,7 +402,6 @@ class TestAdminOnly(object):
         instances_steps_ui.filter_instances(query=horizon_servers[0].name)
         instances_steps_ui.reset_instances_filter()
 
-
     @pytest.mark.idempotent_id('8867776e-ff19-49a7-8d10-ea78cc02cfc6')
     @pytest.mark.parametrize('horizon_servers', [3], ids=[''], indirect=True)
     def test_instances_pagination(self,
@@ -462,6 +430,33 @@ class TestAdminOnly(object):
         instances_steps_ui.check_instances_sum(instance_names)
         update_settings(items_per_page=1)
         instances_steps_ui.check_instances_pagination(instance_names)
+
+    @pytest.mark.idempotent_id('68f1fbae-4cf2-11e7-b7fc-57cd3087863f')
+    @pytest.mark.parametrize('horizon_servers', [3], ids=[''], indirect=True)
+    def test_instances_pagination_filter(self,
+                                         server_steps,
+                                         horizon_servers,
+                                         update_settings,
+                                         instances_steps_ui):
+        """**Scenario:** Verify that instances pagination work with filter.
+
+        **Setup:**
+
+        #. Create 3 servers using API
+
+        **Steps:**
+
+        #. Update ``items_per_page`` parameter to 1 using UI
+        #. Check instances pagination with filtering using UI
+
+        **Teardown:**
+
+        #. Delete 3 servers using API
+        """
+        instance_names = [instance.name
+                          for instance in server_steps.get_servers()]
+        update_settings(items_per_page=1)
+        instances_steps_ui.check_instances_pagination_filter(instance_names)
 
 
 @pytest.mark.usefixtures('user_only')
@@ -676,3 +671,31 @@ class TestUserOnly(object):
         instances_steps_ui.check_instances_sum(instance_names)
         update_settings(items_per_page=1)
         instances_steps_ui.check_instances_pagination(instance_names)
+
+    @pytest.mark.idempotent_id('74a1d870-4cf2-11e7-9757-57cda13b370c')
+    @pytest.mark.parametrize('horizon_servers_with_private_image',
+                             [3], ids=[''], indirect=True)
+    def test_instances_pagination_filter(self,
+                                         server_steps,
+                                         horizon_servers_with_private_image,
+                                         update_settings,
+                                         instances_steps_ui):
+        """**Scenario:** Verify that instances pagination work with filter.
+
+        **Setup:**
+
+        #. Create 3 servers using API
+
+        **Steps:**
+
+        #. Update ``items_per_page`` parameter to 1 using UI
+        #. Check instances pagination with filtering using UI
+
+        **Teardown:**
+
+        #. Delete 3 servers using API
+        """
+        instance_names = [instance.name
+                          for instance in server_steps.get_servers()]
+        update_settings(items_per_page=1)
+        instances_steps_ui.check_instances_pagination_filter(instance_names)

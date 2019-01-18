@@ -38,9 +38,9 @@ class InstancesSteps(base.BaseSteps):
         """Open admin instances page if it was not opened."""
         return self._open(self.app.page_admin_instances)
 
-    def _get_current_instance_name(self, instance_names):
+    def _get_current_instance_name(self, page_instances, instance_names):
         """Getting current instance name."""
-        rows = self._page_instances().table_instances.rows
+        rows = page_instances.table_instances.rows
         assert_that(rows, has_length(1))
 
         instance_name = rows[0].cell('name').value
@@ -245,7 +245,8 @@ class InstancesSteps(base.BaseSteps):
         # instances can be unordered so we should try to retrieve
         # any instance from instances list
 
-        instance_name = self._get_current_instance_name(instance_names)
+        instance_name = self._get_current_instance_name(page_instances,
+                                                        instance_names)
         ordered_names.append(instance_name)
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_absence()
@@ -254,14 +255,17 @@ class InstancesSteps(base.BaseSteps):
         for _ in range(1, count - 1):
             page_instances.table_instances.link_next.click()
 
-            instance_name = self._get_current_instance_name(instance_names)
+            instance_name = self._get_current_instance_name(
+                page_instances,
+                instance_names)
             ordered_names.append(instance_name)
             page_instances.table_instances.link_next.wait_for_presence()
             page_instances.table_instances.link_prev.wait_for_presence()
 
         page_instances.table_instances.link_next.click()
 
-        instance_name = self._get_current_instance_name(instance_names)
+        instance_name = self._get_current_instance_name(page_instances,
+                                                        instance_names)
         ordered_names.append(instance_name)
         page_instances.table_instances.link_next.wait_for_absence()
         page_instances.table_instances.link_prev.wait_for_presence()
@@ -295,7 +299,8 @@ class InstancesSteps(base.BaseSteps):
         # instances can be unordered so we should try to retrieve
         # any instance from instances list
 
-        instance_name = self._get_current_instance_name(instance_names)
+        instance_name = self._get_current_instance_name(page_instances,
+                                                        instance_names)
         ordered_names.append(instance_name)
 
         page_instances.table_instances.link_next.wait_for_presence()
@@ -305,14 +310,16 @@ class InstancesSteps(base.BaseSteps):
         for _ in range(1, count - 1):
             page_instances.table_instances.link_next.click()
 
-            instance_name = self._get_current_instance_name(instance_names)
+            instance_name = self._get_current_instance_name(page_instances,
+                                                            instance_names)
             ordered_names.append(instance_name)
             page_instances.table_instances.link_next.wait_for_presence()
             page_instances.table_instances.link_prev.wait_for_presence()
 
         page_instances.table_instances.link_next.click()
 
-        instance_name = self._get_current_instance_name(instance_names)
+        instance_name = self._get_current_instance_name(page_instances,
+                                                        instance_names)
         ordered_names.append(instance_name)
         page_instances.table_instances.link_next.wait_for_absence()
         page_instances.table_instances.link_prev.wait_for_presence()
@@ -405,7 +412,7 @@ class InstancesSteps(base.BaseSteps):
 
         waiter.wait(lambda: _poll_instance_status(),
                     timeout_seconds=config.VERIFY_RESIZE_TIMEOUT,
-                    sleep_seconds=config.VERIFY_RESIZE_SLEEP) is True
+                    sleep_seconds=config.VERIFY_RESIZE_SLEEP)
         page_instances.table_instances.row(
             name=instance_name).dropdown_menu.item_default.click()
 
@@ -496,7 +503,8 @@ class InstancesSteps(base.BaseSteps):
         """Step to check instances pagination with filtering."""
 
         page_instances = self._page_instances()
-        instance_name = self._get_current_instance_name(instance_names)
+        instance_name = self._get_current_instance_name(page_instances,
+                                                        instance_names)
 
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_absence()
@@ -505,6 +513,8 @@ class InstancesSteps(base.BaseSteps):
         page_instances.table_instances.link_next.wait_for_presence()
         page_instances.table_instances.link_prev.wait_for_presence()
 
+        page_instances.button_instance_filter().click()
+        page_instances.item_instance_parameter(config.INSTANCE_NAME).click()
         page_instances.field_filter_instances.value = instance_name
         page_instances.button_filter_instances.click()
 
@@ -525,8 +535,9 @@ class InstancesSteps(base.BaseSteps):
     @steps_checker.step
     def check_admin_instances_pagination_filter(self, instance_names):
         """Step to check instances pagination with filtering as admin."""
-
-        instance_name = self._get_current_instance_name(instance_names)
+        page_instances = self._page_admin_instances()
+        instance_name = self._get_current_instance_name(page_instances,
+                                                        instance_names)
         page_instances = self._page_admin_instances()
 
         page_instances.table_instances.link_next.wait_for_presence()
