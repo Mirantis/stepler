@@ -378,6 +378,14 @@ class ImagesSteps(base.BaseSteps):
         # image names can be unordered so we should try to retrieve
         # any image from image_names list
         def _get_current_image_name():
+
+            # wait table_images uploaded
+            waiter.wait(
+                lambda: waiter.expect_that(
+                    len(page_images.table_images.rows),
+                    equal_to(1)),
+                timeout_seconds=30,
+                sleep_seconds=0.1)
             rows = page_images.table_images.rows
             assert_that(rows, has_length(1))
 
@@ -411,14 +419,6 @@ class ImagesSteps(base.BaseSteps):
 
         assert_that(page_images.table_images.link_next.is_present,
                     equal_to(False))
-        assert_that(page_images.table_images.link_prev.is_present,
-                    equal_to(True))
-
-        page_images.table_images.link_prev.click()
-        page_images.table_images.row(name=image_names[1]).wait_for_presence()
-
-        assert_that(page_images.table_images.link_next.is_present,
-                    equal_to(True))
         assert_that(page_images.table_images.link_prev.is_present,
                     equal_to(True))
 
