@@ -1,40 +1,34 @@
-# Quickstart:
-# docker build -t stepler-tests .
-# docker run --net=host --rm \
-#    -e OS_AUTH_URL=http://10.109.1.8:5000/v3 \
-#    -e OS_FAULTS_CLOUD_DRIVER_ADDRESS=10.109.2.2 \
-#    -v $(pwd)/reports:/opt/app/test_reports \
-#    -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock \
-#    -v /cloud/key/path:/opt/app/cloud.key \
-#    stepler stepler/nova
-#
-# To run on cloud with ssl change `docker run` to `docker --dns=<cloud dns ip> run`
+FROM ubuntu:16.04
 
-FROM python:2
+COPY . /var/lib/stepler
+WORKDIR /var/lib/stepler
 
-RUN  apt-get update -qq &&  \
-apt-get install -q -y \
-    python-dev \
+RUN apt-get update -qq && \
+    apt-get install -q -y \
+    firefox=45.0.2+build1-0ubuntu1 \
+    python-pip \
     libvirt-dev \
     xvfb \
-    iceweasel \
     xdotool \
+    git \
     libav-tools && \
-apt-get clean  && \
-rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-WORKDIR /opt/app
-
-COPY . /opt/app/
+    apt-get clean  && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN pip install -e .[libvirt]
 
-ENV OS_USERNAME=admin
-ENV OS_PASSWORD=admin
-ENV VIRTUAL_DISPLAY=1
-ENV OS_FAULTS_CLOUD_DRIVER=fuel
-ENV OS_FAULTS_CLOUD_DRIVER_KEYFILE=/opt/app/cloud.key
-# Disable ControlMaster to prevent ansible hangs after revert
-ENV ANSIBLE_SSH_ARGS='-C -o ControlMaster=no'
+COPY bin/run-tests.sh /usr/bin/run-tests
+COPY bin/entrypoint.sh /usr/bin/entrypoint
 
-ENTRYPOINT ["py.test", "-v", "--junit-xml=test_reports/report.xml", "--html=test_reports/report.html", "--self-contained-html"]
+ENV SOURCE_FILE /home/stepler/keystonercv3
+ENV SKIP_LIST skip_list.yaml
+ENV OPENRC_ACTIVATE_CMD "source /home/stepler/keystonercv3"
+ENV VIRTUAL_DISPLAY 1
+ENV OS_DASHBOARD_URL "http://172.16.10.90:8078"
+
+#ENV ANSIBLE_SSH_ARGS='-C -o ControlMaster=no'
+
+ENTRYPOINT ["/usr/bin/entrypoint"]
+
+# Build
+# docker build -t docker-ci-stepler:$(date "+%Y_%m_%d_%H_%M_%S")
